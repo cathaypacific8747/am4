@@ -1,3 +1,4 @@
+# remember to run 
 import coloredlogs, logging
 logger = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG', milliseconds=True)
@@ -51,6 +52,7 @@ if True: # initialise and setup C functions
         hTicket_realism.restype = ctypes.c_double
         logger.debug("Loaded all ticket functions.")
 
+    f.initAirports.argtypes = None
     f.initAirports.restype = ctypes.c_bool
     if f.initAirports():
         logger.debug("Loaded all airports.")

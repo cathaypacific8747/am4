@@ -31,10 +31,10 @@ double hTicket_realism(double distance) { return floor(0.0517742799409248 * dist
 double estLoad(int capacity, double reputation) { return (double)capacity * 0.00908971604324 * reputation; }
 
 struct airportEntry {
-    char city[40];
-    char region[36];
-    char iata[3];
-    char icao[4];
+    char city[37];
+    char region[33];
+    char iata[5];
+    char icao[5];
     int runway;
     int market;
     double latRad;
@@ -53,28 +53,29 @@ bool initAirports() { // returns true if airports are loaded successfully
     char str[fileSize+1];
     strcpy(str, f);
 
-    char entry[3982][96];
+    char entry[3983][96];
     char *ptr = strtok(str, "\n");
-    for (int count = 0; ptr != NULL; count++) {
-        strcpy(entry[count], ptr);
+    for (int count = 1; ptr != NULL; count++) {
+        strcpy(entry[count], ptr); // max = 96
         ptr = strtok(NULL, "\n");
     }
 
     char *ptr1;
-    for (int k = 0; k < 3982; k++) { // ignores EOF
+    for (int k = 1; k < 3982; k++) { // ignores EOF
         if (strncmp(entry[k], ";;", 2) != 0) {
             // data is present, so split it by semicolon.
             ptr1 = strtok(entry[k], ";"); // ignore airportId
-            strcpy(airports[k].city, strtok(NULL, ";"));
-            strcpy(airports[k].region, strtok(NULL, ";"));
-            strcpy(airports[k].iata, strtok(NULL, ";"));
-            strcpy(airports[k].icao, strtok(NULL, ";"));
+            strcpy(airports[k].city, strtok(NULL, ";"));   // max = 36
+            strcpy(airports[k].region, strtok(NULL, ";")); // max = 32
+            strcpy(airports[k].iata, strtok(NULL, ";"));   // max = 4 (EGMD, TIST)
+            strcpy(airports[k].icao, strtok(NULL, ";"));   // max = 4
             airports[k].runway = atoi(strtok(NULL, ";"));
             airports[k].market = atoi(strtok(NULL, ";"));
             airports[k].latRad = atof(strtok(NULL, ";"));
             airports[k].lonRad = atof(strtok(NULL, ";"));
         }
     }
+    printf("[%s]\n", airports[577].city);
     return true;
 }
 
