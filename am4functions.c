@@ -41,7 +41,7 @@ struct airportEntry {
     double lonRad;
 };
 
-struct airportEntry airports[3983];
+struct airportEntry airports[3983]; // airports[x].city == "INVALID" means it does not exist.
 bool initAirports() { // returns true if airports are loaded successfully
     int fd = open("data/ap-indexed-radians.csv", O_RDONLY); // using mmap for performance gains
     
@@ -73,6 +73,8 @@ bool initAirports() { // returns true if airports are loaded successfully
             airports[k].market = atoi(strtok(NULL, ";"));
             airports[k].latRad = atof(strtok(NULL, ";"));
             airports[k].lonRad = atof(strtok(NULL, ";"));
+        } else {
+            strcpy(airports[k].city, "INVALID");
         }
     }
     printf("[%s]\n", airports[577].city);
