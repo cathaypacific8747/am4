@@ -1,6 +1,17 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdlib.h>
+
+// for mmap
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/mman.h>
+#include <string.h>
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 // pax ticket prices
@@ -19,6 +30,53 @@ double hTicket_realism(double distance) { return floor(0.0517742799409248 * dist
 
 double estLoad(int capacity, double reputation) { return (double)capacity * 0.00908971604324 * reputation; }
 
+struct airportEntry {
+    char city[40];
+    char region[36];
+    char iata[3];
+    char icao[4];
+    int runway;
+    int market;
+    double latRad;
+    double lonRad;
+};
+
+struct airportEntry airports[3983];
+bool initAirports() { // returns true if airports are loaded successfully
+    int fd = open("data/ap-indexed-radians.csv", O_RDONLY); // using mmap for performance gains
+    
+    struct stat s;
+    if (fstat(fd, &s) == -1)
+        return false; //error reading file
+    int fileSize = s.st_size;
+    char *f = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+    char str[fileSize+1];
+    strcpy(str, f);
+
+    char entry[3982][96];
+    char *ptr = strtok(str, "\n");
+    for (int count = 0; ptr != NULL; count++) {
+        strcpy(entry[count], ptr);
+        ptr = strtok(NULL, "\n");
+    }
+
+    char *ptr1;
+    for (int k = 0; k < 3982; k++) { // ignores EOF
+        if (strncmp(entry[k], ";;", 2) != 0) {
+            // data is present, so split it by semicolon.
+            ptr1 = strtok(entry[k], ";"); // ignore airportId
+            strcpy(airports[k].city, strtok(NULL, ";"));
+            strcpy(airports[k].region, strtok(NULL, ";"));
+            strcpy(airports[k].iata, strtok(NULL, ";"));
+            strcpy(airports[k].icao, strtok(NULL, ";"));
+            airports[k].runway = atoi(strtok(NULL, ";"));
+            airports[k].market = atoi(strtok(NULL, ";"));
+            airports[k].latRad = atof(strtok(NULL, ";"));
+            airports[k].lonRad = atof(strtok(NULL, ";"));
+        }
+    }
+    return true;
+}
 
 
 double simulatePaxIncome(int y, int j, int f, double yDaily, double jDaily, double fDaily, double distance, double reputation, int flightsPerDay, bool isRealism) {
