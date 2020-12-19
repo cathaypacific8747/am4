@@ -15,6 +15,47 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX_PLANES_PER_ROUTE 20
 
+
+struct paxConf {
+    int yConf;
+    int jConf;
+    int fConf;
+    double maxIncome;
+    int planesPerRoute;
+};
+
+struct cargoConf {
+    double lPct;
+    double hPct;
+    double maxIncome;
+    int planesPerRoute;
+};
+
+struct airportEntry {
+    char city[37];
+    char region[33];
+    char iata[5];
+    char icao[5];
+    int runway;
+    int market;
+    double latRad;
+    double lonRad;
+};
+
+struct demandEntry {
+    int yDemand;
+    int jDemand;
+    int fDemand;
+    double distance;
+};
+
+struct stopoverEntry {
+    int apId;
+    double toO;
+    double toD;
+};
+
+
 // pax ticket prices
 int yTicket_easy(double distance) { return (int)(0.44*distance + 185); } // 1.1*(0.4*d+170)-2
 int jTicket_easy(double distance) { return (int)(0.864*distance + 602.8); } // 1.08*(0.8*d+560)-2
@@ -30,56 +71,6 @@ double lTicket_realism(double distance) { return floor(0.0776321822039374 * dist
 double hTicket_realism(double distance) { return floor(0.0517742799409248 * distance + 24.6369915396414000) / 100; }
 
 double estLoad(int capacity, double reputation) { return (double)capacity * 0.00908971604324 * reputation; }
-
-struct airportEntry {
-    char city[37];
-    char region[33];
-    char iata[5];
-    char icao[5];
-    int runway;
-    int market;
-    double latRad;
-    double lonRad;
-};
-
-struct airportEntry airports[3983]; // airports[x].city == "INVALID" means it does not exist.
-bool initAirports() { // returns true if airports are loaded successfully
-    int fd = open("data/ap-indexed-radians.csv", O_RDONLY); // using mmap for performance gains
-    
-    struct stat s;
-    if (fstat(fd, &s) == -1)
-        return false; //error reading file
-    int fileSize = s.st_size;
-    char *f = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
-    char str[fileSize+1];
-    strcpy(str, f);
-
-    char entry[3983][96];
-    char *ptr = strtok(str, "\n");
-    for (int count = 1; ptr != NULL; count++) {
-        strcpy(entry[count], ptr); // max = 96
-        ptr = strtok(NULL, "\n");
-    }
-
-    char *ptr1;
-    for (int k = 1; k < 3982; k++) { // ignores EOF
-        if (strncmp(entry[k], ";;", 2) != 0) {
-            // data is present, so split it by semicolon.
-            ptr1 = strtok(entry[k], ";"); // ignore airportId
-            strcpy(airports[k].city, strtok(NULL, ";"));   // max = 36
-            strcpy(airports[k].region, strtok(NULL, ";")); // max = 32
-            strcpy(airports[k].iata, strtok(NULL, ";"));   // max = 4 (EGMD, TIST)
-            strcpy(airports[k].icao, strtok(NULL, ";"));   // max = 4
-            airports[k].runway = atoi(strtok(NULL, ";"));
-            airports[k].market = atoi(strtok(NULL, ";"));
-            airports[k].latRad = atof(strtok(NULL, ";"));
-            airports[k].lonRad = atof(strtok(NULL, ";"));
-        } else {
-            strcpy(airports[k].city, "INVALID");
-        }
-    }
-    return true;
-}
 
 double simulatePaxIncome(int y, int j, int f, double yDaily, double jDaily, double fDaily, double distance, double reputation, int flightsPerDay, bool isRealism) {
     int dailyIncome = 0;
@@ -124,21 +115,6 @@ double simulateCargoIncome(int l, int h, double lDaily, double hDaily, double di
     }
     return dailyIncome;
 }
-
-struct paxConf {
-    int yConf;
-    int jConf;
-    int fConf;
-    double maxIncome;
-    int planesPerRoute;
-};
-
-struct cargoConf {
-    double lPct;
-    double hPct;
-    double maxIncome;
-    int planesPerRoute;
-};
 
 // O(n²)
 struct paxConf brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPerDay, double distance, double reputation, bool isRealism) {
@@ -202,12 +178,44 @@ struct cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier
     return conf;
 }
 
-struct demandEntry {
-    int yDemand;
-    int jDemand;
-    int fDemand;
-    double distance;
-};
+struct airportEntry airports[3983]; // airports[x].city == "INVALID" means it does not exist.
+bool initAirports() { // returns true if airports are loaded successfully
+    int fd = open("data/ap-indexed-radians.csv", O_RDONLY); // using mmap for performance gains
+    
+    struct stat s;
+    if (fstat(fd, &s) == -1)
+        return false; //error reading file
+    int fileSize = s.st_size;
+    char *f = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+    char str[fileSize+1];
+    strcpy(str, f);
+
+    char entry[3983][96];
+    char *ptr = strtok(str, "\n");
+    for (int count = 1; ptr != NULL; count++) {
+        strcpy(entry[count], ptr); // max = 96
+        ptr = strtok(NULL, "\n");
+    }
+
+    char *ptr1;
+    for (int k = 1; k < 3982; k++) { // ignores EOF
+        if (strncmp(entry[k], ";;", 2) != 0) {
+            // data is present, so split it by semicolon.
+            ptr1 = strtok(entry[k], ";"); // ignore airportId
+            strcpy(airports[k].city, strtok(NULL, ";"));   // max = 36
+            strcpy(airports[k].region, strtok(NULL, ";")); // max = 32
+            strcpy(airports[k].iata, strtok(NULL, ";"));   // max = 4 (EGMD, TIST)
+            strcpy(airports[k].icao, strtok(NULL, ";"));   // max = 4
+            airports[k].runway = atoi(strtok(NULL, ";"));
+            airports[k].market = atoi(strtok(NULL, ";"));
+            airports[k].latRad = atof(strtok(NULL, ";"));
+            airports[k].lonRad = atof(strtok(NULL, ";"));
+        } else {
+            strcpy(airports[k].city, "INVALID");
+        }
+    }
+    return true;
+}
 
 struct demandEntry *queryDemands(int airportId) {
     // not intended to be exposed to Python.
@@ -251,3 +259,57 @@ void routes(int airportId) {
         // printf("%d, %d, %d, %d, %f\n", k, demands[k].yDemand, demands[k].jDemand, demands[k].fDemand, demands[k].distance);
     }
 }
+
+double distance(double lat1, double lon1, double lat2, double lon2) { // in radians
+    return 12742 * asin(sqrt(pow(sin((lat2-lat1) / (double)2), 2) + cos(lat1) * cos(lat2) * pow(sin((lon2-lon1) / (double)2), 2)));
+}
+
+struct stopoverEntry stopover(int origId, int destId, int range, int rwyReq) {
+    double toO = 0;
+    double toD = 0;
+
+    double origLat = airports[origId].latRad;
+    double origLon = airports[origId].lonRad;
+    double thisLat;
+    double thisLon;
+    double destLat = airports[destId].latRad;
+    double destLon = airports[destId].lonRad;
+
+    double thisLowestSum = 0;
+    double lowestSum = 99999;
+    int apId = 0;
+    static struct stopoverEntry result;
+
+    for (int k = 0; k < 3983; k++) {
+        if (airports[k].runway < rwyReq)
+            continue;
+
+        thisLat = airports[k].latRad;
+        thisLon = airports[k].lonRad;
+        toO = distance(origLat, origLon, thisLat, thisLon);
+        if ((toO > range) || (toO < 100))
+            continue;
+        toD = distance(thisLat, thisLon, destLat, destLon);
+        if ((toD > range) || (toD < 100))
+            continue;
+
+        thisLowestSum = toO + toD;
+        if (thisLowestSum < lowestSum) {
+            lowestSum = thisLowestSum;
+            apId = k;
+        }
+    }
+
+    result.apId = apId;
+    result.toO = toO;
+    result.toD = toD;
+    return result;
+}
+
+int calcFuel(double consumption, int distance, double trainingMultiplier, double modificationMultiplier) {
+    return (int)(consumption*distance*trainingMultiplier*modificationMultiplier);
+    // trainingMultiplier: 1.00, 0.99, 0.98, 0.97
+    // modificationMultiplier: 1.00, 0.9
+}
+
+int calcPaxCO2(double consumption, )

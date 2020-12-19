@@ -81,6 +81,17 @@ if True: # initialise and setup C functions
     bruteCargoConf = f.bruteCargoConf
     bruteCargoConf.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_double, ctypes.c_double, ctypes.c_int, ctypes.c_double, ctypes.c_double, ctypes.c_bool]
     bruteCargoConf.restype = cargoConf
+
+    distance = f.distance
+    distance.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+    distance.restype = ctypes.c_double
+
+    class stopoverEntry(ctypes.Structure):
+        _fields_ = [("apId", ctypes.c_int), ("toO", ctypes.c_double), ("toD", ctypes.c_double)]
+
+    stopover = f.stopover
+    stopover.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+    stopover.restype = stopoverEntry
     
     logger.info("Loaded all remaining C functions.")
 
@@ -140,7 +151,9 @@ async def prefix(ctx, pre):
     else:
         await send_error(ctx, f"Prefix cannot be empty.")
 
-
+@bot.command()
+async def test(ctx):
+    await ctx.send(file=discord.File(f))
 
 
 bot.run(TOKEN)
@@ -153,3 +166,5 @@ bot.run(TOKEN)
 
 # x = brutePaxConf(542, 197, 126, 600, 2, 19808, 100, False)
 # print(x.yConf, x.jConf, x.fConf, x.maxIncome, x.planesPerRoute)
+# x = stopover(2394, 563, 14500, 0)
+# print(x.apId, x.toO, x.toD)
