@@ -13,6 +13,7 @@
 #include <string.h>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX_PLANES_PER_ROUTE 20
 
 // pax ticket prices
 int yTicket_easy(double distance) { return (int)(0.44*distance + 185); } // 1.1*(0.4*d+170)-2
@@ -77,10 +78,8 @@ bool initAirports() { // returns true if airports are loaded successfully
             strcpy(airports[k].city, "INVALID");
         }
     }
-    printf("[%s]\n", airports[577].city);
     return true;
 }
-
 
 double simulatePaxIncome(int y, int j, int f, double yDaily, double jDaily, double fDaily, double distance, double reputation, int flightsPerDay, bool isRealism) {
     int dailyIncome = 0;
@@ -126,11 +125,28 @@ double simulateCargoIncome(int l, int h, double lDaily, double hDaily, double di
     return dailyIncome;
 }
 
-int* brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPerDay, double distance, double reputation, bool isRealism) {
-    int y = 0, j = 0, f;
+struct paxConf {
+    int yConf;
+    int jConf;
+    int fConf;
+    double maxIncome;
+    int planesPerRoute;
+};
 
-    static int conf[4];
-    double dailyIncome;
+struct cargoConf {
+    double lPct;
+    double hPct;
+    double maxIncome;
+    int planesPerRoute;
+};
+
+// O(n²)
+struct paxConf brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPerDay, double distance, double reputation, bool isRealism) {
+    int y = 0, j = 0, f;
+    int p;
+
+    static struct paxConf conf;
+    double incomePerPlanePerDay;
     double maxIncome = 0;
 
     int jMax;
@@ -139,27 +155,31 @@ int* brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPerDay, doubl
         for (j = jMax; j >= 0; j--) {
             f = (maxSeats - y - j*2) / 3;
 
-            // simulate the depletion of demand per day, starting off with the initial daily demand
-            dailyIncome = simulatePaxIncome(y, j, f, (double)yD, (double)jD, (double)fD, distance, reputation, flightsPerDay, isRealism);
-
-            if (dailyIncome > maxIncome) {
-                maxIncome = dailyIncome;
-                conf[0] = y;
-                conf[1] = j;
-                conf[2] = f;
+            for (p = MAX_PLANES_PER_ROUTE; p > 0; p--) { // prioritize more planes per route
+                // simulate the depletion of demand per day, starting off with the initial daily demand
+                incomePerPlanePerDay = simulatePaxIncome(y*p, j*p, f*p, (double)yD, (double)jD, (double)fD, distance, reputation, flightsPerDay, isRealism) / p;
+                
+                if (incomePerPlanePerDay > maxIncome) {
+                    maxIncome = incomePerPlanePerDay;
+                    conf.yConf = y;
+                    conf.jConf = j;
+                    conf.fConf = f;
+                    conf.planesPerRoute = p;
+                }
             }
         }
     }
-    conf[3] = (int)maxIncome;
+    conf.maxIncome = maxIncome;
     return conf;
 }
 
-int* bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, double hMultiplier, int flightsPerDay, double distance, double reputation, bool isRealism) {
+struct cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, double hMultiplier, int flightsPerDay, double distance, double reputation, bool isRealism) {
     double lCap = 0;
     double hCap = 0;
+    int p;
 
-    static int conf[3];
-    double dailyIncome;
+    static struct cargoConf conf;
+    double incomePerPlanePerDay;
     double maxIncome = 0;
 
     double hPct;
@@ -167,22 +187,67 @@ int* bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, double hMu
         lCap = (double)capacity * 0.7 * lMultiplier * (1.00 - hPct);
         hCap = (double)capacity * hMultiplier * hPct;
 
-        dailyIncome = simulateCargoIncome(lCap, hCap, (double)lD, (double)hD, distance, reputation, flightsPerDay, isRealism);
+        for (p = MAX_PLANES_PER_ROUTE; p > 0; p--) {
+            incomePerPlanePerDay = simulateCargoIncome(lCap*p, hCap*p, (double)lD, (double)hD, distance, reputation, flightsPerDay, isRealism) / p;
 
-        if (dailyIncome > maxIncome) {
-            maxIncome = dailyIncome;
-            conf[0] = (int)(100*(1.00-hPct));
-            conf[1] = (int)(100*hPct);
+            if (incomePerPlanePerDay > maxIncome) {
+                maxIncome = incomePerPlanePerDay;
+                conf.lPct = 1.00-hPct;
+                conf.hPct = hPct;
+                conf.planesPerRoute = p;
+            }
         }
     }
-    conf[2] = (int)maxIncome;
+    conf.maxIncome = maxIncome;
     return conf;
 }
 
+struct demandEntry {
+    int yDemand;
+    int jDemand;
+    int fDemand;
+    double distance;
+};
 
+struct demandEntry *queryDemands(int airportId) {
+    // not intended to be exposed to Python.
+    // make sure airportId is between 1 and 3982 inclusive.
+    static struct demandEntry demand[3983];
 
-// int main() {
-//     int *c = brutePaxConf(200);
-//     for (int i = 0; i < 3; i++)
-//         printf("%d,", *(c+i));
-// }
+    char fileName[19]; // max 19
+    sprintf(fileName, "data/dist/%d.csv", airportId);
+    int fd = open(fileName, O_RDONLY);
+    
+    struct stat s;
+    if (fstat(fd, &s) == -1)
+        return demand; // error reading file
+    int fileSize = s.st_size;
+    char *f = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+    char str[fileSize+1];
+    strcpy(str, f);
+
+    char entry[3983][40]; // max = 36
+    char *ptr = strtok(str, "\n");
+    for (int count = 1; ptr != NULL; count++) {
+        strcpy(entry[count], ptr);
+        ptr = strtok(NULL, "\n");
+    }
+
+    char *ptr1;
+    for (int k = 1; k < 3982; k++) { // ignores EOF
+        ptr1 = strtok(entry[k], ",");
+        demand[k].yDemand = atoi(strtok(NULL, ","));
+        demand[k].jDemand = atoi(strtok(NULL, ","));
+        demand[k].fDemand = atoi(strtok(NULL, ","));
+        demand[k].distance = atof(strtok(NULL, ","));
+    }
+
+    return demand;
+}
+
+void routes(int airportId) {
+    struct demandEntry *demands = queryDemands(airportId);
+    for (int k = 0; k < 3983; k++) {
+        // printf("%d, %d, %d, %d, %f\n", k, demands[k].yDemand, demands[k].jDemand, demands[k].fDemand, demands[k].distance);
+    }
+}
