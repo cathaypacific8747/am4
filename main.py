@@ -151,10 +151,8 @@ async def prefix(ctx, pre):
     else:
         await send_error(ctx, f"Prefix cannot be empty.")
 
-@bot.command()
-async def test(ctx):
-    await ctx.send(file=discord.File(f))
 
+f.benchmark()
 
 bot.run(TOKEN)
 # ***REMOVED***
