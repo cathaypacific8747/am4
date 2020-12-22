@@ -97,7 +97,7 @@ double simulatePaxIncome(int y, int j, int f, double yP, double jP, double fP, d
     return dailyIncome;
 }
 
-double simulateCargoIncome(int l, int h, double lP, double hP, sdouble lDaily, double hDaily, double distance, double reputation, int flightsPerDay, bool isRealism) {
+double simulateCargoIncome(int l, int h, double lP, double hP, double lDaily, double hDaily, double distance, double reputation, int flightsPerDay, bool isRealism) {
     int dailyIncome = 0;
     double lActual, hActual;
     for (int flights = 0; flights < flightsPerDay; flights++) {
@@ -115,6 +115,7 @@ double simulateCargoIncome(int l, int h, double lP, double hP, sdouble lDaily, d
 // O(n²)
 // change to malloc()!
 struct paxConf brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPerDay, double distance, double reputation, bool isRealism) {
+    static struct paxConf conf; // change to malloc pls
     int y = 0, j = 0, f;
     if (isRealism) {
         conf.yP = yTicket_realism(distance);
@@ -127,7 +128,6 @@ struct paxConf brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPer
     }
 
     int p;
-    static struct paxConf conf; // change to malloc pls
     double incomePerPlanePerDay;
     double maxIncome = 0;
 
@@ -157,6 +157,7 @@ struct paxConf brutePaxConf(int yD, int jD, int fD, int maxSeats, int flightsPer
 
 // change to malloc()!
 struct cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, double hMultiplier, int flightsPerDay, double distance, double reputation, bool isRealism) {
+    static struct cargoConf conf;
     double lCap = 0;
     double hCap = 0;
 
@@ -170,7 +171,6 @@ struct cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier
 
     int p;
 
-    static struct cargoConf conf;
     double incomePerPlanePerDay;
     double maxIncome = 0;
 
@@ -277,7 +277,7 @@ double distance(double lat1, double lon1, double lat2, double lon2) { // in radi
 }
 
 // remember to free 'result'!
-struct stopoverEntry stopover(int origId, int destId, int range, int rwyReq) {
+struct stopoverEntry *stopover(int origId, int destId, int range, int rwyReq) {
     double toO = 0;
     double toD = 0;
 
@@ -291,7 +291,7 @@ struct stopoverEntry stopover(int origId, int destId, int range, int rwyReq) {
     double thisLowestSum = 0;
     double lowestSum = 65536;
     int apId = 0;
-    struct stopoverEntry result = malloc(sizeof(stopoverEntry));
+    struct stopoverEntry *result = malloc(sizeof(struct stopoverEntry));
 
     for (int k = 1; k < 3983; k++) {
         if (airports[k].runway < rwyReq)
@@ -313,9 +313,9 @@ struct stopoverEntry stopover(int origId, int destId, int range, int rwyReq) {
         }
     }
 
-    result.apId = apId;
-    result.toO = toO;
-    result.toD = toD;
+    result->apId = apId;
+    result->toO = toO;
+    result->toD = toD;
     return result;
 }
 
@@ -331,7 +331,7 @@ double calcPaxCO2(double consumption, double distance, int yActual, int jActual,
     // modificationMultiplier: 1.00, 0.90
 }
 
-double calcCargoCO2(double reputation, double distance, int lActual, int hActual, int lCapacity, int hCapacity, double trainingMultiplier, double modificationMultiplier) {
+double calcCargoCO2(double consumption, double distance, int lActual, int hActual, int lCapacity, int hCapacity, double trainingMultiplier, double modificationMultiplier) {
     return trainingMultiplier*(ceil(distance)*round(modificationMultiplier*consumption)*(lActual/(double)1000 + hActual/(double)500) + (lCapacity + hCapacity));
     // trainingMultiplier: 1.00, 0.99, 0.98, 0.97, 0.96, 0.95
     // modificationMultiplier: 1.00, 0.90
