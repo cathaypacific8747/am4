@@ -64,10 +64,6 @@ if True: # initialise and setup C functions
     else:
         logger.critical("Loading airports failed.")
 
-    routes = f.routes
-    routes.argtypes = [ctypes.c_int]
-    routes.restype = None
-
     class paxConf(ctypes.Structure):
         _fields_ = [("yConf", ctypes.c_int), ("jConf", ctypes.c_int), ("fConf", ctypes.c_int), ("maxIncome", ctypes.c_double), ("planesPerRoute", ctypes.c_int)]
 
@@ -151,8 +147,10 @@ async def prefix(ctx, pre):
     else:
         await send_error(ctx, f"Prefix cannot be empty.")
 
-
-f.benchmark()
+paxRoutes = f.paxRoutes
+paxRoutes.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_double, ctypes.c_bool]
+f.paxRoutes(2394, 600, 17540, 2, 95, False)
+# print(x)
 
 bot.run(TOKEN)
 # ***REMOVED***
