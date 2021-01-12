@@ -1,0 +1,6 @@
+{
+    "userid": {
+        "description": "Used to fix issues with retrieving the wrong airline data.",
+        "validationMode": 1
+    }
+}
