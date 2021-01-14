@@ -258,20 +258,20 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 cursor = await conn.cursor()
                 await cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `model` = '{ac}'")
                 plane = await cursor.fetchone()
-                if plane != None: succ = True
-                if plane[10] == 'Pax':
-                    pro = profit(plane)
-                else:
-                    pro = procargo(plane)
-                ac = plane[1]
-                if not succ:
+                if plane: succ = True
+                if not plane:
                     embed.add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]}', inline = False)
                 else:
+                    if plane[10] == 'Pax':
+                        pro = profit(plane)
+                    else:
+                        pro = procargo(plane)
+                    ac = plane[1]
                     total += pro[mode]*fleet["amount"] 
                     embed.add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]} | Max Profit: **${pro[mode]*fleet["amount"]:,}**', inline = False)
                 bumsecks += fleet['amount']
             embed.add_field(name = 'Fleet', value = f"Total Planes: **{bumsecks}**")
-            embed.add_field(name = 'Profit', value = f"Total Ideal Profit per Day: **${total:,}**")
+            embed.add_field(name = 'Profit', value = f"Total Ideal Profit per Day: **${total:,}**" + ("\*" if not succ else ""))
             await message.edit(content = '', embed = embed)
             await cursor.close()
             conn.close()

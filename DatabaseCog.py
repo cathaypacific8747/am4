@@ -1,4 +1,4 @@
-info = 'Database Commands Extension v1.1a'
+info = 'Database Commands Extension v2.0'
 
 import discord
 from discord.ext import commands
@@ -105,7 +105,7 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
                         f'Profit per Flight (\'Easy\'): \n"${pro[3]:,}"\nFlights per day (\'Easy\'): \n"{round(pro[4], 2)}"\nProfit per Day (\'Easy\'): \n"${pro[5]:,}"```')
             except:
                 pass
-        
+
             embed1.set_field_at(0, name = 'Brief Statistics (Mobile)', value = msg1)
             embed2.set_field_at(0, name = 'Extra Statistics and Profit (Mobile)', value = msg2)
             embed.set_field_at(0, name = 'Comparison (Mobile)', value = msg)
@@ -130,69 +130,23 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
     '''
     Public use:
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-    $search
     $seeall|all|allac
     $info|ac
     $compare
+    $search
     '''
 
-    @commands.command(help='Searches the DB for AC within given parameters', usage='$search <value> <inequalitySign> <column: cost|cap|rng|spd|fuel|co2> [optional - orderby: cost|cap|rng|spd|fuel|co2] [optional - direction: asc|desc]')
-    @notPriceAlert()
-    @notDM()
-    async def search(self, ctx, value, thansign = '>', column = 'cost', orderby = 'cost', direction = 'desc'):
-        global searchC
-        searchC += 1
-        succ = True
-        if thansign == '>':
-            thansign = '<='
-        elif thansign == '<':
-            thansign = '>='
-        else:
-            await ctx.send('invalid than sign')
-            succ = False
-
-        if direction != 'asc' and direction != 'desc':
-            await ctx.send(f'Formatting error.')
-            succ = False
-        
-        try:
-            if len(value) >= 5:
-                value = float(value) / 1000000
-            elif float(value) < 0:
-                await ctx.send('Value negative. Planes are never free!')
-            else:
-                value = float(value)
-        except:
-            await ctx.send(f'Value not a number.')
-        injection = False
-        try:
-            acdb.reconnect(attempts = 5, delay = 0.5)
-            if succ and not injection:
-                cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `shortname`, `cost` FROM `am4bot` WHERE `{column}` {thansign} {float(value)} AND `type` = 'pax' ORDER BY `{orderby}` {direction.upper()} LIMIT 10")
-            acdb.close()
-        except mysql.connector.Error as error:
-            if error.errno == 1054:
-                await ctx.send(f"Unknown column. Columns available are: ```'cost', 'cap', 'rng', 'spd', 'fuel', 'co2'```")
-            elif error.errno == 1064:
-                await ctx.send(f'Formatting error.')
-            else:
-                await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
-            succ = False
-        embed = discord.Embed(title = f'Showing planes where **{column}** {thansign} **{value}**, ordered by {orderby}:', colour = discord.Colour(0x33b300))
-        embed.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
-        for ac in cursor:
-            embed.add_field(name = f'{ac[1]} ($info {ac[7]})', value = f'```py\n${ac[8]}M; {ac[6]} pax; {ac[2]}km; {ac[5]}km/h; {ac[4]}l/km```', inline = False)
-        if succ:
-            await ctx.send(embed = embed)
-
-    @commands.command(aliases = ['all', 'allac'], help='Links to a spreadsheet containing all short names of AC to be used with the $info command', brief='Sends all short names of AC', usage='$seeall|all|allac')
+    @commands.command(aliases = ['all', 'allac'], help='Links to a spreadsheet containing all short names of AC to be used with the $info command', brief='Sends all short names of AC', usage='$seeall|all|allac', hidden = True)
     @notPriceAlert()
     @notDM()
     async def seeall(self, ctx):
         global seeallC
         seeallC += 1
-        await ctx.send(f'Here\'s the link to all AC short names. These are to be used in almost all commands.\nhttps://docs.google.com/spreadsheets/d/1KfMM5N52mIIii_cwRFcHsjbo491DkTanBlC7piFofWk/edit?usp=sharing')
-
+        s = "Here's a link to all to all AC shortnames. There are to be used in almost all commands:\n"
+        s += "https://docs.google.com/spreadsheets/u/3/d/e/2PACX-1vTxa5kKsfJQe7Q8A_WzOOUC0NzHe2CGNMTEcZjnCMih04KF1ieSq2tWIpkTb2dgs6nxRw0lplNFa5bP/pubhtml\n"
+        s += "To automatically search for aircraft abbreviations, use `$search`."
+        await ctx.send(s)
+        # await ctx.send(f'$seeall is now deprecated. Use the $search command instead.')
     @commands.command(aliases = ['ac'], help='Sends stats of a selected AC. Usage: $info <short name of an AC>', brief='Sends stats of a selected AC', usage='$info|ac <aircraftCode>')
     @notPriceAlert()
     @notDM()    
@@ -281,7 +235,7 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
         succ1 = False
         succ2 = False
         injection = False
-        if plane1[0] == "'" or plane2[0] == "'":
+        if "'" in plane1[0] or "'" in plane2[0]:
             injection = True
         ac1 = ''
         ac2 = ''
@@ -291,6 +245,7 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
                 cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane1}'")
             except mysql.connector.Error as error:
                 await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
+            acdb.close()
             for ac in cursor:
                 ac1 = ac
                 succ1 = True
@@ -306,67 +261,104 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
         
         if injection == True:
             await ctx.send('SQL Injection detected. Stop it. Bad.')
-        elif not succ1 and not succ2:
+            return
+        if not succ1 and not succ2:
             await ctx.send('Neither of the aircraft found. You can see all AC abbreviations with the command $seeall')    
+            return
         elif not succ1:
             await ctx.send('First aircraft not found. You can see all AC abbreviations with the command $seeall')
+            return
         elif not succ2:
             await ctx.send('Second aircraft not found. You can see all AC abbreviations with the command $seeall')
+            return
         elif ac1[10] != ac2[10]:
             await ctx.send("Can't compare cargo and pax aircraft")
-            ac1 = ac2 = None
-        else:
-            try:
-                if ac1[10] == 'Cargo':
-                    pro1 = procargo(ac1)
-                    pro2 = procargo(ac2)
-                else:
-                    pro1 = profit(ac1)
-                    pro2 = profit(ac2)
-            except:
-                pass
-
-            ###  Consider using tabulate, plain, makes the code much more readable and maintainable.  ###
-            ps = addspaces(ac1[8], 20)
-            cs = addspaces(ac1[6], 16)
-            rs = addspaces(ac1[2], 20)
-            ss = addspaces(ac1[5], 18)
-            fs = addspaces(ac1[4], 5)
-            es = addspaces(ac1[3], 7)
-            
-            fr = addspaces(f'{pro1[0]:,}', 9)
-            dr = addspaces(round(pro1[1], 2), 12)
-            pr = addspaces(f'{pro1[2]:,}', 12)
-            fe = addspaces(f'{pro1[3]:,}', 12)
-            de = addspaces(round(pro1[4], 2), 15)
-            pe = addspaces(f'{pro1[5]:,}', 15)
-
+            return
+        try:
             if ac1[10] == 'Cargo':
-                msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]:,} lbs" | "{ac2[6]:,} lbs"\n'
-                    f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
-                    f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/k/km" | "{ac2[3]} kg/k/km"\n'
-                    f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
-                    f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
-                    f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+                pro1 = procargo(ac1)
+                pro2 = procargo(ac2)
             else:
-                msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]} pax" | "{ac2[6]} pax"\n'
-                    f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
-                    f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/p/km" | "{ac2[3]} kg/p/km"\n'
-                    f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
-                    f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
-                    f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+                pro1 = profit(ac1)
+                pro2 = profit(ac2)
+        except:
+            pass
 
-            
-            embed = discord.Embed(title=f"{ac1[1]} vs. {ac2[1]}", colour=discord.Colour(0xff9900))
+        ###  Consider using tabulate, plain, makes the code much more readable and maintainable.  ###
+        ps = addspaces(ac1[8], 20)
+        cs = addspaces(ac1[6], 16)
+        rs = addspaces(ac1[2], 20)
+        ss = addspaces(ac1[5], 18)
+        fs = addspaces(ac1[4], 5)
+        es = addspaces(ac1[3], 7)
+        
+        fr = addspaces(f'{pro1[0]:,}', 9)
+        dr = addspaces(round(pro1[1], 2), 12)
+        pr = addspaces(f'{pro1[2]:,}', 12)
+        fe = addspaces(f'{pro1[3]:,}', 12)
+        de = addspaces(round(pro1[4], 2), 15)
+        pe = addspaces(f'{pro1[5]:,}', 15)
 
-            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476935376404550/compare.png')
-            embed.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac1[9]}.png")
-            embed.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
-            embed.add_field(name = 'Comparison', value = msg)
-            
-            message = await ctx.send('', embed = embed)
-            await message.add_reaction('📱')
-            await message.add_reaction('🦵')
+        if ac1[10] == 'Cargo':
+            msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]:,} lbs" | "{ac2[6]:,} lbs"\n'
+                f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
+                f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/k/km" | "{ac2[3]} kg/k/km"\n'
+                f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
+                f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
+                f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+        else:
+            msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]} pax" | "{ac2[6]} pax"\n'
+                f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
+                f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/p/km" | "{ac2[3]} kg/p/km"\n'
+                f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
+                f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
+                f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+
+        
+        embed = discord.Embed(title=f"{ac1[1]} vs. {ac2[1]}", colour=discord.Colour(0xff9900))
+
+        embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476935376404550/compare.png')
+        embed.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac1[9]}.png")
+        embed.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        embed.add_field(name = 'Comparison', value = msg)
+        
+        message = await ctx.send('', embed = embed)
+        await message.add_reaction('📱')
+        await message.add_reaction('🦵')
+
+    
+    @commands.command(brief='Searches the database for aircrafts with the matching name.', usage='$search <name1> [name2] ...', help='Returns all aircrafts with its model name containing name1, name2, etc.\nThe names inputted are order-sensitive.')
+    @notPriceAlert()
+    @notDM()
+    async def search(self, ctx, *args):
+        global searchC
+        searchC += 1
+        if "'" in args:
+            await ctx.send('SQL Injection detected. Stop it. Bad.')
+            return
+        if len(args) == 0:
+            await ctx.send('Missing arguments, check `$help search` for more information.')
+            return
+
+        query = ''.join([f'%{i}%' for i in args])
+
+        try:
+            acdb.reconnect(attempts = 5, delay = 0.5)
+            cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type`, `shortname` FROM `am4bot` WHERE `aircraft` LIKE '{query}' ORDER BY `aircraft`")
+        except mysql.connector.Error as error:
+            await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
+        acdb.close()
+
+        embed = discord.Embed(title = f"Results for **{''.join([f'{i} ' for i in args])}**", colour = discord.Colour(0x03fce3))
+        embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/659878639461990401/799226240305332224/search_icon.png')
+        embed.set_footer(text="Data provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        for result in cursor:
+            isCargo = result[10] == 'Cargo'
+            icon = '<:cargo:773841095896727573>' if isCargo else '<:pax:773841110271393833>'
+            embed.add_field(name = f"{result[1]} {icon}", value = f"```ml\n${result[8]} M, {result[6]:,} {'lbs' if isCargo else 'pax'}, {result[4]} lbs/km```**Call with:** $info {result[11]}\n", inline = False)
+        if len(embed.fields) == 0:
+            embed.add_field(name = ":x: No aircraft found!", value = f"No entry found containing given searchword{'' if len(args) == 1 else 's'}. Make sure there are no misspellings. {'' if len(args) == 1 else 'Remember that this command is **order sensitive**, that means multiple searchwords must be given in order!'}")
+        await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(DatabaseCog(bot))
