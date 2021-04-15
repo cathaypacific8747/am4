@@ -16,9 +16,11 @@ cur = db.cursor()
 cur.execute("SELECT id, city, country, iata, icao, runway, market, lat, lng FROM am4tools_api.airports") # query all airports
 cdef tuple res = cur.fetchall()
 
-# parse the tuple of tuples into an array of airportEntry* structs
+# parse the tuple of tuples into an array of ap_det* structs.
+# querying nonexistent airports will lead to SEGFAULT.
 cdef:
-    struct airportEntry:
+    struct ap_det:
+        bint valid
         char* city
         char* country
         char* iata
@@ -28,13 +30,16 @@ cdef:
         double latRad
         double lonRad
     Pool mem = Pool()
-    airportEntry* airports = <airportEntry*>mem.alloc(3983, sizeof(airportEntry))
-    int index
+    ap_det* airports = <ap_det*>mem.alloc(3983, sizeof(ap_det))
     list valid_airportIds = []
+    int index
     tuple row
+
+for index in range(3983):
+    airports[index].valid = False
 for row in res:
     index = <int>row[0]
-    valid_airportIds.append(index)
+    airports[index].valid = True
     airports[index].city = row[1]
     airports[index].country = row[2]
     airports[index].iata = row[3]
@@ -43,16 +48,7 @@ for row in res:
     airports[index].market = <int>row[6]
     airports[index].latRad = <double>row[7]
     airports[index].lonRad = <double>row[8]
-for index in range(3983):
-    if index not in valid_airportIds:
-        airports[index].city = ""
-        airports[index].country = ""
-        airports[index].iata = ""
-        airports[index].icao = ""
-        airports[index].runway = -1
-        airports[index].market = -1
-        airports[index].latRad = 0.0
-        airports[index].lonRad = 0.0
+
 #                       #
 # END OF INITIALISATION #
 #                       #
@@ -74,6 +70,8 @@ cdef double estLoadY(double capacity, double reputation): return capacity * 0.00
 cdef double estLoadJ(double capacity, double reputation): return capacity * 0.00833436416185 * reputation + 0.0592410115607
 cdef double estLoadF(double capacity, double reputation): return capacity * 0.00844570246176 * reputation + 0.0611838672599
 cdef double customMin(int a, double b): return <double>a if a < b else b
+cdef double distance(double lat1, double lon1, double lat2, double lon2): return 12742 * asin(sqrt(pow(sin((lat2-lat1) / 2.0), 2) + cos(lat1) * cos(lat2) * pow(sin((lon2-lon1) / 2.0), 2)))
+
 
 cdef struct paxConf:
     int yConf
@@ -250,83 +248,6 @@ cdef cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, 
     conf.maxIncome = maxIncome
     return conf
 
-
-#
-cdef struct stopoverEntry:
-    bint success
-    airportEntry airport
-    double toO
-    double toD
-    double diff
-#
-cdef double distance(double lat1, double lon1, double lat2, double lon2):
-    return 12742 * asin(sqrt(pow(sin((lat2-lat1) / 2.0), 2) + cos(lat1) * cos(lat2) * pow(sin((lon2-lon1) / 2.0), 2)))
-#
-cdef stopoverEntry stopover(int origId, int destId, int maxRange, int rwyReq):
-    cdef double toO = 0
-    cdef double toD = 0
-
-    cdef double origLat = airports[origId].latRad
-    cdef double origLon = airports[origId].lonRad
-    cdef double thisLat
-    cdef double thisLon
-    cdef double destLat = airports[destId].latRad
-    cdef double destLon = airports[destId].lonRad
-
-    # cdef double thisLowestSum = 0
-    cdef double lowestSum = 65536
-    cdef double lowestToO, lowestToD
-    cdef int lowestApId = 0
-
-    cdef int k
-    cdef double thisLowestSum
-    for k in range(1, 3983):
-        if airports[k].runway < rwyReq:
-            continue
-        thisLat = airports[k].latRad
-        thisLon = airports[k].lonRad
-        toO = distance(origLat, origLon, thisLat, thisLon)
-        if toO > maxRange or toO < 100:
-            continue
-        toD = distance(thisLat, thisLon, destLat, destLon)
-        if toD > maxRange or toD < 100:
-            continue
-
-        if toO + toD < lowestSum:
-            lowestSum = toO + toD
-            lowestApId = k
-            lowestToO = toO
-            lowestToD = toD
-
-    cdef stopoverEntry result
-    if lowestApId == 0: # no airports found
-        result.success = False
-        result.airport = airports[0] # empty placeholder
-        result.toO = 0.0
-        result.toD = 0.0
-        result.diff = 0.0
-    else:
-        result.success = True
-        result.airport = airports[lowestApId]
-        result.toO = lowestToO
-        result.toD = lowestToD
-        result.diff = lowestSum - distance(origLat, origLon, destLat, destLon)
-
-    return result
-#
-cdef int getApIdByIATA(char* iata):
-    cdef int i
-    for i in range(1,3983):
-        if strcmp(airports[i].iata, iata) == 0:
-            return i
-    return 0
-#
-cdef int getApIdByICAO(char* icao):
-    cdef int i
-    for i in range(1,3983):
-        if strcmp(airports[i].icao, icao) == 0:
-            return i
-    return 0
 
 #
 # this assumes all strings supplied are SQL-injection proof, and already checked for bounds.
@@ -544,6 +465,101 @@ cdef class GuildSettings:
     print(x.details)
     '''
 #
+cdef class Airport:
+    cdef public bint success
+    cdef public int internalId
+    cdef public ap_det details
+
+    def __cinit__(self, int apid=0, char* text=''):
+        cdef tuple idresult
+        self.success = False
+
+        if apid != 0:
+            if airports[apid].valid:
+                self.internalId = apid
+                self.success = True
+        elif text != '':
+            cur.execute(f"SELECT id FROM am4tools_api.airports WHERE iata='{text}' OR icao='{text}' OR id='{text}'")
+            idresult = cur.fetchone()
+            if idresult != None:
+                self.internalId = idresult[0]
+                self.success = True
+        
+        if self.success:
+            self.details = airports[self.internalId]
+    
+    # demo
+    '''
+    a = Airport(text='LHR')
+    print(a.details)
+    '''
+#
+cdef struct stpvr_det:
+    bint success
+    int apid
+    double flyingDistance
+    double diff
+cdef class Route: # assumes that input airports exists already
+    cdef public Airport origin
+    cdef public Airport destination
+    cdef public double distance
+    cdef public stpvr_det stopover
+    #
+    def __cinit__(self, Airport orig, Airport dest):
+        self.origin = orig
+        self.destination = dest
+        self.distance = distance(self.origin.details.latRad, self.origin.details.lonRad, self.destination.details.latRad, self.destination.details.lonRad)
+    #
+    cpdef void findStopover(self, int maxRange, int rwyReq):
+        cdef double toO = 0
+        cdef double toD = 0
+
+        cdef double origLat = self.origin.details.latRad
+        cdef double origLon = self.origin.details.lonRad
+        cdef double thisLat
+        cdef double thisLon
+        cdef double destLat = self.destination.details.latRad
+        cdef double destLon = self.destination.details.lonRad
+
+        cdef double lowestSum = 32768
+        cdef int k_last = 0
+
+        cdef int k
+        for k in range(1, 3983):
+            if airports[k].runway < rwyReq:
+                continue
+            thisLat = airports[k].latRad
+            thisLon = airports[k].lonRad
+            toO = distance(origLat, origLon, thisLat, thisLon)
+            if toO > maxRange or toO < 100:
+                continue
+            toD = distance(thisLat, thisLon, destLat, destLon)
+            if toD > maxRange or toD < 100:
+                continue
+
+            if toO + toD < lowestSum:
+                lowestSum = toO + toD
+                k_last = k
+        #
+        if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
+            self.stopover.success = False
+        else:
+            self.stopover.success = True
+            self.stopover.apid = k_last
+            self.stopover.flyingDistance = lowestSum
+            self.stopover.diff = lowestSum - self.distance
+    # demo
+    '''
+    r = Route(Airport(text='LHR'), Airport(text='SYD'))
+    print(r.distance)
+
+    r.findStopover(maxRange=14500, rwyReq=0)
+    print(r.stopover)
+    '''
+#
+r = Route(Airport(text='LHR'), Airport(text='SYD'))
+r.findStopover(maxRange=14500, rwyReq=0)
+print(r.__dict__)
 
 db.close()
 print('Connection closed.')
