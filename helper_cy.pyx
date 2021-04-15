@@ -9,12 +9,11 @@ cdef extern from "string.h":
     int strcmp(char* str1, char* str2)
 import MySQLdb
 cdef int MAX_PLANES_PER_ROUTE = 20
-cdef long nothing = None
 
-#   db = MySQLdb.connect(host='localhost', user='root', passwd='***REMOVED***')
+# db = MySQLdb.connect(host='localhost', user='root', passwd='***REMOVED***')
 db = MySQLdb.connect(host='***REMOVED***', user='admin', passwd='***REMOVED***')
 cur = db.cursor()
-cur.execute("SELECT id, city, country, iata, icao, runway, market, lat, lng FROM am4tools_dev.airports") # query all airports
+cur.execute("SELECT id, city, country, iata, icao, runway, market, lat, lng FROM am4tools_api.airports") # query all airports
 cdef tuple res = cur.fetchall()
 
 # parse the tuple of tuples into an array of airportEntry* structs
@@ -331,25 +330,25 @@ cdef int getApIdByICAO(char* icao):
 
 #
 # this assumes all strings supplied are SQL-injection proof, and already checked for bounds.
+cdef struct us_det:
+    int discordId
+    int gameId
+    char* ign
+    #
+    char* mode
+    char* paxMode
+    char* cargoMode
+    int lTraining
+    int hTraining
+    int fuelPrice
+    int co2Price
+    int fuelTraining
+    int co2Training
+    int useEstimation
+    int reputation
 cdef class UserSettings:
-    cdef struct us_ret:
-        int internalId
-        int discordId
-        int gameId
-        char* ign
-        #
-        char* mode
-        char* paxMode
-        char* cargoMode
-        int lTraining
-        int hTraining
-        int fuelPrice
-        int co2Price
-        int fuelTraining
-        int co2Training
-        int useEstimation
-        int reputation
     cdef public int internalId
+    cdef public us_det details
     def __cinit__(self, long discordId=0, int gameId=0, char* ign=''): # supply ONE identifier/argument only!
         cdef bint found = False
         cdef tuple user
@@ -370,7 +369,7 @@ cdef class UserSettings:
             if user != None:
                 found = True
                 self.internalId = user[0]
-        if ign != <char*>'' and not found:
+        if ign != '' and not found:
             cur.execute(f"SELECT id FROM am4bot.users WHERE ign='{ign}'")
             user = cur.fetchone()
             if user != None:
@@ -387,7 +386,7 @@ cdef class UserSettings:
                 self.update_discordId(discordId)
             if gameId != 0:
                 self.update_gameId(gameId)
-            if ign != <char*>'':
+            if ign != '':
                 self.update_ign(ign)
 
     # functions are split up intentionally to avoid parsing overhead, affecting performance.
@@ -448,53 +447,57 @@ cdef class UserSettings:
         cur.execute(f"UPDATE am4bot.users SET reputation='{reputation}' WHERE id={self.internalId}")
         db.commit()
     # get
-    cpdef us_ret getSettings(self):
+    cpdef void getDetails(self):
         cdef tuple user
-        cur.execute(f"SELECT discord_id, game_id, ign, mode, pax_mode, cargo_mode, large_training, heavy_training, fuel_price, co2_price, fuel_training, co2_training, use_estimation, reputation FROM am4bot.users")
+        cur.execute(f"SELECT discord_id, game_id, ign, mode, pax_mode, cargo_mode, large_training, heavy_training, fuel_price, co2_price, fuel_training, co2_training, use_estimation, reputation FROM am4bot.users WHERE id={self.internalId}")
         user = cur.fetchone()
         
-        cdef us_ret ret
-        ret.internalId = self.internalId
-        ret.discordId = user[0] if user[0] != None else 0
-        ret.game_id = user[1] if user[1] != None else 0
-        ret.ign = user[2] if user[2] != None else <char*>''
-        ret.mode = user[3]
-        ret.paxMode = user[4]
-        ret.cargoMode = user[5]
-        ret.lTraining = user[6]
-        ret.hTraining = user[7]
-        ret.fuelPrice = user[8]
-        ret.co2Price = user[9]
-        ret.fuelTraining = user[10] 
-        ret.co2Training = user[11] 
-        ret.useEstimation = user[12] 
-        ret.reputation = user[13]
+        cdef us_det det
+        det.discordId = user[0] if user[0] != None else 0
+        det.gameId = user[1] if user[1] != None else 0
+        det.ign = user[2] if user[2] != None else ''
+        #
+        det.mode = user[3]
+        det.paxMode = user[4]
+        det.cargoMode = user[5]
+        det.lTraining = user[6]
+        det.hTraining = user[7]
+        det.fuelPrice = user[8]
+        det.co2Price = user[9]
+        det.fuelTraining = user[10] 
+        det.co2Training = user[11] 
+        det.useEstimation = user[12] 
+        det.reputation = user[13]
 
-        return ret
+        self.details = det
     # demo
-    # x = UserSettings(gameId=54557)
-    # x.update_mode('r')
-    # x.update_paxMode('f')
-    # x.update_cargoMode('l')
-    # x.update_lTraining(6)
-    # x.update_hTraining(6)
-    # x.update_fuelPrice(1000)
-    # x.update_co2Price(150)
-    # x.update_fuelTraining(3)
-    # x.update_co2Training(5)
-    # x.update_useEstimation(0)
-    # x.update_reputation(55)
+    '''
+    x = UserSettings(gameId=54557)
+    x.update_mode('r')
+    x.update_paxMode('f')
+    x.update_cargoMode('l')
+    x.update_lTraining(6)
+    x.update_hTraining(6)
+    x.update_fuelPrice(1000)
+    x.update_co2Price(150)
+    x.update_fuelTraining(3)
+    x.update_co2Training(5)
+    x.update_useEstimation(0)
+    x.update_reputation(55)
+    x.getSettings()
+    print(x.details)
+    '''
+    
 
 #
-
+cdef struct gs_det:
+    long guildId
+    char* prefix
+    long easyRoleId
+    long realismRoleId
 cdef class GuildSettings:
-    cdef struct gs_ret:
-        int internalId
-        long guildId
-        char* prefix
-        long easyRoleId
-        long realismRoleId
     cdef public int internalId
+    cdef public gs_det details
     #
     def __cinit__(self, long guildId): # guildId is REQUIRED.
         cdef tuple guild
@@ -519,29 +522,28 @@ cdef class GuildSettings:
         cur.execute(f"UPDATE am4bot.guilds SET realism_role_id='{realismRoleId}' WHERE id={self.internalId}")
         db.commit()
     # get
-    cpdef gs_ret getSettings(self):
+    cpdef void getDetails(self):
         cdef tuple guild
-        cur.execute(f"SELECT guild_id, prefix, easy_role_id, realism_role_id FROM am4bot.guilds")
+        cur.execute(f"SELECT guild_id, prefix, easy_role_id, realism_role_id FROM am4bot.guilds WHERE id={self.internalId}")
         guild = cur.fetchone()
         
-        cdef gs_ret ret
-        ret.internalId = self.internalId
-        ret.guildId = guild[0]
-        ret.prefix = guild[1] if guild[1] != None else <char*>''
-        ret.easyRoleId = guild[2] if guild[2] != None else 0
-        ret.realismRoleId = guild[3] if guild[3] != None else 0
+        cdef gs_det det
+        det.guildId = guild[0]
+        det.prefix = guild[1] if guild[1] != None else ''
+        det.easyRoleId = guild[2] if guild[2] != None else 0
+        det.realismRoleId = guild[3] if guild[3] != None else 0
 
-        return ret
-
+        self.details = det
     # demo
-    # x = GuildSettings(473892865081081856)
-    # x.update_prefix('.')
-    # x.update_easyRoleId(474359813980291073)
-    # x.update_realismRoleId(474359896066752512)            
+    '''
+    x = GuildSettings(473892865081081856)
+    x.update_prefix('.')
+    x.update_easyRoleId(474359813980291073)
+    x.update_realismRoleId(474359896066752512)
+    x.getSettings()
+    print(x.details)
+    '''
 #
-
-x = GuildSettings(473892865081081857)
-
 
 db.close()
 print('Connection closed.')
