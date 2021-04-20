@@ -10,8 +10,7 @@ logger.info("Loaded discord.py.")
 
 # standard modules
 import os; os.system("python3 setup.py build_ext --inplace")
-# import os; os.system("python3 setup.py build_ext --inplace > /dev/null 2>&1")
-import helper_cy
+from helper_cy import *
 
 if True: # useful discord.py functions and initialisation
     async def send_success(ctx, text):
@@ -71,6 +70,10 @@ async def prefix(ctx, pre):
 
 
 bot.run(TOKEN)
+x = input()
+db.close()
+print('MySQL connection closed.')
+
 # ***REMOVED***
 
 

@@ -3,10 +3,19 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # cython: c_string_type=unicode, c_string_encoding=utf8
+
+#                  #
+#  INITIALISATION  #
+#                  #
+print('>>> START <<<')
+
 from cymem.cymem cimport Pool
 from libc.math cimport *
 cdef extern from "string.h":
     int strcmp(char* str1, char* str2)
+# cdef extern from "math.h":
+#     double round(double arg)
+#     double floor(double arg)
 import MySQLdb
 cdef int MAX_PLANES_PER_ROUTE = 20
 
@@ -37,6 +46,14 @@ cdef:
 
 for index in range(3983):
     airports[index].valid = False
+    airports[index].city = ''
+    airports[index].country = ''
+    airports[index].iata = ''
+    airports[index].icao = ''
+    airports[index].runway = 0
+    airports[index].market = 0
+    airports[index].latRad = 0
+    airports[index].lonRad = 0
 for row in res:
     index = <int>row[0]
     airports[index].valid = True
@@ -49,9 +66,11 @@ for row in res:
     airports[index].latRad = <double>row[7]
     airports[index].lonRad = <double>row[8]
 
-#                       #
-# END OF INITIALISATION #
-#                       #
+
+
+#               #
+#  DEFINITIONS  #
+#               #
 cdef int yTicket_easy(double distance): return <int>(1.1*(0.4*distance + 170))-2
 cdef int jTicket_easy(double distance): return <int>(1.08*(0.8*distance + 560))-2
 cdef int fTicket_easy(double distance): return <int>(1.06*(1.2*distance + 1200))-2
@@ -71,7 +90,7 @@ cdef double estLoadJ(double capacity, double reputation): return capacity * 0.00
 cdef double estLoadF(double capacity, double reputation): return capacity * 0.00844570246176 * reputation + 0.0611838672599
 cdef double customMin(int a, double b): return <double>a if a < b else b
 cdef double distance(double lat1, double lon1, double lat2, double lon2): return 12742 * asin(sqrt(pow(sin((lat2-lat1) / 2.0), 2) + cos(lat1) * cos(lat2) * pow(sin((lon2-lon1) / 2.0), 2)))
-
+cdef int limitCIbound(int ci): return 0 if ci < 0 else 200 if ci > 200 else ci
 
 cdef struct paxConf:
     int yConf
@@ -90,7 +109,10 @@ cdef struct cargoConf:
     int planesPerRoute
     double lP
     double hP
-#
+
+#             #
+#  UTILITIES  #
+#             #
 cdef double simulatePaxIncome(int y, int j, int f, double yP, double jP, double fP, double yDaily, double jDaily, double fDaily, double distance, double reputation, bint useEstimation):
     cdef double income = 0
     cdef double yActual, jActual, fActual
@@ -250,24 +272,66 @@ cdef cargoConf bruteCargoConf(int lD, int hD, int capacity, double lMultiplier, 
 
 
 #
+
+cdef class Speed:
+    cdef public double speed
+    def __cinit__(self, double speed=0):
+        self.speed = speed
+    
+    cdef void toRealSpeed(self):
+        self.speed /= 1.5
+    
+    cdef void toEasySpeed(self):
+        self.speed *= 1.5
+
+    cdef void from_uc(self, double u, int c):
+        self.speed = u * (0.0035*c + 0.3)
+    
+    cdef void from_vc(self, double v, int c):
+        self.speed = v / (0.0035*c + 0.3)
+
+cdef class Distance:
+    cdef public double distance
+    def __cinit__(self, double distance=0):
+        self.distance = distance
+    
+    cpdef void from_vt(self, double v, double t):
+        self.distance = v*t
+
+cdef class Time:
+    cdef public double time
+    def __cinit__(self, double time=0):
+        self.time = time
+
+    cpdef void from_vs(self, double v, double s):
+        self.time = s / v
+
+cdef class CI:
+    cdef public int ci
+    def __cinit__(self, int ci=200):
+        self.ci = limitCIbound(ci)
+    
+    cpdef void from_vu(self, double v, double u):
+        self.ci = limitCIbound(<int>ceil((v - 0.3*u) / (0.0035*u)))
+
 # this assumes all strings supplied are SQL-injection proof, and already checked for bounds.
 cdef struct us_det:
     int discordId
     int gameId
     char* ign
     #
-    char* mode
-    char* paxMode
-    char* cargoMode
-    int lTraining
-    int hTraining
-    int fuelPrice
-    int co2Price
-    int fuelTraining
-    int co2Training
-    int useEstimation
-    int reputation
-cdef class UserSettings:
+    char* mode # 'e', 'r', 'unknown'
+    char* paxMode # 'y', 'f', 'brute'
+    char* cargoMode # 'l', 'brute'
+    int lTraining # 0-6
+    int hTraining # 0-6
+    int fuelPrice # 0-3000
+    int co2Price # 0-200
+    int fuelTraining # 0-3
+    int co2Training # 0-5
+    int useEstimation # 0/1
+    int reputation # 0-100
+cdef class User:
     cdef public int internalId
     cdef public us_det details
     def __cinit__(self, long discordId=0, int gameId=0, char* ign=''): # supply ONE identifier/argument only!
@@ -324,47 +388,47 @@ cdef class UserSettings:
         cur.execute(f"UPDATE am4bot.users SET ign='{ign}' WHERE id={self.internalId}")
         db.commit()
     # set
-    cpdef void update_mode(self, char* mode): # 'e', 'r', 'unknown'
+    cpdef void update_mode(self, char* mode):
         cur.execute(f"UPDATE am4bot.users SET mode='{mode}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_paxMode(self, char* paxMode): # 'y', 'f', 'brute'
+    cpdef void update_paxMode(self, char* paxMode):
         cur.execute(f"UPDATE am4bot.users SET pax_mode='{paxMode}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_cargoMode(self, char* cargoMode): # 'l', 'brute'
+    cpdef void update_cargoMode(self, char* cargoMode):
         cur.execute(f"UPDATE am4bot.users SET cargo_mode='{cargoMode}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_lTraining(self, int lTraining): # 0-6
+    cpdef void update_lTraining(self, int lTraining):
         cur.execute(f"UPDATE am4bot.users SET large_training='{lTraining}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_hTraining(self, int hTraining): # 0-6
+    cpdef void update_hTraining(self, int hTraining):
         cur.execute(f"UPDATE am4bot.users SET heavy_training='{hTraining}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_fuelPrice(self, int fuelPrice): # 0-3000
+    cpdef void update_fuelPrice(self, int fuelPrice):
         cur.execute(f"UPDATE am4bot.users SET fuel_price='{fuelPrice}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_co2Price(self, int co2Price): # 0-200
+    cpdef void update_co2Price(self, int co2Price):
         cur.execute(f"UPDATE am4bot.users SET co2_price='{co2Price}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_fuelTraining(self, int fuelTraining): # 0-3
+    cpdef void update_fuelTraining(self, int fuelTraining):
         cur.execute(f"UPDATE am4bot.users SET fuel_training='{fuelTraining}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_co2Training(self, int co2Training): # 0-5
+    cpdef void update_co2Training(self, int co2Training):
         cur.execute(f"UPDATE am4bot.users SET co2_training='{co2Training}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_useEstimation(self, int useEstimation): # 0/1
+    cpdef void update_useEstimation(self, int useEstimation):
         cur.execute(f"UPDATE am4bot.users SET use_estimation='{useEstimation}' WHERE id={self.internalId}")
         db.commit()
 
-    cpdef void update_reputation(self, int reputation): # 0-100
+    cpdef void update_reputation(self, int reputation):
         cur.execute(f"UPDATE am4bot.users SET reputation='{reputation}' WHERE id={self.internalId}")
         db.commit()
     # get
@@ -393,7 +457,7 @@ cdef class UserSettings:
         self.details = det
     # demo
     '''
-    x = UserSettings(gameId=54557)
+    x = User(gameId=54557)
     x.update_mode('r')
     x.update_paxMode('f')
     x.update_cargoMode('l')
@@ -405,7 +469,7 @@ cdef class UserSettings:
     x.update_co2Training(5)
     x.update_useEstimation(0)
     x.update_reputation(55)
-    x.getSettings()
+    x.getDetails()
     print(x.details)
     '''
     
@@ -416,7 +480,7 @@ cdef struct gs_det:
     char* prefix
     long easyRoleId
     long realismRoleId
-cdef class GuildSettings:
+cdef class Guild:
     cdef public int internalId
     cdef public gs_det details
     #
@@ -457,7 +521,7 @@ cdef class GuildSettings:
         self.details = det
     # demo
     '''
-    x = GuildSettings(473892865081081856)
+    x = Guild(473892865081081856)
     x.update_prefix('.')
     x.update_easyRoleId(474359813980291073)
     x.update_realismRoleId(474359896066752512)
@@ -466,100 +530,439 @@ cdef class GuildSettings:
     '''
 #
 cdef class Airport:
-    cdef public bint success
     cdef public int internalId
     cdef public ap_det details
 
     def __cinit__(self, int apid=0, char* text=''):
         cdef tuple idresult
-        self.success = False
 
         if apid != 0:
-            if airports[apid].valid:
-                self.internalId = apid
-                self.success = True
+            self.internalId = apid
+            self.details = airports[self.internalId]
+            # if airports[apid].valid:
+            #     self.internalId = apid
+            #     self.details = airports[self.internalId]
         elif text != '':
             cur.execute(f"SELECT id FROM am4tools_api.airports WHERE iata='{text}' OR icao='{text}' OR id='{text}'")
             idresult = cur.fetchone()
             if idresult != None:
                 self.internalId = idresult[0]
-                self.success = True
-        
-        if self.success:
-            self.details = airports[self.internalId]
+                self.details = airports[self.internalId]
+            else:
+                self.internalId = 0
+                self.details = airports[0]
     
     # demo
     '''
     a = Airport(text='LHR')
+    a = Airport(text='fsdjkafjkaj') # handles error by returning False in `self.details.valid`.
     print(a.details)
     '''
 #
-cdef struct stpvr_det:
-    bint success
-    int apid
-    double flyingDistance
-    double diff
+cdef struct ac_det:
+    bint valid
+    char* model
+    bint isCargo
+    char* manufacturer
+    char* shortname
+    int capacity
+    int runway
+    int checkCost
+    int acRange
+    int serviceCeiling
+    int checkHours
+    int price
+    int pilots
+    int crew
+    int engineers
+    int technicians
+    char* thumbnail
+    int disabled
+    #
+    char* engine
+    int speed
+    double fuel
+    double co2
+cdef class Aircraft:
+    cdef public int internalId
+    cdef public ac_det details
+    def __cinit__(self, int acid=0, char* text='', char* engine=''):
+        cdef tuple res
+        self.details.valid = False
+
+        # attempt to obtain aircraft information with acid/abbreviation/aircraft name.
+        if acid != 0:
+            cur.execute(f"SELECT id, model, `type`, manufactory, shortname, capacity, runway, a_check, `range`, `ceil`, maintenance, price, pilots, crew, engineers, tech, thumb, disabled FROM am4tools_api.aircrafts WHERE id={acid}")
+            res = cur.fetchone()
+            if res != None: self.details.valid = True
+        elif text != '':
+            cur.execute(f"SELECT id, model, `type`, manufactory, shortname, capacity, runway, a_check, `range`, `ceil`, maintenance, price, pilots, crew, engineers, tech, thumb, disabled FROM am4tools_api.aircrafts WHERE shortname='{text}'")        
+            res = cur.fetchone()
+            if res != None: self.details.valid = True
+            else: # try searching by model name
+                cur.execute(f"SELECT id, model, `type`, manufactory, shortname, capacity, runway, a_check, `range`, `ceil`, maintenance, price, pilots, crew, engineers, tech, thumb, disabled FROM am4tools_api.aircrafts WHERE model LIKE '%{text}%'")        
+                res = cur.fetchone()
+                if res != None: self.details.valid = True
+        
+        # once the aircraft is located, write the details down
+        if self.details.valid:
+            self.internalId = res[0]
+            self.details.model = res[1]
+            self.details.isCargo = res[2] == "Cargo"
+            self.details.manufacturer = res[3]
+            self.details.shortname = res[4]
+            self.details.capacity = res[5]
+            self.details.runway = res[6]
+            self.details.checkCost = res[7]
+            self.details.acRange = res[8]
+            self.details.serviceCeiling = res[9]
+            self.details.checkHours = res[10]
+            self.details.price = res[11]
+            self.details.pilots = res[12]
+            self.details.crew = res[13]
+            self.details.engineers = res[14]
+            self.details.technicians = res[15]
+            self.details.thumbnail = res[16]
+            self.details.disabled = res[17] == 1
+
+            # request engine details
+            if engine != '':
+                # attempt to locate engine by name.
+                cur.execute(f"SELECT engine, speed, fuel, co2 FROM am4tools_api.engines WHERE model_id={self.internalId} AND engine LIKE '%{engine}%' ORDER BY speed DESC")
+                res = cur.fetchone()
+            if engine == '' or res == None:
+                # get engine with top speed
+                cur.execute(f"SELECT engine, speed, fuel, co2 FROM am4tools_api.engines WHERE model_id={self.internalId} ORDER BY speed DESC")
+                res = cur.fetchone()
+            
+            self.details.engine = res[0]
+            self.details.speed = res[1]
+            self.details.fuel = res[2]
+            self.details.co2 = res[3]
+        else: # to prevent sigfault.
+            self.internalId = 0
+            self.details.model = ''
+            self.details.isCargo = False
+            self.details.manufacturer = ''
+            self.details.shortname = ''
+            self.details.capacity = 0
+            self.details.runway = 0
+            self.details.checkCost = 0
+            self.details.acRange = 0
+            self.details.serviceCeiling = 0
+            self.details.checkHours = 0
+            self.details.price = 0
+            self.details.pilots = 0
+            self.details.crew = 0
+            self.details.engineers = 0
+            self.details.technicians = 0
+            self.details.thumbnail = ''
+            self.details.disabled = 1
+            self.details.engine = ''
+            self.details.speed = 0
+            self.details.fuel = 0
+            self.details.co2 = 0
+        
+    # demo
+    '''
+    a = Aircraft(acid=1, engine='pw4062')
+    a = Aircraft(text="concorde")
+    a = Aircraft(text="concorde", engine='dfkljsdkjaskjfaskj') # falls back to engine with highest speed
+    a = Aircraft(text="fsa") # handles error by returning False in `self.details.valid`.
+    print(a.details)
+    '''
+
+#
+cdef:
+    struct rt_paxDem:
+        int y
+        int j
+        int f
+    struct rt_cargoDem:
+        int l
+        int h
+    #
+    struct rt_paxTickets:
+        int y
+        int j
+        int f
+    struct rt_cargoTickets:
+        double l
+        double h
+    #
+    struct rt_paxConfig:
+        int yC
+        int jC
+        int fC
+        bint enoughDemand
+    struct rt_cargoConfig:
+        int lP
+        int hP
+        bint enoughDemand
+    #
+    struct rt_stpvr_det:
+        bint success
+        int apid
+        double flyingDistance
+        double diff
 cdef class Route: # assumes that input airports exists already
     cdef public Airport origin
     cdef public Airport destination
     cdef public double distance
-    cdef public stpvr_det stopover
+    # for automatic queries
+    cdef public User user 
+    cdef public Aircraft aircraft
+
+    # .getDemand(), requires Aircraft()
+    cdef public bint demand_success
+    cdef public rt_paxDem paxDemand
+    cdef public rt_cargoDem cargoDemand
+
+    # .getTickets(), requires Aircraft(), User()
+    cdef public rt_paxTickets paxTickets
+    cdef public rt_cargoTickets cargoTickets
+
+    # .getPaxConf() + .getCargoConf(), requires Aircraft(), User()
+    cdef public rt_paxConfig paxConfiguration
+
+    # .findStopover()
+    cdef public rt_stpvr_det stopover
+    cdef public bint needsStopover
+    
+    cdef public double contribution
     #
     def __cinit__(self, Airport orig, Airport dest):
         self.origin = orig
         self.destination = dest
         self.distance = distance(self.origin.details.latRad, self.origin.details.lonRad, self.destination.details.latRad, self.destination.details.lonRad)
+    # for automatic queries
+    cpdef void setUser(self, User user):
+        self.user = user
+    cpdef void setAircraft(self, Aircraft aircraft):
+        self.aircraft = aircraft
     #
-    cpdef void findStopover(self, int maxRange, int rwyReq):
-        cdef double toO = 0
-        cdef double toD = 0
-
-        cdef double origLat = self.origin.details.latRad
-        cdef double origLon = self.origin.details.lonRad
-        cdef double thisLat
-        cdef double thisLon
-        cdef double destLat = self.destination.details.latRad
-        cdef double destLon = self.destination.details.lonRad
-
-        cdef double lowestSum = 32768
-        cdef int k_last = 0
-
-        cdef int k
-        for k in range(1, 3983):
-            if airports[k].runway < rwyReq:
-                continue
-            thisLat = airports[k].latRad
-            thisLon = airports[k].lonRad
-            toO = distance(origLat, origLon, thisLat, thisLon)
-            if toO > maxRange or toO < 100:
-                continue
-            toD = distance(thisLat, thisLon, destLat, destLon)
-            if toD > maxRange or toD < 100:
-                continue
-
-            if toO + toD < lowestSum:
-                lowestSum = toO + toD
-                k_last = k
-        #
-        if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
-            self.stopover.success = False
+    cpdef void getDemand_raw(self, bint isCargo):
+        if self.origin.internalId < self.destination.internalId:
+            cur.execute(f"SELECT yD, jD, fD FROM am4bot.routes WHERE oID={self.origin.internalId} AND dID={self.destination.internalId}")
         else:
-            self.stopover.success = True
-            self.stopover.apid = k_last
-            self.stopover.flyingDistance = lowestSum
-            self.stopover.diff = lowestSum - self.distance
+            cur.execute(f"SELECT yD, jD, fD FROM am4bot.routes WHERE oID={self.destination.internalId} AND dID={self.origin.internalId}")
+        
+        cdef tuple dem
+        dem = cur.fetchone()
+        if dem == None:
+            self.demand_success = False
+            self.paxDemand.y = 0
+            self.paxDemand.j = 0
+            self.paxDemand.f = 0
+            self.cargoDemand.l = 0
+            self.cargoDemand.h = 0
+        else:
+            self.demand_success = True
+            if isCargo:
+                self.paxDemand.y = 0
+                self.paxDemand.j = 0
+                self.paxDemand.f = 0
+                self.cargoDemand.l = 1000*<int>round(0.5*dem[0])
+                self.cargoDemand.h = 1000*<int>dem[1]
+            else:
+                self.paxDemand.y = <int>dem[0]
+                self.paxDemand.j = <int>dem[1]
+                self.paxDemand.f = <int>dem[2]
+                self.cargoDemand.l = 0
+                self.cargoDemand.h = 0
+    cpdef void getDemand(self):
+        self.getDemand_raw(self.aircraft.details.isCargo)
+    #
+    cpdef void getTickets_raw(self, bint isCargo, bint isRealism):
+        if isCargo:
+            if isRealism:
+                self.cargoTickets.l = lTicket_realism(self.distance)
+                self.cargoTickets.h = hTicket_realism(self.distance)
+            else:
+                self.cargoTickets.l = lTicket_easy(self.distance)
+                self.cargoTickets.h = hTicket_easy(self.distance)
+        else:
+            if isRealism:
+                self.paxTickets.y = yTicket_realism(self.distance)
+                self.paxTickets.j = jTicket_realism(self.distance)
+                self.paxTickets.f = fTicket_realism(self.distance)
+            else:
+                self.paxTickets.y = yTicket_easy(self.distance)
+                self.paxTickets.j = jTicket_easy(self.distance)
+                self.paxTickets.f = fTicket_easy(self.distance)
+    cpdef void getTickets(self):
+        self.getTickets_raw(self.aircraft.details.isCargo, self.user.details.mode == 'r') # if the mode is not unknown, it is defaulted to easy.        
+    #
+    cpdef void getPaxConf_raw(self, int yD, int jD, int fD, int capacity, int tripsPerDay, int quantity, double distance, bint isRealism):
+        cdef int yD_pF = <int>floor(yD / quantity / tripsPerDay)
+        cdef int jD_pF = <int>floor(jD / quantity / tripsPerDay)
+        cdef int fD_pF = <int>floor(fD / quantity / tripsPerDay)
+
+        cdef int yC
+        cdef int jC
+        cdef int fC
+        cdef bint enoughDemand
+        if isRealism:
+            if distance < 13888.88: # FJY
+                fC = <int>floor(capacity / 3) if fD_pF*3 > capacity else fD_pF
+                jC = <int>floor((capacity - fC*3) / 2) if fD_pF*3 + jD_pF*2 > capacity else jD_pF
+                yC = capacity - fC*3 - jC*3
+                enoughDemand = yC < yD_pF
+            elif distance < 15694.44: # JFY
+                jC = <int>floor(capacity / 2) if jD_pF*2 > capacity else jD_pF
+                fC = <int>floor((capacity - jC*2) / 3) if jD_pF*2 + fD_pF*3 > capacity else fD_pF
+                yC = capacity - jC*3 - fC*3
+                enoughDemand = yC < yD_pF
+            elif distance < 17500: # JYF
+                jC = <int>floor(capacity / 2) if jD_pF*2 > capacity else jD_pF
+                yC = capacity - jC*2 if jD_pF*2 + yD_pF > capacity else yD_pF
+                fC = <int>floor((capacity - yC - jC*2) / 3)
+                enoughDemand = fC < fD_pF
+            else: # YJF
+                yC = capacity if yD_pF > capacity else yD_pF
+                jC = <int>floor((capacity - yC) / 2) if yD_pF + jD_pF*2 > capacity else jD_pF
+                fC = <int>floor((capacity - yC - jC*2) / 3)
+                enoughDemand = fC < fD_pF
+        else:
+            if distance < 14425: # FJY
+                fC = <int>floor(capacity / 3) if fD_pF*3 > capacity else fD_pF
+                jC = <int>floor((capacity - fC*3) / 2) if fD_pF*3 + jD_pF*2 > capacity else jD_pF
+                yC = capacity - fC*3 - jC*3
+                enoughDemand = yC < yD_pF
+            elif distance < 14812: # FYJ
+                fC = <int>floor(capacity / 3) if fD_pF*3 > capacity else fD_pF
+                yC = capacity - fC*3 if fD_pF*3 + yD_pF > capacity else yD_pF
+                jC = <int>floor((capacity - fC*3 - yC) / 2)
+                enoughDemand = jC < jD_pF
+            elif distance < 15200: # YFJ
+                yC = capacity if yD_pF > capacity else yD_pF
+                fC = <int>floor((capacity - yC) / 3) if yD_pF + fD_pF*3 > capacity else fD_pF
+                jC = <int>floor((capacity - yC - fC*3) / 2)
+                enoughDemand = jC < jD_pF
+            else: # YJF
+                yC = capacity if yD_pF > capacity else yD_pF
+                jC = <int>floor((capacity - yC) / 2) if yD_pF + jD_pF*2 > capacity else jD_pF
+                fC = <int>floor((capacity - yC - jC*2) / 3)
+                enoughDemand = fC < fD_pF
+        #
+        self.paxConfiguration.yC = yC
+        self.paxConfiguration.jC = jC
+        self.paxConfiguration.fC = fC
+        self.paxConfiguration.enoughDemand = enoughDemand
+    cpdef void getPaxConf(self, int tripsPerDay=1, int quantity=1):
+        self.getPaxConf_raw(self.paxDemand.y, self.paxDemand.j, self.paxDemand.f, self.aircraft.capacity, tripsPerDay, quantity, self.distance, self.user.mode == 'r')
+    #
+    cpdef void getCargoConf_raw(self, int lD, int hD, int capacity, int lTraining, int hTraining, int tripsPerDay, int quantity, double distance, bint isRealism):
+    
+    #
+    cpdef void getStopover_raw(self, int maxRange, int rwyReq):
+        self.needsStopover = self.distance > maxRange
+        if needsStopover:
+            # finds a stopover such that its final route length is minimised.
+            cdef double toO = 0
+            cdef double toD = 0
+
+            cdef double origLat = self.origin.details.latRad
+            cdef double origLon = self.origin.details.lonRad
+            cdef double thisLat
+            cdef double thisLon
+            cdef double destLat = self.destination.details.latRad
+            cdef double destLon = self.destination.details.lonRad
+
+            cdef double lowestSum = 32768
+            cdef int k_last = 0
+
+            cdef int k
+            for k in range(1, 3983):
+                if airports[k].runway < rwyReq or not airports[k].valid:
+                    continue
+                thisLat = airports[k].latRad
+                thisLon = airports[k].lonRad
+                toO = distance(origLat, origLon, thisLat, thisLon)
+                if toO > maxRange or toO < 100:
+                    continue # also eliminates origin airport
+                toD = distance(thisLat, thisLon, destLat, destLon)
+                if toD > maxRange or toD < 100:
+                    continue # also eliminates destination airport
+
+                if toO + toD < lowestSum:
+                    lowestSum = toO + toD
+                    k_last = k
+            #
+            if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
+                self.stopover.success = False
+            else:
+                self.stopover.success = True
+                self.stopover.apid = k_last
+                self.stopover.flyingDistance = lowestSum
+                self.stopover.diff = lowestSum - self.distance
+    cpdef void getStopover(self):
+        self.getStopover_raw(self.aircraft.acRange, self.aircraft.runway if self.user.details.mode == 'r' else 0)
+    # hidden formulae
+    cpdef void getStopover_contribPriority_raw(self, int targetDist, int maxRange, int rwyReq):
+        self.needsStopover = self.distance > maxRange
+        if needsStopover:
+            # aims to find a stopover such that its final route length is as close as the target distance.
+            cdef double toO = 0
+            cdef double toD = 0
+
+            cdef double origLat = self.origin.details.latRad
+            cdef double origLon = self.origin.details.lonRad
+            cdef double thisLat
+            cdef double thisLon
+            cdef double destLat = self.destination.details.latRad
+            cdef double destLon = self.destination.details.lonRad
+
+            cdef double highestSum = 0
+            cdef int k_last = 0
+
+            cdef int k
+            for k in range(1, 3983):
+                if airports[k].runway < rwyReq or not airports[k].valid:
+                    continue
+                thisLat = airports[k].latRad
+                thisLon = airports[k].lonRad
+                toO = distance(origLat, origLon, thisLat, thisLon)
+                if toO > maxRange or toO < 100:
+                    continue # also eliminates origin airport
+                toD = distance(thisLat, thisLon, destLat, destLon)
+                if toD > maxRange or toD < 100:
+                    continue # also eliminates destination airport
+
+                if toO + toD < targetDist and toO + toD > highestSum:
+                    highestSum = toO + toD
+                    k_last = k
+            #
+            if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
+                self.stopover.success = False
+            else:
+                self.stopover.success = True
+                self.stopover.apid = k_last
+                self.stopover.flyingDistance = highestSum
+                self.stopover.diff = targetDist - highestSum
+    cpdef void getContrib_raw(self, bint isRealism, int ci):
+        cdef double base
+        if isRealism:
+            base = 0.0096 if self.distance < 6000 else 0.0048 if self.distance < 10000 else 0.0072
+        else:
+            base = 0.0064 if self.distance < 6000 else 0.0032 if self.distance < 10000 else 0.0048
+        self.contribution = max(base*self.distance*(3-2*ci/200), 152)
+    #
     # demo
     '''
     r = Route(Airport(text='LHR'), Airport(text='SYD'))
     print(r.distance)
 
-    r.findStopover(maxRange=14500, rwyReq=0)
+    r.getStopover_raw(maxRange=14500, rwyReq=0)
     print(r.stopover)
     '''
 #
-r = Route(Airport(text='LHR'), Airport(text='SYD'))
-r.findStopover(maxRange=14500, rwyReq=0)
-print(r.__dict__)
 
-db.close()
-print('Connection closed.')
+# r = Route(Airport(text='LHR'), Airport(text='SYD'))
+# r.setAircraft(Aircraft(text='a388f'))
+# u = User(gameId=54557)
+# u.getDetails()
+# r.setUser(u)
+# r.getPaxConf()
+# 
+# print(r.paxConfiguration)
