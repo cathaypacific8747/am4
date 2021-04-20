@@ -724,6 +724,7 @@ cdef class Route: # assumes that input airports exists already
 
     # .getPaxConf() + .getCargoConf(), requires Aircraft(), User()
     cdef public rt_paxConfig paxConfiguration
+    cdef public rt_cargoConfig cargoConfiguration
 
     # .findStopover()
     cdef public rt_stpvr_det stopover
@@ -852,8 +853,36 @@ cdef class Route: # assumes that input airports exists already
     cpdef void getPaxConf(self, int tripsPerDay=1, int quantity=1):
         self.getPaxConf_raw(self.paxDemand.y, self.paxDemand.j, self.paxDemand.f, self.aircraft.capacity, tripsPerDay, quantity, self.distance, self.user.mode == 'r')
     #
-    cpdef void getCargoConf_raw(self, int lD, int hD, int capacity, int lTraining, int hTraining, int tripsPerDay, int quantity, double distance, bint isRealism):
-    
+    cpdef void getCargoConf_raw(self, int lD, int hD, int capacity, int lTraining, int hTraining, int tripsPerDay, int quantity, double distance):
+        cdef double lCap = capacity * (1 + lTraining/100) * 0.7
+        cdef double hCap = capacity * (1 + hTraining/100)
+
+        cdef double lD_pF = lD / quantity / tripsPerDay
+        cdef double hD_pF = hD / quantity / tripsPerDay
+
+        cdef double lP, hP
+        cdef bint enoughDemand
+        cdef double lCfg, hCfg
+        if lCap < lD_pF:
+            lP, hP = 1, 0
+            enoughDemand = True
+        else:
+            lCfg = lD_pF
+            hCfg = (lCap - lCfg) / 0.7
+
+            lP = <int>(lCfg/lCap * 100)/100
+            hP = 1 - lP
+            if hD_pF < hCfg:
+                enoughDemand = False
+            else:
+                enoughDemand = True
+        self.lP = lP
+        self.hP = hP
+        self.enoughDemand = enoughDemand
+                
+
+    cpdef void getCargoConf(self, int tripsPerDay=1, int quantity=1):
+        self.getCargoConf_raw(self.cargoDemand.l, self.cargoDemand.h, self.aircraft.capacity, tripsPerDay, quantity, self.distance)
     #
     cpdef void getStopover_raw(self, int maxRange, int rwyReq):
         self.needsStopover = self.distance > maxRange
