@@ -278,16 +278,19 @@ cdef class Speed:
     def __cinit__(self, double speed=0):
         self.speed = speed
     
-    cdef void toRealSpeed(self):
+    cpdef void toRealSpeed(self):
         self.speed /= 1.5
     
-    cdef void toEasySpeed(self):
+    cpdef void toEasySpeed(self):
         self.speed *= 1.5
 
-    cdef void from_uc(self, double u, int c):
+    cpdef void from_st(self, double s, double t):
+        self.speed = s / t
+
+    cpdef void from_uc(self, double u, int c):
         self.speed = u * (0.0035*c + 0.3)
     
-    cdef void from_vc(self, double v, int c):
+    cpdef void from_vc(self, double v, int c):
         self.speed = v / (0.0035*c + 0.3)
 
 cdef class Distance:
@@ -308,6 +311,7 @@ cdef class Time:
 
 cdef class CI:
     cdef public int ci
+
     def __cinit__(self, int ci=200):
         self.ci = limitCIbound(ci)
     
@@ -331,7 +335,65 @@ cdef struct us_det:
     int co2Training # 0-5
     int useEstimation # 0/1
     int reputation # 0-100
+
 cdef class User:
+    cdef public int internalId
+    cdef public us details
+    cdef public bint new
+    def __cinit__(self):
+        pass
+
+    cpdef void handleUser(self, tuple user):
+        self.new = user == None
+        if self.new:
+            cur.execute(f"INSERT INTO am4bot.users() VALUES()")
+            db.commit()
+            cur.execute(f"SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='am4bot' AND TABLE_NAME='users'")
+            # cur.execute(f"SELECT LAST_INSERT_ID()")
+            user = cur.fetchone()
+        self.internalId = user[0]            
+    
+    cpdef void from_discordId(self, long discordId):
+        cdef tuple user
+        cur.execute(f"SELECT id FROM am4bot.users WHERE discord_id={discordId}")
+        user = cur.fetchone()
+        handleUser(user)
+        self.update_discordId(discordId)
+    
+    cpdef void from_gameId(self, int gameId):
+        cdef tuple user
+        cur.execute(f"SELECT id FROM am4bot.users WHERE game_id={gameId}")
+        user = cur.fetchone()
+        self.handleUser(user)
+        self.update_gameId(gameId)
+    
+    cpdef void from_ign(self, char* ign=''):
+        cdef tuple user
+        cur.execute(f"SELECT id FROM am4bot.users WHERE ign='{ign}'")
+        user = cur.fetchone()
+        self.handleUser(user)
+        self.update_ign(ign)
+
+    cpdef void update_discordId(self, long discordId):
+        cur.execute(f"UPDATE am4bot.users SET discord_id={discordId} WHERE id={self.internalId}")
+        db.commit()
+
+    cpdef void update_gameId(self, int gameId):
+        cur.execute(f"UPDATE am4bot.users SET game_id={gameId} WHERE id={self.internalId}")
+        db.commit()
+
+    cpdef void update_ign(self, char* ign):
+        cur.execute(f"UPDATE am4bot.users SET ign='{ign}' WHERE id={self.internalId}")
+        db.commit()
+
+
+cdef class User:
+    # to be reworked:
+    # u = User()
+    # u.from_discordId()
+    # u.from_name()
+    # u.from_id()
+
     cdef public int internalId
     cdef public us_det details
     def __cinit__(self, long discordId=0, int gameId=0, char* ign=''): # supply ONE identifier/argument only!
@@ -703,12 +765,12 @@ cdef:
     struct rt_stpvr_det:
         bint success
         int apid
-        double flyingDistance
-        double diff
 cdef class Route: # assumes that input airports exists already
     cdef public Airport origin
     cdef public Airport destination
     cdef public double distance
+    cdef public double flyingDistance
+    cdef public double diff
     # for automatic queries
     cdef public User user 
     cdef public Aircraft aircraft
@@ -736,6 +798,8 @@ cdef class Route: # assumes that input airports exists already
         self.origin = orig
         self.destination = dest
         self.distance = distance(self.origin.details.latRad, self.origin.details.lonRad, self.destination.details.latRad, self.destination.details.lonRad)
+        self.flyingDistance = self.distance
+        self.diff = 0
     # for automatic queries
     cpdef void setUser(self, User user):
         self.user = user
@@ -854,11 +918,11 @@ cdef class Route: # assumes that input airports exists already
         self.getPaxConf_raw(self.paxDemand.y, self.paxDemand.j, self.paxDemand.f, self.aircraft.capacity, tripsPerDay, quantity, self.distance, self.user.mode == 'r')
     #
     cpdef void getCargoConf_raw(self, int lD, int hD, int capacity, int lTraining, int hTraining, int tripsPerDay, int quantity, double distance):
-        cdef double lCap = capacity * (1 + lTraining/100) * 0.7
-        cdef double hCap = capacity * (1 + hTraining/100)
+        cdef double lCap = capacity * (1 + lTraining/100.0) * 0.7
+        cdef double hCap = capacity * (1 + hTraining/100.0)
 
-        cdef double lD_pF = lD / quantity / tripsPerDay
-        cdef double hD_pF = hD / quantity / tripsPerDay
+        cdef double lD_pF = <double>lD / quantity / tripsPerDay
+        cdef double hD_pF = <double>hD / quantity / tripsPerDay
 
         cdef double lP, hP
         cdef bint enoughDemand
@@ -870,7 +934,7 @@ cdef class Route: # assumes that input airports exists already
             lCfg = lD_pF
             hCfg = (lCap - lCfg) / 0.7
 
-            lP = <int>(lCfg/lCap * 100)/100
+            lP = <int>(lCfg/lCap * 100)/100.0
             hP = 1 - lP
             if hD_pF < hCfg:
                 enoughDemand = False
@@ -882,26 +946,27 @@ cdef class Route: # assumes that input airports exists already
                 
 
     cpdef void getCargoConf(self, int tripsPerDay=1, int quantity=1):
-        self.getCargoConf_raw(self.cargoDemand.l, self.cargoDemand.h, self.aircraft.capacity, tripsPerDay, quantity, self.distance)
+        self.getCargoConf_raw(self.cargoDemand.l, self.cargoDemand.h, self.aircraft.capacity, self.user.lTraining, self.user.hTraining, tripsPerDay, quantity, self.distance)
     #
     cpdef void getStopover_raw(self, int maxRange, int rwyReq):
+        cdef double toO = 0
+        cdef double toD = 0
+
+        cdef double origLat = self.origin.details.latRad
+        cdef double origLon = self.origin.details.lonRad
+        cdef double thisLat
+        cdef double thisLon
+        cdef double destLat = self.destination.details.latRad
+        cdef double destLon = self.destination.details.lonRad
+
+        cdef double lowestSum = 20020
+        cdef double lowestCeiledSum = 20020
+        cdef int k_last = 0
+
+        cdef int k
         self.needsStopover = self.distance > maxRange
-        if needsStopover:
+        if self.needsStopover:
             # finds a stopover such that its final route length is minimised.
-            cdef double toO = 0
-            cdef double toD = 0
-
-            cdef double origLat = self.origin.details.latRad
-            cdef double origLon = self.origin.details.lonRad
-            cdef double thisLat
-            cdef double thisLon
-            cdef double destLat = self.destination.details.latRad
-            cdef double destLon = self.destination.details.lonRad
-
-            cdef double lowestSum = 32768
-            cdef int k_last = 0
-
-            cdef int k
             for k in range(1, 3983):
                 if airports[k].runway < rwyReq or not airports[k].valid:
                     continue
@@ -916,6 +981,7 @@ cdef class Route: # assumes that input airports exists already
 
                 if toO + toD < lowestSum:
                     lowestSum = toO + toD
+                    lowestCeiledSum = ceil(toO) + ceil(toD)
                     k_last = k
             #
             if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
@@ -923,60 +989,92 @@ cdef class Route: # assumes that input airports exists already
             else:
                 self.stopover.success = True
                 self.stopover.apid = k_last
-                self.stopover.flyingDistance = lowestSum
-                self.stopover.diff = lowestSum - self.distance
+                self.diff = lowestSum - self.distance
+                self.flyingDistance = lowestCeiledSum
     cpdef void getStopover(self):
         self.getStopover_raw(self.aircraft.acRange, self.aircraft.runway if self.user.details.mode == 'r' else 0)
+    #
+    cpdef void getPaxIncome(self, int y, int j, int f, int yD, int jD, int fD, int yP, int jP, int fP, double reputation, int tripsPerDay, bint useEstimation):
+        cdef double dailyIncome = 0
+        cdef int yActual, jActual, fActual
+        cdef int flights
+        if useEstimation:
+            for flights in range(tripsPerDay):
+                # estimate the actual load
+                # if the pax left is less than the number of seats, the pax left will be used instead.
+                # subtract that from the daily demand and add that to the dailyIncome.
+                yActual = <int>estLoadY(min(y, yD), reputation)
+                jActual = <int>estLoadJ(min(j, jD), reputation)
+                fActual = <int>estLoadF(min(f, fD), reputation)
+
+                yD -= yActual
+                jD -= jActual
+                fD -= fActual
+
+                dailyIncome += yActual*yP + jActual*jP + fActual*fP
+        else:
+            for flights in range(tripsPerDay):
+                yActual = min(y, yDaily)
+                jActual = min(j, jDaily)
+                fActual = min(f, fDaily)
+
+                yDaily -= yActual
+                jDaily -= jActual
+                fDaily -= fActual
+
+                dailyIncome += yActual*yP + jActual*jP + fActual*fP
+
+
     # hidden formulae
     cpdef void getStopover_contribPriority_raw(self, int targetDist, int maxRange, int rwyReq):
-        self.needsStopover = self.distance > maxRange
-        if needsStopover:
-            # aims to find a stopover such that its final route length is as close as the target distance.
-            cdef double toO = 0
-            cdef double toD = 0
+        cdef double toO = 0
+        cdef double toD = 0
 
-            cdef double origLat = self.origin.details.latRad
-            cdef double origLon = self.origin.details.lonRad
-            cdef double thisLat
-            cdef double thisLon
-            cdef double destLat = self.destination.details.latRad
-            cdef double destLon = self.destination.details.lonRad
+        cdef double origLat = self.origin.details.latRad
+        cdef double origLon = self.origin.details.lonRad
+        cdef double thisLat
+        cdef double thisLon
+        cdef double destLat = self.destination.details.latRad
+        cdef double destLon = self.destination.details.lonRad
 
-            cdef double highestSum = 0
-            cdef int k_last = 0
+        cdef double highestSum = 0
+        cdef double highestCeiledSum = 0
+        cdef int k_last = 0
 
-            cdef int k
-            for k in range(1, 3983):
-                if airports[k].runway < rwyReq or not airports[k].valid:
-                    continue
-                thisLat = airports[k].latRad
-                thisLon = airports[k].lonRad
-                toO = distance(origLat, origLon, thisLat, thisLon)
-                if toO > maxRange or toO < 100:
-                    continue # also eliminates origin airport
-                toD = distance(thisLat, thisLon, destLat, destLon)
-                if toD > maxRange or toD < 100:
-                    continue # also eliminates destination airport
+        cdef int k
+        # aims to find a stopover such that its final route length is as close as the target distance.
+        for k in range(1, 3983):
+            if airports[k].runway < rwyReq or not airports[k].valid:
+                continue
+            thisLat = airports[k].latRad
+            thisLon = airports[k].lonRad
+            toO = distance(origLat, origLon, thisLat, thisLon)
+            if toO > maxRange or toO < 100:
+                continue # also eliminates origin airport
+            toD = distance(thisLat, thisLon, destLat, destLon)
+            if toD > maxRange or toD < 100:
+                continue # also eliminates destination airport
 
-                if toO + toD < targetDist and toO + toD > highestSum:
-                    highestSum = toO + toD
-                    k_last = k
-            #
-            if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
-                self.stopover.success = False
-            else:
-                self.stopover.success = True
-                self.stopover.apid = k_last
-                self.stopover.flyingDistance = highestSum
-                self.stopover.diff = targetDist - highestSum
+            if ceil(toO) + ceil(toD) <= targetDist and toO + toD > highestSum:
+                highestSum = toO + toD
+                highestCeiledSum = ceil(toO) + ceil(toD)
+                k_last = k
+        #
+        if k_last == 0: # if the old 0 was not overwritten, then there are no suitable stopovers
+            self.stopover.success = False
+        else:
+            self.stopover.success = True
+            self.stopover.apid = k_last
+            self.diff = targetDist - highestSum
+            self.flyingDistance = highestCeiledSum
     cpdef void getContrib_raw(self, bint isRealism, int ci):
         cdef double base
         if isRealism:
-            base = 0.0096 if self.distance < 6000 else 0.0048 if self.distance < 10000 else 0.0072
+            base = 0.0096 if self.flyingDistance <= 6000 else 0.0048 if self.flyingDistance <= 10000 else 0.0072
+            self.contribution = min(base*self.flyingDistance*(3-<double>ci/100), 228)
         else:
-            base = 0.0064 if self.distance < 6000 else 0.0032 if self.distance < 10000 else 0.0048
-        self.contribution = max(base*self.distance*(3-2*ci/200), 152)
-    #
+            base = 0.0064 if self.flyingDistance <= 6000 else 0.0032 if self.flyingDistance <= 10000 else 0.0048
+            self.contribution = min(base*self.flyingDistance*(3-<double>ci/100), 152)
     # demo
     '''
     r = Route(Airport(text='LHR'), Airport(text='SYD'))
@@ -985,6 +1083,39 @@ cdef class Route: # assumes that input airports exists already
     r.getStopover_raw(maxRange=14500, rwyReq=0)
     print(r.stopover)
     '''
+#
+# cdef class Hub:
+#     # get a list of all profitable routes, sorted by descending income
+#     cdef public Airport origin
+#     cdef public list routes
+# 
+#     # for automatic queries
+#     cdef public User user 
+#     cdef public Aircraft aircraft
+# 
+#     def __cinit__(self, airport ap):
+#         self.origin = ap
+#     # for automated queries
+#     cpdef void setUser(self, User user):
+#         self.user = user
+#     cpdef void setAircraft(self, Aircraft aircraft):
+#         self.aircraft = aircraft
+#     #
+#     cpdef void getDemands_raw(self, double distance, bint isCargo):
+#         cur.execute(f"SELECT oID, dID, yD, jD, fD, dist FROM am4bot.routes WHERE oID={self.origin.internalId} OR dID={self.origin.internalId} AND dist <= {distance}")
+#         cdef tuple dems
+#         cdef Route r
+#         cdef Airport destA
+#         dems = cur.fetchall()
+#         if isCargo:
+#             for dem in dems:
+#                 pass
+                # destA = Airport(apid=dem[1]) if dem[0] == self.origin.internalId else Airport(apid=dem[0])
+                # r = Route(orig=self.origin, dest=destA)
+                # r.paxDemand.y = dem
+                # routes.append(r)
+
+        
 #
 
 # r = Route(Airport(text='LHR'), Airport(text='SYD'))
