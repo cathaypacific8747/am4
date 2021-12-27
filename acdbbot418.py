@@ -1,4 +1,4 @@
-V = 'v4.1.8'
+V = 'v4.1.9'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
 
@@ -106,29 +106,35 @@ async def help(ctx, command = 'all'):
 @bot.command(hidden = True)
 @notPriceAlert()
 @notDM()
-async def login(ctx, *, airline):
-    if not '%' in airline:
-        airline = quote(airline)
+async def login(ctx, *, airlineName):
+    airlineName = quote(airlineName)
     try:
-        airline = int(airline)
-        UseId = True
-    except: UseId = False
-    with urlopen(f'https://www.airline4.net/api/?access_token=***REMOVED***&user={airline}' if not UseId else f'https://www.airline4.net/api/?access_token=***REMOVED***&id={airline}') as file:
+        airlineName = int(airlineName)
+        useid = True
+    except:
+        useid = False
+    with urlopen(f'https://www.airline4.net/api/?access_token=***REMOVED***&user={airlineName}' if not useid else f'https://www.airline4.net/api/?access_token=***REMOVED***&id={airlineName}') as file:
         data = json.load(file)
     if data['status']['request'] == 'success':
-        sets = discordSettings(discordUserId = ctx.author.id)
-        if UseId: 
-            sets.modifySetting('userid', airline)
-        else: sets.removeSetting('userid')
-        await ctx.author.edit(nick = data['user']['company'])
-        if data['user']['game_mode'] == 'Realism':
-            try: await ctx.author.remove_roles(discord.utils.get(ctx.guild.roles, name='Easy'))
-            except: None            
-            await ctx.author.add_roles(discord.utils.get(ctx.guild.roles, name='Realism'))
+        settings = discordSettings(discordUserId=ctx.author.id)
+        if useid: 
+            settings.modifySetting('userid', airlineName)
         else:
-            try: await ctx.author.remove_roles(discord.utils.get(ctx.guild.roles, name='Realism'))
-            except: None
-            await ctx.author.add_roles(discord.utils.get(ctx.guild.roles, name='Easy'))
+            settings.removeSetting('userid')
+        
+        await ctx.author.edit(nick=data['user']['company'])
+
+        isRealism = data['user']['game_mode'] == 'Realism'
+        try:
+            await ctx.author.remove_roles(discord.utils.get(ctx.guild.roles, name='Easy' if isRealism else 'Realism'))
+        except Exception:
+            pass
+        try:
+            await ctx.author.remove_roles(discord.utils.get(ctx.guild.roles, name='Non AM'))
+        except Exception:
+            pass
+        
+        await ctx.author.add_roles(discord.utils.get(ctx.guild.roles, name='Realism' if isRealism else 'Easy'))
         await ctx.send(f'Welcome, **{data["user"]["company"]}**, to the AM4 Discord Server.\nHappy flying!')
     else:
         await ctx.send(content = f'Error: {data["status"]["description"]}')
