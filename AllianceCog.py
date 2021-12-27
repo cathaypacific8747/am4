@@ -25,7 +25,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
     '''
 
     @commands.command(hidden=True, usage='$watchlist\n$watchlist add|+ <alliance>\n$watchlist remove|rm|- <alliance>', help='Mods-only use.\nViews or edits the current watchlist. Any alliance on the watchlist will have their data requested every hour.\nAffects $allianceCompare.')
-    @modsOnly()
+    @modsOrStars()
     async def watchlist(self, ctx, *args):
         targetAlliance = " ".join(args[1:])
         if args == ():
@@ -49,7 +49,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
                     await ctx.send(f'Cannot find **{targetAlliance}** in the watchlist.')
 
     @commands.command(hidden=True, usage='$memberCompare <alliance1> <alliance2>', help="Mods-only use. Both arguments required.\nReturns two graphs: descending contribution, descending share value.\nNote: Each command calls the API twice, so don't call it excessively :)")
-    @modsOnly()
+    @modsOrStars()
     async def memberCompare(self, ctx, alliance1, alliance2):
         http = urllib3.PoolManager()
         loadingMessage = await ctx.send(f"Requesting *{alliance1}*'s data.")
@@ -71,7 +71,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
             await loadingMessage.delete()
 
     @commands.command(hidden=True, usage='$alliance <alliance>', help='Mods-only use.\nShows the A.V. progression graph of a specified alliance over time. Also shows the rate of A.V. change over time.\nAlliance specified must be added to the watchlist.')
-    @modsOnly()
+    @modsOrStars()
     async def alliance(self, ctx, *targetAlliance):
         allianceName = " ".join(targetAlliance)
         try:
@@ -95,7 +95,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
             await ctx.send(':x: File read error. Another process is now updating data to the log file. Please wait 1 minute and try again.')
 
     @commands.command(hidden=True, usage='$allianceCompare <alliance1> <alliance2>', help='Mods-only use.\nShows the A.V. progression graph of the two specified alliance over time. Also shows gap difference between the two.\nBoth alliances specified must be added to the watchlist.')
-    @modsOnly()
+    @modsOrStars()
     async def allianceCompare(self, ctx, alliance1, alliance2):
         try:
             with open('data/log/allianceLog.json') as f:
@@ -140,7 +140,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
         print(locals().values())
 
     @commands.command(hidden=True, usage='$member <member1> [member2] [...]', help='Mods-only use.\nShows the contribution/day, contribution and share value history graphs for the specified member(s) within/across tracked alliances.')
-    @modsOnly()
+    @modsOrStars()
     async def member(self, ctx, *members):
         with open('data/log/allianceLog.json') as f:
             loadingMessage = await ctx.send('Searching logs...')
@@ -179,7 +179,7 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
                 await ctx.send(':x: File read error. Another process is now updating data to the log file. Please wait 1 minute and try again.')
 
     @commands.command(hidden=True, usage='$actions <member> [maxResults:100]', help='Mods-only use.\nLists a timeline of estimated departures, contributions and profits.\nBest viewed on Desktop.')
-    @modsOnly()
+    @modsOrStars()
     async def actions(self, ctx, memberN, maxResults='default'):
         try:
             if maxResults == 'default':

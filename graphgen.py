@@ -56,12 +56,15 @@ def returnSvStatistics(x,y):
     return temp
 
 def getDiff(x1, y1, x2, y2):
-    finalDiffs = []
+    gapX, gapY = [], []
     for i1 in range(len(x1)):
-        correspondingData = [[(x1[i1]+x2[i2])/2, y1[i1]-y2[i2]] for i2 in range(len(x2)) if abs(3600*(x1[i1]-x2[i2])) <= 30]
-        if correspondingData:
-            finalDiffs.append(correspondingData[0])
-    return finalDiffs
+        try:
+            i2 = min(range(len(x2)), key=lambda j:abs(x2[j]-x1[i1]))
+            gapX.append((x1[i1]+x2[i2])/2)
+            gapY.append(y1[i1]-y2[i2])
+        except:
+            pass
+    return gapX, gapY
 
 def setXticks(oldestHour, interface=plt):
     incrementingHour, diffTicks, displayTicks = 0, [], []
@@ -265,7 +268,7 @@ def svComparisonGraph(data1, data2):
     # secondary y-axis = allianceValue gap between both of them
     ax2 = ax1.twinx()
     ax2.set_ylabel('Alliance Value Gap (' + r'$\$_'+allianceName1.lower()[:4]+'-\$_'+allianceName2.lower()[:4]+'$' + ')', alpha=0.7)
-    gapX, gapY = map(list, zip(*getDiff(hourDiffs1, shareValues1, hourDiffs2, shareValues2)))
+    gapX, gapY = getDiff(hourDiffs1, shareValues1, hourDiffs2, shareValues2)
     ax2.plot(gapX, gapY, color=(1,1,1,0.4), label=(f'Alliance Value Gap\n' + returnSvStatistics(gapX, gapY)))
     ax2.tick_params(axis='y', colors=(1,1,1,0.7))
     leg = ax2.legend(loc='lower right')
@@ -297,7 +300,7 @@ def contribGraph(data1, data2):
     line2 = ax1.plot(times2, sumOfContribs2, marker='.', markersize=10, label=(f'{allianceName2}\n' + returnStatistics(sumOfContribs2, False) + returnSvStatistics(times2, sumOfContribs2)))
 
     ax2 = ax1.twinx()
-    gapX, gapY = map(list, zip(*getDiff(times1, sumOfContribs1, times2, sumOfContribs2)))
+    gapX, gapY = getDiff(times1, sumOfContribs1, times2, sumOfContribs2)
     line3 = ax2.plot(gapX, gapY, color=(1,1,1,0.4), label=(f'Contribution/day Gap\n' + returnStatistics(gapY, False) + returnSvStatistics(gapX, gapY)))
     ax2.fill_between(gapX, gapY, color=(1,1,1,0.1), interpolate=True)
 
@@ -361,7 +364,7 @@ def actualContribGraph(data1, data2):
     line2 = ax1.plot(times2, sumOfContribs2, label=(f'{allianceName2}\n' + returnStatistics(sumOfContribs2, False) + returnSvStatistics(times2, sumOfContribs2)))
 
     ax2 = ax1.twinx()
-    gapX, gapY = map(list, zip(*getDiff(times1, sumOfContribs1, times2, sumOfContribs2)))
+    gapX, gapY = getDiff(times1, sumOfContribs1, times2, sumOfContribs2)
     line3 = ax2.plot(gapX, gapY, color=(1,1,1,0.4), label=(f'Contribution/day Gap\n' + returnStatistics(gapY, False) + returnSvStatistics(gapX, gapY)))
     ax2.fill_between(gapX, gapY, color=(1,1,1,0.1), interpolate=True)
 

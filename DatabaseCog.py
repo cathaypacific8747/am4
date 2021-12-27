@@ -245,7 +245,7 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
                 cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane1}'")
             except mysql.connector.Error as error:
                 await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
-            acdb.close()
+            
             for ac in cursor:
                 ac1 = ac
                 succ1 = True
@@ -258,7 +258,7 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
             for ac in cursor:
                 ac2 = ac
                 succ2 = True
-        
+            acdb.close()
         if injection == True:
             await ctx.send('SQL Injection detected. Stop it. Bad.')
             return
@@ -353,9 +353,10 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
         embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/659878639461990401/799226240305332224/search_icon.png')
         embed.set_footer(text="Data provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
         for result in cursor:
-            isCargo = result[10] == 'Cargo'
-            icon = '<:cargo:773841095896727573>' if isCargo else '<:pax:773841110271393833>'
-            embed.add_field(name = f"{result[1]} {icon}", value = f"```ml\n${result[8]} M, {result[6]:,} {'lbs' if isCargo else 'pax'}, {result[4]} lbs/km```**Call with:** $info {result[11]}\n", inline = False)
+            if len(embed.fields) <= 24:
+                isCargo = result[10] == 'Cargo'
+                icon = '<:cargo:773841095896727573>' if isCargo else '<:pax:773841110271393833>'
+                embed.add_field(name = f"{result[1]} {icon}", value = f"```ml\n${result[8]} M, {result[6]:,} {'lbs' if isCargo else 'pax'}, {result[4]} lbs/km```**Call with:** $info {result[11]}\n", inline = False)
         if len(embed.fields) == 0:
             embed.add_field(name = ":x: No aircraft found!", value = f"No entry found containing given searchword{'' if len(args) == 1 else 's'}. Make sure there are no misspellings. {'' if len(args) == 1 else 'Remember that this command is **order sensitive**, that means multiple searchwords must be given in order!'}")
         await ctx.send(embed = embed)

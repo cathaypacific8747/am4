@@ -157,7 +157,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
             value  = f"**​         Rank**: {data['user']['rank']}\n"
             value += f"**  ​      Level**: {data['user']['level']}\n"
             value += f"**​       Mode**: {data['user']['game_mode']}\n"
-            value += f"**​Achievements**: {data['user']['achievements']}/77\n"
+            value += f"**​Achievements**: {data['user']['achievements']}/81\n"
             value += f"**     Founded**: {strftime('%d/%b/%Y', gmtime(data['user']['founded']))}\n"
             cargoRep = '' if data['user']['cargo_reputation'] == 'N/A' else f", <:cargo:773841095896727573> {data['user']['cargo_reputation']}%"
             value += f"**    Reputation**: <:pax:773841110271393833> {data['user']['reputation']}%{cargoRep}\n"

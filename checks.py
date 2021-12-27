@@ -28,6 +28,19 @@ def modsOnly():
         return True
     return check(predicate)
 
+def modsOrStars():
+    async def predicate(ctx):
+        try:
+            modRole = get(ctx.author.roles, id=514431344764256276)
+            starRole = get(ctx.author.roles, id=701410528853098497)
+            if modRole is None and starRole is None:
+                await ctx.send("You do not have the required roles to use this command.")
+                return False
+        except:
+            return False
+        return True
+    return check(predicate)
+
 def notPriceAlert():
     async def predicate(ctx):
         try:
