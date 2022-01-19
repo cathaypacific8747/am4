@@ -558,7 +558,7 @@ class AirportCog(commands.Cog, name = 'Airport Commands'):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.user_id != self.bot.user.id:
-            reactor = self.bot.get_user(payload.user_id)
+            reactor = await self.bot.fetch_user(payload.user_id)
             if payload.emoji.id in [705724371452428309, 705723955020955708]:
                 msg = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
                 await msg.clear_reactions()
