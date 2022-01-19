@@ -382,25 +382,23 @@ async def unload(ctx, extension = 'all'):
 @bot.command(hidden = True)
 @guideDevsOnly()
 async def load(ctx, extension = 'valid extensions'):
-    print('bitch1')
     if extension == 'valid extensions':
-        print('bitch2')
         for cog in ValidCogs:
-            print('bitch3')
             try: bot.load_extension(cog)
             except commands.ExtensionAlreadyLoaded: pass
-            print('bitch4')
         await ctx.send('All stock extensions loaded.')
     else:
-        print('bitch5')
         bot.load_extension(extension)
-        print('bitch6')
         await ctx.send(f'{extension} has been loaded!')
 
 @bot.command(hidden=True)
 @guideDevsOnly()
 async def clearConsole(ctx):
     system('clear')
+
+@bot.command(hidden=True)
+async def testaa(ctx):
+    await ctx.send(f'testaa')
 
 bot.run('***REMOVED***')
 paused = False

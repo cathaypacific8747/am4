@@ -47,7 +47,13 @@ def notPriceAlert():
             if ctx.message.channel.id == 554503485765189642:
                 await ctx.send(f'This command is disabled here. Please go to <#475885102178631680>.')
                 return False
-            elif ctx.message.channel.id not in [475885102178631680, 659878639461990401, 789477232900833290, 701324942943191110]:
+            elif ctx.message.channel.id not in [
+                475885102178631680,
+                659878639461990401,
+                789477232900833290,
+                701324942943191110,
+                475629813831565312,
+            ]:
                 imgName = random.choice(glob.glob("data/notbotspam/*"))
                 messages = await ctx.message.channel.history(limit=2).flatten()
                 if messages[1].content != '$ignore':

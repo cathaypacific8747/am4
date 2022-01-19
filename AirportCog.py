@@ -9,11 +9,10 @@ import math
 import csv
 import urllib3
 import time
-import json
 import ast
 import os
-import sys
 from checks import *
+import traceback
 
 acdb = mysql.connector.connect(user='***REMOVED***',
                                passwd='***REMOVED***',
@@ -600,7 +599,8 @@ class AirportCog(commands.Cog, name = 'Airport Commands'):
                     await ask.add_reaction('<:250_results:730781935059599472>')
                     await ask.add_reaction('<:1000_results:730781947705688104>')
                     await ask.add_reaction('<:all_results:730781956064673863>')
-                except:
+                except Exception:
+                    await self.bot.get_channel(id=475629813831565312).send(traceback.format_exc())
                     await self.bot.get_channel(payload.channel_id).send(f'<@{payload.user_id}> I was not able to send you a confirmation message by a DM. Please check your privacy settings or unlock me.')
             elif payload.emoji.id in [730781911860904006,730781925815615529,730781935059599472,730781947705688104,730781956064673863]:
                 try:
