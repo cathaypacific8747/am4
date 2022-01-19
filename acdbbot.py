@@ -398,7 +398,9 @@ async def clearConsole(ctx):
 
 @bot.command(hidden=True)
 async def testaa(ctx):
-    await ctx.send(f'testaa')
+    cxt = bot.get_user(933324148598530108)
+    await cxt.send(f'wait how')
+    await ctx.send(f'???????')
 
 bot.run('***REMOVED***')
 paused = False
