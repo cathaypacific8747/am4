@@ -1,4 +1,4 @@
-V = 'v4.1.9'
+V = 'v4.1.10'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
 
@@ -393,12 +393,6 @@ async def load(ctx, extension = 'valid extensions'):
 @guideDevsOnly()
 async def clearConsole(ctx):
     system('clear')
-
-@bot.command(hidden=True)
-async def testab(ctx):
-    person = await bot.get_or_fetch_user(933324148598530108)
-    await person.send(f'yo?')
-    await ctx.send(f'???????')
 
 bot.run('***REMOVED***')
 paused = False
