@@ -239,8 +239,6 @@ async def price(ctx, *costs):
                         print('Send start.')
                         qatar = bot.get_user(430192751779250176)
                         await qatar.send(f'{output} (Price sent by {ctx.message.author.mention})')
-                        cathay = bot.get_user(668261593502580787)
-                        await cathay.send(f'{output} (Price sent by {ctx.message.author.mention})')
                         print('Send end.')
 
                     with open('ass.json', 'r+') as f:
@@ -398,8 +396,8 @@ async def clearConsole(ctx):
 
 @bot.command(hidden=True)
 async def testaa(ctx):
-    cxt = bot.get_user(933324148598530108)
-    await cxt.send(f'wait how')
+    person = await bot.get_or_fetch_user(933324148598530108)
+    await person.send(f'wait how')
     await ctx.send(f'???????')
 
 bot.run('***REMOVED***')
