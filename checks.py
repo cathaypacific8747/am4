@@ -19,8 +19,9 @@ def guideDevsOnly():
 def modsOnly():
     async def predicate(ctx):
         try:
-            role = get(ctx.author.roles, id=514431344764256276)
-            if role is None:
+            modRole = get(ctx.author.roles, id=514431344764256276)
+            helperRole = get(ctx.author.roles, id=931616311358939227)
+            if modRole is None and helperRole is None:
                 await ctx.send("You do not have the required roles to use this command.")
                 return False
         except:
