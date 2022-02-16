@@ -1,4 +1,4 @@
-info = 'AM4 API Commands Extension v1.4'
+info = 'AM4 API Commands Extension v1.5'
 
 import importlib # for reimporting imports
 import graphgen # needed
@@ -106,7 +106,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
     $fleet
     '''
 
-    @commands.command(aliases = ['airline'], help='Shows some basic stats of an airline', usage='$user|airline [optional: airline name/id]')
+    @commands.command(aliases = ['airline'], help='Shows some basic stats of an airline', usage='$user|airline [optional: airline name/id]', intends = discord.Intents.default(members = True))
     @commands.cooldown(200, 86400)
     @notDM()
     @notPriceAlert()
@@ -199,7 +199,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
         else:
             await ctx.send(f'API Error: {data["status"]["description"]}')
     
-    @commands.command(help="Shows an airline's fleet and the total ideal profit", usage='$fleet [optional: airline name/id]')
+    @commands.command(help="Shows an airline's fleet and the total ideal profit", usage='$fleet [optional: airline name/id]', intents = discord.Intents.default(members = True))
     @commands.cooldown(200, 86400)
     @notDM()
     @notPriceAlert()
@@ -226,7 +226,17 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 useId = True
             except: # if input airline is not int-able
                 if str(airline)[-1] == '>': # is mentioning someone
-                    airline = ctx.guild.get_member(int(airline.replace('<', '').replace('@', '').replace('!', '').replace('>', ''))).display_name
+                    try: 
+                        airline = ctx.guild.get_member(int(airline.replace('<@!', '').replace('>', '')))
+                        s = discordSettings(discordUserId=airline.id).getUserSettings()
+                        if 'userid' in s:
+                            userId = s['userid']
+                            useId = True
+                        else:
+                            airline = airline.display_name
+                    except:
+                        await message.edit(content = 'Error:\nCould not find this user.')
+                        return
                 airline = airline.replace('<s>', ' ').replace('࣪', ' ') # for space in front of airlines.
                 if '%' not in airline: airline = quote(airline)
 
@@ -239,8 +249,10 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 mode = 2
             else:
                 mode = 5
-            embed = discord.Embed(title = f'Fleet of {data["user"]["company"]}', colour = discord.Colour(0xffee00))
-            embed.set_footer(text=f"Data updated live from the AM4 API; requests remaining: {data['status']['requests_remaining']}\nData and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+            embeds = list()
+            eCount = 0
+            embeds.append(discord.Embed(title = f'Fleet of {data["user"]["company"]}', colour = discord.Colour(0xffee00)))
+            #embed.set_footer(text=f"Data updated live from the AM4 API; requests remaining: {data['status']['requests_remaining']}\nData and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
             await message.edit(content = 'Calculating, Please Wait...\nEstablishing connection to the Database')
             conn = await aiomysql.connect(user='***REMOVED***',
                                         password='***REMOVED***',
@@ -260,7 +272,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 plane = await cursor.fetchone()
                 if plane: succ = True
                 if not plane:
-                    embed.add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]}', inline = False)
+                    embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]}', inline = False)
                 else:
                     if plane[10] == 'Pax':
                         pro = profit(plane)
@@ -268,11 +280,20 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                         pro = procargo(plane)
                     ac = plane[1]
                     total += pro[mode]*fleet["amount"] 
-                    embed.add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]} | Max Profit: **${pro[mode]*fleet["amount"]:,}**', inline = False)
+                    embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]} | Max Profit: **${pro[mode]*fleet["amount"]:,}**', inline = False)
+                if len(embeds[eCount].fields) == 25:
+                    eCount += 1
+                    embeds.append(discord.Embed(colour = discord.Colour(0xffee00)))
+                if len(embeds) == 10:
+                    await ctx.send("You've done it, you crazy son of a bitch, you've reached Discord's limits. I cannot display your entire fleet. Congratulations. Now go on, do something useful with your life. Find a new hobby. Learn a new skill. Touch grass. Find new friends. Go, my child, you're free now.")
                 bumsecks += fleet['amount']
-            embed.add_field(name = 'Fleet', value = f"Total Planes: **{bumsecks}**")
-            embed.add_field(name = 'Profit', value = f"Total Ideal Profit per Day: **${total:,}**" + ("\*" if not succ else ""))
-            await message.edit(content = '', embed = embed)
+            embeds[eCount].add_field(name = 'Fleet', value = f"Total Planes: **{bumsecks}**")
+            embeds[eCount].add_field(name = 'Profit', value = f"Total Ideal Profit per Day: **${total:,}**" + ("\*" if not succ else ""))
+            embeds[eCount].set_footer(text=f"Data updated live from the AM4 API; requests remaining: {data['status']['requests_remaining']}\nData and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+
+            await message.delete()
+            for mbed in embeds:
+                await ctx.send(content = '', embed = mbed)
             await cursor.close()
             conn.close()
         else:
