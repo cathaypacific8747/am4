@@ -1,4 +1,4 @@
-V = 'v4.1.10'
+V = 'v4.1.11'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
 
@@ -27,7 +27,10 @@ cursor = acdb.cursor(buffered = True)
 # then start the bot-related actions
 import discord
 from discord.ext import commands, tasks
-bot = commands.Bot(command_prefix = '$', case_insensitive = True)
+intents = discord.Intents.default()
+intents.members = True
+intents.messages = True
+bot = commands.Bot(command_prefix = '$', case_insensitive = True, intents = intents)
 bot.remove_command('help')
 
 @bot.event
