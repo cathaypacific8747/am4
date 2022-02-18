@@ -141,7 +141,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                             #airline = airline.display_name
                             await message.edit(content = 'Error:\nCould not find this user. Try entering their nickname instead.')
                             return
-                     except:
+                    except:
                         await message.edit(content = 'Error:\nCould not find this user.')
                 airline = airline.replace('<s>', ' ').replace('࣪', ' ') # for space in front of airlines.
                 if '%' not in airline: airline = quote(airline)
