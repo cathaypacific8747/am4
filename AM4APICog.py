@@ -132,8 +132,8 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 if str(airline)[-1] == '>': # is mentioning someone
                     try: 
                         #airline = ctx.guild.get_member(int(airline.replace('<@!', '').replace('>', '')))
-                        airline = int(airline.replace('<@!', '').replace('>', ''))
-                        s = discordSettings(discordUserId=airline).getUserSettings()
+                        UID = int(airline.replace('<@!', '').replace('>', ''))
+                        s = discordSettings(discordUserId=UID).getUserSettings()
                         if 'userid' in s:
                             userId = s['userid']
                             useId = True
@@ -240,8 +240,8 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
                 if str(airline)[-1] == '>': # is mentioning someone
                     try: 
                         #airline = ctx.guild.get_member(int(airline.replace('<@!', '').replace('>', '')))
-                        airline = int(airline.replace('<@!', '').replace('>', ''))
-                        s = discordSettings(discordUserId=airline).getUserSettings()
+                        UID = int(airline.replace('<@!', '').replace('>', ''))
+                        s = discordSettings(discordUserId=UID).getUserSettings()
                         if 'userid' in s:
                             userId = s['userid']
                             useId = True
