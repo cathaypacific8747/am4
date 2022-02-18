@@ -106,7 +106,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
     $fleet
     '''
 
-    @commands.command(aliases = ['airline'], help='Shows some basic stats of an airline', usage='$user|airline [optional: airline name/id]', intends = discord.Intents.default(members = True))
+    @commands.command(aliases = ['airline'], help='Shows some basic stats of an airline', usage='$user|airline [optional: airline name/id]', intends = discord.Intents.default())
     @commands.cooldown(200, 86400)
     @notDM()
     @notPriceAlert()
@@ -211,7 +211,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
         else:
             await ctx.send(f'API Error: {data["status"]["description"]}')
     
-    @commands.command(help="Shows an airline's fleet and the total ideal profit", usage='$fleet [optional: airline name/id]', intents = discord.Intents.default(members = True))
+    @commands.command(help="Shows an airline's fleet and the total ideal profit", usage='$fleet [optional: airline name/id]', intents = discord.Intents.default())
     @commands.cooldown(200, 86400)
     @notDM()
     @notPriceAlert()
