@@ -36,23 +36,22 @@ bot.remove_command('help')
 
 @bot.event
 async def on_ready():
-    if gmtime()[7] >= 311:
-        acotd = randint(1, 310)
-    else:
-        acotd = gmtime()[7]
+    acotd = min(gmtime()[7], randint(1, 310))
     num = 0
     cursor.execute(f'SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot`')
     for plane in cursor:
         if num == acotd:
             await bot.change_presence(activity = discord.Activity(type = 3, name = f'AC of the day: {plane[1]}'))
         num += 1
+    
     for cog in ValidCogs:
         bot.load_extension(cog)
-    for guild in bot.guilds()
-        if guild.id in AllowedGuilds:
-            continue
-        else:
+    
+    for guild in bot.guilds():
+        print(f"I'm in guild {guild.id}.")
+        if guild.id not in AllowedGuilds:
             await guild.leave()
+            print(f'Left guild {guild.id}.')
     print(f'ACDB Bot {V} is online, latency is {round(bot.latency * 1000)}ms')
     bot.resettime = gmtime()
     acdb.close()
