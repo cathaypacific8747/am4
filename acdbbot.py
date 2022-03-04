@@ -84,15 +84,14 @@ $donate
 $price
 '''
 
-@bot.command(help='')
-@notPriceAlert()
-@notDM()
+@bot.command(hidden=True)
+@modsOnly()
 async def kickserver(ctx):
     for g in bot.guilds:
-        print(f"I'm in guild {g.id}.")
-        if g.id not in AllowedGuilds:
+        gnin = g.id not in AllowedGuilds
+        if gnin:
             await g.leave()
-            print(f'Left guild {g.id}.')
+        await ctx.send(f'{g.id}: {"Left" if gnin else "pass"}')
 
 @bot.command(help = "Shows this command")
 @notPriceAlert()
