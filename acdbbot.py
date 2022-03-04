@@ -47,11 +47,6 @@ async def on_ready():
     for cog in ValidCogs:
         bot.load_extension(cog)
     
-    for guild in bot.guilds():
-        print(f"I'm in guild {guild.id}.")
-        if guild.id not in AllowedGuilds:
-            await guild.leave()
-            print(f'Left guild {guild.id}.')
     print(f'ACDB Bot {V} is online, latency is {round(bot.latency * 1000)}ms')
     bot.resettime = gmtime()
     acdb.close()
@@ -88,6 +83,16 @@ $botinfo|version
 $donate
 $price
 '''
+
+@bot.command(help='')
+@notPriceAlert()
+@notDM()
+async def kickserver(ctx):
+    for guild in bot.guilds():
+        print(f"I'm in guild {guild.id}.")
+        if guild.id not in AllowedGuilds:
+            await guild.leave()
+            print(f'Left guild {guild.id}.')
 
 @bot.command(help = "Shows this command")
 @notPriceAlert()
