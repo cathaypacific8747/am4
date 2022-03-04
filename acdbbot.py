@@ -88,9 +88,7 @@ $price
 @notPriceAlert()
 @notDM()
 async def kickserver(ctx):
-    gs = bot.guilds()
-    print(gs)
-    for g in gs:
+    for g in bot.guilds:
         print(f"I'm in guild {g.id}.")
         if g.id not in AllowedGuilds:
             await g.leave()
