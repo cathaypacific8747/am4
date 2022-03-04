@@ -1,6 +1,7 @@
 V = 'v4.1.11'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
+AllowedGuilds = [697804430711586930, 473892865081081856]
 
 # import modules and initialise stuff such as mysql first
 from datetime import datetime, timedelta
@@ -47,6 +48,11 @@ async def on_ready():
         num += 1
     for cog in ValidCogs:
         bot.load_extension(cog)
+    for guild in bot.guilds()
+        if guild.id in AllowedGuilds:
+            continue
+        else:
+            await guild.leave()
     print(f'ACDB Bot {V} is online, latency is {round(bot.latency * 1000)}ms')
     bot.resettime = gmtime()
     acdb.close()
