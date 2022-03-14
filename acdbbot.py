@@ -141,7 +141,7 @@ async def login(ctx, *, airlineName):
             hasIPO = bool(data['user']['share'])
             allianceName = data['user']['alliance']
             
-            value  = f"**  Airline Name**: {data['user']['company']}\n"
+            value  = f"**   Airline Name**: {data['user']['company']}\n"
             value += f"**​         Rank**: {data['user']['rank']}\n"
             value += f"**  ​      Level**: {data['user']['level']}\n"
             value += f"**​       Mode**: {data['user']['game_mode']}\n"
@@ -162,7 +162,7 @@ async def login(ctx, *, airlineName):
             message = await ctx.send(embed = embed)
             await message.add_reaction('<:yep:488368754070126594>')
             await message.add_reaction('<:nope:488368772571201536>')
-            #await asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
             
             aut = ctx.message.author
             def check(reaction, user):
