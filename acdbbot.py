@@ -161,21 +161,22 @@ async def login(ctx, *, airlineName):
             message = await ctx.send(embed = embed)
             await message.add_reaction('<:yep:488368754070126594>')
             await message.add_reaction('<:nope:488368772571201536>')
+            #await asyncio.sleep(0.1)
 
             def check(reaction, user):
-                return user != reaction.me and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
+                return not reaction.me and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout = 60, check = check)
             except asyncio.TimeourError:
-                await message.edit(content = "Login attempt timed out. Please try again.")
+                await message.edit(content = "Login attempt timed out. Please try again.", embed = None)
             else:
                 if str(reaction.emoji) == '<:yep:488368754070126594>':
                     pass
                 elif str(reaction.emoji) == '<:nope:488368772571201536>':
-                    await message.edit(content = "To correct this issue, please use the $login command again, but this time using your **user ID**. This can be found in the in-game FAQ section, right at the top.")
+                    await message.edit(content = "To correct this issue, please use the $login command again, but this time using your **user ID**. This can be found in the in-game FAQ section, right at the top.", embed = None)
                     return
                 else:
-                    await message.edit(content = "Huh, this really shouldn't have happened.")
+                    await message.edit(content = "Huh, this really shouldn't have happened.", embed = None)
                     return
         
         await ctx.author.edit(nick=data['user']['company'])
