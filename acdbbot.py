@@ -163,19 +163,19 @@ async def login(ctx, *, airlineName):
             await message.add_reaction('<:nope:488368772571201536>')
 
             def check(reaction, user):
-                return user == ctx.author and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
+                return user == not reaction.me and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout = 60, check = check)
             except asyncio.TimeourError:
-                await message.edit("Login attempt timed out. Please try again.")
+                await message.edit(content = "Login attempt timed out. Please try again.")
             else:
                 if str(reaction.emoji) == '<:yep:488368754070126594>':
                     pass
                 elif str(reaction.emoji) == '<:nope:488368772571201536>':
-                    await message.edit("To correct this issue, please use the $login command again, but this time using your **user ID**. This can be found in the in-game FAQ section, right at the top.")
+                    await message.edit(content = "To correct this issue, please use the $login command again, but this time using your **user ID**. This can be found in the in-game FAQ section, right at the top.")
                     return
                 else:
-                    await message.edit("Huh, this really shouldn't have happened.")
+                    await message.edit(content = "Huh, this really shouldn't have happened.")
                     return
         
         await ctx.author.edit(nick=data['user']['company'])
@@ -191,6 +191,8 @@ async def login(ctx, *, airlineName):
             pass
         
         await ctx.author.add_roles(discord.utils.get(ctx.guild.roles, name='Realism' if isRealism else 'Easy'))
+        if not useid:
+            await message.delete()
         await ctx.send(f'Welcome, **{data["user"]["company"]}**, to the AM4 Discord Server.\nHappy flying!')
     else:
         await ctx.send(content = f'Error: {data["status"]["description"]}')
