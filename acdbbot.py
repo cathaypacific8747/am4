@@ -1,4 +1,4 @@
-V = 'v4.1.12'
+V = 'v4.12.0'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
 AllowedGuilds = [697804430711586930, 473892865081081856]
@@ -19,6 +19,7 @@ from checks import *
 from DatabaseCog import profit, procargo
 import mysql.connector
 from SettingsCog import discordSettings
+import asyncio
 acdb = mysql.connector.connect(user='***REMOVED***',
                                passwd='***REMOVED***',
                                host='***REMOVED***',
@@ -133,6 +134,49 @@ async def login(ctx, *, airlineName):
             settings.modifySetting('userid', airlineName)
         else:
             settings.removeSetting('userid')
+        
+        if not useid:
+            embed = discord.Embed(title = f"Is this you?", description = 'Please confirm that this is your airline by clicking on the <:yep:488368754070126594> button below. Otherwise, click on the <:nope:488368772571201536> button and follow the instructions on how to login correctly.', colour=discord.Colour(0x1f8de0))
+            
+            hasIPO = bool(data['user']['share'])
+            allianceName = data['user']['alliance']
+
+            value  = f"**​         Rank**: {data['user']['rank']}\n"
+            value += f"**  ​      Level**: {data['user']['level']}\n"
+            value += f"**​       Mode**: {data['user']['game_mode']}\n"
+            value += f"**​Achievements**: {data['user']['achievements']}/81\n"
+            value += f"**     Founded**: {strftime('%d/%b/%Y', gmtime(data['user']['founded']))}\n"
+            cargoRep = '' if data['user']['cargo_reputation'] == 'N/A' else f", <:cargo:773841095896727573> {data['user']['cargo_reputation']}%"
+            value += f"**    Reputation**: <:pax:773841110271393833> {data['user']['reputation']}%{cargoRep}\n"
+            value += f"**   ​Routes/Fleet**: {data['user']['routes']}/{data['user']['fleet']}\n"
+            if hasIPO:
+                value += f"**​      Share Value**: ${data['user']['share']:,.2f}\n"
+                value += f"**​    Shares**: {data['user']['shares_sold']}/{data['user']['shares_sold']+data['user']['shares_available']}\n"
+            value += f"**​      Alliance**: {'---' if not allianceName else allianceName}\n"
+            embed.add_field(name='Basic Statistics', inline=False, value=value)
+            awards = "".join([f"`{strftime('%d/%b/%y', gmtime(award['awarded']))}` - {award['award']}\n" for award in data['awards']])
+            if awards:
+                embed.add_field(name=':trophy: Awards', inline=False, value=awards)
+            
+            message = await ctx.send(embed = embed)
+            await message.add_reaction('<:yep:488368754070126594>')
+            await message.add_reaction('<:nope:488368772571201536>')
+
+            def check(reaction, user):
+                return user == message.author and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
+            try:
+                reaction = await bot.wait_for('reaction_add', timeout = 60, check = check)
+            except asyncio.TimeourError:
+                await message.edit("Login attempt timed out. Please try again.")
+            else:
+                if str(reaction.emoji) == '<:yep:488368754070126594>':
+                    pass
+                elif str(reaction.emoji) == '<:nope:488368772571201536>':
+                    await message.edit("To correct this issue, please use the $login command again, but this time using your **user ID**. This can be found in the in-game FAQ section, right at the top.")
+                    return
+                else:
+                    await message.edit("Huh, this really shouldn't have happened.")
+                    return
         
         await ctx.author.edit(nick=data['user']['company'])
 
