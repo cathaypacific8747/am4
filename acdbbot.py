@@ -167,7 +167,7 @@ async def login(ctx, *, airlineName):
                 return user == ctx.message.author and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout = 60, check = check)
-            except asyncio.TimeourError:
+            except asyncio.TimeoutError:
                 await message.edit(content = "Login attempt timed out. Please try again.", embed = None)
             else:
                 if str(reaction.emoji) == '<:yep:488368754070126594>':
