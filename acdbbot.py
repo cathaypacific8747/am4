@@ -1,4 +1,4 @@
-V = 'v4.12.0'
+V = 'v4.2.0'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
 AllowedGuilds = [697804430711586930, 473892865081081856]
