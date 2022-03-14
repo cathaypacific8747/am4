@@ -164,7 +164,14 @@ async def login(ctx, *, airlineName):
             #await asyncio.sleep(0.1)
 
             def check(reaction, user):
-                return not reaction.me and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
+                if reaction.me == False:
+                    if str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>':
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+                #return not reaction.me and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>'
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout = 60, check = check)
             except asyncio.TimeourError:
