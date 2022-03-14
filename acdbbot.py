@@ -165,8 +165,7 @@ async def login(ctx, *, airlineName):
             
             aut = ctx.message.author
             def check(reaction, user):
-                global aut
-                return user == aut and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>' and reaction.message == message
+                return user != bot.user and str(reaction.emoji) == '<:yep:488368754070126594>' or '<:nope:488368772571201536>' and reaction.message == message
             try:
                 reaction, user = await bot.wait_for('reaction_add', timeout = 60, check = check)
             except asyncio.TimeoutError:
