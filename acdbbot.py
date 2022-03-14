@@ -140,8 +140,9 @@ async def login(ctx, *, airlineName):
             
             hasIPO = bool(data['user']['share'])
             allianceName = data['user']['alliance']
-
-            value  = f"**​         Rank**: {data['user']['rank']}\n"
+            
+            value  = f"**  Airline Name**: {data['user']['company']}\n"
+            value += f"**​         Rank**: {data['user']['rank']}\n"
             value += f"**  ​      Level**: {data['user']['level']}\n"
             value += f"**​       Mode**: {data['user']['game_mode']}\n"
             value += f"**​Achievements**: {data['user']['achievements']}/81\n"
