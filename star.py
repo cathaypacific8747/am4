@@ -15,8 +15,9 @@ from helper_cy import *
 
 try:
     entries = []
-    hubs = ['ASB', 'RAI', 'KRT', 'BAH', 'SIN', 'KUL', 'WLG', 'ASU', 'CGK', 'XCH', 'LIM', 'WLS', 'ADD']
+    # hubs = ['ASB', 'RAI', 'KRT', 'BAH', 'SIN', 'KUL', 'WLG', 'ASU', 'CGK', 'XCH', 'LIM', 'WLS', 'ADD']
     # hubs = ['BKK', 'DEL', 'DXB', 'FRA', 'GRU', 'IXE', 'JFK', 'LHR', 'ORD', 'PEK', 'SYD']
+    hubs = ['BOM', 'JFK', 'KCH', 'REC', 'KSC', 'YKS']
 
     for h in hubs:
         origAirport = Airport(text=h)
@@ -35,7 +36,7 @@ try:
                     r.getContrib_raw(isRealism=False, ci=c.ci)
                     stopAirport = Airport(apid=r.stopover['apid'])
 
-                    r.getDemand_raw(True)
+                    r.getDemand_raw(False)
                     fields = (
                         origAirport.details['iata'],
                         origAirport.details['country'],
@@ -51,13 +52,13 @@ try:
                         r.distance,
                         r.flyingDistance,
 
-                        r.cargoDemand['l'],
-                        r.cargoDemand['h'],
-                        '',
+                        # r.cargoDemand['l'],
+                        # r.cargoDemand['h'],
+                        # '',
 
-                        # r.paxDemand['y'],
-                        # r.paxDemand['j'],
-                        # r.paxDemand['f'],
+                        r.paxDemand['y'],
+                        r.paxDemand['j'],
+                        r.paxDemand['f'],
 
                         c.ci,
                         r.contribution
