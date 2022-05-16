@@ -1,18 +1,10 @@
-# V3
+# am4bot V3
 
-A modern rewrite of the discord bot.
-
+A modern rewrite of the discord bot, utilising the AM4Tools API.
 ```
 $ sudo apt-get update
-$ sudo apt-get install postgresql
-$ sudo passwd postgres
-$ sudo service postgresql start
-$ sudo -u postgres psql
-postgres-# ALTER USER postgres WITH PASSWORD 'XXX';
-postgres-# CREATE DATABASE am4bot;
-postgres-# \q
 $ cp .env.template .env
-$ python3 setup.py
+$ pip3 install -r requirements.txt
 $ python3 main.py
 ```
 
