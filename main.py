@@ -5,6 +5,6 @@ if __name__ == '__main__':
     load_dotenv()
 
     discord_token = os.getenv('DISCORD_TOKEN')
-    assert discord_token is not None
-    
-    print(discord_token)
+    am4tools_token = os.getenv('AM4TOOLS_TOKEN')
+    if discord_token is None or am4tools_token is None:
+        raise AssertionError('Discord and AM4Tools token required!')
