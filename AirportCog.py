@@ -14,12 +14,12 @@ import os
 from checks import *
 import traceback
 
-acdb = mysql.connector.connect(user='***REMOVED***',
-                               passwd='***REMOVED***',
-                               host='***REMOVED***',
-                               database='***REMOVED***')
+# acdb = mysql.connector.connect(user='***REMOVED***',
+#                                passwd='***REMOVED***',
+#                                host='***REMOVED***',
+#                                database='***REMOVED***')
 
-cursor = acdb.cursor(buffered = True)
+# cursor = acdb.cursor(buffered = True)
 airportC = routesC = stopC = 0
 
 if 1: # just to make the entire section collapsible and readable
@@ -275,20 +275,21 @@ class AirportCog(commands.Cog, name = 'Airport Commands'):
             #for ap in cursor:
                 #nsucc = True
                 #name = ap[0]
-            try:
-                acdb.reconnect(attempts = 5, delay = 0.5)
-                cursor.execute(f"SELECT `id`, ` arpt`, ` rgn`, ` iata`, ` icao`, ` rwy`, ` mrkt` FROM `arpt` WHERE ` ICAO` = '{code}' OR ` IATA` = '{code}'")
-                acdb.close()
-            except mysql.connector.Error as error:
-                await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
-            for ap in cursor:
-                succ = True
-                if nsucc == False:
-                    name = ap[1] + " Airport"
-                await ctx.send(f'**{name.encode("iso-8859-1", "replace").decode("utf8", "replace")}** Stats```python\n         City: {ap[1]}, {ap[2]}'
-                               f'\n         IATA: {ap[3]}\n         ICAO: {ap[4]}\nRunway Length: {int(ap[5]):,} ft.\n Market Value: {ap[6]}%\n```')    
-            if succ == False:
-                await ctx.send('Airport not found. You may have misspelled its IATA/ICAO or it isn\'t in the game.')
+            # try:
+            #     acdb.reconnect(attempts = 5, delay = 0.5)
+            #     cursor.execute(f"SELECT `id`, ` arpt`, ` rgn`, ` iata`, ` icao`, ` rwy`, ` mrkt` FROM `arpt` WHERE ` ICAO` = '{code}' OR ` IATA` = '{code}'")
+            #     acdb.close()
+            # except mysql.connector.Error as error:
+            #     await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
+            # for ap in cursor:
+            #     succ = True
+            #     if nsucc == False:
+            #         name = ap[1] + " Airport"
+            #     await ctx.send(f'**{name.encode("iso-8859-1", "replace").decode("utf8", "replace")}** Stats```python\n         City: {ap[1]}, {ap[2]}'
+            #                    f'\n         IATA: {ap[3]}\n         ICAO: {ap[4]}\nRunway Length: {int(ap[5]):,} ft.\n Market Value: {ap[6]}%\n```')    
+            # if succ == False:
+            #     await ctx.send('Airport not found. You may have misspelled its IATA/ICAO or it isn\'t in the game.')
+            await ctx.send("Database commands are under maintenance. Please try again later.")
 
     @commands.command(aliases=['route'], brief='Shows the details and/or stopover of a route.', help='Shows the details of the any given route, including the best stopover whenever possible, configuration and ticket prices.\nThe field(s) [flights per day] and [reputation] is optional.', usage='$stop|route <Origin IATA/ICAO code> <Destination IATA/ICAO code> <aircraft code> [optional: flights per day] [optional: reputation]')
     @notDM()
@@ -600,7 +601,7 @@ class AirportCog(commands.Cog, name = 'Airport Commands'):
                     await ask.add_reaction('<:1000_results:730781947705688104>')
                     await ask.add_reaction('<:all_results:730781956064673863>')
                 except Exception:
-                    await self.bot.get_channel(id=475629813831565312).send(traceback.format_exc())
+                    await self.bot.get_channel(475629813831565312).send(traceback.format_exc())
                     await self.bot.get_channel(payload.channel_id).send(f'<@{payload.user_id}> I was not able to send you a confirmation message by a DM. Please check your privacy settings or unlock me.')
             elif payload.emoji.id in [730781911860904006,730781925815615529,730781935059599472,730781947705688104,730781956064673863]:
                 try:
@@ -705,5 +706,5 @@ class AirportCog(commands.Cog, name = 'Airport Commands'):
                     # delete variables to conserve RAM.
                     msg = oldEmbed = oldEmbedData = data = combinations = o = needsStopover = range = isCargo = rwyReq = maxIncome = ask = maxRoutes = origMessage = loadingMessage = counter = successCounter = entries = maxRoutesDisplay = startTime = lastLoggedTime = numOfDots = d = thisEntry = stpvrInfo = dR = stpvr = nowTime = f = None
 
-def setup(bot):
-    bot.add_cog(AirportCog(bot))
+async def setup(bot):
+    await bot.add_cog(AirportCog(bot))

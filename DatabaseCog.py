@@ -5,12 +5,13 @@ from discord.ext import commands
 from checks import *
 import mysql.connector
 
-acdb = mysql.connector.connect(user='***REMOVED***',
-                               passwd='***REMOVED***',
-                               host='***REMOVED***',
-                               database='***REMOVED***')
-
-cursor = acdb.cursor(buffered = True)
+acdb = None
+# acdb = mysql.connector.connect(user='***REMOVED***',
+#                                passwd='***REMOVED***',
+#                                host='***REMOVED***',
+#                                database='***REMOVED***')
+# cursor = acdb.cursor(buffered = True)
+acdb = None
 
 infoC = compareC = searchC = seeallC = 0
 ac = ac1 = ac2 = pro1 = pro2 = msg = pro = embed = ps = cs = rs = ss = fs = es = fr = dr = pr = fe = de = pe = ''
@@ -146,220 +147,218 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
         s += "https://docs.google.com/spreadsheets/u/3/d/e/2PACX-1vTxa5kKsfJQe7Q8A_WzOOUC0NzHe2CGNMTEcZjnCMih04KF1ieSq2tWIpkTb2dgs6nxRw0lplNFa5bP/pubhtml\n"
         s += "To automatically search for aircraft abbreviations, use `$search`."
         await ctx.send(s)
-        # await ctx.send(f'$seeall is now deprecated. Use the $search command instead.')
+    
     @commands.command(aliases = ['ac'], help='Sends stats of a selected AC. Usage: $info <short name of an AC>', brief='Sends stats of a selected AC', usage='$info|ac <aircraftCode>')
     @notPriceAlert()
     @notDM()    
     async def info(self, ctx, plane):
-        global infoC, ac, msg1, msg2, pro, embed1, embed2
-        infoC += 1
-        succ = False
-        injection = False
-        if "'" in plane:
-            injection = True
-        if injection == False:
-            try:
-                acdb.reconnect(attempts = 5, delay = 0.5)
-                cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type`, `rwy`, `maint`, `acost` FROM `am4bot` WHERE `shortname` = '{plane}'")
-                acdb.close()
-            except mysql.connector.Error as error:
-                await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
-        for ac1 in cursor:
-            ac = ac1
-            embed1 = discord.Embed(title=f"{ac[1]}", colour=discord.Colour(0xd0021b))
+        # global infoC, ac, msg1, msg2, pro, embed1, embed2
+        # infoC += 1
+        # succ = False
+        await ctx.send(f'This command has been disabled due to issues with our database. We will fix this soon.')
+        # try:
+        #     acdb.reconnect(attempts = 5, delay = 0.5)
+        #     cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type`, `rwy`, `maint`, `acost` FROM `am4bot` WHERE `shortname` = '{plane}'")
+        #     acdb.close()
+        # except mysql.connector.Error as error:
+        #     await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
+        # for ac1 in cursor:
+        #     ac = ac1
+        #     embed1 = discord.Embed(title=f"{ac[1]}", colour=discord.Colour(0xd0021b))
 
-            embed1.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476944414867506/plane.png')
-            embed1.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac[9]}.png")
-            embed1.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        #     embed1.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476944414867506/plane.png')
+        #     embed1.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac[9]}.png")
+        #     embed1.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
             
-            embed2 = discord.Embed(title=f"{ac[1]}", colour=discord.Colour(0xd1021b))
+        #     embed2 = discord.Embed(title=f"{ac[1]}", colour=discord.Colour(0xd1021b))
 
-            embed2.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702474176489062410/maintlogo.png')
-            embed2.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac[9]}.png")
-            embed2.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        #     embed2.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702474176489062410/maintlogo.png')
+        #     embed2.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac[9]}.png")
+        #     embed2.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
             
-            # sorry, had to change the format, it looks unorganised at first.
-            # no problem my man.
-            if ac[10] == "Cargo":
-                pro = procargo(ac1)
-                msg1 = '```ml' + '\n'
-                msg1 += f'           Price: "{ac[8]} million"' + '\n'
-                msg1 += f'        Capacity: "{ac[6]:,} lbs"'   + '\n'
-                msg1 += f'           Range: "{ac[2]} km"'      + '\n'
-                msg1 += f'           Speed: "{ac[5]} km/h"'    + '\n'
-                msg1 += f'Fuel consumption: "{ac[4]} lbs/km"'  + '\n'
-                msg1 += f'   CO2 emmisions: "{ac[3]} kg/1k lbs/km"```'
-                embed1.add_field(name = 'Brief Statistics', value = msg1)
+        #     # sorry, had to change the format, it looks unorganised at first.
+        #     # no problem my man.
+        #     if ac[10] == "Cargo":
+        #         pro = procargo(ac1)
+        #         msg1 = '```ml' + '\n'
+        #         msg1 += f'           Price: "{ac[8]} million"' + '\n'
+        #         msg1 += f'        Capacity: "{ac[6]:,} lbs"'   + '\n'
+        #         msg1 += f'           Range: "{ac[2]} km"'      + '\n'
+        #         msg1 += f'           Speed: "{ac[5]} km/h"'    + '\n'
+        #         msg1 += f'Fuel consumption: "{ac[4]} lbs/km"'  + '\n'
+        #         msg1 += f'   CO2 emmisions: "{ac[3]} kg/1k lbs/km"```'
+        #         embed1.add_field(name = 'Brief Statistics', value = msg1)
                     
-            else:
-                pro = profit(ac1)
-                msg1 = '```ml' + '\n'
-                msg1 += f'           Price: "{ac[8]} million"' + '\n'
-                msg1 += f'        Capacity: "{ac[6]} pax"'     + '\n'
-                msg1 += f'           Range: "{ac[2]} km"'      + '\n'
-                msg1 += f'           Speed: "{ac[5]} km/h"'    + '\n'
-                msg1 += f'Fuel consumption: "{ac[4]} lbs/km"'  + '\n'
-                msg1 += f'   CO2 emmisions: "{ac[3]} kg/pax/km"```'
-                embed1.add_field(name = 'Brief Statistics', value=msg1)
+        #     else:
+        #         pro = profit(ac1)
+        #         msg1 = '```ml' + '\n'
+        #         msg1 += f'           Price: "{ac[8]} million"' + '\n'
+        #         msg1 += f'        Capacity: "{ac[6]} pax"'     + '\n'
+        #         msg1 += f'           Range: "{ac[2]} km"'      + '\n'
+        #         msg1 += f'           Speed: "{ac[5]} km/h"'    + '\n'
+        #         msg1 += f'Fuel consumption: "{ac[4]} lbs/km"'  + '\n'
+        #         msg1 += f'   CO2 emmisions: "{ac[3]} kg/pax/km"```'
+        #         embed1.add_field(name = 'Brief Statistics', value=msg1)
 
-            msg2 = '```ml' + '\n'
-            msg2 += f'         Min. Runway Required: "{int(ac[11]):,} ft"'  + '\n'
-            msg2 += f'       Fl. Hours Before Check: "{int(ac[12])} Hours"' + '\n'
-            msg2 += f'                 A-Check Cost: "${ac[13]}"'           + '\n'
-            msg2 += '\n'
-            msg2 += f'Profit per Flight (\'Realism\'): "${pro[0]:,}"'        + '\n'
-            msg2 += f'  Flights per day (\'Realism\'): "{round(pro[1], 2)}"' + '\n'
-            msg2 += f'   Profit per Day (\'Realism\'): "${pro[2]:,}"'        + '\n'
-            msg2 += f'   Profit per Flight (\'Easy\'): "${pro[3]:,}"'        + '\n'
-            msg2 += f'     Flights per day (\'Easy\'): "{round(pro[4], 2)}"' + '\n'
-            msg2 += f'      Profit per Day (\'Easy\'): "${pro[5]:,}"```'
-            embed2.add_field(name = 'Extra Statistics and Profit', value=msg2)
+        #     msg2 = '```ml' + '\n'
+        #     msg2 += f'         Min. Runway Required: "{int(ac[11]):,} ft"'  + '\n'
+        #     msg2 += f'       Fl. Hours Before Check: "{int(ac[12])} Hours"' + '\n'
+        #     msg2 += f'                 A-Check Cost: "${ac[13]}"'           + '\n'
+        #     msg2 += '\n'
+        #     msg2 += f'Profit per Flight (\'Realism\'): "${pro[0]:,}"'        + '\n'
+        #     msg2 += f'  Flights per day (\'Realism\'): "{round(pro[1], 2)}"' + '\n'
+        #     msg2 += f'   Profit per Day (\'Realism\'): "${pro[2]:,}"'        + '\n'
+        #     msg2 += f'   Profit per Flight (\'Easy\'): "${pro[3]:,}"'        + '\n'
+        #     msg2 += f'     Flights per day (\'Easy\'): "{round(pro[4], 2)}"' + '\n'
+        #     msg2 += f'      Profit per Day (\'Easy\'): "${pro[5]:,}"```'
+        #     embed2.add_field(name = 'Extra Statistics and Profit', value=msg2)
             
-            message = await ctx.send(embed = embed1)
-            await message.add_reaction('📱')
-            await message.add_reaction('🦵')
-            await message.add_reaction('⏩')
+        #     message = await ctx.send(embed = embed1)
+        #     await message.add_reaction('📱')
+        #     await message.add_reaction('🦵')
+        #     await message.add_reaction('⏩')
 
-            succ = True
-        if injection:
-            await ctx.send('SQL Injection detected. Stop it. Bad.')
-        elif succ == False:
-            await ctx.send('Aircraft not found. You can see all AC abbreviations with the command $seeall')
+        #     succ = True
+        # elif succ == False:
+        #     await ctx.send('Aircraft not found. You can see all AC abbreviations with the command $seeall')
 
     @commands.command(help='Compares two selected AC stats back to back. Usage: $compare <AC1> <AC2>', brief='Compares two selected AC stats back to back', usage='$compare <aircraftCode> <aircraftCode>')
     @notPriceAlert()
     @notDM()
     async def compare(self, ctx, plane1, plane2):
-        global compareC, msg, embed, ac1, ac2, pro1, pro2, ps, cs, rs, ss, fs, es, fr, dr, pr, fe, de, pe
-        compareC += 1
-        succ1 = False
-        succ2 = False
-        injection = False
-        if "'" in plane1[0] or "'" in plane2[0]:
-            injection = True
-        ac1 = ''
-        ac2 = ''
-        if injection == False:
-            try:
-                acdb.reconnect(attempts = 5, delay = 0.5)
-                cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane1}'")
-            except mysql.connector.Error as error:
-                await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
+        await ctx.send(f'This command has been disabled due to issues with our database. We will fix this soon.')
+        # global compareC, msg, embed, ac1, ac2, pro1, pro2, ps, cs, rs, ss, fs, es, fr, dr, pr, fe, de, pe
+        # compareC += 1
+        # succ1 = False
+        # succ2 = False
+        # injection = False
+        # if "'" in plane1[0] or "'" in plane2[0]:
+        #     injection = True
+        # ac1 = ''
+        # ac2 = ''
+        # if injection == False:
+        #     try:
+        #         acdb.reconnect(attempts = 5, delay = 0.5)
+        #         cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane1}'")
+        #     except mysql.connector.Error as error:
+        #         await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
             
-            for ac in cursor:
-                ac1 = ac
-                succ1 = True
+        #     for ac in cursor:
+        #         ac1 = ac
+        #         succ1 = True
 
-            try:
-                cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane2}'")
-                acdb.close()
-            except mysql.connector.Error as error:
-                await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
-            for ac in cursor:
-                ac2 = ac
-                succ2 = True
-            acdb.close()
-        if injection == True:
-            await ctx.send('SQL Injection detected. Stop it. Bad.')
-            return
-        if not succ1 and not succ2:
-            await ctx.send('Neither of the aircraft found. You can see all AC abbreviations with the command $seeall')    
-            return
-        elif not succ1:
-            await ctx.send('First aircraft not found. You can see all AC abbreviations with the command $seeall')
-            return
-        elif not succ2:
-            await ctx.send('Second aircraft not found. You can see all AC abbreviations with the command $seeall')
-            return
-        elif ac1[10] != ac2[10]:
-            await ctx.send("Can't compare cargo and pax aircraft")
-            return
-        try:
-            if ac1[10] == 'Cargo':
-                pro1 = procargo(ac1)
-                pro2 = procargo(ac2)
-            else:
-                pro1 = profit(ac1)
-                pro2 = profit(ac2)
-        except:
-            pass
+        #     try:
+        #         cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `shortname` = '{plane2}'")
+        #         acdb.close()
+        #     except mysql.connector.Error as error:
+        #         await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')
+        #     for ac in cursor:
+        #         ac2 = ac
+        #         succ2 = True
+        #     acdb.close()
+        # if injection == True:
+        #     await ctx.send('SQL Injection detected. Stop it. Bad.')
+        #     return
+        # if not succ1 and not succ2:
+        #     await ctx.send('Neither of the aircraft found. You can see all AC abbreviations with the command $seeall')    
+        #     return
+        # elif not succ1:
+        #     await ctx.send('First aircraft not found. You can see all AC abbreviations with the command $seeall')
+        #     return
+        # elif not succ2:
+        #     await ctx.send('Second aircraft not found. You can see all AC abbreviations with the command $seeall')
+        #     return
+        # elif ac1[10] != ac2[10]:
+        #     await ctx.send("Can't compare cargo and pax aircraft")
+        #     return
+        # try:
+        #     if ac1[10] == 'Cargo':
+        #         pro1 = procargo(ac1)
+        #         pro2 = procargo(ac2)
+        #     else:
+        #         pro1 = profit(ac1)
+        #         pro2 = profit(ac2)
+        # except:
+        #     pass
 
-        ###  Consider using tabulate, plain, makes the code much more readable and maintainable.  ###
-        ps = addspaces(ac1[8], 20)
-        cs = addspaces(ac1[6], 16)
-        rs = addspaces(ac1[2], 20)
-        ss = addspaces(ac1[5], 18)
-        fs = addspaces(ac1[4], 5)
-        es = addspaces(ac1[3], 7)
+        # ###  Consider using tabulate, plain, makes the code much more readable and maintainable.  ###
+        # ps = addspaces(ac1[8], 20)
+        # cs = addspaces(ac1[6], 16)
+        # rs = addspaces(ac1[2], 20)
+        # ss = addspaces(ac1[5], 18)
+        # fs = addspaces(ac1[4], 5)
+        # es = addspaces(ac1[3], 7)
         
-        fr = addspaces(f'{pro1[0]:,}', 9)
-        dr = addspaces(round(pro1[1], 2), 12)
-        pr = addspaces(f'{pro1[2]:,}', 12)
-        fe = addspaces(f'{pro1[3]:,}', 12)
-        de = addspaces(round(pro1[4], 2), 15)
-        pe = addspaces(f'{pro1[5]:,}', 15)
+        # fr = addspaces(f'{pro1[0]:,}', 9)
+        # dr = addspaces(round(pro1[1], 2), 12)
+        # pr = addspaces(f'{pro1[2]:,}', 12)
+        # fe = addspaces(f'{pro1[3]:,}', 12)
+        # de = addspaces(round(pro1[4], 2), 15)
+        # pe = addspaces(f'{pro1[5]:,}', 15)
 
-        if ac1[10] == 'Cargo':
-            msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]:,} lbs" | "{ac2[6]:,} lbs"\n'
-                f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
-                f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/k/km" | "{ac2[3]} kg/k/km"\n'
-                f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
-                f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
-                f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
-        else:
-            msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]} pax" | "{ac2[6]} pax"\n'
-                f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
-                f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/p/km" | "{ac2[3]} kg/p/km"\n'
-                f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
-                f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
-                f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+        # if ac1[10] == 'Cargo':
+        #     msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]:,} lbs" | "{ac2[6]:,} lbs"\n'
+        #         f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
+        #         f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/k/km" | "{ac2[3]} kg/k/km"\n'
+        #         f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
+        #         f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
+        #         f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
+        # else:
+        #     msg = (f'```ml\nPrice:{ps} "${ac1[8]} M" | "${ac2[8]} M"\nCapacity:{cs} "{ac1[6]} pax" | "{ac2[6]} pax"\n'
+        #         f'Range:{rs} "{ac1[2]} km" | "{ac2[2]} km"\nSpeed:{ss} "{ac1[5]} km/h" | "{ac2[5]} km/h"\n'
+        #         f'Fuel Consumption:{fs} "{ac1[4]} lbs/km" | "{ac2[4]} lbs/km"\nCO2 Emmisions:{es} "{ac1[3]} kg/p/km" | "{ac2[3]} kg/p/km"\n'
+        #         f'Profit per flight (\'Realism\'):{fr} "${pro1[0]:,}" | "${pro2[0]:,}"\nFlights per day (\'Realism\'):{dr} "{round(pro1[1], 2)}" | "{round(pro2[1], 2)}"\n'
+        #         f'Profit per day (\'Realism\'):{pr} "${pro1[2]:,}" | "${pro2[2]:,}"\nProfit per flight (\'Easy\'):{fe} "${pro1[3]:,}" | "${pro2[3]:,}"\n'
+        #         f'Flights per day (\'Easy\'):{de} "{round(pro1[4], 2)}" | "{round(pro2[4], 2)}"\nProfit per day (\'Easy\'):{pe} "${pro1[5]:,}" | "${pro2[5]:,}"```')
 
         
-        embed = discord.Embed(title=f"{ac1[1]} vs. {ac2[1]}", colour=discord.Colour(0xff9900))
+        # embed = discord.Embed(title=f"{ac1[1]} vs. {ac2[1]}", colour=discord.Colour(0xff9900))
 
-        embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476935376404550/compare.png')
-        embed.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac1[9]}.png")
-        embed.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
-        embed.add_field(name = 'Comparison', value = msg)
+        # embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/659878639461990401/702476935376404550/compare.png')
+        # embed.set_image(url=f"https://www.airline4.net/assets/img/aircraft/png/{ac1[9]}.png")
+        # embed.set_footer(text="Data and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        # embed.add_field(name = 'Comparison', value = msg)
         
-        message = await ctx.send('', embed = embed)
-        await message.add_reaction('📱')
-        await message.add_reaction('🦵')
+        # message = await ctx.send('', embed = embed)
+        # await message.add_reaction('📱')
+        # await message.add_reaction('🦵')
 
     
     @commands.command(brief='Searches the database for aircrafts with the matching name.', usage='$search <name1> [name2] ...', help='Returns all aircrafts with its model name containing name1, name2, etc.\nThe names inputted are order-sensitive.')
     @notPriceAlert()
     @notDM()
     async def search(self, ctx, *args):
-        global searchC
-        searchC += 1
-        if "'" in args:
-            await ctx.send('SQL Injection detected. Stop it. Bad.')
-            return
-        if len(args) == 0:
-            await ctx.send('Missing arguments, check `$help search` for more information.')
-            return
+        await ctx.send(f'This command has been disabled due to issues with our database. We will fix this soon.')
 
-        query = ''.join([f'%{i}%' for i in args])
+        # global searchC
+        # searchC += 1
+        # if "'" in args:
+        #     await ctx.send('SQL Injection detected. Stop it. Bad.')
+        #     return
+        # if len(args) == 0:
+        #     await ctx.send('Missing arguments, check `$help search` for more information.')
+        #     return
 
-        try:
-            acdb.reconnect(attempts = 5, delay = 0.5)
-            cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type`, `shortname` FROM `am4bot` WHERE `aircraft` LIKE '{query}' ORDER BY `aircraft`")
-        except mysql.connector.Error as error:
-            await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
-        acdb.close()
+        # query = ''.join([f'%{i}%' for i in args])
 
-        embed = discord.Embed(title = f"Results for **{''.join([f'{i} ' for i in args])}**", colour = discord.Colour(0x03fce3))
-        embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/659878639461990401/799226240305332224/search_icon.png')
-        embed.set_footer(text="Data provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
-        for result in cursor:
-            if len(embed.fields) <= 24:
-                isCargo = result[10] == 'Cargo'
-                icon = '<:cargo:773841095896727573>' if isCargo else '<:pax:773841110271393833>'
-                embed.add_field(name = f"{result[1]} {icon}", value = f"```ml\n${result[8]} M, {result[6]:,} {'lbs' if isCargo else 'pax'}, {result[4]} lbs/km```**Call with:** $info {result[11]}\n", inline = False)
-        if len(embed.fields) == 0:
-            embed.add_field(name = ":x: No aircraft found!", value = f"No entry found containing given searchword{'' if len(args) == 1 else 's'}. Make sure there are no misspellings. {'' if len(args) == 1 else 'Remember that this command is **order sensitive**, that means multiple searchwords must be given in order!'}")
-        await ctx.send(embed = embed)
+        # try:
+        #     acdb.reconnect(attempts = 5, delay = 0.5)
+        #     cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type`, `shortname` FROM `am4bot` WHERE `aircraft` LIKE '{query}' ORDER BY `aircraft`")
+        # except mysql.connector.Error as error:
+        #     await ctx.send(f'Database error. Contact <@243007616714801157> if this happens.```python\n{error}```')    
+        # acdb.close()
 
-def setup(bot):
-    bot.add_cog(DatabaseCog(bot))
+        # embed = discord.Embed(title = f"Results for **{''.join([f'{i} ' for i in args])}**", colour = discord.Colour(0x03fce3))
+        # embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/659878639461990401/799226240305332224/search_icon.png')
+        # embed.set_footer(text="Data provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
+        # for result in cursor:
+        #     if len(embed.fields) <= 24:
+        #         isCargo = result[10] == 'Cargo'
+        #         icon = '<:cargo:773841095896727573>' if isCargo else '<:pax:773841110271393833>'
+        #         embed.add_field(name = f"{result[1]} {icon}", value = f"```ml\n${result[8]} M, {result[6]:,} {'lbs' if isCargo else 'pax'}, {result[4]} lbs/km```**Call with:** $info {result[11]}\n", inline = False)
+        # if len(embed.fields) == 0:
+        #     embed.add_field(name = ":x: No aircraft found!", value = f"No entry found containing given searchword{'' if len(args) == 1 else 's'}. Make sure there are no misspellings. {'' if len(args) == 1 else 'Remember that this command is **order sensitive**, that means multiple searchwords must be given in order!'}")
+        # await ctx.send(embed = embed)
+
+async def setup(bot):
+    await bot.add_cog(DatabaseCog(bot))

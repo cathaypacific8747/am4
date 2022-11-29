@@ -1,9 +1,8 @@
-V = 'v4.2.0'
+V = 'v4.2.1'
 info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndatabase and profit formula by **Scuderia Airlines**'
-ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog', ]
+ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog']
 AllowedGuilds = [697804430711586930, 473892865081081856]
 
-# import modules and initialise stuff such as mysql first
 from datetime import datetime, timedelta
 from time import gmtime, time, strftime
 from urllib.request import urlopen
@@ -17,40 +16,44 @@ import json
 import csv
 from checks import *
 from DatabaseCog import profit, procargo
-import mysql.connector
 from SettingsCog import discordSettings
 import asyncio
-acdb = mysql.connector.connect(user='***REMOVED***',
-                               passwd='***REMOVED***',
-                               host='***REMOVED***',
-                               database='***REMOVED***')
-cursor = acdb.cursor(buffered = True)
+from dotenv import dotenv_values
+# TODO: use TOML instead of dotenv.
+# TODO: bfg remove all credentials and tokens.
 
-# then start the bot-related actions
+cfg = dotenv_values(".env")
+assert cfg['DISCORD_TOKEN']
+# acdb = mysql.connector.connect(user='***REMOVED***',
+#                                passwd='***REMOVED***',
+#                                host='***REMOVED***',
+#                                database='***REMOVED***')
+# cursor = acdb.cursor(buffered = True)
+
 import discord
 from discord.ext import commands, tasks
-#intents = discord.Intents.default()
-#intents.members = True
-#intents.messages = True
-bot = commands.Bot(command_prefix = '$', case_insensitive = True)
+
+
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
 bot.remove_command('help')
 
 @bot.event
 async def on_ready():
-    acotd = min(gmtime()[7], randint(1, 310))
-    num = 0
-    cursor.execute(f'SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot`')
-    for plane in cursor:
-        if num == acotd:
-            await bot.change_presence(activity = discord.Activity(type = 3, name = f'AC of the day: {plane[1]}'))
-        num += 1
+    # acotd = min(gmtime()[7], randint(1, 310))
+    # num = 0
+    # cursor.execute(f'SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot`')
+    # for plane in cursor:
+    #     if num == acotd:
+    #         await bot.change_presence(activity = discord.Activity(type = 3, name = f'AC of the day: {plane[1]}'))
+    #     num += 1
     
     for cog in ValidCogs:
-        bot.load_extension(cog)
+        await bot.load_extension(cog)
     
     print(f'ACDB Bot {V} is online, latency is {round(bot.latency * 1000)}ms')
     bot.resettime = gmtime()
-    acdb.close()
+    # acdb.close()
 
 @bot.event
 async def on_command_error(ctx, error):    
@@ -71,7 +74,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CheckFailure):
         pass
     else:
-        console = bot.get_channel(id = 475629813831565312)
+        console = bot.get_channel(475629813831565312)
         await console.send(f'Encountered an error:\nFrom message: {ctx.message.author.display_name}: `{ctx.message.content}`\nLink to message: {ctx.message.jump_url}\n```py\n{error}```<@&701415081547923516>')
 
 '''
@@ -403,10 +406,10 @@ async def killswitch(ctx):
 async def restart(ctx):
     execl(executable, path.abspath(__file__), * argv)
 
-@bot.command(aliases = ['recon'], hidden = True)
-@guideDevsOnly()
-async def reconnect(ctx):
-    acdb.reconnect(attempts = 5, delay = 0.5)
+# @bot.command(aliases = ['recon'], hidden = True)
+# @guideDevsOnly()
+# async def reconnect(ctx):
+#     acdb.reconnect(attempts = 5, delay = 0.5)
 
 @bot.command(hidden = True)
 @guideDevsOnly()
@@ -443,8 +446,10 @@ async def unload(ctx, extension = 'all'):
 async def load(ctx, extension = 'valid extensions'):
     if extension == 'valid extensions':
         for cog in ValidCogs:
-            try: bot.load_extension(cog)
-            except commands.ExtensionAlreadyLoaded: pass
+            try:
+                await bot.load_extension(cog)
+            except commands.ExtensionAlreadyLoaded:
+                pass
         await ctx.send('All stock extensions loaded.')
     else:
         bot.load_extension(extension)
@@ -455,5 +460,4 @@ async def load(ctx, extension = 'valid extensions'):
 async def clearConsole(ctx):
     system('clear')
 
-bot.run('***REMOVED***')
-paused = False
+bot.run(cfg['DISCORD_TOKEN'])

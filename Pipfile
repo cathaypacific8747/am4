@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+matplotlib = "*"
+pandas = "*"
+numpy = "*"
+pillow = "*"
+urllib3 = "*"
+"discord.py" = "*"
+adjusttext = "*"
+aiomysql = "*"
+"mysql.connector" = "*"
+colour = "*"
+python-dotenv = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

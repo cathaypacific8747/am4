@@ -48,11 +48,11 @@ def GenAllianceEmbed():
     embed2.add_field(name = 'Avg. Contribution per Day:', value = f"${round(user['contributed'] / ago):,}")
     return embed2
 
-def IncrementBar(bar):
-    l = list(bar)
-    l[-1] = ''
-    l.insert(0, '▮')
-    return ''.join(l)
+# def IncrementBar(bar):
+#     l = list(bar)
+#     l[-1] = ''
+#     l.insert(0, '▮')
+#     return ''.join(l)
 
 class Logs:
     def __init__(self, username=None, allianceName=None):
@@ -221,7 +221,7 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
         message = await ctx.send('Calculating, Please Wait...\nAccessing the Api...')
         total = 0
         fleet = 0
-        bumsecks = 0
+        ttl_planes = 0
 
         useId = False
         if airline == '': # querying itself
@@ -260,57 +260,51 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
             data = json.load(f)
         if data['status']['request'] == 'success':
             # Logs(username=data['user']['company']).saveInfo(data) # save it for future use.
-            if data['user']['game_mode'] == 'Realism':
-                mode = 2
-            else:
-                mode = 5
-            embeds = list()
+            mode = 2 if data['user']['game_mode'] == 'Realism' else 5
+            
             eCount = 0
-            embeds.append(discord.Embed(title = f'Fleet of {data["user"]["company"]}', colour = discord.Colour(0xffee00)))
-            #embed.set_footer(text=f"Data updated live from the AM4 API; requests remaining: {data['status']['requests_remaining']}\nData and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
-            await message.edit(content = 'Calculating, Please Wait...\nEstablishing connection to the Database')
-            conn = await aiomysql.connect(user='***REMOVED***',
-                                        password='***REMOVED***',
-                                        host='***REMOVED***',
-                                        db='***REMOVED***')
-            acn = 0
-            bar = ''
-            for fleet in data['fleet']: bar += '▯'
-            for fleet in data['fleet']:
-                acn += 1
-                await message.edit(content = f'Calculating, Please Wait...\nCalculating Profit: {acn}/{len(data["fleet"])}\n{bar}')
-                bar = IncrementBar(bar)
+            embeds = [discord.Embed(title=f'Fleet of {data["user"]["company"]}', colour=discord.Colour(0xffee00))]
+            # await message.edit(content = 'Calculating, Please Wait...\nEstablishing connection to the Database')
+            # conn = await aiomysql.connect(user='***REMOVED***',
+            #                             password='***REMOVED***',
+            #                             host='***REMOVED***',
+            #                             db='***REMOVED***')
+            bar = '▯' * len(data['fleet'])
+            for fcn, fleet in enumerate(data['fleet']):
+                await message.edit(content = f'Calculating, Please Wait...\nCalculating Profit: {fcn}/{len(data["fleet"])}\n{bar}')
+                # bar = IncrementBar(bar)
                 succ = False
-                ac = fleet['aircraft']
-                cursor = await conn.cursor()
-                await cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `model` = '{ac}'")
-                plane = await cursor.fetchone()
-                if plane: succ = True
-                if not plane:
-                    embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]}', inline = False)
-                else:
-                    if plane[10] == 'Pax':
-                        pro = profit(plane)
-                    else:
-                        pro = procargo(plane)
-                    ac = plane[1]
-                    total += pro[mode]*fleet["amount"] 
-                    embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]} | Max Profit: **${pro[mode]*fleet["amount"]:,}**', inline = False)
+                # cursor = await conn.cursor()
+                # await cursor.execute(f"SELECT `manf`, `aircraft`, `rng`, `co2`, `fuel`, `spd`, `cap`, `model`, `cost`, `img`, `type` FROM `am4bot` WHERE `model` = '{ac}'")
+                # plane = await cursor.fetchone()
+                # if plane:
+                #     succ = True
+                embeds[eCount].add_field(name='Plane:', value=f'**{ac}** x {fleet["amount"]}', inline=False)
+                # if not plane:
+                #     embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]}', inline = False)
+                # else:
+                #     if plane[10] == 'Pax':
+                #         pro = profit(plane)
+                #     else:
+                #         pro = procargo(plane)
+                #     ac = plane[1]
+                #     total += pro[mode]*fleet["amount"] 
+                #     embeds[eCount].add_field(name = 'Plane:', value = f'**{ac}** x {fleet["amount"]} | Max Profit: **${pro[mode]*fleet["amount"]:,}**', inline = False)
                 if len(embeds[eCount].fields) == 25:
                     eCount += 1
                     embeds.append(discord.Embed(colour = discord.Colour(0xffee00)))
                 if len(embeds) == 10:
                     await ctx.send("You've done it, you crazy son of a bitch, you've reached Discord's limits. I cannot display your entire fleet. Congratulations. Now go on, do something useful with your life. Find a new hobby. Learn a new skill. Touch grass. Find new friends. Go, my child, you're free now.")
-                bumsecks += fleet['amount']
-            embeds[eCount].add_field(name = 'Fleet', value = f"Total Planes: **{bumsecks}**")
+                ttl_planes += fleet['amount']
+            embeds[eCount].add_field(name = 'Fleet', value = f"Total Planes: **{ttl_planes}**")
             embeds[eCount].add_field(name = 'Profit', value = f"Total Ideal Profit per Day: **${total:,}**" + ("\*" if not succ else ""))
             embeds[eCount].set_footer(text=f"Data updated live from the AM4 API; requests remaining: {data['status']['requests_remaining']}\nData and Profit Formula provided by Scuderia Airlines' AC database.\nSupport us by donating! For more info, use the $donate command.")
 
             await message.delete()
             for mbed in embeds:
                 await ctx.send(content = '', embed = mbed)
-            await cursor.close()
-            conn.close()
+            # await cursor.close()
+            # conn.close()
         else:
             await message.edit(content = f'API Error: {data["status"]["description"]}')
 
@@ -326,5 +320,5 @@ class AM4APICog(commands.Cog, name = 'API Commands'):
         importlib.reload(graphgen)
         await ctx.send('SV graph code updated.')
 
-def setup(bot):
-    bot.add_cog(AM4APICog(bot))
+async def setup(bot):
+    await bot.add_cog(AM4APICog(bot))

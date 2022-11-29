@@ -128,5 +128,5 @@ class CompCog(commands.Cog, name = 'Settings Commands'):
             embed = discord.Embed(title=f':x: Too many arguments!', description='Please check `$help settings`', colour=0xdd2e44)
             await ctx.send(embed=embed)
         
-def setup(bot):
-    bot.add_cog(CompCog(bot))
+async def setup(bot):
+    await bot.add_cog(CompCog(bot))

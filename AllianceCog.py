@@ -261,5 +261,5 @@ class AlliancesCog(commands.Cog, name = 'Alliance Commands'):
         except:
             await ctx.send(':x: File read error. Another process is now updating data to the log file. Please wait 1 minute and try again.')
 
-def setup(bot):
-    bot.add_cog(AlliancesCog(bot))
+async def setup(bot):
+    await bot.add_cog(AlliancesCog(bot))

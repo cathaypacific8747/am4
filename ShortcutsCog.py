@@ -36,5 +36,5 @@ class ShortcutsCog(commands.Cog, name = 'Tool Shortcuts Commands'):
         msg += 'https://docs.google.com/spreadsheets/d/1YInKDK8fHmetOO1n9ZSyn8--gZhNmsY6BIjBoEhInTQ/edit?usp=sharing'
         await ctx.send(msg)
 
-def setup(bot):
-    bot.add_cog(ShortcutsCog(bot))
+async def setup(bot):
+    await bot.add_cog(ShortcutsCog(bot))
