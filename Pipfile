@@ -14,9 +14,9 @@ adjusttext = "*"
 aiomysql = "*"
 "mysql.connector" = "*"
 colour = "*"
-python-dotenv = "*"
 
 [dev-packages]
+rich = "*"
 
 [requires]
 python_version = "3.11"

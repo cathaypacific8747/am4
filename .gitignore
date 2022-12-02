@@ -1,3 +1,7 @@
+dep
+config.json
+config.production.json
+
 */__pycache__
 
 # Byte-compiled / optimized / DLL files

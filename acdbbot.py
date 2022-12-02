@@ -3,7 +3,7 @@ info = f'**AM4 ACDB bot** {V}\nmade by **favorit1** and **Cathay Express**\ndata
 ValidCogs = ['SettingsCog', 'DatabaseCog', 'AM4APICog', 'ShortcutsCog', 'AirportCog', 'AllianceCog']
 AllowedGuilds = [697804430711586930, 473892865081081856]
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import gmtime, time, strftime
 from urllib.request import urlopen
 from urllib.parse import quote
@@ -14,16 +14,14 @@ from copy import deepcopy
 import math
 import json
 import csv
-from checks import *
 from DatabaseCog import profit, procargo
 from SettingsCog import discordSettings
 import asyncio
-from dotenv import dotenv_values
-# TODO: use TOML instead of dotenv.
-# TODO: bfg remove all credentials and tokens.
+from rich import print, inspect
+import traceback
+from checks import *
+from config import config
 
-cfg = dotenv_values(".env")
-assert cfg['DISCORD_TOKEN']
 # acdb = mysql.connector.connect(user='***REMOVED***',
 #                                passwd='***REMOVED***',
 #                                host='***REMOVED***',
@@ -74,8 +72,9 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CheckFailure):
         pass
     else:
-        console = bot.get_channel(475629813831565312)
-        await console.send(f'Encountered an error:\nFrom message: {ctx.message.author.display_name}: `{ctx.message.content}`\nLink to message: {ctx.message.jump_url}\n```py\n{error}```<@&701415081547923516>')
+        console = bot.get_channel(config.debug_channelId)
+        full_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        await console.send(f'Encountered an error:\nFrom message: {ctx.message.author.display_name}: `{ctx.message.content}`\nLink to message: {ctx.message.jump_url}\n```py\n{full_error}```')
 
 '''
 Public use:
@@ -234,8 +233,6 @@ async def ignore(ctx):
     pass
 
 bot.priceC = 0
-priceAlertId = 554503485765189642
-botspamId    = 475885102178631680
 async def parsePrice(costs, furtherErrorInfo, ctx):
     try:
         if not costs:
@@ -265,27 +262,25 @@ async def parsePrice(costs, furtherErrorInfo, ctx):
 @bot.command(help='Reports the current price, pinging PriceNotify.', usage='$price f<fuel price> c<co2 price>')
 @notDM()
 async def price(ctx, *costs):
-    if ctx.message.channel.id == priceAlertId:
-        furtherErrorInfo = f'See `$help price` for proper command usage in <#{botspamId}>.'
+    if ctx.message.channel.id == config.priceAlert_channelId:
+        furtherErrorInfo = f'See `$help price` for proper command usage in <#{config.botSpam_channelId}>.'
         try:
-            async for m in bot.get_channel(priceAlertId).history():
-                if m.author == bot.user and "Price sent by" in m.content:
-                    now = datetime.utcnow()
+            async for m in bot.get_channel(config.priceAlert_channelId).history():
+                if m.author.id == bot.user.id and "Price sent by" in m.content:
+                    now = datetime.now(timezone.utc)
                     intervalStart = now.replace(minute=(0 if now.minute < 30 else 30), second=0, microsecond=0)
                     if m.created_at < intervalStart:
                         break # the bot's last ping is earlier than the current earliest ping time.
                     else:
                         timeLeft = intervalStart + timedelta(minutes=30) - now
                         raise ValueError(f"You're doing that too fast! Try again in {timeLeft.total_seconds():.0f} seconds.")
-            else:
-                raise ValueError('Internal Error: last ping message not found.')
         except ValueError as errorMessage:
             await ctx.send(errorMessage)
         else:
             try:
                 fuel, co2 = await parsePrice(costs, furtherErrorInfo, ctx)
-                if fuel and co2: # if no errors
-                    priceNotify, output = discord.utils.get(ctx.guild.roles, name='PriceNotify'), ''
+                if fuel and co2:
+                    priceNotify, output = discord.utils.get(ctx.guild.roles, id=config.priceAlert_roleId), ''
                     if fuel != 9999:
                         output += f'Fuel price is ${fuel}. '
                     if co2 != 9999:
@@ -297,24 +292,12 @@ async def price(ctx, *costs):
                         await priceNotify.edit(mentionable=False)
                     else:
                         await ctx.send(f'{output} (Price sent by {ctx.message.author.mention})')
-
-                    # custom for qatar
-                    if (fuel <= 750 or co2 <= 140):
-                        print('Send start.')
-                        qatar = bot.get_user(430192751779250176)
-                        await qatar.send(f'{output} (Price sent by {ctx.message.author.mention})')
-                        print('Send end.')
-
-                    with open('ass.json', 'r+') as f:
-                        oldData = json.load(f)
-                        oldData[f'{time()}'] = {'fuel': f'{fuel}', 'co2': f'{co2}'}
-                        f.seek(0)
-                        json.dump(oldData, f)
-                        f.truncate()
                     
                     await ctx.message.delete()
-            except:
-                pass
+            except Exception as e:
+                print(e)
+    else:
+        await ctx.send(f'Please use `$price` in <#{config.priceAlert_channelId}>.')
 
 '''
 Mod use:
@@ -325,12 +308,12 @@ $priceUpdate
 @bot.command(hidden=True)
 @modsOnly()
 async def priceUpdate(ctx, *costs):
-    if ctx.message.channel.id == priceAlertId:
+    if ctx.message.channel.id == config.priceAlert_channelId:
         furtherErrorInfo = ''
         try:
-            async for m in bot.get_channel(priceAlertId).history():
+            async for m in bot.get_channel(config.priceAlert_channelId).history():
                 if m.author == bot.user and "Price sent by" in m.content:
-                    now = datetime.utcnow()
+                    now = datetime.now(timezone.utc)
                     intervalStart = now.replace(minute=(0 if now.minute < 30 else 30), second=0, microsecond=0)
                     if m.created_at > intervalStart:
                         lastMessage = m
@@ -369,16 +352,9 @@ async def priceUpdate(ctx, *costs):
                     else:
                         await lastMessage.edit(content=f'{output} (Price sent by {oldMentions}, {ctx.message.author.mention})')
 
-                    with open('ass.json', 'r+') as f:
-                        oldData = json.load(f)
-                        oldData[sorted(list(oldData))[-1]] = {'fuel': f'{newFuel}', 'co2': f'{newCo2}'}
-                        f.seek(0)
-                        json.dump(oldData, f)
-                        f.truncate()
-
                     await ctx.message.delete()
-            except:
-                pass
+            except Exception as e:
+                print(e)
 
 '''
 GuideDev use:
@@ -405,11 +381,6 @@ async def killswitch(ctx):
 @guideDevsOnly()
 async def restart(ctx):
     execl(executable, path.abspath(__file__), * argv)
-
-# @bot.command(aliases = ['recon'], hidden = True)
-# @guideDevsOnly()
-# async def reconnect(ctx):
-#     acdb.reconnect(attempts = 5, delay = 0.5)
 
 @bot.command(hidden = True)
 @guideDevsOnly()
@@ -460,4 +431,4 @@ async def load(ctx, extension = 'valid extensions'):
 async def clearConsole(ctx):
     system('clear')
 
-bot.run(cfg['DISCORD_TOKEN'])
+bot.run(config.discord_token)

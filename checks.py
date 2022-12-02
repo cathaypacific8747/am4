@@ -1,8 +1,9 @@
-from discord.ext.commands import check, has_role
+from discord.ext.commands import check
 from discord.utils import get
 import discord
 import glob
 import random
+from config import config
 
 def guideDevsOnly():
     async def predicate(ctx):
@@ -19,12 +20,13 @@ def guideDevsOnly():
 def modsOnly():
     async def predicate(ctx):
         try:
-            modRole = get(ctx.author.roles, id=514431344764256276)
-            helperRole = get(ctx.author.roles, id=931616311358939227)
+            modRole = get(ctx.author.roles, id=config.moderator_roleId)
+            helperRole = get(ctx.author.roles, id=config.helper_roleId)
+            print(modRole, helperRole)
             if modRole is None and helperRole is None:
                 await ctx.send("You do not have the required roles to use this command.")
                 return False
-        except:
+        except Exception:
             return False
         return True
     return check(predicate)
@@ -32,7 +34,7 @@ def modsOnly():
 def modsOrStars():
     async def predicate(ctx):
         try:
-            modRole = get(ctx.author.roles, id=514431344764256276)
+            modRole = get(ctx.author.roles, id=config.moderator_roleId)
             starRole = get(ctx.author.roles, id=701410528853098497)
             if modRole is None and starRole is None:
                 await ctx.send("You do not have the required roles to use this command.")
@@ -45,8 +47,8 @@ def modsOrStars():
 def notPriceAlert():
     async def predicate(ctx):
         try:
-            if ctx.message.channel.id == 554503485765189642:
-                await ctx.send(f'This command is disabled here. Please go to <#475885102178631680>.')
+            if ctx.message.channel.id == config.priceAlert_channelId:
+                await ctx.send(f'This command is disabled here. Please go to <#{config.botSpam_channelId}>.')
                 return False
             elif ctx.message.channel.id not in [
                 475885102178631680,
