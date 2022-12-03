@@ -1,6 +1,6 @@
 import math
 
-from api.airport import Airport
+from .airport import Airport
 
 class Route:
     def __init__(self, a1: Airport, a2: Airport):

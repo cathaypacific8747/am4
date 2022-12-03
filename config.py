@@ -6,6 +6,10 @@ class Config:
     priceAlert_roleId: int = 0
     moderator_roleId: int = 0
     helper_roleId: int = 0
+    db_host: str = ""
+    db_user: str = ""
+    db_password: str = ""
+    db_database: str = ""
     
     def __init__(self, cfg: dict):
         self.__dict__.update(cfg)

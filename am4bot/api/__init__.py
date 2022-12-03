@@ -1,26 +1,30 @@
 import os
 import csv
-import rich
+from rich import inspect, print
 import time
-# import lzma
-# from io import StringIO
-import pandas as pd
+# import pandas as pd
+from pyarrow import csv
 import pyarrow.feather as feather
+import MySQLdb
+from loguru import logger
 
-from api.route import Route
-
+from config import Config
 from .aircraft import Aircraft
 from .airport import Airport
+from .route import Route
 
 class API:
-    def __init__(self):
-        self._success('started api')
-        # self.__set_aircrafts()
-        # self.__set_airports()
-        self.__set_routes()
-
-    def _success(self, text):
-        rich.print(f'[green]{time.time()} INFO: {text}[/]')
+    def __init__(self, config: Config):
+        logger.debug('initializing API')
+        self.config = config
+        with MySQLdb.connect(
+            host=self.config.db_host,
+            user=self.config.db_user,
+            passwd=self.config.db_password,
+            db=self.config.db_database,
+        ) as self.con:
+            self.cur = self.con.cursor()
+            self.create_database()
 
     def _path(self, *path) -> str:
         return os.path.join(os.path.dirname(__file__), *path)
@@ -36,7 +40,7 @@ class API:
     def __set_airports(self):
         with open(self._path('data', 'airports.csv'), 'r') as f:
             self.airports = tuple(Airport(*r) for r in csv.reader(f))
-            self._success('finished loading airports!')
+            logger.debug('finished loading airports')
 
         self.airport_icao_hashtable = {}
         self.airport_iata_hashtable = {}
@@ -47,28 +51,24 @@ class API:
             self.airport_id_hashtable[a.id] = i
 
     def __set_routes(self):
-        start = time.perf_counter()
-        df = pd.read_csv(self._path('data', 'routes.csv'), sep=',', header=0, index_col=0)
-        i = df.info(verbose=True, memory_usage='deep')
-        print(i)
-        # with lzma.open(self._path('data', 'routes'), 'r') as f:
-        #     for row in csv.reader(StringIO(f.read().decode('utf-8'))):
-        #         oid, did, yd, jd, fd = map(int, row[:-1])
-        #         dist = float(row[-1])
         
-        # with open(self._path('data', 'routes.csv'), 'r') as f:
-        #     for row in csv.reader(f):
-        #         oid, did, yd, jd, fd = map(int, row[:-1])
-        #         dist = float(row[-1])
+        logger.debug('finished loading routes')
 
-        self._success(time.perf_counter() - start)
-        self._success('finished loading routes!')
+    def __get_sql_statement(self, filename: str) -> str:
+        with open(self._path('sql', filename), 'r') as f:
+            return f.read()
 
-    def get_airport_by_icao(self, icao: str) -> Airport:
-        return self.airports[self.airport_icao_hashtable[icao]]
-    
-    def get_airport_by_iata(self, iata: str) -> Airport:
-        return self.airports[self.airport_iata_hashtable[iata]]
-    
-    def get_airport_by_id(self, id: int) -> Airport:
-        return self.airports[self.airport_id_hashtable[id]]
+    def create_database(self):
+        self.cur.execute("SHOW TABLES;")
+        tables = [t[0] for t in self.cur.fetchall()]
+        if 'routes' not in tables:
+            self.cur.execute(self.__get_sql_statement('create_routes.sql'))
+            self.con.commit()
+            tmp_routes_file = self._path('data', '_routes.csv')
+            # csv.write_csv(feather.read_table(self._path('data', 'routes')), tmp_routes_file)
+            logger.debug('finished decompressing')
+            self.cur.execute(f"LOAD DATA LOCAL INFILE '{tmp_routes_file}' INTO TABLE routes FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n';")
+            os.remove(tmp_routes_file)
+            self.con.commit()
+            logger.debug('inserted routes table')
+        logger.debug('all done')

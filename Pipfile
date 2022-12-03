@@ -5,20 +5,21 @@ name = "pypi"
 
 [packages]
 matplotlib = "*"
-pandas = "*"
-numpy = "*"
+numpy = ">=1.21.2"
 pillow = "*"
 urllib3 = "*"
 "discord.py" = "*"
 adjusttext = "*"
 aiomysql = "*"
-"mysql.connector" = "*"
 colour = "*"
+pandas = "*"
+mysqlclient = "*"
+loguru = "*"
+pyarrow = "<10.0.0"
+turbodbc = "*"
 
 [dev-packages]
 rich = "*"
-pandas = "*"
-pyarrow = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.10.8"
