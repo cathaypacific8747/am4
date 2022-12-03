@@ -17,6 +17,8 @@ colour = "*"
 
 [dev-packages]
 rich = "*"
+pandas = "*"
+pyarrow = "*"
 
 [requires]
 python_version = "3.11"
