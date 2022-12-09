@@ -24,6 +24,7 @@ odbcinst -j
 import attr
 from typing import NamedTuple
 
+TODO: use postgres/sqlite
 
 <!-- wget https://dev.mysql.com/get/Downloads/Connector-ODBC/8.0/mysql-connector-odbc-8.0.31-linux-glibc2.27-x86-64bit.tar.gz
 tar -xvf mysql-connector-odbc-8.0.31-linux-glibc2.27-x86-64bit.tar.gz
