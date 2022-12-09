@@ -1,4 +1,4 @@
-from am4bot.api import API
+import am4bot.api
 from config import config
 from loguru import logger
 import logging
@@ -20,4 +20,4 @@ class InterceptHandler(logging.Handler):
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
-api = API(config)
+api = am4bot.api.API(config)

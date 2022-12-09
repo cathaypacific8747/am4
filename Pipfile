@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 matplotlib = "*"
-numpy = ">=1.21.2"
 pillow = "*"
 urllib3 = "*"
 "discord.py" = "*"
@@ -15,7 +14,9 @@ colour = "*"
 pandas = "*"
 mysqlclient = "*"
 loguru = "*"
+numpy = ">=1.21.2"
 pyarrow = "<10.0.0"
+pyodbc = "*"
 turbodbc = "*"
 
 [dev-packages]
