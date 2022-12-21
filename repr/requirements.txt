@@ -1,5 +1,0 @@
-numpy==1.23.1 # Jul 9 2022 (newest: 1.23.5)
-pyarrow==9.0.0 # Aug 3 2022 (newest: 10.0.1)
-pandas==1.4.4 # Aug 31 2022 (newest: 1.5.2)
-
-# known working versions: numpy==1.23.1, pyarrow==9.0.0

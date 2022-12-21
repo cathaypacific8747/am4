@@ -1,3 +1,4 @@
+aid,city,region,iata,icao,runway,market,lat,lon
 1,Honiara,Solomon Islands,HIR,AGGH,7218,55,-0.16454965,2.793486607
 2,Munda,Solomon Islands,MUA,AGGM,4593,69,-0.145350489,2.74475715
 3,Yaren District,Nauru,INU,ANYN,7054,50,-0.009554945,2.913286239

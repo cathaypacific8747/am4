@@ -5,10 +5,10 @@ import csv
 import time
 import shutil
 # import pandas as pd
-from pyarrow import csv
-import pyarrow.feather as feather
-# import MySQLdb
-import turbodbc
+import pyarrow as pa
+import pyarrow.feather as pa_feather
+import pyarrow.csv as pa_csv
+import duckdb
 
 from config import Config
 from .aircraft import Aircraft
@@ -19,21 +19,8 @@ class API:
     def __init__(self, config: Config):
         logger.debug('initializing API')
         self.config = config
-        
-        # if self.config.db_odbc_copy_ini:
-        #     shutil.copy(
-        #         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'odbc.ini'),
-        #         os.path.join(os.path.expanduser('~'), '.odbc.ini')
-        #     )
-        logger.critical(__name__)
-        con = turbodbc.connect(dsn="testing")
-        print(con)
-        # with turbodbc.connect(dsn='testing') as self.con:
-        #     self.cur = self.con.cursor()
-        #     self.cur.execute("SHOW TABLES;")
-        #     tables = [t[0] for t in self.cur.fetchall()]
-        #     print(tables)
-        #     self.create_database()
+        self.con = duckdb.connect(":memory:")
+        self.create_database()
 
     def _path(self, *path) -> str:
         return os.path.join(os.path.dirname(__file__), *path)
@@ -60,7 +47,6 @@ class API:
             self.airport_id_hashtable[a.id] = i
 
     def __set_routes(self):
-        
         logger.debug('finished loading routes')
 
     def __get_sql_statement(self, filename: str) -> str:
@@ -68,17 +54,16 @@ class API:
             return f.read()
 
     def create_database(self):
-        self.cur.execute("SHOW TABLES;")
-        tables = [t[0] for t in self.cur.fetchall()]
-        if 'routes' not in tables:
-            self.cur.execute(self.__get_sql_statement('create_routes.sql'))
-            self.con.commit()
-            # tmp_routes_file = self._path('data', '_routes.csv')
-            tbl = feather.read_table(self._path('data', 'routes'))
-            print(tbl)
-            logger.debug('finished decompressing')
-            # self.cur.execute(f"LOAD DATA LOCAL INFILE '{tmp_routes_file}' INTO TABLE routes FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n';")
-            # os.remove(tmp_routes_file)
-            self.con.commit()
-            logger.debug('inserted routes table')
+        logger.debug('start database')
+        routes_arrow = pa_feather.read_table(self._path('data', 'routes'))
+        self.con.execute("CREATE TABLE routes AS SELECT * FROM routes_arrow")
+        self.con.execute("INSERT INTO routes SELECT * FROM routes_arrow")
+        
+        self.con.register('routes', self.routes_arrow)
+        res = self.con.execute("SELECT * FROM routes WHERE yd > 1600 AND d > 17000 ORDER BY (yd+jd*2+fd*3) DESC").df()
+
+        # self.airports_arrow = pa_csv.read_csv(self._path('data', 'airports.csv'))
+        # self.con.register('airports', self.airports_arrow)
+        # res = self.con.execute("SELECT * FROM airports").df()
+        print(res)
         logger.debug('all done')

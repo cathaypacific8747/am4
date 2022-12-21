@@ -30,11 +30,10 @@ class ShortcutsCog(commands.Cog, name = 'Tool Shortcuts Commands'):
     @notPriceAlert()
     @notDM()
     async def spreadsheet(self, ctx):
-        global sheetC
-        sheetC += 1
-        msg = "Here's the link to the AM4 AC spreadsheet, created by Scuderia Airlines, and the rest of the Guide Development team:\n"
-        msg += 'https://docs.google.com/spreadsheets/d/1YInKDK8fHmetOO1n9ZSyn8--gZhNmsY6BIjBoEhInTQ/edit?usp=sharing'
-        await ctx.send(msg)
+        await ctx.send(f'''Here's a link to all to all AC shortnames. They are to be used in almost all commands:
+https://docs.google.com/spreadsheets/d/1xoEtXi4qibjyTHq05vh0frzWXLKXiAvXulAUB-zUW0M/edit#gid=0
+To automatically search for aircraft abbreviations, use `$search`.
+''')
 
 async def setup(bot):
     await bot.add_cog(ShortcutsCog(bot))

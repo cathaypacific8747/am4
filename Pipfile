@@ -12,12 +12,10 @@ adjusttext = "*"
 aiomysql = "*"
 colour = "*"
 pandas = "*"
-mysqlclient = "*"
 loguru = "*"
 numpy = ">=1.21.2"
 pyarrow = "<10.0.0"
-pyodbc = "*"
-turbodbc = "*"
+duckdb = "==0.6.1"
 
 [dev-packages]
 rich = "*"

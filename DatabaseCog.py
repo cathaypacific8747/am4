@@ -141,12 +141,10 @@ class DatabaseCog(commands.Cog, name = 'ACDB Commands'):
     @notPriceAlert()
     @notDM()
     async def seeall(self, ctx):
-        global seeallC
-        seeallC += 1
-        s = "Here's a link to all to all AC shortnames. There are to be used in almost all commands:\n"
-        s += "https://docs.google.com/spreadsheets/u/3/d/e/2PACX-1vTxa5kKsfJQe7Q8A_WzOOUC0NzHe2CGNMTEcZjnCMih04KF1ieSq2tWIpkTb2dgs6nxRw0lplNFa5bP/pubhtml\n"
-        s += "To automatically search for aircraft abbreviations, use `$search`."
-        await ctx.send(s)
+        await ctx.send(f'''Here's a link to all to all AC shortnames. They are to be used in almost all commands:
+https://docs.google.com/spreadsheets/d/1xoEtXi4qibjyTHq05vh0frzWXLKXiAvXulAUB-zUW0M/edit#gid=0
+To automatically search for aircraft abbreviations, use `$search`.
+''')
     
     @commands.command(aliases = ['ac'], help='Sends stats of a selected AC. Usage: $info <short name of an AC>', brief='Sends stats of a selected AC', usage='$info|ac <aircraftCode>')
     @notPriceAlert()
