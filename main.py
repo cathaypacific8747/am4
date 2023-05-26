@@ -1,23 +1,12 @@
-import am4bot.api
-from config import config
-from loguru import logger
-import logging
-import sys
+import am4utils
 
-class InterceptHandler(logging.Handler):
-    def emit(self, record):
-        try:
-            level = logger.level(record.levelname).name
-        except ValueError:
-            level = record.levelno
+print('VERSION', am4utils.__version__)
 
-        frame, depth = sys._getframe(6), 6
-        while frame and frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back
-            depth += 1
+def test():
+    ey0 = am4utils.optimal_y_easy_price(10000)
+    e = am4utils.create_pax_ticket(10000, True)
+    assert ey0 == e.y_price == 4580
+    print('d=10000, ey_price:', e.y_price)
 
-        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
-
-logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-
-api = am4bot.api.API(config)
+if __name__ == '__main__':
+    test()

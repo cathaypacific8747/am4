@@ -1,24 +1,43 @@
-[tool.poetry]
-name = "am4bot"
-version = "0.1.0"
-description = "Discord Bot for the game Airline Manager 4."
-authors = ["cathaypacific8747 <58929011+cathaypacific8747@users.noreply.github.com>"]
-license = "MIT"
-readme = "README.md"
+# [tool.poetry]
+# name = "am4bot"
+# version = "0.1.0"
+# description = "Discord Bot for the game Airline Manager 4."
+# authors = ["cathaypacific8747 <58929011+cathaypacific8747@users.noreply.github.com>"]
+# license = "MIT"
+# readme = "README.md"
+# build = "build.py"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-matplotlib = "^3.7.1"
-Pillow = "^9.5.0"
-urllib3 = "^2.0.2"
-"discord.py" = "^2.2.3"
-adjustText = "^0.8"
+# [tool.poetry.dependencies]
+# python = "^3.11"
+# matplotlib = "^3.7.1"
+# Pillow = "^9.5.0"
+# urllib3 = "^2.0.2"
+# "discord.py" = "^2.2.3"
+# adjustText = "^0.8"
+# pybind11 = "^2.10.4"
 
-[tool.poetry.group.dev.dependencies]
-rich = "^13.3.5"
-beautifulsoup4 = "^4.12.2"
-pyjsparser = "^2.7.1"
+# [tool.poetry.group.dev.dependencies]
+# rich = "^13.3.5"
+# beautifulsoup4 = "^4.12.2"
+# pyjsparser = "^2.7.1"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "cmake>=3.12",
+]
+build-backend = "setuptools.build_meta"
+
+# [tool.ruff]
+# extend-select = [
+#   "B",   # flake8-bugbear
+#   "I",   # isort
+#   "PGH", # pygrep-hooks
+#   "RUF", # Ruff-specific
+#   "UP",  # pyupgrade
+# ]
+# extend-ignore = [
+#   "E501",   # Line too long
+# ]
+# target-version = "py37"
