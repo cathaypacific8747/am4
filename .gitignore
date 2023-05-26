@@ -1,5 +1,10 @@
 dep
-research
+research/misc
+research/web
+research/routes
+research/routes.csv
+research/nn/routes.csv
+research/nn/nn_selfself.py
 config.json
 config.production.json
 
@@ -17,7 +22,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
