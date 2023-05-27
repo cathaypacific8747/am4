@@ -12,9 +12,8 @@ cmake
 ```
 virtualenv .venv
 .venv/scripts/activate
-pip install .
+pip3 uninstall am4bot -y; pip3 install .
+pip3 install .[dev]
 
-cd build
-cmake ..
-cmake --build . --config Release --target check
+cmake -S . -B build
 ```

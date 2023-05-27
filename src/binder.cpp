@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include "route.hpp"
+#include "airport.hpp"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -17,7 +18,6 @@ PYBIND11_MODULE(am4utils, m) {
     m.def("optimal_y_easy_price", &optimal_y_easy_price);
     m.def("optimal_j_easy_price", &optimal_j_easy_price);
     m.def("optimal_f_easy_price", &optimal_f_easy_price);
-
     
     py::class_<PaxTicket>(m, "PaxTicket")
         .def(py::init<>())
@@ -30,9 +30,14 @@ PYBIND11_MODULE(am4utils, m) {
         .def_readwrite("l_price", &CargoTicket::l_price)
         .def_readwrite("h_price", &CargoTicket::h_price);
 
-    m.def("create_pax_ticket", &create_pax_ticket, py::arg("distance"), py::arg("is_easy"));
-    m.def("create_cargo_ticket", &create_cargo_ticket, py::arg("distance"), py::arg("is_easy"));
+    m.def("create_pax_ticket", &create_pax_ticket);
+    m.def("create_cargo_ticket", &create_cargo_ticket);
 
-
-    m.attr("__version__") = "0.0.1";
+    m.def("get_airport_by_id", &get_airport_by_id);
+    
+#ifdef VERSION_INFO
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }

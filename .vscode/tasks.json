@@ -4,7 +4,7 @@
         {
             "label": "run main",
             "type": "shell",
-            "command": "python3 acdbbot.py"
+            "command": "py main.py"
         }
     ]
 }

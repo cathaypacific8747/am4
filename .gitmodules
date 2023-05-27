@@ -1,4 +1,0 @@
-[submodule "am4utils/include/pybind11"]
-	path = am4utils/include/pybind11
-	url = https://github.com/pybind/pybind11.git
-	branch = stable
