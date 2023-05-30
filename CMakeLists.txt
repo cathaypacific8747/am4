@@ -1,62 +1,44 @@
 cmake_minimum_required(VERSION 3.15...3.26)
 
-project(am4utils-build LANGUAGES CXX)
+project(${SKBUILD_PROJECT_NAME} VERSION ${SKBUILD_PROJECT_VERSION} LANGUAGES CXX)
 
-## download duckdb
-
-set(DUCKDB_VERSION "0.8.0")
-string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
-if (IS_ARM)
-    message(FATAL_ERROR "DuckDB: ARM not supported")
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(FATAL_ERROR "DuckDB: 32-bit not supported")
-elseif(APPLE)
-    set(DUCKDB_URL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/libduckdb-osx-universal.zip")
-elseif(WIN32)
-    set(DUCKDB_URL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/libduckdb-windows-amd64.zip")
-elseif(UNIX)
-    set(DUCKDB_URL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/libduckdb-linux-amd64.zip")
-endif()
-
-
-set(DUCKDB_ZIP "${CMAKE_BINARY_DIR}/duckdb.zip")
-set(DUCKDB_DIR "${CMAKE_BINARY_DIR}/duckdb")
-
-if(NOT EXISTS "${DUCKDB_DIR}/duckdb.h")
-    message(STATUS "[DEBUG] duckdb does not exist")
-    file(DOWNLOAD "${DUCKDB_URL}" "${DUCKDB_ZIP}")
-    file(ARCHIVE_EXTRACT INPUT "${DUCKDB_ZIP}" DESTINATION "${DUCKDB_DIR}")
-    file(REMOVE "${DUCKDB_ZIP}")
-endif()
-
-include_directories(${DUCKDB_DIR})
-add_library(duckdb STATIC IMPORTED)
-set_target_properties(
-    duckdb PROPERTIES
-    IMPORTED_LOCATION "${DUCKDB_DIR}/duckdb.lib"
-    POSITION_INDEPENDENT_CODE ON
-)
-
-######
+include(libduckdb.cmake)
 
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
-# message(STATUS "[DEBUG] py: ${Python_EXECUTABLE}")
-# message(STATUS "[DEBUG] pybind11: ${pybind11_DIR}")
-# message(STATUS "[DEBUG] CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
-# message(STATUS "[DEBUG] DUCKDB_LIBRARY: ${DUCKDB_LIBRARY}")
-find_package(pybind11 CONFIG REQUIRED)
+find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/include/pybind11")
+message(STATUS "[DEBUG]\n\
+   cmake binary dir ${CMAKE_BINARY_DIR}\n\
+   py executable    ${Python_EXECUTABLE}\n\
+   pybind11 dir     ${pybind11_DIR}\n\
+   duckdb src       ${duckdb_folder_SOURCE_DIR}\n")
+file(TO_CMAKE_PATH "${Python_SITELIB}/${SKBUILD_WHEEL_INSTALL_DIR}" PYTHON_SITE_PACKAGES_DIR)
 
-pybind11_add_module(am4utils src/binder.cpp)
-add_library(route STATIC src/route.cpp)
-add_library(airport STATIC src/airport.cpp)
+pybind11_add_module(_core src/am4utils/binder.cpp)
+add_library(db STATIC src/am4utils/db.cpp)
+add_library(route STATIC src/am4utils/route.cpp)
+add_library(airport STATIC src/am4utils/airport.cpp)
+target_include_directories(db PRIVATE ${duckdb_folder_SOURCE_DIR})
+target_compile_definitions(db PRIVATE CORE_DIR=${PYTHON_SITE_PACKAGES_DIR})
+target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_link_libraries(
-    am4utils
+    _core
+    PRIVATE duckdb
+    PRIVATE db
     PRIVATE route
     PRIVATE airport
-    PRIVATE duckdb
 )
-target_compile_definitions(am4utils PRIVATE VERSION_INFO=0.0.3)
 
+# add_custom_command(
+#     TARGET _core POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#         $<TARGET_FILE:duckdb>
+#         $<TARGET_FILE_DIR:_core>
+#     COMMAND ${CMAKE_COMMAND} -E copy_directory
+#         ${CMAKE_SOURCE_DIR}/src/am4utils/data
+#         $<TARGET_FILE_DIR:_core>/data
+# )
 
-install(TARGETS am4utils LIBRARY DESTINATION .)
+install(TARGETS _core DESTINATION .)
+install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
+install(FILES ${CMAKE_SOURCE_DIR}/src/am4utils/__init__.py DESTINATION .)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/am4utils/data DESTINATION .)

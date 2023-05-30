@@ -2,10 +2,6 @@
     "configurations": [
         {
             "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/build/duckdb/**"
-            ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
