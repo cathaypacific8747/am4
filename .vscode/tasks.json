@@ -5,6 +5,11 @@
             "label": "run main",
             "type": "shell",
             "command": "py main.py"
+        },
+        {
+            "label": "reinstall am4bot",
+            "type": "shell",
+            "command": "pip3 uninstall am4bot; pip3 install ."
         }
     ]
 }

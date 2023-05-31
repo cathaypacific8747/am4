@@ -1,9 +1,5 @@
 {
-    "cmake.buildArgs": [
-        "-DSKBUILD_PROJECT_NAME=am4utils-vscode",
-        "-DSKBUILD_PROJECT_VERSION=vscode-dev",
-        "-DSKBUILD_WHEEL_INSTALL_DIR=am4utils"
-    ],
+    "cmake.buildArgs": [],
     "files.associations": {
         "*.spec": "python",
         ".env.production": "properties",

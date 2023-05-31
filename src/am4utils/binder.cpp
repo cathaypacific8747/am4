@@ -9,16 +9,17 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(_core, m) {
-    m.def("optimal_l_real_price", &optimal_l_real_price);
-    m.def("optimal_h_real_price", &optimal_h_real_price);
-    m.def("optimal_l_easy_price", &optimal_l_easy_price);
-    m.def("optimal_h_easy_price", &optimal_h_easy_price);
-    m.def("optimal_y_real_price", &optimal_y_real_price);
-    m.def("optimal_j_real_price", &optimal_j_real_price);
-    m.def("optimal_f_real_price", &optimal_f_real_price);
-    m.def("optimal_y_easy_price", &optimal_y_easy_price);
-    m.def("optimal_j_easy_price", &optimal_j_easy_price);
-    m.def("optimal_f_easy_price", &optimal_f_easy_price);
+    m.def_submodule("route")
+        .def("optimal_l_real_price", &optimal_l_real_price)
+        .def("optimal_h_real_price", &optimal_h_real_price)
+        .def("optimal_l_easy_price", &optimal_l_easy_price)
+        .def("optimal_h_easy_price", &optimal_h_easy_price)
+        .def("optimal_y_real_price", &optimal_y_real_price)
+        .def("optimal_j_real_price", &optimal_j_real_price)
+        .def("optimal_f_real_price", &optimal_f_real_price)
+        .def("optimal_y_easy_price", &optimal_y_easy_price)
+        .def("optimal_j_easy_price", &optimal_j_easy_price)
+        .def("optimal_f_easy_price", &optimal_f_easy_price);
     
     py::class_<PaxTicket>(m, "PaxTicket")
         .def(py::init<>())
@@ -34,14 +35,19 @@ PYBIND11_MODULE(_core, m) {
     m.def("create_pax_ticket", &create_pax_ticket);
     m.def("create_cargo_ticket", &create_cargo_ticket);
 
-    m.def("get_airport_by_id", &get_airport_by_id);
-    
-    m.def("init_db", &init_db);
-    m.def("query_db", &query_db);
+    m.def_submodule("db")
+        .def("init", &init)
+        .def("_query", &_query);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
     m.attr("__version__") = "dev";
+#endif
+
+#ifdef CORE_DIR
+    m.attr("__coredir__") = MACRO_STRINGIFY(CORE_DIR);
+#else
+    m.attr("__coredir__") = "";
 #endif
 }

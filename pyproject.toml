@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "am4bot"
-version = "0.0.3"
+version = "0.0.4"
 description = "Utilities and tools for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "<58929011+cathaypacific8747@users.noreply.github.com>" }]
 license = { text = "MIT License" }
