@@ -4,7 +4,7 @@ import pyarrow.parquet as pq
 
 def convert_routes():
     table = csv.read_csv(
-        'web/routes.csv',
+        'web/routes.fixed.csv',
         csv.ReadOptions(column_names=["oid", "did", "yd", "jd", "fd", "d"]),
     )
     table = table.cast(pa.schema([
@@ -41,7 +41,7 @@ def convert_airports():
 
 def convert_aircrafts():
     table = csv.read_csv(
-        'web/aircrafts.csv',
+        'web/aircrafts.new.csv',
     )
     # id,name,manufacturer,cargo,eid,ename,speed,fuel,co2,cost,capacity,rwy,check_cost,range,ceil,maint,pilots,crew,engines,technicians,img,wingspan,length
     table = table.cast(pa.schema([
@@ -63,7 +63,7 @@ def convert_aircrafts():
         ("maint", pa.uint16()),
         ("pilots", pa.uint8()),
         ("crew", pa.uint8()),
-        ("engines", pa.uint8()),
+        ("engineers", pa.uint8()),
         ("technicians", pa.uint8()),
         ("img", pa.string()),
         ("wingspan", pa.uint8()),

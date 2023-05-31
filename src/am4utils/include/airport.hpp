@@ -1,10 +1,11 @@
+#pragma once
 #include <string>
 
 using namespace std;
 
 class Airport {
 public:
-    uint16_t id;
+    uint16_t id = 0;
     string name;
     string fullname;
     string country;

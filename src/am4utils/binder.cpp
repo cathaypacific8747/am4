@@ -1,53 +1,62 @@
 #include <pybind11/pybind11.h>
-#include "include/route.hpp"
-#include "include/airport.hpp"
+#include "include/enums.h"
 #include "include/db.hpp"
+#include "include/airport.hpp"
+#include "include/route.hpp"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-namespace py = pybind11;
-
-PYBIND11_MODULE(_core, m) {
-    m.def_submodule("route")
-        .def("optimal_l_real_price", &optimal_l_real_price)
-        .def("optimal_h_real_price", &optimal_h_real_price)
-        .def("optimal_l_easy_price", &optimal_l_easy_price)
-        .def("optimal_h_easy_price", &optimal_h_easy_price)
-        .def("optimal_y_real_price", &optimal_y_real_price)
-        .def("optimal_j_real_price", &optimal_j_real_price)
-        .def("optimal_f_real_price", &optimal_f_real_price)
-        .def("optimal_y_easy_price", &optimal_y_easy_price)
-        .def("optimal_j_easy_price", &optimal_j_easy_price)
-        .def("optimal_f_easy_price", &optimal_f_easy_price);
-    
-    py::class_<PaxTicket>(m, "PaxTicket")
-        .def(py::init<>())
-        .def_readwrite("y_price", &PaxTicket::y_price)
-        .def_readwrite("j_price", &PaxTicket::j_price)
-        .def_readwrite("f_price", &PaxTicket::f_price);
-
-    py::class_<CargoTicket>(m, "CargoTicket")
-        .def(py::init<>())
-        .def_readwrite("l_price", &CargoTicket::l_price)
-        .def_readwrite("h_price", &CargoTicket::h_price);
-
-    m.def("create_pax_ticket", &create_pax_ticket);
-    m.def("create_cargo_ticket", &create_cargo_ticket);
-
-    m.def_submodule("db")
-        .def("init", &init)
-        .def("_query", &_query);
-
 #ifdef VERSION_INFO
-    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+    string version = MACRO_STRINGIFY(VERSION_INFO);
 #else
-    m.attr("__version__") = "dev";
+    string version = "dev";
 #endif
 
 #ifdef CORE_DIR
-    m.attr("__coredir__") = MACRO_STRINGIFY(CORE_DIR);
+    string core_dir = MACRO_STRINGIFY(CORE_DIR);
 #else
-    m.attr("__coredir__") = "";
+    string core_dir = ""
 #endif
+
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+PYBIND11_MODULE(_core, m) {
+    py::enum_<GameMode>(m, "GameMode")
+        .value("EASY", GameMode::EASY)
+        .value("REALISM", GameMode::REALISM)
+        .export_values();
+
+    py::class_<PaxTicket>(m, "PaxTicket")
+        .def(py::init<>())
+        .def_readwrite("y", &PaxTicket::y)
+        .def_readwrite("j", &PaxTicket::j)
+        .def_readwrite("f", &PaxTicket::f)
+        .def("__repr__",
+            [](const PaxTicket &a) {
+                return "<PaxTicket y=" + std::to_string(a.y) + " j=" + std::to_string(a.j) + " f=" + std::to_string(a.f) + ">";
+            }
+        );
+
+    py::class_<CargoTicket>(m, "CargoTicket")
+        .def(py::init<>())
+        .def_readwrite("l", &CargoTicket::l)
+        .def_readwrite("h", &CargoTicket::h)
+        .def("__repr__",
+            [](const CargoTicket &a) {
+                return "<CargoTicket l=" + std::to_string(a.l) + " h=" + std::to_string(a.h) + ">";
+            }
+        );
+    
+    m.def_submodule("route")
+        .def("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a = GameMode::EASY)
+        .def("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a = GameMode::EASY);
+
+    m.def_submodule("db")
+        .def("init", &init)
+        .def("_debug_query", &_debug_query);
+
+    m.attr("__version__") = version;
+    m.attr("__coredir__") = core_dir;
 }

@@ -8,16 +8,54 @@ using namespace duckdb;
 
 #define VALIDATE(q) if (q->HasError()) { cerr << q->GetError() << endl; return false; }
 
-bool init() {
-    Connection con(db);
-    
+// adapted from: duckdb/tools/pythonpkg/src/pyconnection.cpp
+shared_ptr<DatabaseConnection> DatabaseConnection::default_connection = nullptr;
+shared_ptr<DatabaseConnection> DatabaseConnection::CreateNewInstance() {
+    auto con = make_shared<DatabaseConnection>();
+    con->database = make_uniq<DuckDB>(":memory:");
+    con->connection = make_uniq<Connection>(*con->database);
+    // cout << "default_connection initialized" << endl;
+
+    return con;
+}
+
+shared_ptr<DatabaseConnection> DatabaseConnection::DefaultConnection() {
+	if (!default_connection) {
+		default_connection = DatabaseConnection::CreateNewInstance();
+	}
+	return default_connection;
+}
+
+shared_ptr<DatabaseConnection> DatabaseConnection::Clone() {
+    if (!connection) {
+        cerr << "connection is null, cannot clone." << endl;
+        return nullptr;
+    }
+    auto con = make_shared<DatabaseConnection>();
+    con->database = this->database;
+    con->connection = make_uniq<Connection>(*con->database);
+
+    connections.push_back(con);
+    return con;
+}
+
+void DatabaseConnection::CloseAll() {
+    connection = nullptr;
+    database = nullptr;
+    for (auto &con : connections) {
+        con->CloseAll();
+    }
+}
+
+// sets the home directory and inserts airports, aircrafts and routes
+bool DatabaseConnection::prepare_db() {
     if (!home_dir.empty()) {
         // WARN: prone to SQLi, duckdb doesn't support prepared statements for config options yet
-        auto set_homedir = con.Query("SET home_directory = '" + home_dir + "';");
+        auto set_homedir = connection->Query("SET home_directory = '" + home_dir + "';");
         VALIDATE(set_homedir);
     }
-    
-    auto ct_airports = con.Query(
+
+    auto ct_airports = connection->Query(
         "CREATE TABLE airports ("
         "  id         USMALLINT PRIMARY KEY NOT NULL,"
         "  name       VARCHAR NOT NULL,"
@@ -36,43 +74,75 @@ bool init() {
     );
     VALIDATE(ct_airports);
     
-    auto ins_airports = con.Query("INSERT INTO airports SELECT * FROM read_parquet('~/data/airports.parquet');");
+    auto ins_airports = connection->Query("INSERT INTO airports SELECT * FROM read_parquet('~/data/airports.parquet');");
     VALIDATE(ins_airports);
 
-    auto idx_airports = con.Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);");
+    auto idx_airports = connection->Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);");
     VALIDATE(idx_airports);
 
-    // id	name	manufacturer	cargo	eid	ename	speed	fuel	co2	cost	capacity	rwy	check_cost	range	ceil	maint	pilots	crew	engines	technicians	img	wingspan	length
-    // 1	B747-400	Boeing	FALSE	2	GE CF6-80C2b5F	946.58	21.21	0.18	92136845	416	10250	7140605	14500	40000	330	2	13	4	4	assets/img/aircraft/png/747-8.png	64	70
-    // 1	B747-400	Boeing	FALSE	4	PW4056	982.3	22.89	0.18	92136845	416	10250	7140605	14500	40000	330	2	13	4	4	assets/img/aircraft/png/747-8.png	64	70
-    // 1	B747-400	Boeing	FALSE	1	PW4062	866.21	20.16	0.18	92136845	416	10250	7140605	14500	40000	330	2	13	4	4	assets/img/aircraft/png/747-8.png	64	70
-    // 1	B747-400	Boeing	FALSE	3	RR RB211-524	884.07	20.79	0.18	92136845	416	10250	7140605	14500	40000	330	2	13	4	4	assets/img/aircraft/png/747-8.png	64	70
-    // 2	A380-800	Airbus	FALSE	5	GP7270	963.9	22.89	0.16	215629503	600	9680	6468885	14500	40000	450	2	18	6	16	assets/img/aircraft/png/a380.png	79	72
-    // 2	A380-800	Airbus	FALSE	6	RR Trent 970	916.65	18.9	0.16	215629503	600	9680	6468885	14500	40000	450	2	18	6	16	assets/img/aircraft/png/a380.png	79	72
-    // 2	A380-800	Airbus	FALSE	7	RR Trent 972	1048.95	22.26	0.16	215629503	600	9680	6468885	14500	40000	450	2	18	6	16	assets/img/aircraft/png/a380.png	79	72
-    
-    // auto ct_aircrafts = con.Query("CREATE TABLE aircrafts AS SELECT * FROM read_parquet('./data/aircrafts.parquet');");
-    // if (!ct_aircrafts->HasError()) {
-    //     cerr << ct_aircrafts->GetError();
-    //     return false;
-    // }
+    auto ct_aircrafts = connection->Query(
+        "CREATE TABLE aircrafts ("
+        "  id           USMALLINT NOT NULL,"
+        "  name         VARCHAR NOT NULL,"
+        "  manufacturer VARCHAR NOT NULL,"
+        "  cargo        BOOLEAN NOT NULL,"
+        "  eid          USMALLINT NOT NULL,"
+        "  ename        VARCHAR NOT NULL,"
+        "  speed        FLOAT NOT NULL,"
+        "  fuel         FLOAT NOT NULL,"
+        "  co2          FLOAT NOT NULL,"
+        "  cost         UINTEGER NOT NULL,"
+        "  capacity     UINTEGER NOT NULL,"
+        "  rwy          USMALLINT NOT NULL,"
+        "  check_cost   UINTEGER NOT NULL,"
+        "  range        USMALLINT NOT NULL,"
+        "  ceil         USMALLINT NOT NULL,"
+        "  maint        USMALLINT NOT NULL,"
+        "  pilots       UTINYINT NOT NULL,"
+        "  crew         UTINYINT NOT NULL,"
+        "  engineers    UTINYINT NOT NULL,"
+        "  technicians  UTINYINT NOT NULL,"
+        "  img          VARCHAR NOT NULL,"
+        "  wingspan     UTINYINT NOT NULL,"
+        "  length       UTINYINT NOT NULL,"
+        ");"
+    );
+    VALIDATE(ct_aircrafts);
 
-    // auto ct_routes = con.Query("CREATE TABLE routes AS SELECT * FROM read_parquet('./data/routes.parquet');");
-    // if (!ct_routes->HasError()) {
-    //     cerr << ct_routes->GetError();
-    //     return false;
-    // }
+    auto ins_aircrafts = connection->Query("INSERT INTO aircrafts SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
+    VALIDATE(ins_aircrafts);
+
+    auto idx_aircrafts = connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, name, manufacturer, cargo, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, engineers, technicians, img);");
+    VALIDATE(idx_aircrafts);
+
+    auto insert_routes = connection->Query(
+        "CREATE TABLE routes ("
+        "  oid USMALLINT NOT NULL,"
+        "  did USMALLINT NOT NULL,"
+        "  yd  USMALLINT NOT NULL,"
+        "  jd  USMALLINT NOT NULL,"
+        "  fd  USMALLINT NOT NULL,"
+        "  d   FLOAT     NOT NULL,"
+        ");"
+    );
+    VALIDATE(insert_routes);
+
+    auto ins_routes = connection->Query("INSERT INTO routes SELECT * FROM read_parquet('~/data/routes.parquet');");
+    VALIDATE(ins_routes);
+
+    auto idx_routes = connection->Query("CREATE INDEX routes_idx ON routes(oid, did, yd, jd, fd, d);");
+    VALIDATE(idx_routes);
 
     return true;
 }
 
-void _query(string query) {
-    Connection con(db);
-
-    auto result = con.Query(query);
-    result->Print();
+bool init() {
+    return DatabaseConnection::DefaultConnection()->prepare_db();
 }
 
-Connection _get_connection() {
-    return Connection(db);
+void _debug_query(string query) {
+    auto con = DatabaseConnection::DefaultConnection()->Clone();
+
+    auto result = con->connection->Query(query);
+    result->Print();
 }
