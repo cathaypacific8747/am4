@@ -1,28 +1,97 @@
-# AM4 bot
+# am4bot ![logo](src/am4bot/assets/img/logo-small.png)
 
-## Installation
+[![](https://dcbadge.vercel.app/api/server/4tVQHtf?style=flat)](https://discord.gg/4tVQHtf)
+
+A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
+
+Our bot is currently running legacy code in the [`src-old`](./src-old/) directory: I am currently planning to rewrite the core calculations in [C++](/src/am4utils/binder.cpp) for better performance and the rest in Python. The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
+
+## Current Features
+- calculates essential statistics
+    - most distance-efficient stopovers
+    - route demands, best seat configurations, best ticket prices, estimated income
+    - player rank, mode, achievements, fleet
+    - alliance rank, share value, contribution
+    - aircraft characteristics and profit
+    - airport characteristics
+- CSV export for route queries
+- fuel/CO2 notifications
+- aircraft characteristics comparisons
+- internal *Star Alliance* tools (now disbanded)
+    - adding competitor alliances to watchlist
+    - alliance comparisons over time: value, contribution/day, rate of changes
+    - realtime alliance-member comparisons: SV/contribution distribution
+    - member tracking: cheat detection tools, departure pattern identification
+
+## Commands
+
+### Public
+- `$route|stop <airport> <airport> <aircraft> [flights_per_day] [reputation]`: finds the best route between two airports
+  
+  ![route](src/am4bot/assets/img/route.png)
+- `$routes <airport> <aircraft> <max_distance> <flights_per_day> [reputation]`: finds the best destinations from a certain airport, sorted by decreasing estimated income
+  
+  ![routes](src/am4bot/assets/img/routes.png)
+- `$user [player]`: shows player (and associated alliance if found) statistics
+  
+  ![user](src/am4bot/assets/img/user.png)
+- `$fleet [player]`: shows player fleet and estimated income
+  
+  ![fleet](src/am4bot/assets/img/fleet.png)
+- `$info <aircraft>`: shows basic aircraft information and rough profit estimations
+  
+  ![info](src/am4bot/assets/img/info.png)
+- `$compare <aircraft>`: compares two aircrafts
+  
+  ![compare](src/am4bot/assets/img/compare.png)
+- `$search <aircraft>`: finds the associated aircraft shortname for aircraft commands
+  
+  ![search](src/am4bot/assets/img/search.png)
+- `$airport <airport>`: shows airport information
+  
+  ![airport](src/am4bot/assets/img/airport.png)
+- `$price f[fuel_price] c[co2_price]`: notifies everyone for the fuel price
+  
+  ![price](src/am4bot/assets/img/price.png)
+
+### Internal Alliance Tools
+- `$memberCompare <player> <player>`: compares descending structure of contribution/day and SV
+  
+  ![member-compare](src/am4bot/assets/img/member-compare.png)
+- `$alliance <alliance>`: shows AV progression and d(AV)/dt.
+  
+  ![alliance](src/am4bot/assets/img/alliance.png)
+- `$allianceCompare <alliance> <alliance>`: compares AV progression and gap difference over time, shows 48h/12h-average contribution/day graphs
+  
+  ![alliance-compare](src/am4bot/assets/img/alliance-compare.png)
+- `$member <player> [player[]]` shows contribution/day, total contribution and SV history for 1+ members
+  
+  ![member](src/am4bot/assets/img/member.png)
+- `$actions <player> [maxResults]`: shows log of estimated departures, contributions and income
+  
+  ![member-compare](src/am4bot/assets/img/member-compare.png)
+- `$watchlist [add|+, remove|rm|-] [alliance]`: shows, adds or remove alliance(s) to the watchlist
+
+
+## Development for rewrite
 Requirements: python3.11
 
-```bash
-pip3 install -r requirements.txt
-```
-
-## dev
-cmake
 ```bash
 virtualenv .venv
 .venv/scripts/activate
 pip3 install .[dev]
-pip3 uninstall am4bot -y; pip3 install .
-.venv/scripts/deactivate
-
 mkdir build
 cd build
 cmake ..
-cmake --build . --target am4utils
+cmake --build . --target _core_executable
+
+pip3 uninstall am4bot -y
+.venv/scripts/deactivate
 ```
 
-### duckdb
+### database tests
+download the [DuckDB command line binaries](https://duckdb.org/docs/installation/)
+
 ```sql
 CREATE TABLE airports (
   id         USMALLINT PRIMARY KEY NOT NULL,

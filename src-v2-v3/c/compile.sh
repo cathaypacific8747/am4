@@ -1,0 +1,1 @@
+gcc -O3 -shared -Wl,-soname,helper_c -o helper_c.so -fPIC helper_c.c
