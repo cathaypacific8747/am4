@@ -6,58 +6,31 @@
 using namespace std;
 using namespace duckdb;
 
-#define VALIDATE(q) if (q->HasError()) { cerr << q->GetError() << endl; return false; }
-#define VALIDATE_PREP(p) if (!p->success) { cerr << p->GetError() << endl; return false; }
+shared_ptr<Database> Database::default_client = nullptr;
+shared_ptr<Database> Database::CreateClient() {
+    shared_ptr<Database> client = make_shared<Database>();
+    client->database = make_uniq<DuckDB>(nullptr);
+    client->connection = make_uniq<Connection>(*client->database);
+    cout << "default_client initialized" << endl;
 
-// adapted from: duckdb/tools/pythonpkg/src/pyconnection.cpp
-shared_ptr<DatabaseConnection> DatabaseConnection::default_connection = nullptr;
-shared_ptr<DatabaseConnection> DatabaseConnection::CreateNewInstance() {
-    auto con = make_shared<DatabaseConnection>();
-    con->database = make_uniq<DuckDB>(":memory:");
-    con->connection = make_uniq<Connection>(*con->database);
-    // cout << "default_connection initialized" << endl;
-
-    return con;
+    return client;
 }
 
-shared_ptr<DatabaseConnection> DatabaseConnection::DefaultConnection() {
-	if (!default_connection) {
-		default_connection = DatabaseConnection::CreateNewInstance();
+shared_ptr<Database> Database::Client() {
+	if (!default_client) {
+		default_client = Database::CreateClient();
 	}
-	return default_connection;
-}
-
-shared_ptr<DatabaseConnection> DatabaseConnection::Clone() {
-    if (!connection) {
-        cerr << "connection is null, cannot clone." << endl;
-        return nullptr;
-    }
-    auto con = make_shared<DatabaseConnection>();
-    con->database = this->database;
-    con->connection = make_uniq<Connection>(*con->database);
-
-    connections.push_back(con);
-    return con;
-}
-
-void DatabaseConnection::CloseAll() {
-    connection = nullptr;
-    database = nullptr;
-    for (auto &con : connections) {
-        con->CloseAll();
-    }
+	return default_client;
 }
 
 // sets the home directory and inserts airports, aircrafts and routes
-bool DatabaseConnection::prepare_db() {
+void Database::prepare_db() {
     if (!home_dir.empty()) {
-        // WARN: prone to SQLi, duckdb doesn't support prepared statements for config options yet
-        auto set_homedir = connection->Query("SET home_directory = '" + home_dir + "';");
-        VALIDATE(set_homedir);
+        CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
     }
 
     // airports
-    auto ct_airports = connection->Query(
+    CHECK_SUCCESS(connection->Query(
         "CREATE TABLE airports ("
         "  id         USMALLINT PRIMARY KEY NOT NULL,"
         "  name       VARCHAR NOT NULL,"
@@ -73,17 +46,12 @@ bool DatabaseConnection::prepare_db() {
         "  hub_cost   UINTEGER NOT NULL,"
         "  rwy_codes  VARCHAR NOT NULL"
         ");"
-    );
-    VALIDATE(ct_airports);
-    
-    auto ins_airports = connection->Query("INSERT INTO airports SELECT * FROM read_parquet('~/data/airports.parquet');");
-    VALIDATE(ins_airports);
-
-    auto idx_airports = connection->Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);");
-    VALIDATE(idx_airports);
+    ));
+    CHECK_SUCCESS(connection->Query("INSERT INTO airports SELECT * FROM read_parquet('~/data/airports.parquet');"));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);"));
 
     // aircrafts
-    auto ct_aircrafts = connection->Query(
+    CHECK_SUCCESS(connection->Query(
         "CREATE TABLE aircrafts ("
         "  id           USMALLINT NOT NULL,"
         "  shortname    VARCHAR NOT NULL,"
@@ -111,19 +79,11 @@ bool DatabaseConnection::prepare_db() {
         "  wingspan     UTINYINT NOT NULL,"
         "  length       UTINYINT NOT NULL,"
         ");"
-    );
-    VALIDATE(ct_aircrafts);
+    ));
+    CHECK_SUCCESS(connection->Query("INSERT INTO aircrafts SELECT * FROM read_parquet('~/data/aircrafts.parquet');"));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);"));
 
-    auto ins_aircrafts = connection->Query("INSERT INTO aircrafts SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
-    VALIDATE(ins_aircrafts);
-
-    auto idx_aircrafts = connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);");
-    VALIDATE(idx_aircrafts);
-
-
-
-    // routes
-    auto insert_routes = connection->Query(
+    CHECK_SUCCESS(connection->Query(
         "CREATE TABLE routes ("
         "  oid USMALLINT NOT NULL,"
         "  did USMALLINT NOT NULL,"
@@ -132,25 +92,27 @@ bool DatabaseConnection::prepare_db() {
         "  fd  USMALLINT NOT NULL,"
         "  d   FLOAT     NOT NULL,"
         ");"
-    );
-    VALIDATE(insert_routes);
-
-    auto ins_routes = connection->Query("INSERT INTO routes SELECT * FROM read_parquet('~/data/routes.parquet');");
-    VALIDATE(ins_routes);
-
-    auto idx_routes = connection->Query("CREATE INDEX routes_idx ON routes(oid, did, yd, jd, fd, d);");
-    VALIDATE(idx_routes);
-
-    return true;
+    ));
+    CHECK_SUCCESS(connection->Query("INSERT INTO routes SELECT * FROM read_parquet('~/data/routes.parquet');"));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX routes_idx ON routes(oid, did, yd, jd, fd, d);"));
 }
 
-bool init() {
-    return DatabaseConnection::DefaultConnection()->prepare_db();
+void Database::prepare_statements() {
+    get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1");
+    CHECK_SUCCESS(get_airport_by_id);
+
+    get_route_demands_by_id = connection->Prepare("SELECT yd, jd, fd FROM routes WHERE oid = $1 AND did = $2;");
+    CHECK_SUCCESS(get_route_demands_by_id);
+}
+
+void init() {
+    Database::Client()->prepare_db();
+    Database::Client()->prepare_statements();
 }
 
 void _debug_query(string query) {
-    auto con = DatabaseConnection::DefaultConnection()->Clone();
+    auto client = Database::Client();
 
-    auto result = con->connection->Query(query);
+    auto result = client->connection->Query(query);
     result->Print();
 }

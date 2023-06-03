@@ -4,7 +4,7 @@
 using namespace std;
 
 struct Airport {
-    uint16_t id = 0;
+    uint16_t id;
     string name;
     string fullname;
     string country;
@@ -17,6 +17,8 @@ struct Airport {
     uint8_t market;
     uint32_t hub_cost;
     string rwy_codes;
+
+    bool valid = false;
 
     static Airport from_id(int id);
 };

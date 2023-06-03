@@ -29,7 +29,7 @@ struct VIPTicket {
 struct PaxDemand {
     uint16_t y;
     uint16_t j;
-    uint16_t d;
+    uint16_t f;
 };
 
 struct CargoDemand {
@@ -38,11 +38,15 @@ struct CargoDemand {
 };
 
 struct Route {
-    Airport from;
-    Airport to;
+    Airport origin;
+    Airport destination;
 
+    PaxDemand pax_demand;
     double distance;
+    bool valid = false;
 
     static double calc_distance(double lat1, double lon1, double lat2, double lon2);
     static double calc_distance(Airport a0, Airport a1);
+
+    static Route from_airports(Airport a0, Airport a1);
 };

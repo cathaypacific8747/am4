@@ -2,10 +2,10 @@
 #include <vector>
 
 using namespace std;
-using namespace duckdb;
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
+#define CHECK_SUCCESS(q) if (q->HasError()) throw DatabaseException(q->GetError());
 
 #ifdef CORE_DIR
 static string home_dir = MACRO_STRINGIFY(CORE_DIR);
@@ -13,23 +13,29 @@ static string home_dir = MACRO_STRINGIFY(CORE_DIR);
 static string home_dir = "";
 #endif
 
-struct DatabaseConnection {
-    shared_ptr<DuckDB> database;
-    shared_ptr<Connection> connection;
-    std::vector<shared_ptr<DatabaseConnection>> connections;
-
-    static shared_ptr<DatabaseConnection> DefaultConnection();
-
-    shared_ptr<DatabaseConnection> Clone();
-    void CloseAll();
+// multiple threads can use the same connection?
+// https://github.com/duckdb/duckdb/blob/8c32403411d628a400cc32e5fe73df87eb5aad7d/test/api/test_api.cpp#L142
+struct Database {
+    duckdb::unique_ptr<duckdb::DuckDB> database;
+    duckdb::unique_ptr<duckdb::Connection> connection;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_id;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_route_demands_by_id;
     
-    static shared_ptr<DatabaseConnection> CreateNewInstance();
-    static shared_ptr<DatabaseConnection> default_connection;
+    static shared_ptr<Database> default_client;
+    static shared_ptr<Database> Client();
+    static shared_ptr<Database> CreateClient();
 
-    bool prepare_db();
+    void prepare_db();
+    void prepare_statements();
 };
 
-static DuckDB db(":memory:");
-
-bool init();
+void init();
 void _debug_query(string query);
+
+class DatabaseException : public exception {
+private:
+    string msg;
+public:
+    DatabaseException(string msg) : msg(msg) {}
+    const char* what() const throw() { return msg.c_str(); }
+};

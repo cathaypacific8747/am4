@@ -50,7 +50,7 @@ void test_route_distance() {
 
 void test_demand_queries() {
     srand(1);
-    auto con = DatabaseConnection::DefaultConnection()->Clone();
+    auto con = Database::Client();
     auto routes_query = con->connection->Prepare("SELECT * FROM routes WHERE yd > ? AND jd > ? AND fd > ? AND d < ?;");
 
     int64_t total_rows = 0;
@@ -60,7 +60,6 @@ void test_demand_queries() {
     }
     END_TIMER // .145 ms/it
     cout << "total fetched rows: " << total_rows << endl;
-    con->CloseAll();
 }
 
 void fix_routes_csv() {
@@ -112,13 +111,16 @@ int main(int argc, string argv[]) {
     // test_demand_queries();
     // fix_routes_csv();
 
-    Airport ap = Airport::from_id(1);
-    cout << ap.name << " | " << ap.fullname << endl;
-    
     // PaxTicket pt = PaxTicket::from_optimal(10000, GameMode::EASY);
     // cout << pt.y << " | " << pt.j << " | " << pt.f << endl;
     
     // test_route_distance();
+
+    Airport ap0 = Airport::from_id(1);
+    Airport ap1 = Airport::from_id(2);
+    Route r = Route::from_airports(ap0, ap1);
+    cout << r.origin.name << " -> " << r.destination.name << ": " << r.distance << "km, " << r.pax_demand.y << '/' << r.pax_demand.j << '/' << r.pax_demand.f << endl;
+    
 
     return 0;
 }

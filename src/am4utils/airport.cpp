@@ -1,26 +1,17 @@
 #include <iostream>
 #include <duckdb.hpp>
-#include "include/airport.hpp"
 #include "include/db.hpp"
+#include "include/airport.hpp"
+#include "include/route.hpp"
 
 using namespace std;
 using namespace duckdb;
 
 Airport Airport::from_id(int id) {
-    auto con = DatabaseConnection::DefaultConnection()->Clone();
     Airport ap;
 
-    auto get_airport_by_id = con->connection->Prepare("SELECT * FROM airports WHERE id = ?");
-    if (!get_airport_by_id->success) {
-        cerr << "prepare error: " << get_airport_by_id->GetError() << endl;
-        return ap; // TODO: throw error instead
-    }
-
-    auto result = get_airport_by_id->Execute(id);
-    if (result->HasError()) {
-        cerr << "result has error: " << result->GetError() << endl;
-        return ap;
-    }
+    auto result = Database::Client()->get_airport_by_id->Execute(id);
+    CHECK_SUCCESS(result);
     
     auto chunk = result->Fetch();
     if (!chunk || chunk->size() == 0) return ap;
@@ -39,6 +30,7 @@ Airport Airport::from_id(int id) {
     ap.market = chunk->GetValue(10, 0).GetValue<uint8_t>();
     ap.hub_cost = chunk->GetValue(11, 0).GetValue<uint32_t>();
     ap.rwy_codes = chunk->GetValue(12, 0).GetValue<string>();
+    ap.valid = true;
 
     return ap;
 }

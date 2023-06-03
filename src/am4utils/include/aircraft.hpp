@@ -32,4 +32,6 @@ struct Aircraft {
     string img;
     uint8_t wingspan;
     uint8_t length;
+
+    bool valid = false;
 };

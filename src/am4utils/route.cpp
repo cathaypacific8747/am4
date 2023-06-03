@@ -1,6 +1,8 @@
 #include <math.h>
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/route.hpp"
 #include "include/enums.h"
@@ -47,4 +49,38 @@ double Route::calc_distance(double lat1, double lon1, double lat2, double lon2) 
 
 double Route::calc_distance(Airport a1, Airport a2) {
     return calc_distance(a1.lat, a1.lng, a2.lat, a2.lng);
+}
+
+Route Route::from_airports(Airport a1, Airport a2) {
+    uint16_t id0;
+    uint16_t id1;
+
+    if (a1.id < a2.id) {
+        id0 = a1.id;
+        id1 = a2.id;
+    } else if (a1.id > a2.id) {
+        id0 = a2.id;
+        id1 = a1.id;
+    } else {
+        throw std::invalid_argument("Cannot create route from same airport");
+    }
+
+    Route route;
+
+    auto result = Database::Client()->get_route_demands_by_id->Execute(id0, id1);
+    CHECK_SUCCESS(result);
+
+    auto chunk = result->Fetch();
+    if (!chunk || chunk->size() == 0) return route;
+
+    route.origin = a1;
+    route.destination = a2;
+    route.distance = calc_distance(a1, a2);
+    route.pax_demand.y = chunk->GetValue(0, 0).GetValue<uint16_t>();
+    route.pax_demand.j = chunk->GetValue(1, 0).GetValue<uint16_t>();
+    route.pax_demand.f = chunk->GetValue(2, 0).GetValue<uint16_t>();
+    
+    route.valid = true;
+    
+    return route;
 }
