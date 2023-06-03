@@ -3,8 +3,7 @@
 
 using namespace std;
 
-class Airport {
-public:
+struct Airport {
     uint16_t id = 0;
     string name;
     string fullname;

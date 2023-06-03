@@ -7,6 +7,7 @@ using namespace std;
 using namespace duckdb;
 
 #define VALIDATE(q) if (q->HasError()) { cerr << q->GetError() << endl; return false; }
+#define VALIDATE_PREP(p) if (!p->success) { cerr << p->GetError() << endl; return false; }
 
 // adapted from: duckdb/tools/pythonpkg/src/pyconnection.cpp
 shared_ptr<DatabaseConnection> DatabaseConnection::default_connection = nullptr;
@@ -55,6 +56,7 @@ bool DatabaseConnection::prepare_db() {
         VALIDATE(set_homedir);
     }
 
+    // airports
     auto ct_airports = connection->Query(
         "CREATE TABLE airports ("
         "  id         USMALLINT PRIMARY KEY NOT NULL,"
@@ -80,12 +82,15 @@ bool DatabaseConnection::prepare_db() {
     auto idx_airports = connection->Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);");
     VALIDATE(idx_airports);
 
+    // aircrafts
     auto ct_aircrafts = connection->Query(
         "CREATE TABLE aircrafts ("
         "  id           USMALLINT NOT NULL,"
-        "  name         VARCHAR NOT NULL,"
+        "  shortname    VARCHAR NOT NULL,"
         "  manufacturer VARCHAR NOT NULL,"
-        "  cargo        BOOLEAN NOT NULL,"
+        "  name         VARCHAR NOT NULL,"
+        "  type         UTINYINT NOT NULL,"
+        "  priority     UTINYINT NOT NULL,"
         "  eid          USMALLINT NOT NULL,"
         "  ename        VARCHAR NOT NULL,"
         "  speed        FLOAT NOT NULL,"
@@ -112,9 +117,12 @@ bool DatabaseConnection::prepare_db() {
     auto ins_aircrafts = connection->Query("INSERT INTO aircrafts SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
     VALIDATE(ins_aircrafts);
 
-    auto idx_aircrafts = connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, name, manufacturer, cargo, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, engineers, technicians, img);");
+    auto idx_aircrafts = connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);");
     VALIDATE(idx_aircrafts);
 
+
+
+    // routes
     auto insert_routes = connection->Query(
         "CREATE TABLE routes ("
         "  oid USMALLINT NOT NULL,"

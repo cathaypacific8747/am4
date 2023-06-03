@@ -14,7 +14,6 @@ static string home_dir = "";
 #endif
 
 struct DatabaseConnection {
-public:
     shared_ptr<DuckDB> database;
     shared_ptr<Connection> connection;
     std::vector<shared_ptr<DatabaseConnection>> connections;

@@ -43,12 +43,14 @@ def convert_aircrafts():
     table = csv.read_csv(
         'web/aircrafts.new.csv',
     )
-    # id,name,manufacturer,cargo,eid,ename,speed,fuel,co2,cost,capacity,rwy,check_cost,range,ceil,maint,pilots,crew,engines,technicians,img,wingspan,length
+    # id,shortname,manufacturer,name,type,priority,eid,ename,speed,fuel,co2,cost,capacity,rwy,check_cost,range,ceil,maint,pilots,crew,engineers,technicians,img,wingspan,length
     table = table.cast(pa.schema([
         ("id", pa.uint16()),
-        ("name", pa.string()),
+        ("shortname", pa.string()),
         ("manufacturer", pa.string()),
-        ("cargo", pa.bool_()),
+        ("name", pa.string()),
+        ("type", pa.uint8()),
+        ("priority", pa.uint8()),
         ("eid", pa.uint16()),
         ("ename", pa.string()),
         ("speed", pa.float32()),

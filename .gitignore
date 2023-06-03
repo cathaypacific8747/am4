@@ -4,6 +4,8 @@ research/routes
 research/routes.csv
 research/nn/routes.csv
 research/nn/nn_selfself.py
+research/analytics/*.json
+research/analytics/*.parquet
 config.json
 config.production.json
 

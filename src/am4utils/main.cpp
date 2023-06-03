@@ -1,6 +1,7 @@
 #include "include/enums.h"
 #include "include/db.hpp"
 #include "include/airport.hpp"
+#include "include/aircraft.hpp"
 #include "include/route.hpp"
 #include <fstream>
 #include <sstream>
@@ -111,8 +112,8 @@ int main(int argc, string argv[]) {
     // test_demand_queries();
     // fix_routes_csv();
 
-    // Airport ap = Airport::from_id(1);
-    // cout << ap.name << " | " << ap.fullname << endl;
+    Airport ap = Airport::from_id(1);
+    cout << ap.name << " | " << ap.fullname << endl;
     
     // PaxTicket pt = PaxTicket::from_optimal(10000, GameMode::EASY);
     // cout << pt.y << " | " << pt.j << " | " << pt.f << endl;

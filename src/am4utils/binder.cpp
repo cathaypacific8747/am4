@@ -2,6 +2,7 @@
 #include "include/enums.h"
 #include "include/db.hpp"
 #include "include/airport.hpp"
+#include "include/aircraft.hpp"
 #include "include/route.hpp"
 
 #define STRINGIFY(x) #x
@@ -27,6 +28,12 @@ PYBIND11_MODULE(_core, m) {
         .value("EASY", GameMode::EASY)
         .value("REALISM", GameMode::REALISM)
         .export_values();
+    
+    py::enum_<AircraftType>(m, "AircraftType")
+        .value("PAX", AircraftType::PAX)
+        .value("CARGO", AircraftType::CARGO)
+        .value("VIP", AircraftType::VIP)
+        .export_values();
 
     py::class_<PaxTicket>(m, "PaxTicket")
         .def(py::init<>())
@@ -46,6 +53,17 @@ PYBIND11_MODULE(_core, m) {
         .def("__repr__",
             [](const CargoTicket &a) {
                 return "<CargoTicket l=" + std::to_string(a.l) + " h=" + std::to_string(a.h) + ">";
+            }
+        );
+    
+    py::class_<VIPTicket>(m, "VIPTicket")
+        .def(py::init<>())
+        .def_readwrite("y", &VIPTicket::y)
+        .def_readwrite("j", &VIPTicket::j)
+        .def_readwrite("f", &VIPTicket::f)
+        .def("__repr__",
+            [](const VIPTicket &a) {
+                return "<VIPTicket y=" + std::to_string(a.y) + " j=" + std::to_string(a.j) + " f=" + std::to_string(a.f) + ">";
             }
         );
     

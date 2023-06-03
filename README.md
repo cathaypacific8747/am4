@@ -1,4 +1,4 @@
-# am4bot ![logo](src/am4bot/assets/img/logo-small.png)
+# ![logo](src/am4bot/assets/img/logo-small.png) am4bot
 
 [![](https://dcbadge.vercel.app/api/server/4tVQHtf?style=flat)](https://discord.gg/4tVQHtf)
 
@@ -111,12 +111,13 @@ CREATE TABLE airports (
 INSERT INTO airports SELECT * FROM read_parquet('./src/am4utils/data/airports.parquet');
 CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);
 
-
 CREATE TABLE aircrafts (
   id           USMALLINT NOT NULL,
-  name         VARCHAR NOT NULL,
+  shortname    VARCHAR NOT NULL,
   manufacturer VARCHAR NOT NULL,
-  cargo        BOOLEAN NOT NULL,
+  name         VARCHAR NOT NULL,
+  type         UTINYINT NOT NULL,
+  priority     UTINYINT NOT NULL,
   eid          USMALLINT NOT NULL,
   ename        VARCHAR NOT NULL,
   speed        FLOAT NOT NULL,
@@ -138,7 +139,7 @@ CREATE TABLE aircrafts (
   length       UTINYINT NOT NULL,
 );
 INSERT INTO aircrafts SELECT * FROM read_parquet('./src/am4utils/data/aircrafts.parquet');
-CREATE INDEX aircrafts_idx ON aircrafts(id, name, manufacturer, cargo, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, engineers, technicians, img);
+CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);
 
 
 CREATE TABLE routes (

@@ -10,13 +10,13 @@ Airport Airport::from_id(int id) {
     auto con = DatabaseConnection::DefaultConnection()->Clone();
     Airport ap;
 
-    auto prep = con->connection->Prepare("SELECT * FROM airports WHERE id = ?");
-    if (!prep->success) {
-        cerr << "prepare error: " << prep->GetError() << endl;
+    auto get_airport_by_id = con->connection->Prepare("SELECT * FROM airports WHERE id = ?");
+    if (!get_airport_by_id->success) {
+        cerr << "prepare error: " << get_airport_by_id->GetError() << endl;
         return ap; // TODO: throw error instead
     }
-    
-    auto result = prep->Execute(id);
+
+    auto result = get_airport_by_id->Execute(id);
     if (result->HasError()) {
         cerr << "result has error: " << result->GetError() << endl;
         return ap;

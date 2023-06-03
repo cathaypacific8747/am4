@@ -9,28 +9,21 @@ struct PaxTicket {
     uint16_t f;
     
     static PaxTicket from_optimal(float distance, GameMode game_mode);
-    static uint16_t optimal_y_real_price(float distance);
-    static uint16_t optimal_j_real_price(float distance);
-    static uint16_t optimal_f_real_price(float distance);
-    static uint16_t optimal_y_easy_price(float distance);
-    static uint16_t optimal_j_easy_price(float distance);
-    static uint16_t optimal_f_easy_price(float distance);
 };
 
 struct CargoTicket {
-    uint16_t l;
-    uint16_t h;
+    float l;
+    float h;
 
     static CargoTicket from_optimal(float distance, GameMode game_mode);
-    static uint16_t optimal_l_real_price(float distance);
-    static uint16_t optimal_h_real_price(float distance);
-    static uint16_t optimal_l_easy_price(float distance);
-    static uint16_t optimal_h_easy_price(float distance);
 };
 
-union Ticket {
-    PaxTicket pax;
-    CargoTicket cargo;
+struct VIPTicket {
+    uint16_t y;
+    uint16_t j;
+    uint16_t f;
+    
+    static VIPTicket from_optimal(float distance);
 };
 
 struct PaxDemand {
@@ -48,8 +41,6 @@ struct Route {
     Airport from;
     Airport to;
 
-    Ticket ticket;
-    
     double distance;
 
     static double calc_distance(double lat1, double lon1, double lat2, double lon2);

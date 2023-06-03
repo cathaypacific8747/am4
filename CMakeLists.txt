@@ -19,6 +19,7 @@ pybind11_add_module(
     src/am4utils/binder.cpp
     src/am4utils/db.cpp
     src/am4utils/airport.cpp
+    src/am4utils/aircraft.cpp
     src/am4utils/route.cpp
 )
 target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
@@ -39,6 +40,7 @@ add_executable(_core_executable
     src/am4utils/main.cpp
     src/am4utils/db.cpp
     src/am4utils/airport.cpp
+    src/am4utils/aircraft.cpp
     src/am4utils/route.cpp
 )
 target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
