@@ -77,15 +77,22 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
 Requirements: python3.11
 
 ```bash
+# windows
 virtualenv .venv
-.venv/scripts/activate
-pip3 uninstall am4bot -y; pip3 install .[dev]
+.venv\Scripts\activate
+
+# linux
+sudo apt install build-essential
+virtualenv .venv
+source .venv/bin/activate
+
+###
+pip3 uninstall am4utils -y && pip3 install --verbose ".[dev]"
 pytest
 
 mkdir build
 cd build
-cmake ..
-cmake --build . --target _core_executable
+cmake .. && cmake --build . && ./_core_executable
 
 .venv/scripts/deactivate
 ```

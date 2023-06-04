@@ -106,7 +106,7 @@ void fix_routes_csv() {
     outfile.close();
 }
 
-int main(int argc, string argv[]) {
+int main(int argc, char **argv[]) {
     cout << "am4utils (v" << version << "), home_directory " << core_dir << "\n_______" << std::setprecision(15) << endl;
 
     init(); // 1.3s
@@ -125,11 +125,11 @@ int main(int argc, string argv[]) {
     cout << r.origin.name << " -> " << r.destination.name << ": " << r.distance << "km, " << r.pax_demand.y << '/' << r.pax_demand.j << '/' << r.pax_demand.f << endl;
     cout << ap0.repr() << endl;
     cout << ap1.repr() << endl;
-    try {
-        Airport a = Airport::from_auto("VHHX");
-    } catch (const AirportNotFoundException& e) {
-        cerr << e.what() << endl;
-    }
+    // try {
+    //     Airport a = Airport::from_auto("VHHX");
+    // } catch (const AirportNotFoundException& e) {
+    //     cerr << e.what() << endl;
+    // }
 
     return 0;
 }

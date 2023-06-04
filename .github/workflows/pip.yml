@@ -1,0 +1,38 @@
+name: "Pip"
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build with Pip
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # platform: [windows-latest, macos-latest, ubuntu-latest]
+        platform: [windows-latest, ubuntu-latest]
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Build and install
+      run: pip install --verbose .[dev]
+
+    - name: Test
+      run: pytest
+    
+    # - name: Upload site-packages
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: site-packages
+    #     path: ${{ env.PYTHONPATH }}

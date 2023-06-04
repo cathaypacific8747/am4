@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 
 [project]
-name = "am4bot"
+name = "am4utils"
 version = "0.0.6"
 description = "Utilities and tools for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "<58929011+cathaypacific8747@users.noreply.github.com>" }]
@@ -37,8 +37,8 @@ build-dir = "build"
 wheel.expand-macos-universal-tags = true
 wheel.install-dir = "am4utils"
 cmake.args = ["-DSKBUILD_WHEEL_INSTALL_DIR=am4utils"]
-# cmake.verbose = true
-# logging.level = "DEBUG"
+cmake.verbose = true
+logging.level = "DEBUG"
 
 
 [tool.pytest.ini_options]
