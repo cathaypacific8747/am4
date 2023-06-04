@@ -41,6 +41,10 @@ VIPTicket VIPTicket::from_optimal(float distance) {
     return ticket;
 }
 
+string Route::repr() {
+    return "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " distance=" + std::to_string(distance) + " pax_demand.y=" + std::to_string(pax_demand.y) + " pax_demand.j=" + std::to_string(pax_demand.j) + " pax_demand.f=" + std::to_string(pax_demand.f) + ">";
+}
+
 double Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
     double dLat = (lat2 - lat1) * PI / 180.0;
     double dLon = (lon2 - lon1) * PI / 180.0;

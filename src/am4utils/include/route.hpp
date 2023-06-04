@@ -49,4 +49,6 @@ struct Route {
     static double calc_distance(Airport a0, Airport a1);
 
     static Route from_airports(Airport a0, Airport a1);
+
+    string repr();
 };

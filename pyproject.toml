@@ -41,12 +41,12 @@ cmake.args = ["-DSKBUILD_WHEEL_INSTALL_DIR=am4utils"]
 # logging.level = "DEBUG"
 
 
-# [tool.pytest.ini_options]
-# minversion = "6.0"
-# addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-# xfail_strict = true
-# filterwarnings = ["error"]
-# testpaths = ["tests"]
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+testpaths = ["tests"]
 
 
 # [tool.cibuildwheel]

@@ -10,7 +10,10 @@
 #include <iomanip>
 #include <chrono>
 
-using namespace std;
+using std::string;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 #ifdef VERSION_INFO
     string version = MACRO_STRINGIFY(VERSION_INFO);
@@ -33,7 +36,7 @@ using namespace std;
 void test_route_distance() {
     std::vector<Airport> airports;
     for (int i = 0; i <= 3983; i++) {
-        auto ap = Airport::from_id(i);
+        auto ap = Airport::_from_id(i);
         if (ap.id == 0) continue;
         airports.push_back(ap);
     }
@@ -65,29 +68,29 @@ void test_demand_queries() {
 void fix_routes_csv() {
     std::vector<Airport> airports;
     for (int i = 0; i <= 3983; i++) {
-        auto ap = Airport::from_id(i);
+        auto ap = Airport::_from_id(i);
         airports.push_back(ap);
     }
     cout << "loaded airports" << endl;
 
-    ifstream infile("C:/Users/cx/projects/am4bot/research/web/routes.csv");
+    std::ifstream infile("C:/Users/cx/projects/am4bot/research/web/routes.csv");
     if (!infile.is_open()) {
         cerr << "Error opening infile" << endl;
     }
 
-    ofstream outfile("C:/Users/cx/projects/am4bot/research/web/routes.fixed.csv");
+    std::ofstream outfile("C:/Users/cx/projects/am4bot/research/web/routes.fixed.csv");
     if (!outfile.is_open()) {
         cerr << "Error opening infile" << endl;
     }
 
     string line;
     idx_t i = 0;
-    while (getline(infile, line)) {
+    while (std::getline(infile, line)) {
         std::vector<string> route;
-        stringstream ss(line);
+        std::stringstream ss(line);
         string item;
 
-        while (getline(ss, item, ',')) {
+        while (std::getline(ss, item, ',')) {
             route.push_back(item);
         }
         int16_t oid = stoi(route[0]);
@@ -104,7 +107,7 @@ void fix_routes_csv() {
 }
 
 int main(int argc, string argv[]) {
-    cout << "am4utils (v" << version << "), home_directory " << core_dir << "\n_______" << setprecision(15) << endl;
+    cout << "am4utils (v" << version << "), home_directory " << core_dir << "\n_______" << std::setprecision(15) << endl;
 
     init(); // 1.3s
     // test_route_distance();
@@ -116,11 +119,17 @@ int main(int argc, string argv[]) {
     
     // test_route_distance();
 
-    Airport ap0 = Airport::from_id(1);
-    Airport ap1 = Airport::from_id(2);
+    Airport ap0 = Airport::from_auto("VHHH");
+    Airport ap1 = Airport::from_auto("LHR");
     Route r = Route::from_airports(ap0, ap1);
     cout << r.origin.name << " -> " << r.destination.name << ": " << r.distance << "km, " << r.pax_demand.y << '/' << r.pax_demand.j << '/' << r.pax_demand.f << endl;
-    
+    cout << ap0.repr() << endl;
+    cout << ap1.repr() << endl;
+    try {
+        Airport a = Airport::from_auto("VHHX");
+    } catch (const AirportNotFoundException& e) {
+        cerr << e.what() << endl;
+    }
 
     return 0;
 }

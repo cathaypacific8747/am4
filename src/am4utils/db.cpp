@@ -3,7 +3,7 @@
 #include <duckdb.hpp>
 #include "include/db.hpp"
 
-using namespace std;
+using std::string;
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
@@ -11,7 +11,6 @@ shared_ptr<Database> Database::CreateClient() {
     shared_ptr<Database> client = make_shared<Database>();
     client->database = make_uniq<DuckDB>(nullptr);
     client->connection = make_uniq<Connection>(*client->database);
-    cout << "default_client initialized" << endl;
 
     return client;
 }
@@ -100,6 +99,12 @@ void Database::prepare_db() {
 void Database::prepare_statements() {
     get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1");
     CHECK_SUCCESS(get_airport_by_id);
+
+    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1");
+    CHECK_SUCCESS(get_airport_by_iata);
+
+    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1");
+    CHECK_SUCCESS(get_airport_by_icao);
 
     get_route_demands_by_id = connection->Prepare("SELECT yd, jd, fd FROM routes WHERE oid = $1 AND did = $2;");
     CHECK_SUCCESS(get_route_demands_by_id);

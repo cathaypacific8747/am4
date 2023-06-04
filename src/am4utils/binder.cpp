@@ -26,7 +26,10 @@ PYBIND11_MODULE(_core, m) {
         .def("_debug_query", &_debug_query);
     
     m.def_submodule("airport")
-        .def("from_id", &Airport::from_id, "id"_a);
+        .def("_from_id", &Airport::_from_id, "id"_a)
+        .def("_from_iata", &Airport::_from_iata, "s"_a)
+        .def("_from_icao", &Airport::_from_icao, "s"_a)
+        .def("from_auto", &Airport::from_auto, "s"_a);
 
     m.def_submodule("aircraft");
 
@@ -52,13 +55,8 @@ PYBIND11_MODULE(_core, m) {
         .def_readwrite("hub_cost", &Airport::hub_cost)
         .def_readwrite("rwy_codes", &Airport::rwy_codes)
         .def_readwrite("valid", &Airport::valid)
-        .def("__repr__",
-            [](const Airport &a) {
-                return "<Airport id=" + std::to_string(a.id) + " name=" + a.name + " fullname=" + a.fullname + " country=" + a.country + " continent=" + a.continent + " iata=" + a.iata + " icao=" + a.icao + " lat=" + std::to_string(a.lat) + " lng=" + std::to_string(a.lng) + " rwy=" + std::to_string(a.rwy) + " market=" + std::to_string(a.market) + " hub_cost=" + std::to_string(a.hub_cost) + " rwy_codes=" + a.rwy_codes + " valid=" + std::to_string(a.valid) + ">";
-            }
-        );
+        .def("__repr__", &Airport::repr);
 
-    // route, todo: proper repr!
     py::class_<Route>(m, "Route")
         .def(py::init<>())
         .def_readwrite("origin", &Route::origin)
@@ -66,11 +64,7 @@ PYBIND11_MODULE(_core, m) {
         .def_readwrite("pax_demand", &Route::pax_demand)
         .def_readwrite("distance", &Route::distance)
         .def_readwrite("valid", &Route::valid)
-        .def("__repr__",
-            [](const Route &a) {
-                return "<Route distance=" + std::to_string(a.distance) + " valid=" + std::to_string(a.valid) + ">";
-            }
-        );
+        .def("__repr__", &Route::repr);
         
 
     py::class_<PaxTicket>(m, "PaxTicket")
@@ -140,6 +134,7 @@ PYBIND11_MODULE(_core, m) {
         .export_values();
     
     py::register_exception<DatabaseException>(m, "DatabaseException");
+    py::register_exception<AirportNotFoundException>(m, "AirportNotFoundException");
 
     m.attr("__version__") = version;
     m.attr("__coredir__") = core_dir;

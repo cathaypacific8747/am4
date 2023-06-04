@@ -1,7 +1,7 @@
 #include <duckdb.hpp>
 #include <vector>
 
-using namespace std;
+using std::string;
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -19,11 +19,13 @@ struct Database {
     duckdb::unique_ptr<duckdb::DuckDB> database;
     duckdb::unique_ptr<duckdb::Connection> connection;
     duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_id;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_iata;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_icao;
     duckdb::unique_ptr<duckdb::PreparedStatement> get_route_demands_by_id;
     
-    static shared_ptr<Database> default_client;
-    static shared_ptr<Database> Client();
-    static shared_ptr<Database> CreateClient();
+    static std::shared_ptr<Database> default_client;
+    static std::shared_ptr<Database> Client();
+    static std::shared_ptr<Database> CreateClient();
 
     void prepare_db();
     void prepare_statements();
@@ -32,7 +34,7 @@ struct Database {
 void init();
 void _debug_query(string query);
 
-class DatabaseException : public exception {
+class DatabaseException : public std::exception {
 private:
     string msg;
 public:

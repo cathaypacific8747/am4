@@ -79,13 +79,14 @@ Requirements: python3.11
 ```bash
 virtualenv .venv
 .venv/scripts/activate
-pip3 install .[dev]
+pip3 uninstall am4bot -y; pip3 install .[dev]
+pytest
+
 mkdir build
 cd build
 cmake ..
 cmake --build . --target _core_executable
 
-pip3 uninstall am4bot -y
 .venv/scripts/deactivate
 ```
 

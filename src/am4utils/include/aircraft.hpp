@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 
-using namespace std;
+using std::string;
 
 struct Aircraft {
     uint16_t id;
