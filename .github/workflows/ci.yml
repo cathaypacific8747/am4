@@ -29,7 +29,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Build and install am4utils
-      run: pip install --verbose /src/am4utils[dev]
+      run: pip3 install --verbose "src/am4utils/.[dev]"
 
     - name: Test everything
       run: pytest

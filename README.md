@@ -37,7 +37,7 @@ virtualenv .venv
 source .venv/bin/activate
 
 # python dev
-pip3 install --verbose "src/am4utils[dev]"
+pip3 install --verbose "src/am4utils/.[dev]"
 pytest
 pip3 uninstall am4utils -y
 
