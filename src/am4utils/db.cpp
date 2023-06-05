@@ -23,10 +23,9 @@ shared_ptr<Database> Database::Client() {
 }
 
 // sets the home directory and inserts airports, aircrafts and routes
-void Database::prepare_db() {
-    if (!home_dir.empty()) {
-        CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
-    }
+void Database::insert(string home_dir) {
+    CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
+    // std::cout << "db home directory: " << home_dir << std::endl;
 
     // airports
     CHECK_SUCCESS(connection->Query(
@@ -110,8 +109,8 @@ void Database::prepare_statements() {
     CHECK_SUCCESS(get_route_demands_by_id);
 }
 
-void init() {
-    Database::Client()->prepare_db();
+void init(string home_dir) {
+    Database::Client()->insert(home_dir);
     Database::Client()->prepare_statements();
 }
 

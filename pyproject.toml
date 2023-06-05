@@ -1,101 +1,51 @@
-[build-system]
-requires = ["scikit-build-core>=0.3.3", "pybind11"]
-build-backend = "scikit_build_core.build"
-
-
 [project]
-name = "am4utils"
-version = "0.0.6"
-description = "Utilities and tools for the game Airline Manager 4."
-authors = [{ name = "cathaypacific8747", email = "<58929011+cathaypacific8747@users.noreply.github.com>" }]
+name = "am4bot"
+version = "0.0.0"
+description = "Discord bot for the game Airline Manager 4."
+authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
 license = { text = "MIT License" }
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.9"
 ]
-# dependencies = [
-#     "matplotlib>=3.7.1",
-#     "Pillow>=9.5.0",
-#     "urllib3>=2.0.2",
-#     "discord.py>=2.2.3",
-#     "adjustText>=0.8",
-# ]
+dependencies = [
+    "am4utils",
+    "matplotlib>=3.7.1",
+    "Pillow>=9.5.0",
+    "urllib3>=2.0.2",
+    "discord.py>=2.2.3",
+    "adjustText>=0.8",
+]
 
 [project.optional-dependencies]
 dev = [
-    "pybind11",
     "rich", "beautifulsoup4", "pyjsparser",
-    "pytest"
+    "pytest", "ruff"
 ]
-
-[tool.scikit-build]
-build-dir = "build"
-wheel.expand-macos-universal-tags = true
-wheel.install-dir = "am4utils"
-cmake.args = ["-DSKBUILD_WHEEL_INSTALL_DIR=am4utils"]
-cmake.verbose = true
-logging.level = "DEBUG"
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-xfail_strict = true
-filterwarnings = ["error"]
-testpaths = ["tests"]
+addopts = ["-ra", "--showlocals"]
+testpaths = ["src/am4utils/tests"]
 
 
-# [tool.cibuildwheel]
-# test-command = "pytest {project}/tests"
-# test-extras = ["test"]
-# test-skip = ["*universal2:arm64"]
-# build-verbosity = 1
+[tool.ruff]
+select = ["E", "F"]
+ignore = [
+    "PT011",
+    "W292",
+    "E501", # line too long
+]
 
+exclude = ["src-old", "src-v2-v3", "research/nn"]
 
-# [tool.ruff]
-# select = [
-#     "E",
-#     "F",
-#     "W",   # flake8
-#     "B",   # flake8-bugbear
-#     "I",   # isort
-#     "ARG", # flake8-unused-arguments
-#     "C4",  # flake8-comprehensions
-#     "EM",  # flake8-errmsg
-#     "ICN", # flake8-import-conventions
-#     "ISC", # flake8-implicit-str-concat
-#     "G",   # flake8-logging-format
-#     "PGH", # pygrep-hooks
-#     "PIE", # flake8-pie
-#     "PL",  # pylint
-#     "PT",  # flake8-pytest-style
-#     "PTH", # flake8-use-pathlib
-#     "RET", # flake8-return
-#     "RUF", # Ruff-specific
-#     "SIM", # flake8-simplify
-#     "T20", # flake8-print
-#     "UP",  # pyupgrade
-#     "YTT", # flake8-2020
-#     "EXE", # flake8-executable
-#     "NPY", # NumPy specific rules
-#     "PD",  # pandas-vet
-# ]
-# extend-ignore = [
-#     "PLR",  # Design related pylint codes
-#     "E501", # Line too long
-# ]
-# target-version = "py311"
-# src = ["src"]
-# unfixable = [
-#     "T20",  # Removes print statements
-#     "F841", # Removes unused variables
-# ]
-# flake8-unused-arguments.ignore-variadic-names = true
-# isort.required-imports = ["from __future__ import annotations"]
+target-version = "py39"
 
-# [tool.ruff.per-file-ignores]
-# "tests/**" = ["T20"]
+[tool.ruff.per-file-ignores]
+"tests/**" = ["T20"]

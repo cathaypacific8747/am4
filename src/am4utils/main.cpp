@@ -21,10 +21,26 @@ using std::endl;
     string version = "dev";
 #endif
 
-#ifdef CORE_DIR
-    string core_dir = MACRO_STRINGIFY(CORE_DIR);
+// string::size_type pos = string(result).find_last_of("\\/");
+// return string(result).substr(0, pos);
+
+#ifdef _WIN32
+#include <Windows.h>
+string get_executable_path() {
+    char result[MAX_PATH];
+    GetModuleFileName(NULL, result, MAX_PATH);
+    string::size_type pos = string(result).find_last_of("\\/");
+    return string(result).substr(0, pos);
+}
 #else
-    string core_dir = ""
+#include <unistd.h>
+#include <limits.h>
+string get_executable_path() {
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    string::size_type pos = string(result).find_last_of("\\/");
+    return string(result).substr(0, pos);
+}
 #endif
 
 // benchmark time
@@ -106,10 +122,11 @@ void fix_routes_csv() {
     outfile.close();
 }
 
-int main(int argc, char **argv[]) {
-    cout << "am4utils (v" << version << "), home_directory " << core_dir << "\n_______" << std::setprecision(15) << endl;
+int main(int argc, char **argv) {
+    string executable_path = get_executable_path();
+    cout << "am4utils (v" << version << "), excutable =" << executable_path << "\n_______" << std::setprecision(15) << endl;
 
-    init(); // 1.3s
+    init(executable_path); // 1.3s
     // test_route_distance();
     // test_demand_queries();
     // fix_routes_csv();
@@ -130,6 +147,7 @@ int main(int argc, char **argv[]) {
     // } catch (const AirportNotFoundException& e) {
     //     cerr << e.what() << endl;
     // }
+    _debug_query("SELECT current_setting('home_directory')");
 
     return 0;
 }

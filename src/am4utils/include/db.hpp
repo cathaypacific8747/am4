@@ -7,12 +7,6 @@ using std::string;
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 #define CHECK_SUCCESS(q) if (q->HasError()) throw DatabaseException(q->GetError());
 
-#ifdef CORE_DIR
-static string home_dir = MACRO_STRINGIFY(CORE_DIR);
-#else
-static string home_dir = "";
-#endif
-
 // multiple threads can use the same connection?
 // https://github.com/duckdb/duckdb/blob/8c32403411d628a400cc32e5fe73df87eb5aad7d/test/api/test_api.cpp#L142
 struct Database {
@@ -27,11 +21,11 @@ struct Database {
     static std::shared_ptr<Database> Client();
     static std::shared_ptr<Database> CreateClient();
 
-    void prepare_db();
+    void insert(string home_dir);
     void prepare_statements();
 };
 
-void init();
+void init(string home_dir);
 void _debug_query(string query);
 
 class DatabaseException : public std::exception {

@@ -4,7 +4,7 @@
 
 A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
 
-Our bot is currently running legacy code in the [`src-old`](./src-old/) directory: I am currently planning to rewrite the core calculations in [C++](/src/am4utils/binder.cpp) for better performance and the rest in Python. The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
+Our bot is currently running legacy code in the [`src-old`](./src-old/) directory - I am now rewriting the core calculations in C++ for better performance under [`src/am4utils`](./src/am4utils/), with the main bot written in Python under [`src/am4bot (under construction)`](./src/am4bot/). The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
 
 ## Current Features
 - calculates essential statistics
@@ -22,6 +22,37 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
     - alliance comparisons over time: value, contribution/day, rate of changes
     - realtime alliance-member comparisons: SV/contribution distribution
     - member tracking: cheat detection tools, departure pattern identification
+
+## Development
+Requirements: python3.9+, C++11 compliant compiler
+
+```bash
+# windows
+virtualenv .venv
+.venv\Scripts\activate
+
+# linux
+sudo apt install build-essential
+virtualenv .venv
+source .venv/bin/activate
+
+# python dev
+pip3 install --verbose "src/am4utils[dev]"
+pytest
+pip3 uninstall am4utils -y
+
+# C++ main dev
+mkdir build
+cd build
+cmake .. && cmake --build . --target _core_executable && ./_core_executable
+
+# build wheel
+mkdir /tmp/cibuildwheel/built_wheel
+python3 -m pip wheel . --wheel-dir=/tmp/cibuildwheel/built_wheel --no-deps -v
+pip install /tmp/cibuildwheel/built_wheel/am4utils-*.whl --force-reinstall
+
+.venv/scripts/deactivate
+```
 
 ## Commands
 
@@ -71,93 +102,3 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
   
   ![member-compare](src/am4bot/assets/img/member-compare.png)
 - `$watchlist [add|+, remove|rm|-] [alliance]`: shows, adds or remove alliance(s) to the watchlist
-
-
-## Development for rewrite
-Requirements: python3.11
-
-```bash
-# windows
-virtualenv .venv
-.venv\Scripts\activate
-
-# linux
-sudo apt install build-essential
-virtualenv .venv
-source .venv/bin/activate
-
-###
-pip3 uninstall am4utils -y && pip3 install --verbose ".[dev]"
-pytest
-
-mkdir build
-cd build
-cmake .. && cmake --build . && ./_core_executable
-
-.venv/scripts/deactivate
-```
-
-### database tests
-download the [DuckDB command line binaries](https://duckdb.org/docs/installation/)
-
-```sql
-CREATE TABLE airports (
-  id         USMALLINT PRIMARY KEY NOT NULL,
-  name       VARCHAR NOT NULL,
-  fullname   VARCHAR NOT NULL,
-  country    VARCHAR NOT NULL,
-  continent  VARCHAR NOT NULL,
-  iata       VARCHAR UNIQUE NOT NULL,
-  icao       VARCHAR UNIQUE NOT NULL,
-  lat        DOUBLE NOT NULL,
-  lng        DOUBLE NOT NULL,
-  rwy        USMALLINT NOT NULL,
-  market     UTINYINT NOT NULL,
-  hub_cost   UINTEGER NOT NULL,
-  rwy_codes  VARCHAR NOT NULL
-);
-INSERT INTO airports SELECT * FROM read_parquet('./src/am4utils/data/airports.parquet');
-CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);
-
-CREATE TABLE aircrafts (
-  id           USMALLINT NOT NULL,
-  shortname    VARCHAR NOT NULL,
-  manufacturer VARCHAR NOT NULL,
-  name         VARCHAR NOT NULL,
-  type         UTINYINT NOT NULL,
-  priority     UTINYINT NOT NULL,
-  eid          USMALLINT NOT NULL,
-  ename        VARCHAR NOT NULL,
-  speed        FLOAT NOT NULL,
-  fuel         FLOAT NOT NULL,
-  co2          FLOAT NOT NULL,
-  cost         UINTEGER NOT NULL,
-  capacity     UINTEGER NOT NULL,
-  rwy          USMALLINT NOT NULL,
-  check_cost   UINTEGER NOT NULL,
-  range        USMALLINT NOT NULL,
-  ceil         USMALLINT NOT NULL,
-  maint        USMALLINT NOT NULL,
-  pilots       UTINYINT NOT NULL,
-  crew         UTINYINT NOT NULL,
-  engineers    UTINYINT NOT NULL,
-  technicians  UTINYINT NOT NULL,
-  img          VARCHAR NOT NULL,
-  wingspan     UTINYINT NOT NULL,
-  length       UTINYINT NOT NULL,
-);
-INSERT INTO aircrafts SELECT * FROM read_parquet('./src/am4utils/data/aircrafts.parquet');
-CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);
-
-
-CREATE TABLE routes (
-  oid USMALLINT NOT NULL,
-  did USMALLINT NOT NULL,
-  yd  USMALLINT NOT NULL,
-  jd  USMALLINT NOT NULL,
-  fd  USMALLINT NOT NULL,
-  d   FLOAT     NOT NULL,
-);
-INSERT INTO routes SELECT * FROM read_parquet('./src/am4utils/data/routes.parquet');
-CREATE INDEX routes_idx ON routes(oid, did, yd, jd, fd, d);
-```

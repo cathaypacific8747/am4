@@ -1,7 +1,8 @@
-import am4utils
 import pytest
 
-am4utils.db.init()
+import am4utils
+
+am4utils.db.init(am4utils.__path__[0])
 
 def test_airport():
     a0 = am4utils.airport._from_id(3500)
@@ -10,7 +11,7 @@ def test_airport():
 
 def test_invalid_airport():
     with pytest.raises(am4utils.AirportNotFoundException):
-        a0 = am4utils.airport.from_auto('VHHX')
+        _a = am4utils.airport.from_auto('VHHX')
 
 def test_route():
     a0 = am4utils.airport.from_auto('VHHH')
@@ -25,4 +26,4 @@ def test_invalid_route_to_self():
     a0 = am4utils.airport.from_auto('VHHH')
 
     with pytest.raises(ValueError):
-        r = am4utils.route.from_airports(a0, a0)
+        _r = am4utils.route.from_airports(a0, a0)

@@ -9,12 +9,13 @@ if (NOT DEFINED SKBUILD_WHEEL_INSTALL_DIR)
 endif()
 
 project(am4utils LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 11)
 include(libduckdb.cmake)
 
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
+find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
 file(TO_CMAKE_PATH "${Python_SITELIB}/${SKBUILD_WHEEL_INSTALL_DIR}" PYTHON_LIB_DIR)
-message(STATUS "[DEBUG]\n\
+message("[DEBUG]\n\
    cmake binary dir ${CMAKE_BINARY_DIR}\n\
    py executable    ${Python_EXECUTABLE}\n\
    pybind11 dir     ${pybind11_DIR}\n\
@@ -23,16 +24,15 @@ message(STATUS "[DEBUG]\n\
 
 pybind11_add_module(
     _core
-    src/am4utils/binder.cpp
-    src/am4utils/db.cpp
-    src/am4utils/airport.cpp
-    src/am4utils/aircraft.cpp
-    src/am4utils/route.cpp
+    binder.cpp
+    db.cpp
+    airport.cpp
+    aircraft.cpp
+    route.cpp
 )
 target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core
     PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION}
-    PRIVATE CORE_DIR=${PYTHON_LIB_DIR}
 )
 
 set_rpath(_core)
@@ -40,22 +40,21 @@ target_link_libraries(_core PRIVATE duckdb)
 
 install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
-install(FILES ${CMAKE_SOURCE_DIR}/src/am4utils/__init__.py DESTINATION .)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/am4utils/data DESTINATION .)
+install(FILES ${CMAKE_SOURCE_DIR}/__init__.py DESTINATION .)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 
 
 # debug executable
 add_executable(_core_executable
-    src/am4utils/main.cpp
-    src/am4utils/db.cpp
-    src/am4utils/airport.cpp
-    src/am4utils/aircraft.cpp
-    src/am4utils/route.cpp
+    main.cpp
+    db.cpp
+    airport.cpp
+    aircraft.cpp
+    route.cpp
 )
 target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable
     PRIVATE VERSION_INFO=0.0.0-dev
-    PRIVATE CORE_DIR=$<TARGET_FILE_DIR:_core_executable>
 )
 
 set_rpath(_core_executable)
@@ -67,6 +66,10 @@ add_custom_command(
         $<TARGET_FILE:duckdb>
         $<TARGET_FILE_DIR:_core_executable>
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/src/am4utils/data
+        ${CMAKE_SOURCE_DIR}/data
         $<TARGET_FILE_DIR:_core_executable>/data
 )
+
+if (NOT BUILD_EXECUTABLES)
+    set_target_properties(_core_executable PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+endif()

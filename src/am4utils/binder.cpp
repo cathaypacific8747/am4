@@ -11,12 +11,6 @@
     string version = "dev";
 #endif
 
-#ifdef CORE_DIR
-    string core_dir = MACRO_STRINGIFY(CORE_DIR);
-#else
-    string core_dir = ""
-#endif
-
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -137,5 +131,4 @@ PYBIND11_MODULE(_core, m) {
     py::register_exception<AirportNotFoundException>(m, "AirportNotFoundException");
 
     m.attr("__version__") = version;
-    m.attr("__coredir__") = core_dir;
 }

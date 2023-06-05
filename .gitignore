@@ -69,8 +69,9 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+build-wsl/
 develop-eggs/
-# dist/
+dist/
 downloads/
 eggs/
 .eggs/
