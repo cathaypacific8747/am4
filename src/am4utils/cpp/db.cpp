@@ -25,7 +25,6 @@ shared_ptr<Database> Database::Client() {
 // sets the home directory and inserts airports, aircrafts and routes
 void Database::insert(string home_dir) {
     CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
-    // std::cout << "db home directory: " << home_dir << std::endl;
 
     // airports
     CHECK_SUCCESS(connection->Query(
@@ -96,14 +95,29 @@ void Database::insert(string home_dir) {
 }
 
 void Database::prepare_statements() {
-    get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1");
+    get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1 LIMIT 1");
     CHECK_SUCCESS(get_airport_by_id);
 
-    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1");
+    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1 LIMIT 1");
     CHECK_SUCCESS(get_airport_by_iata);
 
-    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1");
+    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1 LIMIT 1");
     CHECK_SUCCESS(get_airport_by_icao);
+
+    get_airport_by_name = connection->Prepare("SELECT * FROM airports WHERE upper(name) = $1 LIMIT 1");
+    CHECK_SUCCESS(get_airport_by_name);
+
+    get_airport_by_all = connection->Prepare("SELECT * FROM airports WHERE iata = $1 OR icao = $1 OR upper(name) = $1 LIMIT 1");
+    CHECK_SUCCESS(get_airport_by_all);
+
+    suggest_airport_by_iata = connection->Prepare("SELECT *, jaro_winkler_similarity(iata, $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
+    CHECK_SUCCESS(suggest_airport_by_iata);
+
+    suggest_airport_by_icao = connection->Prepare("SELECT *, jaro_winkler_similarity(icao, $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
+    CHECK_SUCCESS(suggest_airport_by_icao);
+
+    suggest_airport_by_name = connection->Prepare("SELECT *, jaro_winkler_similarity(upper(name), $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
+    CHECK_SUCCESS(suggest_airport_by_name);
 
     get_route_demands_by_id = connection->Prepare("SELECT yd, jd, fd FROM routes WHERE oid = $1 AND did = $2;");
     CHECK_SUCCESS(get_route_demands_by_id);

@@ -15,6 +15,12 @@ struct Database {
     duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_id;
     duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_iata;
     duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_icao;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_name;
+    duckdb::unique_ptr<duckdb::PreparedStatement> get_airport_by_all;
+    duckdb::unique_ptr<duckdb::PreparedStatement> suggest_airport_by_iata;
+    duckdb::unique_ptr<duckdb::PreparedStatement> suggest_airport_by_icao;
+    duckdb::unique_ptr<duckdb::PreparedStatement> suggest_airport_by_name;
+
     duckdb::unique_ptr<duckdb::PreparedStatement> get_route_demands_by_id;
     
     static std::shared_ptr<Database> default_client;

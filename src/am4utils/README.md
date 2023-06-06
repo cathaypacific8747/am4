@@ -2,7 +2,7 @@
 
 Tools and utilities for Airline Manager 4 bot.
 
-### database tests
+### Database tests
 download the [DuckDB command line binaries](https://duckdb.org/docs/installation/)
 
 ```sql
@@ -23,6 +23,8 @@ CREATE TABLE airports (
 );
 INSERT INTO airports SELECT * FROM read_parquet('./data/airports.parquet');
 CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);
+
+SELECT *, jaro_winkler_similarity(name, 'hostomel') AS score FROM airports ORDER BY score DESC LIMIT 5;
 
 CREATE TABLE aircrafts (
   id           USMALLINT NOT NULL,
