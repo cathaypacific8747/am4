@@ -140,7 +140,7 @@ std::vector<Airport> Airport::_suggest_all(string s) {
         }
     }
 
-    std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const auto& a, const auto& b) {
+    std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const AirportSuggestion& a, const AirportSuggestion& b) {
         return a.score > b.score;
     });
 
