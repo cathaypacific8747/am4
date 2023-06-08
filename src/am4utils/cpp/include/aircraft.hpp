@@ -1,8 +1,9 @@
 #pragma once
-#include "enums.h"
-
 #include <string>
 #include <cstdint>
+#include <duckdb.hpp>
+
+#include "enums.h"
 
 using std::string;
 
@@ -13,18 +14,18 @@ struct Aircraft {
     string name;
     AircraftType type;
     uint8_t priority;
-    int16_t eid;
+    uint16_t eid;
     string ename;
     float speed;
     float fuel;
     float co2;
     uint32_t cost;
     uint32_t capacity;
-    int16_t rwy;
+    uint16_t rwy;
     uint32_t check_cost;
-    int16_t range;
-    int16_t ceil;
-    int16_t maint;
+    uint16_t range;
+    uint16_t ceil;
+    uint16_t maint;
     uint8_t pilots;
     uint8_t crew;
     uint8_t engineers;
@@ -34,4 +35,66 @@ struct Aircraft {
     uint8_t length;
 
     bool valid = false;
+
+    Aircraft();
+    Aircraft(const duckdb::DataChunk& chunk, idx_t row);
+
+    static Aircraft _from_id(uint16_t id, uint8_t priority = 0);
+    static Aircraft _from_shortname(string s, uint8_t priority = 0);
+    static Aircraft _from_name(string s, uint8_t priority = 0);
+    static Aircraft _from_all(string s, uint8_t priority = 0);
+
+    static std::vector<Aircraft> _suggest_shortname(string s, uint8_t priority = 0);
+    static std::vector<Aircraft> _suggest_name(string s, uint8_t priority = 0);
+    static std::vector<Aircraft> _suggest_all(string s, uint8_t priority = 0);
+
+    static Aircraft from_auto(string s);
+
+    string repr();
+};
+
+struct AircraftSuggestion {
+    Aircraft ac;
+    double score;
+};
+
+class AircraftNotFoundException : public std::exception {
+private:
+    AircraftSearchType searchtype;
+    string searchstr;
+    std::vector<Aircraft> suggestions;
+public:
+    AircraftNotFoundException(AircraftSearchType searchtype, string searchstr, std::vector<Aircraft> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
+    const char* what() const throw() {
+        std::stringstream ss;
+        string searchtype_str;
+        switch (searchtype) {
+            case AircraftSearchType::ALL:
+                searchtype_str = "all";
+                break;
+            case AircraftSearchType::ID:
+                searchtype_str = "id";
+                break;
+            case AircraftSearchType::SHORTNAME:
+                searchtype_str = "shortname";
+                break;
+            case AircraftSearchType::NAME:
+                searchtype_str = "name";
+                break;
+            default:
+                searchtype_str = "(unknown)";
+                break;
+        }
+        ss << "Aircraft not found - " << searchtype_str << ":" << searchstr;
+        if (suggestions.size() > 0) {
+            ss << ". Did you mean: ";
+            for (auto ac : suggestions) {
+                ss << "\n  " << ac.id << ": " << ac.shortname << "/" << ac.name;
+            }
+        }
+        return ss.str().c_str();
+    }
+    AircraftSearchType get_searchtype() { return searchtype; }
+    string get_searchstr() { return searchstr; }
+    std::vector<Aircraft> get_suggestions() { return suggestions; }
 };

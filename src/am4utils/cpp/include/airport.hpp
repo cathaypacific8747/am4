@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <sstream>
+#include <duckdb.hpp>
+
+#include "enums.h"
 
 using std::string;
 using std::vector;
@@ -24,8 +27,6 @@ struct Airport {
     Airport();
     Airport(const duckdb::DataChunk& chunk, idx_t row);
 
-    // void update_from_chunk(duckdb::DataChunk& chunk, idx_t row);
-
     static Airport _from_id(uint16_t id);
     static Airport _from_iata(string s);
     static Airport _from_icao(string s);
@@ -42,12 +43,9 @@ struct Airport {
     string repr();
 };
 
-enum AirportSearchType {
-    ALL,
-    IATA,
-    ICAO,
-    NAME,
-    ID,
+struct AirportSuggestion {
+    Airport ap;
+    double score;
 };
 
 class AirportNotFoundException : public std::exception {
@@ -61,19 +59,19 @@ public:
         std::stringstream ss;
         string searchtype_str;
         switch (searchtype) {
-            case ALL:
+            case AirportSearchType::ALL:
                 searchtype_str = "all";
                 break;
-            case IATA:
+            case AirportSearchType::IATA:
                 searchtype_str = "iata";
                 break;
-            case ICAO:
+            case AirportSearchType::ICAO:
                 searchtype_str = "icao";
                 break;
-            case NAME:
+            case AirportSearchType::NAME:
                 searchtype_str = "name";
                 break;
-            case ID:
+            case AirportSearchType::ID:
                 searchtype_str = "id";
                 break;
             default:

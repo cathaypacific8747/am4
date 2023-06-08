@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <duckdb.hpp>
+
 #include "include/db.hpp"
 
 using std::string;
@@ -98,10 +99,10 @@ void Database::prepare_statements() {
     get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1 LIMIT 1");
     CHECK_SUCCESS(get_airport_by_id);
 
-    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1 LIMIT 1");
+    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1 LIMIT 1"); // $1: expects uppercase
     CHECK_SUCCESS(get_airport_by_iata);
 
-    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1 LIMIT 1");
+    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1 LIMIT 1"); // $1: expects uppercase
     CHECK_SUCCESS(get_airport_by_icao);
 
     get_airport_by_name = connection->Prepare("SELECT * FROM airports WHERE upper(name) = $1 LIMIT 1");
@@ -118,6 +119,26 @@ void Database::prepare_statements() {
 
     suggest_airport_by_name = connection->Prepare("SELECT *, jaro_winkler_similarity(upper(name), $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
     CHECK_SUCCESS(suggest_airport_by_name);
+
+
+    get_aircraft_by_id = connection->Prepare("SELECT * FROM aircrafts WHERE id = $1 AND priority = $2 LIMIT 1");
+    CHECK_SUCCESS(get_aircraft_by_id);
+
+    get_aircraft_by_shortname = connection->Prepare("SELECT * FROM aircrafts WHERE shortname = $1 AND priority = $2 LIMIT 1"); // $1: expects lowercase
+    CHECK_SUCCESS(get_aircraft_by_shortname);
+
+    get_aircraft_by_name = connection->Prepare("SELECT * FROM aircrafts WHERE lower(name) = $1 AND priority = $2 LIMIT 1");
+    CHECK_SUCCESS(get_aircraft_by_name);
+
+    get_aircraft_by_all = connection->Prepare("SELECT * FROM aircrafts WHERE (shortname = $1 OR lower(name) = $1) AND priority = $2 LIMIT 1");
+    CHECK_SUCCESS(get_aircraft_by_all);
+
+    suggest_aircraft_by_shortname = connection->Prepare("SELECT *, jaro_winkler_similarity(shortname, $1) AS score FROM aircrafts WHERE priority = $2 ORDER BY score DESC LIMIT 5");
+    CHECK_SUCCESS(suggest_aircraft_by_shortname);
+
+    suggest_aircraft_by_name = connection->Prepare("SELECT *, jaro_winkler_similarity(lower(name), $1) AS score FROM aircrafts WHERE priority = $2 ORDER BY score DESC LIMIT 5");
+    CHECK_SUCCESS(suggest_aircraft_by_name);
+
 
     get_route_demands_by_id = connection->Prepare("SELECT yd, jd, fd FROM routes WHERE oid = $1 AND did = $2;");
     CHECK_SUCCESS(get_route_demands_by_id);

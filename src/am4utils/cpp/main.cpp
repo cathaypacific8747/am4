@@ -1,14 +1,15 @@
-#include "include/enums.h"
-#include "include/db.hpp"
-#include "include/airport.hpp"
-#include "include/aircraft.hpp"
-#include "include/route.hpp"
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+
+#include "include/enums.h"
+#include "include/db.hpp"
+#include "include/airport.hpp"
+#include "include/aircraft.hpp"
+#include "include/route.hpp"
 
 using std::string;
 using std::cout;
@@ -72,12 +73,16 @@ int main(int argc, char **argv) {
     // cout << r.origin.name << " -> " << r.destination.name << ": " << r.distance << "km, " << r.pax_demand.y << '/' << r.pax_demand.j << '/' << r.pax_demand.f << endl;
     // cout << ap0.repr() << endl;
     // cout << ap1.repr() << endl;
-    try {
-        Airport a = Airport::from_auto("HKG");
-        cout << a.repr() << endl;
-    } catch (const AirportNotFoundException& e) {
-        cerr << e.what() << endl;
-    }
+
+    Aircraft ac;
+    ac = Aircraft::from_auto("id:1");
+    cout << ac.repr() << endl;
+    ac = Aircraft::from_auto("name:b747-400");
+    cout << ac.repr() << endl;
+    ac = Aircraft::from_auto("shortname:B744");
+    cout << ac.repr() << endl;
+    ac = Aircraft::from_auto("B744");
+    cout << ac.repr() << endl;
 
     return 0;
 }

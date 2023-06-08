@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include <duckdb.hpp>
+
 #include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/route.hpp"
@@ -112,11 +112,6 @@ std::vector<Airport> Airport::_suggest_name(string s) {
     }
     return airports;
 }
-
-struct AirportSuggestion {
-    Airport ap;
-    double score;
-};
 
 std::vector<Airport> Airport::_suggest_all(string s) {
     std::vector<Airport> airports;
