@@ -42,21 +42,17 @@ VIPTicket VIPTicket::from_optimal(float distance) {
     return ticket;
 }
 
-string Route::repr() {
-    return "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " distance=" + std::to_string(distance) + " pax_demand.y=" + std::to_string(pax_demand.y) + " pax_demand.j=" + std::to_string(pax_demand.j) + " pax_demand.f=" + std::to_string(pax_demand.f) + ">";
-}
-
 double Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
     double dLat = (lat2 - lat1) * PI / 180.0;
     double dLon = (lon2 - lon1) * PI / 180.0;
     return 12742 * asin(sqrt(pow(sin(dLat / 2), 2) + cos(lat1 * PI / 180.0) * cos(lat2 * PI / 180.0) * pow(sin(dLon / 2), 2)));
 }
 
-double Route::calc_distance(Airport a1, Airport a2) {
+double Route::calc_distance(const Airport& a1, const Airport& a2) {
     return calc_distance(a1.lat, a1.lng, a2.lat, a2.lng);
 }
 
-Route Route::from_airports(Airport a1, Airport a2) {
+Route Route::from_airports(const Airport& a1, const Airport& a2) {
     uint16_t id0;
     uint16_t id1;
 
@@ -88,4 +84,8 @@ Route Route::from_airports(Airport a1, Airport a2) {
     route.valid = true;
     
     return route;
+}
+
+const string Route::repr() {
+    return "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " distance=" + std::to_string(distance) + " pax_demand.y=" + std::to_string(pax_demand.y) + " pax_demand.j=" + std::to_string(pax_demand.j) + " pax_demand.f=" + std::to_string(pax_demand.f) + ">";
 }

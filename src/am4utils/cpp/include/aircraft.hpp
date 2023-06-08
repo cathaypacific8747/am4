@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdint>
 #include <duckdb.hpp>
+#include <iomanip>
 
 #include "enums.h"
 
@@ -40,22 +41,24 @@ struct Aircraft {
     Aircraft(const duckdb::DataChunk& chunk, idx_t row);
 
     static Aircraft _from_id(uint16_t id, uint8_t priority = 0);
-    static Aircraft _from_shortname(string s, uint8_t priority = 0);
-    static Aircraft _from_name(string s, uint8_t priority = 0);
-    static Aircraft _from_all(string s, uint8_t priority = 0);
+    static Aircraft _from_shortname(const string& s, uint8_t priority = 0);
+    static Aircraft _from_name(const string& s, uint8_t priority = 0);
+    static Aircraft _from_all(const string& s, uint8_t priority = 0);
 
-    static std::vector<Aircraft> _suggest_shortname(string s, uint8_t priority = 0);
-    static std::vector<Aircraft> _suggest_name(string s, uint8_t priority = 0);
-    static std::vector<Aircraft> _suggest_all(string s, uint8_t priority = 0);
+    static std::vector<Aircraft> _suggest_shortname(const string& s, uint8_t priority = 0);
+    static std::vector<Aircraft> _suggest_name(const string& s, uint8_t priority = 0);
+    static std::vector<Aircraft> _suggest_all(const string& s, uint8_t priority = 0);
 
     static Aircraft from_auto(string s);
 
-    string repr();
+    const string repr();
 };
 
 struct AircraftSuggestion {
     Aircraft ac;
     double score;
+
+    AircraftSuggestion(const Aircraft& ac, double score) : ac(ac), score(score) {}
 };
 
 class AircraftNotFoundException : public std::exception {
@@ -89,7 +92,7 @@ public:
         if (suggestions.size() > 0) {
             ss << ". Did you mean: ";
             for (auto ac : suggestions) {
-                ss << "\n  " << ac.id << ": " << ac.shortname << "/" << ac.name;
+                ss << "\n  " << std::setw(3) << ac.id << ": " << ac.shortname << "/" << ac.name;
             }
         }
         return ss.str().c_str();

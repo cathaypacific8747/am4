@@ -28,24 +28,26 @@ struct Airport {
     Airport(const duckdb::DataChunk& chunk, idx_t row);
 
     static Airport _from_id(uint16_t id);
-    static Airport _from_iata(string s);
-    static Airport _from_icao(string s);
-    static Airport _from_name(string s);
-    static Airport _from_all(string s);
+    static Airport _from_iata(const string& s);
+    static Airport _from_icao(const string& s);
+    static Airport _from_name(const string& s);
+    static Airport _from_all(const string& s);
 
-    static std::vector<Airport> _suggest_iata(string s);
-    static std::vector<Airport> _suggest_icao(string s);
-    static std::vector<Airport> _suggest_name(string s);
-    static std::vector<Airport> _suggest_all(string s);
+    static std::vector<Airport> _suggest_iata(const string& s);
+    static std::vector<Airport> _suggest_icao(const string& s);
+    static std::vector<Airport> _suggest_name(const string& s);
+    static std::vector<Airport> _suggest_all(const string& s);
 
     static Airport from_auto(string s);
 
-    string repr();
+    const string repr();
 };
 
 struct AirportSuggestion {
     Airport ap;
     double score;
+
+    AirportSuggestion(const Airport& ap, double score) : ap(ap), score(score) {}
 };
 
 class AirportNotFoundException : public std::exception {

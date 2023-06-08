@@ -75,14 +75,17 @@ int main(int argc, char **argv) {
     // cout << ap1.repr() << endl;
 
     Aircraft ac;
-    ac = Aircraft::from_auto("id:1");
-    cout << ac.repr() << endl;
-    ac = Aircraft::from_auto("name:b747-400");
-    cout << ac.repr() << endl;
-    ac = Aircraft::from_auto("shortname:B744");
-    cout << ac.repr() << endl;
-    ac = Aircraft::from_auto("B744");
-    cout << ac.repr() << endl;
+    try {
+        ac = Aircraft::from_auto("name:Boeing B747-400");
+        cout << ac.repr() << endl;
+    } catch (DatabaseException &e) {
+        cerr << "DatabaseException: " << e.what() << endl;
+        return 1;
+    } catch (AircraftNotFoundException &e) {
+        cerr << "AircraftNotFoundException: " << e.what() << endl;
+        return 1;
+    }
+
 
     return 0;
 }

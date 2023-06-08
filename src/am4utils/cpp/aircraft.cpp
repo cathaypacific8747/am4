@@ -5,10 +5,6 @@
 
 using std::string;
 
-string Aircraft::repr() {
-    return "<Aircraft id=" + std::to_string(id) + " shortname='" + shortname + "' manufacturer='" + manufacturer + "' name='" + name + "' type=" + std::to_string(type) + " priority=" + std::to_string(priority) + " eid=" + std::to_string(eid) + " ename='" + ename + "' speed=" + std::to_string(speed) + " fuel=" + std::to_string(fuel) + " co2=" + std::to_string(co2) + " cost=" + std::to_string(cost) + " capacity=" + std::to_string(capacity) + " rwy=" + std::to_string(rwy) + " check_cost=" + std::to_string(check_cost) + " range=" + std::to_string(range) + " ceil=" + std::to_string(ceil) + " maint=" + std::to_string(maint) + " pilots=" + std::to_string(pilots) + " crew=" + std::to_string(crew) + " engineers=" + std::to_string(engineers) + " technicians=" + std::to_string(technicians) + " img='" + img + "' wingspan=" + std::to_string(wingspan) + " length=" + std::to_string(length) + ">";
-}
-
 Aircraft::Aircraft() : valid(false) {}
 
 Aircraft::Aircraft(const duckdb::DataChunk& chunk, idx_t row) : 
@@ -49,8 +45,8 @@ Aircraft Aircraft::_from_id(uint16_t id, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
-Aircraft Aircraft::_from_shortname(string shortname, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_shortname->Execute(shortname, priority);
+Aircraft Aircraft::_from_shortname(const string& shortname, uint8_t priority) {
+    auto result = Database::Client()->get_aircraft_by_shortname->Execute(shortname.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
     if (!chunk || chunk->size() == 0) return Aircraft();
@@ -58,8 +54,8 @@ Aircraft Aircraft::_from_shortname(string shortname, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
-Aircraft Aircraft::_from_name(string s, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_name->Execute(s, priority);
+Aircraft Aircraft::_from_name(const string& s, uint8_t priority) {
+    auto result = Database::Client()->get_aircraft_by_name->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
     if (!chunk || chunk->size() == 0) return Aircraft();
@@ -67,8 +63,8 @@ Aircraft Aircraft::_from_name(string s, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
-Aircraft Aircraft::_from_all(string s, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_all->Execute(s, priority);
+Aircraft Aircraft::_from_all(const string& s, uint8_t priority) {
+    auto result = Database::Client()->get_aircraft_by_all->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
     if (!chunk || chunk->size() == 0) return Aircraft();
@@ -77,31 +73,31 @@ Aircraft Aircraft::_from_all(string s, uint8_t priority) {
 }
 
 
-std::vector<Aircraft> Aircraft::_suggest_shortname(string s, uint8_t priority) {
+std::vector<Aircraft> Aircraft::_suggest_shortname(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
-    auto result = Database::Client()->suggest_aircraft_by_shortname->Execute(s, priority);
+    auto result = Database::Client()->suggest_aircraft_by_shortname->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     while (auto chunk = result->Fetch()) {
         for (idx_t i = 0; i < chunk->size(); i++) {
-            aircrafts.push_back(Aircraft(*chunk, i));
+            aircrafts.emplace_back(*chunk, i);
         }
     }
     return aircrafts;
 }
 
-std::vector<Aircraft> Aircraft::_suggest_name(string s, uint8_t priority) {
+std::vector<Aircraft> Aircraft::_suggest_name(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
-    auto result = Database::Client()->suggest_aircraft_by_name->Execute(s, priority);
+    auto result = Database::Client()->suggest_aircraft_by_name->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     while (auto chunk = result->Fetch()) {
         for (idx_t i = 0; i < chunk->size(); i++) {
-            aircrafts.push_back(Aircraft(*chunk, i));
+            aircrafts.emplace_back(*chunk, i);
         }
     }
     return aircrafts;
 }
 
-std::vector<Aircraft> Aircraft::_suggest_all(string s, uint8_t priority) {
+std::vector<Aircraft> Aircraft::_suggest_all(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
     std::vector<AircraftSuggestion> suggestions;
     for (auto& stmt : {
@@ -114,10 +110,10 @@ std::vector<Aircraft> Aircraft::_suggest_all(string s, uint8_t priority) {
         if (!chunk || chunk->size() == 0) continue;
 
         for (idx_t i = 0; i < chunk->size(); i++) {
-            AircraftSuggestion suggestion;
-            suggestion.score = chunk->GetValue(5, i).GetValue<double>();
-            suggestion.ac = Aircraft(*chunk, i);
-            suggestions.push_back(suggestion);
+            suggestions.emplace_back(
+                Aircraft(*chunk, i),
+                chunk->GetValue(5, i).GetValue<double>()
+            );
         }
     }
 
@@ -126,7 +122,7 @@ std::vector<Aircraft> Aircraft::_suggest_all(string s, uint8_t priority) {
     });
 
     for (size_t i = 0; i < std::min<size_t>(5, suggestions.size()); i++) {
-        aircrafts.push_back(suggestions[i].ac);
+        aircrafts.push_back(std::move(suggestions[i].ac));
     }
 
     return aircrafts;
@@ -182,4 +178,8 @@ Aircraft Aircraft::from_auto(string s) {
     }
 
     throw AircraftNotFoundException(search_type, s, aircrafts);
+}
+
+const string Aircraft::repr() {
+    return "<Aircraft id=" + std::to_string(id) + " shortname='" + shortname + "' manufacturer='" + manufacturer + "' name='" + name + "' type=" + std::to_string(type) + " priority=" + std::to_string(priority) + " eid=" + std::to_string(eid) + " ename='" + ename + "' speed=" + std::to_string(speed) + " fuel=" + std::to_string(fuel) + " co2=" + std::to_string(co2) + " cost=" + std::to_string(cost) + " capacity=" + std::to_string(capacity) + " rwy=" + std::to_string(rwy) + " check_cost=" + std::to_string(check_cost) + " range=" + std::to_string(range) + " ceil=" + std::to_string(ceil) + " maint=" + std::to_string(maint) + " pilots=" + std::to_string(pilots) + " crew=" + std::to_string(crew) + " engineers=" + std::to_string(engineers) + " technicians=" + std::to_string(technicians) + " img='" + img + "' wingspan=" + std::to_string(wingspan) + " length=" + std::to_string(length) + ">";
 }

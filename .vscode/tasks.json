@@ -2,14 +2,33 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "run main",
+            "label": "py: run main.py",
             "type": "shell",
-            "command": "py main.py"
+            "command": "${command:python.interpreterPath} main.py"
         },
         {
-            "label": "reinstall am4bot",
+            "label": "py: uninstall",
             "type": "shell",
-            "command": "pip3 uninstall am4bot; pip3 install ."
+            "command": "${command:python.interpreterPath} -m pip uninstall am4utils -y"
+        },
+        {
+            "label": "py: install",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} -m pip install --verbose \"src/am4utils/.[dev]\""
+        },
+        {
+            "label": "py: reinstall",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "py: uninstall",
+                "py: install"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "py: test",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} -m pytest"
         }
     ]
 }

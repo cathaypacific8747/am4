@@ -9,10 +9,6 @@
 using std::string;
 using namespace duckdb;
 
-string Airport::repr() {
-    return "<Airport id=" + std::to_string(id) + " name='" + name + "' fullname='" + fullname + "' country='" + country + "' continent='" + continent + "' iata='" + iata + "' icao='" + icao + "' lat=" + std::to_string(lat) + " lng=" + std::to_string(lng) + " rwy=" + std::to_string(rwy) + " market=" + std::to_string(market) + " hub_cost=" + std::to_string(hub_cost) + " rwy_codes='" + rwy_codes + "'>";
-}
-
 Airport::Airport() : valid(false) {}
 
 Airport::Airport(const duckdb::DataChunk& chunk, idx_t row) :
@@ -40,7 +36,7 @@ Airport Airport::_from_id(uint16_t id) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_iata(string s) {
+Airport Airport::_from_iata(const string& s) {
     auto result = Database::Client()->get_airport_by_iata->Execute(s.c_str()); // note: std::string somehow converts to BLOB
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -49,7 +45,7 @@ Airport Airport::_from_iata(string s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_icao(string s) {
+Airport Airport::_from_icao(const string& s) {
     auto result = Database::Client()->get_airport_by_icao->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -58,7 +54,7 @@ Airport Airport::_from_icao(string s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_name(string s) {
+Airport Airport::_from_name(const string& s) {
     auto result = Database::Client()->get_airport_by_name->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -67,7 +63,7 @@ Airport Airport::_from_name(string s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_all(string s) {
+Airport Airport::_from_all(const string& s) {
     auto result = Database::Client()->get_airport_by_all->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -77,43 +73,43 @@ Airport Airport::_from_all(string s) {
 }
 
 
-std::vector<Airport> Airport::_suggest_iata(string s) {
+std::vector<Airport> Airport::_suggest_iata(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_iata->Execute(s.c_str());
     CHECK_SUCCESS(result);
     while (auto chunk = result->Fetch()) {
         for (idx_t i = 0; i < chunk->size(); i++) {
-            airports.push_back(Airport(*chunk, i));
+            airports.emplace_back(*chunk, i);
         }
     }
     return airports;
 }
 
-std::vector<Airport> Airport::_suggest_icao(string s) {
+std::vector<Airport> Airport::_suggest_icao(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_icao->Execute(s.c_str());
     CHECK_SUCCESS(result);
     while (auto chunk = result->Fetch()) {
         for (idx_t i = 0; i < chunk->size(); i++) {
-            airports.push_back(Airport(*chunk, i));
+            airports.emplace_back(*chunk, i);
         }
     }
     return airports;
 }
 
-std::vector<Airport> Airport::_suggest_name(string s) {
+std::vector<Airport> Airport::_suggest_name(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_name->Execute(s.c_str());
     CHECK_SUCCESS(result);
     while (auto chunk = result->Fetch()) {
         for (idx_t i = 0; i < chunk->size(); i++) {
-            airports.push_back(Airport(*chunk, i));
+            airports.emplace_back(*chunk, i);
         }
     }
     return airports;
 }
 
-std::vector<Airport> Airport::_suggest_all(string s) {
+std::vector<Airport> Airport::_suggest_all(const string& s) {
     std::vector<Airport> airports;
     std::vector<AirportSuggestion> suggestions;
     // suggest_airport_by_* is a duckdb::unique_ptr<duckdb::PreparedStatement>
@@ -128,10 +124,10 @@ std::vector<Airport> Airport::_suggest_all(string s) {
         if (!chunk || chunk->size() == 0) continue;
 
         for (idx_t i = 0; i < chunk->size(); i++) {
-            AirportSuggestion suggestion;
-            suggestion.score = chunk->GetValue(13, i).GetValue<double>();
-            suggestion.ap = Airport(*chunk, i);
-            suggestions.push_back(suggestion);
+            suggestions.emplace_back(
+                Airport(*chunk, i),
+                chunk->GetValue(13, i).GetValue<double>()
+            );
         }
     }
 
@@ -140,7 +136,7 @@ std::vector<Airport> Airport::_suggest_all(string s) {
     });
 
     for (size_t i = 0; i < std::min<size_t>(5, suggestions.size()); i++) {
-        airports.push_back(suggestions[i].ap);
+        airports.push_back(std::move(suggestions[i].ap));
     }
 
     return airports;
@@ -202,4 +198,8 @@ Airport Airport::from_auto(string s) {
     }
 
     throw AirportNotFoundException(search_type, s, airports);
+}
+
+const string Airport::repr() {
+    return "<Airport id=" + std::to_string(id) + " name='" + name + "' fullname='" + fullname + "' country='" + country + "' continent='" + continent + "' iata='" + iata + "' icao='" + icao + "' lat=" + std::to_string(lat) + " lng=" + std::to_string(lng) + " rwy=" + std::to_string(rwy) + " market=" + std::to_string(market) + " hub_cost=" + std::to_string(hub_cost) + " rwy_codes='" + rwy_codes + "'>";
 }

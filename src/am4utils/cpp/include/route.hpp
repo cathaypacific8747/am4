@@ -46,9 +46,9 @@ struct Route {
     bool valid = false;
 
     static double calc_distance(double lat1, double lon1, double lat2, double lon2);
-    static double calc_distance(Airport a0, Airport a1);
+    static double calc_distance(const Airport& a0, const Airport& a1);
 
-    static Route from_airports(Airport a0, Airport a1);
+    static Route from_airports(const Airport& a0, const Airport& a1);
 
-    string repr();
+    const string repr();
 };
