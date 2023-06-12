@@ -43,7 +43,8 @@ PYBIND11_MODULE(_core, m) {
     m_route
         .def("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a)
-        .def("from_airports", &Route::from_airports, "a1"_a, "a2"_a);
+        .def("from_airports", &Route::from_airports, "ap1"_a, "ap2"_a)
+        .def("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a);
     
     // airport
     py::class_<Airport>(m_ap, "Airport")

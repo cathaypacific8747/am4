@@ -2,6 +2,11 @@
 
 Tools and utilities for Airline Manager 4 bot.
 
+Supports Python 3.9 - 3.11 on the following platforms:
+- manylinux2_24 x86_64 (ubuntu 16.10+, debian 9+, fedora 25+)
+- windows amd64
+- macos x86_64 / amd64
+
 ### Database tests
 download the [DuckDB command line binaries](https://duckdb.org/docs/installation/)
 

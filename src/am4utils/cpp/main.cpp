@@ -65,27 +65,27 @@ int main(int argc, char **argv) {
     // PaxTicket pt = PaxTicket::from_optimal(10000, GameMode::EASY);
     // cout << pt.y << " | " << pt.j << " | " << pt.f << endl;
     
-    // _debug_query("SELECT current_setting('home_directory')");
 
-    // Airport ap0 = Airport::from_auto("icao:VhHH");
-    // Airport ap1 = Airport::from_auto("iata:LhR");
+    // Aircraft ac;
+    // try {
+    //     ac = Aircraft::from_auto("name:B747-400");
+    //     cout << ac.repr() << endl;
+    // } catch (DatabaseException &e) {
+    //     cerr << "DatabaseException: " << e.what() << endl;
+    //     return 1;
+    // } catch (AircraftNotFoundException &e) {
+    //     cerr << "AircraftNotFoundException: " << e.what() << endl;
+    //     return 1;
+    // }
+
+
+    Airport ap0 = Airport::from_auto("icao:VhHH");
+    Airport ap1 = Airport::from_auto("iata:LhR");
+    Aircraft ac = Aircraft::from_auto("name:B747-400");
     // Route r = Route::from_airports(ap0, ap1);
-    // cout << r.origin.name << " -> " << r.destination.name << ": " << r.distance << "km, " << r.pax_demand.y << '/' << r.pax_demand.j << '/' << r.pax_demand.f << endl;
-    // cout << ap0.repr() << endl;
-    // cout << ap1.repr() << endl;
+    Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
+    cout << r.repr() << endl;
 
-    Aircraft ac;
-    try {
-        ac = Aircraft::from_auto("name:Boeing B747-400");
-        cout << ac.repr() << endl;
-    } catch (DatabaseException &e) {
-        cerr << "DatabaseException: " << e.what() << endl;
-        return 1;
-    } catch (AircraftNotFoundException &e) {
-        cerr << "AircraftNotFoundException: " << e.what() << endl;
-        return 1;
-    }
-
-
+    // _debug_query("SELECT current_setting('home_directory')");
     return 0;
 }

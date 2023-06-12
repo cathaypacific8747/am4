@@ -54,6 +54,7 @@ Aircraft Aircraft::_from_shortname(const string& shortname, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
+// TODO: also search for concat(manufacturer, ' ', name)?
 Aircraft Aircraft::_from_name(const string& s, uint8_t priority) {
     auto result = Database::Client()->get_aircraft_by_name->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
@@ -97,6 +98,7 @@ std::vector<Aircraft> Aircraft::_suggest_name(const string& s, uint8_t priority)
     return aircrafts;
 }
 
+// TODO: remove duplicates
 std::vector<Aircraft> Aircraft::_suggest_all(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
     std::vector<AircraftSuggestion> suggestions;

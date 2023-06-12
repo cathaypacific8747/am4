@@ -109,10 +109,10 @@ std::vector<Airport> Airport::_suggest_name(const string& s) {
     return airports;
 }
 
+// TODO: remove duplicates
 std::vector<Airport> Airport::_suggest_all(const string& s) {
     std::vector<Airport> airports;
     std::vector<AirportSuggestion> suggestions;
-    // suggest_airport_by_* is a duckdb::unique_ptr<duckdb::PreparedStatement>
     for (auto& stmt : {
         Database::Client()->suggest_airport_by_iata.get(),
         Database::Client()->suggest_airport_by_icao.get(),

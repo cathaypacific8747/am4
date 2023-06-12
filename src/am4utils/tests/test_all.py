@@ -76,3 +76,11 @@ def test_invalid_route_to_self():
 
     with pytest.raises(ValueError):
         _r = am4utils.route.from_airports(a0, a0)
+
+def test_route_with_aircraft():
+    a0 = am4utils.airport.from_auto('VHHH')
+    a1 = am4utils.airport.from_auto('LHR')
+    ac = am4utils.aircraft.from_auto('b744')
+    r = am4utils.route.from_airports_with_aircraft(a0, a1, ac)
+    assert int(r.distance) == 9630
+    assert r.pax_demand.y == 1093
