@@ -217,7 +217,7 @@ Route Route::from_airports(const Airport& ap1, const Airport& ap2) {
 }
 
 // depending on ac type, populate either pax or cargo demands
-Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac, uint16_t trips_per_day) {
+Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac, uint16_t trips_per_day, GameMode game_mode) {
     auto result = __get_route_result(ap1.id, ap2.id);
 
     auto chunk = result->Fetch();
@@ -229,28 +229,52 @@ Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2,
     route.distance = calc_distance(ap1, ap2);
     switch (ac.type) {
         case AircraftType::PAX:
-        case AircraftType::VIP:
             route.pax_demand = PaxDemand(*chunk, 0);
-            route.routed_aircraft = PurchasedAircraft(
+            route.purchased_aircraft = PurchasedAircraft(
                 ac,
-                RoutedAircaftConfig(Route::calc_pax_conf(
+                PurchasedAircaftConfig(Route::calc_pax_conf(
                     route.pax_demand,
                     ac.capacity,
                     route.distance,
-                    trips_per_day
+                    trips_per_day,
+                    game_mode
                 ))
             );
+            route.ticket = Ticket(PaxTicket::from_optimal(
+                route.distance,
+                game_mode
+            ));
             break;
         case AircraftType::CARGO:
             route.cargo_demand = CargoDemand(*chunk, 0);
-            route.routed_aircraft = PurchasedAircraft(
+            route.purchased_aircraft = PurchasedAircraft(
                 ac,
-                RoutedAircaftConfig(Route::calc_cargo_conf(
+                PurchasedAircaftConfig(Route::calc_cargo_conf(
                     route.cargo_demand,
                     ac.capacity,
                     trips_per_day
                 ))
             );
+            route.ticket = Ticket(CargoTicket::from_optimal(
+                route.distance,
+                game_mode
+            ));
+            break;
+        case AircraftType::VIP:
+            route.pax_demand = PaxDemand(*chunk, 0);
+            route.purchased_aircraft = PurchasedAircraft(
+                ac,
+                PurchasedAircaftConfig(Route::calc_pax_conf(
+                    route.pax_demand,
+                    ac.capacity,
+                    route.distance,
+                    trips_per_day,
+                    game_mode
+                ))
+            );
+            route.ticket = Ticket(VIPTicket::from_optimal(
+                route.distance
+            ));
             break;
     }
     

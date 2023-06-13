@@ -36,20 +36,22 @@ sudo apt install build-essential
 virtualenv .venv
 source .venv/bin/activate
 
-# python dev
-pip3 install --verbose "src/am4utils/.[dev]"
-pytest
-pip3 uninstall am4utils -y
-
 # C++ main dev
 mkdir build
 cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
 
+# python dev
+pip3 install --verbose "src/am4utils/.[dev]"
+pytest
+cd src/am4utils
+python3 generate-stubs.py
+pip3 uninstall am4utils -y
+
 # build wheel
-mkdir /tmp/cibuildwheel/built_wheel
-python3 -m pip wheel . --wheel-dir=/tmp/cibuildwheel/built_wheel --no-deps -v
-pip install /tmp/cibuildwheel/built_wheel/am4utils-*.whl --force-reinstall
+mkdir wheelhouse
+python3 -m pip wheel . --wheel-dir=wheelhouse no-deps -v
+pip install wheelhouse/am4utils-*.whl --force-reinstall
 
 .venv/scripts/deactivate
 ```

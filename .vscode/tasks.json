@@ -12,6 +12,14 @@
             "command": "${command:python.interpreterPath} -m pip uninstall am4utils -y"
         },
         {
+            "label": "py: generate stubs",
+            "type": "shell",
+            "options": {
+                "cwd": "src/am4utils"
+            },
+            "command": "${command:python.interpreterPath} generate-stubs.py"
+        },
+        {
             "label": "py: install",
             "type": "shell",
             "command": "${command:python.interpreterPath} -m pip install --verbose \"src/am4utils/.[dev]\""
@@ -21,7 +29,8 @@
             "dependsOrder": "sequence",
             "dependsOn": [
                 "py: uninstall",
-                "py: install"
+                "py: install",
+                "py: generate stubs",
             ],
             "problemMatcher": []
         },

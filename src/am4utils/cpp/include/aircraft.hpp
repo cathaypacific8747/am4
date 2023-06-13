@@ -118,19 +118,19 @@ struct CargoConfig {
     bool valid;
 };
 
-union RoutedAircaftConfig {
+union PurchasedAircaftConfig {
     PaxConfig pax_config;
     CargoConfig cargo_config;
 
-    RoutedAircaftConfig() {}
-    RoutedAircaftConfig(const PaxConfig& pax_config) : pax_config(pax_config) {}
-    RoutedAircaftConfig(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
+    PurchasedAircaftConfig() {}
+    PurchasedAircaftConfig(const PaxConfig& pax_config) : pax_config(pax_config) {}
+    PurchasedAircaftConfig(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
 };
 
 struct PurchasedAircraft {
     Aircraft aircraft;
-    RoutedAircaftConfig config;
+    PurchasedAircaftConfig config;
 
     PurchasedAircraft() {}
-    PurchasedAircraft(const Aircraft& ac, const RoutedAircaftConfig& config) : aircraft(ac), config(config) {}
+    PurchasedAircraft(const Aircraft& ac, const PurchasedAircaftConfig& config) : aircraft(ac), config(config) {}
 };

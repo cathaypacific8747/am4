@@ -1,6 +1,6 @@
 [project]
 name = "am4utils"
-version = "0.1.1"
+version = "0.1.2"
 description = "Tools and utilities for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
 license = { text = "MIT License" }
@@ -16,7 +16,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pybind11", "pytest"]
+dev = ["pybind11", "pybind11-stubgen", "pytest"]
 
 [build-system]
 requires = ["scikit-build-core>=0.3.3", "pybind11"]

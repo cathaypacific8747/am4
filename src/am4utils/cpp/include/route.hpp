@@ -11,14 +11,14 @@ struct PaxTicket {
     uint16_t j;
     uint16_t f;
     
-    static PaxTicket from_optimal(float distance, GameMode game_mode);
+    static PaxTicket from_optimal(float distance, GameMode game_mode = GameMode::EASY);
 };
 
 struct CargoTicket {
     float l;
     float h;
 
-    static CargoTicket from_optimal(float distance, GameMode game_mode);
+    static CargoTicket from_optimal(float distance, GameMode game_mode = GameMode::EASY);
 };
 
 struct VIPTicket {
@@ -27,6 +27,17 @@ struct VIPTicket {
     uint16_t f;
     
     static VIPTicket from_optimal(float distance);
+};
+
+union Ticket {
+    PaxTicket pax_ticket;
+    CargoTicket cargo_ticket;
+    VIPTicket vip_ticket;
+
+    Ticket() {}
+    Ticket(const PaxTicket& pax_ticket) : pax_ticket(pax_ticket) {}
+    Ticket(const CargoTicket& cargo_ticket) : cargo_ticket(cargo_ticket) {}
+    Ticket(const VIPTicket& vip_ticket) : vip_ticket(vip_ticket) {}
 };
 
 struct PaxDemand {
@@ -58,7 +69,8 @@ struct Route {
     PaxDemand pax_demand;
     CargoDemand cargo_demand;
 
-    PurchasedAircraft routed_aircraft;
+    PurchasedAircraft purchased_aircraft;
+    Ticket ticket;
 
     double distance;
     bool valid = false;
@@ -83,7 +95,7 @@ struct Route {
 
 
     static Route from_airports(const Airport& a0, const Airport& a1);
-    static Route from_airports_with_aircraft(const Airport& a0, const Airport& a1, const Aircraft& ac, uint16_t trips_per_day = 1);
+    static Route from_airports_with_aircraft(const Airport& a0, const Airport& a1, const Aircraft& ac, uint16_t trips_per_day = 1, GameMode game_mode = GameMode::EASY);
 
     const string repr();
 };

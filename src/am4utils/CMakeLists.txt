@@ -41,7 +41,7 @@ install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
 install(FILES ${CMAKE_SOURCE_DIR}/__init__.py DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
-
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION .) # / is important!
 
 # debug executable
 add_executable(_core_executable
