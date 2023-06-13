@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "include/db.hpp"
 #include "include/aircraft.hpp"
@@ -12,7 +13,7 @@ Aircraft::Aircraft(const duckdb::DataChunk& chunk, idx_t row) :
     shortname(chunk.GetValue(1, row).GetValue<string>()),
     manufacturer(chunk.GetValue(2, row).GetValue<string>()),
     name(chunk.GetValue(3, row).GetValue<string>()),
-    type(static_cast<AircraftType>(chunk.GetValue(4, row).GetValue<uint8_t>())),
+    type(static_cast<Aircraft::Type>(chunk.GetValue(4, row).GetValue<uint8_t>())),
     priority(chunk.GetValue(5, row).GetValue<uint8_t>()),
     eid(chunk.GetValue(6, row).GetValue<uint16_t>()),
     ename(chunk.GetValue(7, row).GetValue<string>()),
@@ -133,25 +134,25 @@ std::vector<Aircraft> Aircraft::_suggest_all(const string& s, uint8_t priority) 
 
 Aircraft Aircraft::from_auto(string s) {
     Aircraft ac;
-    AircraftSearchType search_type = AircraftSearchType::ALL;
+    Aircraft::SearchType search_type = Aircraft::SearchType::ALL;
 
     string s_lower = s;
     std::transform(s_lower.begin(), s_lower.end(), s_lower.begin(), ::tolower);
 
     // search airports
     if (s_lower.substr(0, 5) == "name:") {
-        search_type = AircraftSearchType::NAME;
+        search_type = Aircraft::SearchType::NAME;
         s = s_lower.substr(5);
         ac = Aircraft::_from_name(s);
     } else if (s_lower.substr(0, 10) == "shortname:") {
-        search_type = AircraftSearchType::SHORTNAME;
+        search_type = Aircraft::SearchType::SHORTNAME;
         s = s_lower.substr(10);
         ac = Aircraft::_from_shortname(s);
     } else if (s_lower.substr(0, 4) == "all:") {
         s = s_lower.substr(4);
         ac = Aircraft::_from_all(s);
     } else if (s_lower.substr(0, 3) == "id:") {
-        search_type = AircraftSearchType::ID;
+        search_type = Aircraft::SearchType::ID;
         s = s.substr(3);
         try {
             ac = Aircraft::_from_id(std::stoi(s));
@@ -168,13 +169,13 @@ Aircraft Aircraft::from_auto(string s) {
     // empty airports, suggest and throw error
     std::vector<Aircraft> aircrafts;
     switch (search_type) {
-        case AircraftSearchType::ALL:
+        case Aircraft::SearchType::ALL:
             aircrafts = Aircraft::_suggest_all(s);
             break;
-        case AircraftSearchType::NAME:
+        case Aircraft::SearchType::NAME:
             aircrafts = Aircraft::_suggest_name(s);
             break;
-        case AircraftSearchType::SHORTNAME:
+        case Aircraft::SearchType::SHORTNAME:
             aircrafts = Aircraft::_suggest_shortname(s);
             break;
     }
@@ -183,5 +184,21 @@ Aircraft Aircraft::from_auto(string s) {
 }
 
 const string Aircraft::repr() {
-    return "<Aircraft id=" + std::to_string(id) + " shortname='" + shortname + "' manufacturer='" + manufacturer + "' name='" + name + "' type=" + std::to_string(type) + " priority=" + std::to_string(priority) + " eid=" + std::to_string(eid) + " ename='" + ename + "' speed=" + std::to_string(speed) + " fuel=" + std::to_string(fuel) + " co2=" + std::to_string(co2) + " cost=" + std::to_string(cost) + " capacity=" + std::to_string(capacity) + " rwy=" + std::to_string(rwy) + " check_cost=" + std::to_string(check_cost) + " range=" + std::to_string(range) + " ceil=" + std::to_string(ceil) + " maint=" + std::to_string(maint) + " pilots=" + std::to_string(pilots) + " crew=" + std::to_string(crew) + " engineers=" + std::to_string(engineers) + " technicians=" + std::to_string(technicians) + " img='" + img + "' wingspan=" + std::to_string(wingspan) + " length=" + std::to_string(length) + ">";
+    std::stringstream ss;
+    std::string actype;
+    switch(type) {
+        case Aircraft::Type::PAX:
+            actype = "PAX";
+            break;
+        case Aircraft::Type::CARGO:
+            actype = "CARGO";
+            break;
+        case Aircraft::Type::VIP:
+            actype = "VIP";
+            break;
+    }
+
+    ss << "<Aircraft id=" << id << " shortname='" << shortname << "' manufacturer='" << manufacturer << "' name='" << name << "' type=" << actype << " priority=" << priority << " eid=" << eid << " ename='" << ename << "' speed=" << speed << " fuel=" << fuel << " co2=" << co2 << " cost=" << cost << " capacity=" << capacity << " rwy=" << rwy << " check_cost=" << check_cost << " range=" << range << " ceil=" << ceil << " maint=" << maint << " pilots=" << pilots << " crew=" << crew << " engineers=" << engineers << " technicians=" << technicians << " img='" << img << "' wingspan=" << wingspan << " length=" << length << ">";
+
+    return ss.str();
 }

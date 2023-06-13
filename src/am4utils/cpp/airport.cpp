@@ -144,26 +144,26 @@ std::vector<Airport> Airport::_suggest_all(const string& s) {
 
 Airport Airport::from_auto(string s) {
     Airport ap;
-    AirportSearchType search_type = AirportSearchType::ALL;
+    Airport::SearchType search_type = Airport::SearchType::ALL;
 
     string s_upper = s;
     std::transform(s_upper.begin(), s_upper.end(), s_upper.begin(), ::toupper);
 
     // search airports
     if (s_upper.substr(0, 5) == "IATA:") {
-        search_type = AirportSearchType::IATA;
+        search_type = Airport::SearchType::IATA;
         s = s_upper.substr(5);
         ap = Airport::_from_iata(s);
     } else if (s_upper.substr(0, 5) == "ICAO:") {
-        search_type = AirportSearchType::ICAO;
+        search_type = Airport::SearchType::ICAO;
         s = s_upper.substr(5);
         ap = Airport::_from_icao(s);
     } else if (s_upper.substr(0, 5) == "NAME:") {
-        search_type = AirportSearchType::NAME;
+        search_type = Airport::SearchType::NAME;
         s = s_upper.substr(5);
         ap = Airport::_from_name(s);
     } else if (s_upper.substr(0, 3) == "ID:") {
-        search_type = AirportSearchType::ID;
+        search_type = Airport::SearchType::ID;
         s = s.substr(3);
         try {
             ap = Airport::_from_id(std::stoi(s));
@@ -183,16 +183,16 @@ Airport Airport::from_auto(string s) {
     // empty airports, suggest and throw error
     std::vector<Airport> airports;
     switch (search_type) {
-        case AirportSearchType::ALL:
+        case Airport::SearchType::ALL:
             airports = Airport::_suggest_all(s);
             break;
-        case AirportSearchType::IATA:
+        case Airport::SearchType::IATA:
             airports = Airport::_suggest_iata(s);
             break;
-        case AirportSearchType::ICAO:
+        case Airport::SearchType::ICAO:
             airports = Airport::_suggest_icao(s);
             break;
-        case AirportSearchType::NAME:
+        case Airport::SearchType::NAME:
             airports = Airport::_suggest_name(s);
             break;
     }

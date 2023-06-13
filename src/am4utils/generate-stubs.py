@@ -8,13 +8,14 @@ if __name__ == '__main__':
     pybind11_stubgen.StubsGenerator.GLOBAL_CLASSNAME_REPLACEMENTS.update({
         re.compile(r'union (\w+)'): lambda m: m.group(1),
         re.compile(r'PurchasedAircaftConfig'): lambda m: 'PurchasedAircraftConfig',
+        re.compile(r'::'): lambda m: '.', # scoped enum in class
     })
 
     pybind11_stubgen.main(
         [
-            "am4utils",
             "-o", ".",
             "--no-setup-py",
+            "am4utils",
         ],
     )
     shutil.move('am4utils-stubs', 'stubs')

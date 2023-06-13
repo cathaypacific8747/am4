@@ -1,10 +1,10 @@
 #include <pybind11/pybind11.h>
 
-#include "include/enums.h"
 #include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/aircraft.hpp"
 #include "include/route.hpp"
+#include "include/user.hpp"
 
 #ifdef VERSION_INFO
     string version = MACRO_STRINGIFY(VERSION_INFO);
@@ -20,22 +20,12 @@ PYBIND11_MODULE(_core, m) {
     py::module_ m_ac = m.def_submodule("aircraft", "Aircraft");
     py::module_ m_ap = m.def_submodule("airport", "Airport");
     py::module_ m_route = m.def_submodule("route", "Route");
+    py::module_ m_user = m.def_submodule("user", "User");
 
     // needs to be defined before classes for default arguments to work
-    py::enum_<GameMode>(m, "GameMode")
-        .value("EASY", GameMode::EASY)
-        .value("REALISM", GameMode::REALISM);
-
-    py::enum_<AircraftType>(m_ac, "AircraftType")
-        .value("PAX", AircraftType::PAX)
-        .value("CARGO", AircraftType::CARGO)
-        .value("VIP", AircraftType::VIP);
-    
-    py::enum_<PaxConfigAlgorithm>(m_ac, "PaxConfigAlgorithm")
-        .value("FJY", PaxConfigAlgorithm::FJY).value("FYJ", PaxConfigAlgorithm::FYJ)
-        .value("JFY", PaxConfigAlgorithm::JFY).value("JYF", PaxConfigAlgorithm::JYF)
-        .value("YJF", PaxConfigAlgorithm::YJF).value("YFJ", PaxConfigAlgorithm::YFJ);
-
+    py::enum_<User::GameMode>(m_user, "GameMode")
+        .value("EASY", User::GameMode::EASY)
+        .value("REALISM", User::GameMode::REALISM);
 
     /*** DATABASE ***/
     m_db
@@ -46,7 +36,8 @@ PYBIND11_MODULE(_core, m) {
 
 
     /*** AIRCRAFT ***/
-    py::class_<Aircraft>(m_ac, "Aircraft")
+    py::class_<Aircraft> ac_class(m_ac, "Aircraft");
+    ac_class
         .def(py::init<>())
         .def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
@@ -81,17 +72,23 @@ PYBIND11_MODULE(_core, m) {
         .def_static("from_auto", &Aircraft::from_auto, "s"_a)
         .def("__repr__", &Aircraft::repr);
     
-    py::class_<PurchasedAircraft>(m_ac, "PurchasedAircraft")
+    py::enum_<Aircraft::Type>(ac_class, "Type")
+        .value("PAX", Aircraft::Type::PAX)
+        .value("CARGO", Aircraft::Type::CARGO)
+        .value("VIP", Aircraft::Type::VIP);
+    
+    py::class_<PurchasedAircraft, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
+    p_ac_class
         .def(py::init<>())
-        .def_readonly("aircraft", &PurchasedAircraft::aircraft)
         .def_readonly("config", &PurchasedAircraft::config);
     
-    py::class_<PurchasedAircaftConfig>(m_ac, "PurchasedAircraftConfig")
+    py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
         .def(py::init<>())
-        .def_readonly("pax_config", &PurchasedAircaftConfig::pax_config)
-        .def_readonly("cargo_config", &PurchasedAircaftConfig::cargo_config);
+        .def_readonly("pax_config", &PurchasedAircraft::Config::pax_config)
+        .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
     
-    py::class_<PaxConfig>(m_ac, "PaxConfig")
+    py::class_<PaxConfig> pc_class(m_ac, "PaxConfig");
+    pc_class
         .def(py::init<>())
         .def_readonly("y", &PaxConfig::y)
         .def_readonly("j", &PaxConfig::j)
@@ -99,11 +96,23 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("valid", &PaxConfig::valid)
         .def_readonly("algorithm", &PaxConfig::algorithm);
 
-    py::class_<CargoConfig>(m_ac, "CargoConfig")
+    py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
+        .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)
+        .value("JFY", PaxConfig::Algorithm::JFY).value("JYF", PaxConfig::Algorithm::JYF)
+        .value("YJF", PaxConfig::Algorithm::YJF).value("YFJ", PaxConfig::Algorithm::YFJ)
+        .value("NONE", PaxConfig::Algorithm::NONE);
+
+    py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
+    cc_class
         .def(py::init<>())
         .def_readonly("l", &CargoConfig::l)
         .def_readonly("h", &CargoConfig::h)
-        .def_readonly("valid", &CargoConfig::valid);
+        .def_readonly("valid", &CargoConfig::valid)
+        .def_readonly("algorithm", &CargoConfig::algorithm);
+
+    py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
+        .value("L", CargoConfig::Algorithm::L).value("HL", CargoConfig::Algorithm::H)
+        .value("NONE", CargoConfig::Algorithm::NONE);
 
     py::register_exception<AircraftNotFoundException>(m_ac, "AircraftNotFoundException");
 
@@ -143,14 +152,14 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("destination", &Route::destination)
         .def_readonly("pax_demand", &Route::pax_demand)
         .def_readonly("cargo_demand", &Route::cargo_demand)
-        .def_readonly("purchased_aircraft", &Route::purchased_aircraft)
+        .def_readonly("aircraft", &Route::aircraft)
         .def_readonly("ticket", &Route::ticket)
-        .def_readonly("distance", &Route::distance)
+        .def_readonly("direct_distance", &Route::direct_distance)
         .def_readonly("valid", &Route::valid)
         .def_static("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def_static("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def_static("from_airports", &Route::from_airports, "ap1"_a, "ap2"_a)
-        .def_static("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a, "trips_per_day"_a = 1, "game_mode"_a = GameMode::EASY)
+        .def_static("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a, "trips_per_day"_a = 1, "game_mode"_a = User::GameMode::EASY)
         .def("__repr__", &Route::repr);
         
 

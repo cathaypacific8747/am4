@@ -5,7 +5,6 @@
 #include <iomanip>
 #include <chrono>
 
-#include "include/enums.h"
 #include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/aircraft.hpp"
@@ -62,7 +61,7 @@ int main(int argc, char **argv) {
     }
     // cout << "initialised database" << endl;
 
-    // PaxTicket pt = PaxTicket::from_optimal(10000, GameMode::EASY);
+    // PaxTicket pt = PaxTicket::from_optimal(10000, User::GameMode::EASY);
     // cout << pt.y << " | " << pt.j << " | " << pt.f << endl;
     
 

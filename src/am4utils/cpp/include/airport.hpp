@@ -3,12 +3,18 @@
 #include <sstream>
 #include <duckdb.hpp>
 
-#include "enums.h"
-
 using std::string;
 using std::vector;
 
 struct Airport {
+    enum class SearchType {
+        ALL,
+        IATA,
+        ICAO,
+        NAME,
+        ID,
+    };
+
     uint16_t id;
     string name;
     string fullname;
@@ -52,28 +58,28 @@ struct AirportSuggestion {
 
 class AirportNotFoundException : public std::exception {
 private:
-    AirportSearchType searchtype;
+    Airport::SearchType searchtype;
     string searchstr;
     std::vector<Airport> suggestions;
 public:
-    AirportNotFoundException(AirportSearchType searchtype, string searchstr, std::vector<Airport> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
+    AirportNotFoundException(Airport::SearchType searchtype, string searchstr, std::vector<Airport> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
     const char* what() const throw() {
         std::stringstream ss;
         string searchtype_str;
         switch (searchtype) {
-            case AirportSearchType::ALL:
+            case Airport::SearchType::ALL:
                 searchtype_str = "all";
                 break;
-            case AirportSearchType::IATA:
+            case Airport::SearchType::IATA:
                 searchtype_str = "iata";
                 break;
-            case AirportSearchType::ICAO:
+            case Airport::SearchType::ICAO:
                 searchtype_str = "icao";
                 break;
-            case AirportSearchType::NAME:
+            case Airport::SearchType::NAME:
                 searchtype_str = "name";
                 break;
-            case AirportSearchType::ID:
+            case Airport::SearchType::ID:
                 searchtype_str = "id";
                 break;
             default:
@@ -89,7 +95,7 @@ public:
         }
         return ss.str().c_str();
     }
-    AirportSearchType get_searchtype() { return searchtype; }
+    Airport::SearchType get_searchtype() { return searchtype; }
     string get_searchstr() { return searchstr; }
     std::vector<Airport> get_suggestions() { return suggestions; }
 };

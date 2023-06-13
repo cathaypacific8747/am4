@@ -6,7 +6,4 @@ if __name__ == '__main__':
 
     a0 = am4utils.aircraft.Aircraft.from_auto('name:B747-400')
     assert a0.shortname == "b744"
-    help(a0)
-
-    # ticket = am4utils.route.create_optimal_pax_ticket(10000, am4utils.GameMode.EASY) # 4580 9240 13990
-    # help(ticket)
+    help(a0.type)

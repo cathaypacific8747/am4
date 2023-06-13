@@ -8,12 +8,45 @@ __all__ = [
     "AircraftNotFoundException",
     "CargoConfig",
     "PaxConfig",
-    "PurchasedAircraft",
-    "PurchasedAircraftConfig"
+    "PurchasedAircraft"
 ]
 
 
 class Aircraft():
+    class Type():
+        """
+        Members:
+
+          PAX
+
+          CARGO
+
+          VIP
+        """
+        def __eq__(self, other: object) -> bool: ...
+        def __getstate__(self) -> int: ...
+        def __hash__(self) -> int: ...
+        def __index__(self) -> int: ...
+        def __init__(self, value: int) -> None: ...
+        def __int__(self) -> int: ...
+        def __ne__(self, other: object) -> bool: ...
+        def __repr__(self) -> str: ...
+        def __setstate__(self, state: int) -> None: ...
+        @property
+        def name(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def value(self) -> int:
+            """
+            :type: int
+            """
+        CARGO: am4utils._core.aircraft.Aircraft.Type # value = <Type.CARGO: 1>
+        PAX: am4utils._core.aircraft.Aircraft.Type # value = <Type.PAX: 0>
+        VIP: am4utils._core.aircraft.Aircraft.Type # value = <Type.VIP: 2>
+        __members__: dict # value = {'PAX': <Type.PAX: 0>, 'CARGO': <Type.CARGO: 1>, 'VIP': <Type.VIP: 2>}
+        pass
     def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
     @staticmethod
@@ -142,9 +175,9 @@ class Aircraft():
         :type: int
         """
     @property
-    def type(self) -> am4utils._core.AircraftType:
+    def type(self) -> Aircraft.Type:
         """
-        :type: am4utils._core.AircraftType
+        :type: Aircraft.Type
         """
     @property
     def valid(self) -> bool:
@@ -160,7 +193,46 @@ class Aircraft():
 class AircraftNotFoundException(Exception, BaseException):
     pass
 class CargoConfig():
+    class Algorithm():
+        """
+        Members:
+
+          L
+
+          HL
+
+          NONE
+        """
+        def __eq__(self, other: object) -> bool: ...
+        def __getstate__(self) -> int: ...
+        def __hash__(self) -> int: ...
+        def __index__(self) -> int: ...
+        def __init__(self, value: int) -> None: ...
+        def __int__(self) -> int: ...
+        def __ne__(self, other: object) -> bool: ...
+        def __repr__(self) -> str: ...
+        def __setstate__(self, state: int) -> None: ...
+        @property
+        def name(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def value(self) -> int:
+            """
+            :type: int
+            """
+        HL: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.HL: 1>
+        L: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.L: 0>
+        NONE: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.NONE: 2>
+        __members__: dict # value = {'L': <Algorithm.L: 0>, 'HL': <Algorithm.HL: 1>, 'NONE': <Algorithm.NONE: 2>}
+        pass
     def __init__(self) -> None: ...
+    @property
+    def algorithm(self) -> CargoConfig.Algorithm:
+        """
+        :type: CargoConfig.Algorithm
+        """
     @property
     def h(self) -> int:
         """
@@ -178,11 +250,57 @@ class CargoConfig():
         """
     pass
 class PaxConfig():
+    class Algorithm():
+        """
+        Members:
+
+          FJY
+
+          FYJ
+
+          JFY
+
+          JYF
+
+          YJF
+
+          YFJ
+
+          NONE
+        """
+        def __eq__(self, other: object) -> bool: ...
+        def __getstate__(self) -> int: ...
+        def __hash__(self) -> int: ...
+        def __index__(self) -> int: ...
+        def __init__(self, value: int) -> None: ...
+        def __int__(self) -> int: ...
+        def __ne__(self, other: object) -> bool: ...
+        def __repr__(self) -> str: ...
+        def __setstate__(self, state: int) -> None: ...
+        @property
+        def name(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def value(self) -> int:
+            """
+            :type: int
+            """
+        FJY: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.FJY: 0>
+        FYJ: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.FYJ: 1>
+        JFY: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.JFY: 2>
+        JYF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.JYF: 3>
+        NONE: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.NONE: 6>
+        YFJ: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YFJ: 5>
+        YJF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YJF: 4>
+        __members__: dict # value = {'FJY': <Algorithm.FJY: 0>, 'FYJ': <Algorithm.FYJ: 1>, 'JFY': <Algorithm.JFY: 2>, 'JYF': <Algorithm.JYF: 3>, 'YJF': <Algorithm.YJF: 4>, 'YFJ': <Algorithm.YFJ: 5>, 'NONE': <Algorithm.NONE: 6>}
+        pass
     def __init__(self) -> None: ...
     @property
-    def algorithm(self) -> am4utils._core.PaxConfigAlgorithm:
+    def algorithm(self) -> PaxConfig.Algorithm:
         """
-        :type: am4utils._core.PaxConfigAlgorithm
+        :type: PaxConfig.Algorithm
         """
     @property
     def f(self) -> int:
@@ -205,29 +323,24 @@ class PaxConfig():
         :type: int
         """
     pass
-class PurchasedAircraft():
+class PurchasedAircraft(Aircraft):
+    class Config():
+        def __init__(self) -> None: ...
+        @property
+        def cargo_config(self) -> CargoConfig:
+            """
+            :type: CargoConfig
+            """
+        @property
+        def pax_config(self) -> PaxConfig:
+            """
+            :type: PaxConfig
+            """
+        pass
     def __init__(self) -> None: ...
     @property
-    def aircraft(self) -> Aircraft:
+    def config(self) -> PurchasedAircraft.Config:
         """
-        :type: Aircraft
-        """
-    @property
-    def config(self) -> PurchasedAircraftConfig:
-        """
-        :type: PurchasedAircraftConfig
-        """
-    pass
-class PurchasedAircraftConfig():
-    def __init__(self) -> None: ...
-    @property
-    def cargo_config(self) -> CargoConfig:
-        """
-        :type: CargoConfig
-        """
-    @property
-    def pax_config(self) -> PaxConfig:
-        """
-        :type: PaxConfig
+        :type: PurchasedAircraft.Config
         """
     pass

@@ -4,13 +4,11 @@
 #include <iostream>
 
 #include "include/db.hpp"
-#include "include/airport.hpp"
 #include "include/route.hpp"
-#include "include/enums.h"
 
-PaxTicket PaxTicket::from_optimal(float distance, GameMode game_mode) {
+PaxTicket PaxTicket::from_optimal(float distance, User::GameMode game_mode) {
     PaxTicket ticket;
-    if (game_mode == GameMode::EASY) {
+    if (game_mode == User::GameMode::EASY) {
         ticket.y = (uint16_t)(1.10 * (0.4 * distance + 170)) - 2;
         ticket.j = (uint16_t)(1.08 * (0.8 * distance + 560)) - 2;
         ticket.f = (uint16_t)(1.06 * (1.2 * distance + 1200)) - 2;
@@ -22,9 +20,9 @@ PaxTicket PaxTicket::from_optimal(float distance, GameMode game_mode) {
     return ticket;
 };
 
-CargoTicket CargoTicket::from_optimal(float distance, GameMode game_mode) {
+CargoTicket CargoTicket::from_optimal(float distance, User::GameMode game_mode) {
     CargoTicket ticket;
-    if (game_mode == GameMode::EASY) {
+    if (game_mode == User::GameMode::EASY) {
         ticket.l = floorf(1.10 * (0.0948283724581252 * distance + 85.2045432642377000)) / 100;
         ticket.h = floorf(1.08 * (0.0689663577640275 * distance + 28.2981124272893000)) / 100;
     } else {
@@ -76,7 +74,7 @@ PaxConfig Route::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
     config.y = capacity - config.f * 3 - config.j * 2;
     config.valid = config.y < d_pf.y;
-    config.algorithm = PaxConfigAlgorithm::FJY;
+    config.algorithm = PaxConfig::Algorithm::FJY;
     return config;
 };
 
@@ -86,7 +84,7 @@ PaxConfig Route::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
     config.j = (capacity - config.f * 3 - config.y) / 2;
     config.valid = config.j < d_pf.j;
-    config.algorithm = PaxConfigAlgorithm::FYJ;
+    config.algorithm = PaxConfig::Algorithm::FYJ;
     return config;
 };
 
@@ -96,7 +94,7 @@ PaxConfig Route::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
     config.y = capacity - config.j * 2 - config.f * 3;
     config.valid = config.y < d_pf.y;
-    config.algorithm = PaxConfigAlgorithm::JFY;
+    config.algorithm = PaxConfig::Algorithm::JFY;
     return config;
 };
 
@@ -106,7 +104,7 @@ PaxConfig Route::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
     config.f = capacity - config.y - config.j * 2;
     config.valid = config.f < d_pf.f;
-    config.algorithm = PaxConfigAlgorithm::JYF;
+    config.algorithm = PaxConfig::Algorithm::JYF;
     return config;
 };
 
@@ -116,7 +114,7 @@ PaxConfig Route::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
     config.j = (capacity - config.y - config.f * 3) / 2;
     config.valid = config.j < d_pf.j;
-    config.algorithm = PaxConfigAlgorithm::YFJ;
+    config.algorithm = PaxConfig::Algorithm::YFJ;
     return config;
 };
 
@@ -126,11 +124,11 @@ PaxConfig Route::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float d
     config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
     config.f = capacity - config.y - config.j * 2;
     config.valid = config.f < d_pf.f;
-    config.algorithm = PaxConfigAlgorithm::YJF;
+    config.algorithm = PaxConfig::Algorithm::YJF;
     return config;
 };
 
-PaxConfig Route::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day, GameMode game_mode) {
+PaxConfig Route::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day, User::User::GameMode game_mode) {
     PaxDemand d_pf = PaxDemand(
         pax_demand.y / trips_per_day,
         pax_demand.j / trips_per_day,
@@ -138,7 +136,7 @@ PaxConfig Route::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, f
     );
 
     PaxConfig config;
-    if (game_mode == GameMode::EASY) {
+    if (game_mode == User::GameMode::EASY) {
         if (distance < 14425) {
             config = calc_fjy_conf(d_pf, capacity, distance);
         } else if (distance < 14812) {
@@ -162,14 +160,8 @@ PaxConfig Route::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, f
     return config;
 }
 
-CargoConfig Route::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day, uint8_t l_training) {
-    // always fill up low priority first
-    CargoDemand d_pf = CargoDemand(
-        cargo_demand.l / trips_per_day,
-        cargo_demand.h / trips_per_day
-    );
-
-    double l_cap = capacity * (1 + l_training / 100.0) * 0.7;
+CargoConfig Route::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
+    double l_cap = capacity * 0.7;
 
     CargoConfig config;
     if (d_pf.l > l_cap) {
@@ -182,6 +174,31 @@ CargoConfig Route::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t cap
         config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
     }
     return config;
+}
+
+// virually useless!
+CargoConfig Route::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
+    CargoConfig config;
+    if (d_pf.h > capacity) {
+        config.h = 100;
+        config.l = 0;
+        config.valid = true;
+    } else {
+        config.h = d_pf.h / capacity * 100;
+        config.l = 100 - config.h;
+        config.valid = d_pf.l >= capacity - d_pf.h;
+    }
+    return config;
+}
+
+CargoConfig Route::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day, uint8_t l_training) {
+    CargoDemand d_pf = CargoDemand(
+        cargo_demand.l / trips_per_day,
+        cargo_demand.h / trips_per_day
+    );
+    double true_capacity = capacity * (1 + l_training / 100.0);
+
+    return calc_l_conf(d_pf, true_capacity); // low priority is always more profitable
 }
 
 duckdb::unique_ptr<duckdb::QueryResult> inline Route::__get_route_result(uint16_t id0, uint16_t id1) {
@@ -207,7 +224,7 @@ Route Route::from_airports(const Airport& ap1, const Airport& ap2) {
     Route route;
     route.origin = ap1;
     route.destination = ap2;
-    route.distance = calc_distance(ap1, ap2);
+    route.direct_distance = calc_distance(ap1, ap2);
     route.pax_demand = PaxDemand(*chunk, 0);
     route.cargo_demand = CargoDemand(*chunk, 0);
     
@@ -217,7 +234,7 @@ Route Route::from_airports(const Airport& ap1, const Airport& ap2) {
 }
 
 // depending on ac type, populate either pax or cargo demands
-Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac, uint16_t trips_per_day, GameMode game_mode) {
+Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac, uint16_t trips_per_day, User::GameMode game_mode) {
     auto result = __get_route_result(ap1.id, ap2.id);
 
     auto chunk = result->Fetch();
@@ -226,54 +243,54 @@ Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2,
     Route route;
     route.origin = ap1;
     route.destination = ap2;
-    route.distance = calc_distance(ap1, ap2);
+    route.direct_distance = calc_distance(ap1, ap2);
     switch (ac.type) {
-        case AircraftType::PAX:
+        case Aircraft::Type::PAX:
             route.pax_demand = PaxDemand(*chunk, 0);
-            route.purchased_aircraft = PurchasedAircraft(
+            route.aircraft = PurchasedAircraft(
                 ac,
-                PurchasedAircaftConfig(Route::calc_pax_conf(
+                Route::calc_pax_conf(
                     route.pax_demand,
                     ac.capacity,
-                    route.distance,
+                    route.direct_distance,
                     trips_per_day,
                     game_mode
-                ))
+                )
             );
             route.ticket = Ticket(PaxTicket::from_optimal(
-                route.distance,
+                route.direct_distance,
                 game_mode
             ));
             break;
-        case AircraftType::CARGO:
+        case Aircraft::Type::CARGO:
             route.cargo_demand = CargoDemand(*chunk, 0);
-            route.purchased_aircraft = PurchasedAircraft(
+            route.aircraft = PurchasedAircraft(
                 ac,
-                PurchasedAircaftConfig(Route::calc_cargo_conf(
+                Route::calc_cargo_conf(
                     route.cargo_demand,
                     ac.capacity,
                     trips_per_day
-                ))
+                )
             );
             route.ticket = Ticket(CargoTicket::from_optimal(
-                route.distance,
+                route.direct_distance,
                 game_mode
             ));
             break;
-        case AircraftType::VIP:
+        case Aircraft::Type::VIP:
             route.pax_demand = PaxDemand(*chunk, 0);
-            route.purchased_aircraft = PurchasedAircraft(
+            route.aircraft = PurchasedAircraft(
                 ac,
-                PurchasedAircaftConfig(Route::calc_pax_conf(
+                Route::calc_pax_conf(
                     route.pax_demand,
                     ac.capacity,
-                    route.distance,
+                    route.direct_distance,
                     trips_per_day,
                     game_mode
-                ))
+                )
             );
             route.ticket = Ticket(VIPTicket::from_optimal(
-                route.distance
+                route.direct_distance
             ));
             break;
     }
@@ -285,7 +302,7 @@ Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2,
 
 const string Route::repr() {
     if (!valid) return "<Route valid=false>";
-    std::string s = "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " distance=" + std::to_string(distance) +
+    std::string s = "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " direct_distance=" + std::to_string(direct_distance) +
                     " pax_demand=(" + std::to_string(pax_demand.y) + ", " + std::to_string(pax_demand.j) + ", " + std::to_string(pax_demand.f) + ")" +
                     " cargo_demand=(" + std::to_string(cargo_demand.l) + ", " + std::to_string(cargo_demand.h) + ")>";
     return s;

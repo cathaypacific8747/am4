@@ -1,7 +1,7 @@
 import pytest
 
 import am4utils
-from am4utils._core.aircraft import Aircraft
+from am4utils._core.aircraft import Aircraft, AircraftNotFoundException
 from am4utils._core.airport import Airport
 from am4utils._core.route import Route
 
@@ -25,11 +25,11 @@ def test_aircraft_auto_name():
     assert a0.shortname == "b744"
 
 def test_aircraft_auto_fail():
-    with pytest.raises(am4utils.aircraft.AircraftNotFoundException):
+    with pytest.raises(AircraftNotFoundException):
         _a = Aircraft.from_auto('b745')
 
 def test_aircraft_auto_shortname_fail():
-    with pytest.raises(am4utils.aircraft.AircraftNotFoundException):
+    with pytest.raises(AircraftNotFoundException):
         _a = Aircraft.from_auto('shortname:b745')
 
 ## airport tests
@@ -71,7 +71,7 @@ def test_route():
     a0 = Airport.from_auto('VHHH')
     a1 = Airport.from_auto('LHR')
     r = Route.from_airports(a0, a1)
-    assert int(r.distance) == 9630
+    assert int(r.direct_distance) == 9630
     assert r.pax_demand.y == 1093
 
 def test_invalid_route_to_self():
@@ -85,8 +85,8 @@ def test_route_with_aircraft():
     a1 = Airport.from_auto('LHR')
     ac = Aircraft.from_auto('b744')
     r = Route.from_airports_with_aircraft(a0, a1, ac)
-    assert int(r.distance) == 9630
+    assert int(r.direct_distance) == 9630
     assert r.pax_demand.y == 1093
-    assert r.purchased_aircraft.config.pax_config.y == 0
-    assert r.purchased_aircraft.config.pax_config.j == 16
-    assert r.purchased_aircraft.config.pax_config.f == 128
+    assert r.aircraft.config.pax_config.y == 0
+    assert r.aircraft.config.pax_config.j == 16
+    assert r.aircraft.config.pax_config.f == 128
