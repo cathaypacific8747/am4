@@ -51,11 +51,11 @@ PaxDemand::PaxDemand(const duckdb::DataChunk& chunk, idx_t row) :
 
 CargoDemand::CargoDemand() : l(0), h(0) {};
 CargoDemand::CargoDemand(uint32_t l, uint32_t h) : l(l), h(h) {};
-CargoDemand::CargoDemand(uint16_t y, uint16_t j) : l(y * 1000), h(round((float)j / 2) * 1000) {};
+CargoDemand::CargoDemand(uint16_t y, uint16_t j) : l(y * 1000), h(round((j / 2.0F) * 1000)) {};
 CargoDemand::CargoDemand(const duckdb::DataChunk& chunk, idx_t row) :
     l(chunk.GetValue(0, row).GetValue<int32_t>() * 1000),
     h(round(chunk.GetValue(1, row).GetValue<float>() / 2) * 1000) {};
-CargoDemand::CargoDemand(const PaxDemand& pax_demand) : l(pax_demand.y * 1000), h(round(pax_demand.j / 2) * 500) {};
+CargoDemand::CargoDemand(const PaxDemand& pax_demand) : l(pax_demand.y * 1000), h(round(pax_demand.j / 2.0F) * 500) {};
 
 Route::Route() : valid(false) {};
 
@@ -67,6 +67,121 @@ double inline Route::calc_distance(double lat1, double lon1, double lat2, double
 
 double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
+}
+
+
+PaxConfig Route::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
+    config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
+    config.y = capacity - config.f * 3 - config.j * 2;
+    config.valid = config.y < d_pf.y;
+    config.algorithm = PaxConfigAlgorithm::FJY;
+    return config;
+};
+
+PaxConfig Route::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
+    config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
+    config.j = (capacity - config.f * 3 - config.y) / 2;
+    config.valid = config.j < d_pf.j;
+    config.algorithm = PaxConfigAlgorithm::FYJ;
+    return config;
+};
+
+PaxConfig Route::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
+    config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
+    config.y = capacity - config.j * 2 - config.f * 3;
+    config.valid = config.y < d_pf.y;
+    config.algorithm = PaxConfigAlgorithm::JFY;
+    return config;
+};
+
+PaxConfig Route::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
+    config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
+    config.f = capacity - config.y - config.j * 2;
+    config.valid = config.f < d_pf.f;
+    config.algorithm = PaxConfigAlgorithm::JYF;
+    return config;
+};
+
+PaxConfig Route::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.y = d_pf.y > capacity ? capacity : d_pf.y;
+    config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
+    config.j = (capacity - config.y - config.f * 3) / 2;
+    config.valid = config.j < d_pf.j;
+    config.algorithm = PaxConfigAlgorithm::YFJ;
+    return config;
+};
+
+PaxConfig Route::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.y = d_pf.y > capacity ? capacity : d_pf.y;
+    config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
+    config.f = capacity - config.y - config.j * 2;
+    config.valid = config.f < d_pf.f;
+    config.algorithm = PaxConfigAlgorithm::YJF;
+    return config;
+};
+
+PaxConfig Route::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day, GameMode game_mode) {
+    PaxDemand d_pf = PaxDemand(
+        pax_demand.y / trips_per_day,
+        pax_demand.j / trips_per_day,
+        pax_demand.f / trips_per_day
+    );
+
+    PaxConfig config;
+    if (game_mode == GameMode::EASY) {
+        if (distance < 14425) {
+            config = calc_fjy_conf(d_pf, capacity, distance);
+        } else if (distance < 14812) {
+            config = calc_fyj_conf(d_pf, capacity, distance);
+        } else if (distance < 15200) {
+            config = calc_yfj_conf(d_pf, capacity, distance);
+        } else {
+            config = calc_yjf_conf(d_pf, capacity, distance);
+        }
+    } else {
+        if (distance < 13888.88) {
+            config = calc_fjy_conf(d_pf, capacity, distance);
+        } else if (distance < 15694.44) {
+            config = calc_jfy_conf(d_pf, capacity, distance);
+        } else if (distance < 17500) {
+            config = calc_jyf_conf(d_pf, capacity, distance);
+        } else {
+            config = calc_yjf_conf(d_pf, capacity, distance);
+        }
+    }
+    return config;
+}
+
+CargoConfig Route::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day, uint8_t l_training) {
+    // always fill up low priority first
+    CargoDemand d_pf = CargoDemand(
+        cargo_demand.l / trips_per_day,
+        cargo_demand.h / trips_per_day
+    );
+
+    double l_cap = capacity * (1 + l_training / 100.0) * 0.7;
+
+    CargoConfig config;
+    if (d_pf.l > l_cap) {
+        config.l = 100;
+        config.h = 0;
+        config.valid = true;
+    } else {
+        config.l = d_pf.l / l_cap * 100;
+        config.h = 100 - config.l;
+        config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
+    }
+    return config;
 }
 
 duckdb::unique_ptr<duckdb::QueryResult> inline Route::__get_route_result(uint16_t id0, uint16_t id1) {
@@ -102,7 +217,7 @@ Route Route::from_airports(const Airport& ap1, const Airport& ap2) {
 }
 
 // depending on ac type, populate either pax or cargo demands
-Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac) {
+Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2, const Aircraft& ac, uint16_t trips_per_day) {
     auto result = __get_route_result(ap1.id, ap2.id);
 
     auto chunk = result->Fetch();
@@ -116,9 +231,26 @@ Route Route::from_airports_with_aircraft(const Airport& ap1, const Airport& ap2,
         case AircraftType::PAX:
         case AircraftType::VIP:
             route.pax_demand = PaxDemand(*chunk, 0);
+            route.routed_aircraft = PurchasedAircraft(
+                ac,
+                RoutedAircaftConfig(Route::calc_pax_conf(
+                    route.pax_demand,
+                    ac.capacity,
+                    route.distance,
+                    trips_per_day
+                ))
+            );
             break;
         case AircraftType::CARGO:
             route.cargo_demand = CargoDemand(*chunk, 0);
+            route.routed_aircraft = PurchasedAircraft(
+                ac,
+                RoutedAircaftConfig(Route::calc_cargo_conf(
+                    route.cargo_demand,
+                    ac.capacity,
+                    trips_per_day
+                ))
+            );
             break;
     }
     

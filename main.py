@@ -1,11 +1,10 @@
-import am4utils
+from src.am4bot.config import Config
+from src.am4bot.main import bot
 
 if __name__ == '__main__':
-    print(f'py: am4utils ({am4utils._core.__version__}), executable_path={am4utils.__path__[0]}')
-    am4utils.db.init(am4utils.__path__[0])
+    config = Config.from_json("config.json")
 
-    a0 = am4utils.aircraft.from_auto('name:B747-400')
-    assert a0.shortname == "b744"
+    if not config.DISCORD_TOKEN or not config.AM4_API_TOKEN:
+        raise AssertionError('Discord and AM4Tools token is required to run the bot!')
 
-    # ticket = am4utils.route.create_optimal_pax_ticket(10000, am4utils.GameMode.EASY) # 4580 9240 13990
-    # help(ticket)
+    bot.run(config.DISCORD_TOKEN)

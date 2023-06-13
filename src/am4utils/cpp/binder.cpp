@@ -44,7 +44,7 @@ PYBIND11_MODULE(_core, m) {
         .def("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def("from_airports", &Route::from_airports, "ap1"_a, "ap2"_a)
-        .def("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a);
+        .def("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a, "trips_per_day"_a = 1);
     
     // airport
     py::class_<Airport>(m_ap, "Airport")
@@ -95,6 +95,30 @@ PYBIND11_MODULE(_core, m) {
         .def_readwrite("length", &Aircraft::length)
         .def_readwrite("valid", &Aircraft::valid)
         .def("__repr__", &Aircraft::repr);
+    
+    py::class_<PurchasedAircraft>(m_ac, "PurchasedAircraft")
+        .def(py::init<>())
+        .def_readwrite("aircraft", &PurchasedAircraft::aircraft)
+        .def_readwrite("config", &PurchasedAircraft::config);
+    
+    py::class_<RoutedAircaftConfig>(m_ac, "PurchasedAircraftConfig")
+        .def(py::init<>())
+        .def_readwrite("pax_config", &RoutedAircaftConfig::pax_config)
+        .def_readwrite("cargo_config", &RoutedAircaftConfig::cargo_config);
+    
+    py::class_<PaxConfig>(m_ac, "PaxConfig")
+        .def(py::init<>())
+        .def_readwrite("y", &PaxConfig::y)
+        .def_readwrite("j", &PaxConfig::j)
+        .def_readwrite("f", &PaxConfig::f)
+        .def_readwrite("valid", &PaxConfig::valid)
+        .def_readwrite("algorithm", &PaxConfig::algorithm);
+
+    py::class_<CargoConfig>(m_ac, "CargoConfig")
+        .def(py::init<>())
+        .def_readwrite("l", &CargoConfig::l)
+        .def_readwrite("h", &CargoConfig::h)
+        .def_readwrite("valid", &CargoConfig::valid);
 
     // routes/tickets
     py::class_<Route>(m_route, "Route")
@@ -102,6 +126,8 @@ PYBIND11_MODULE(_core, m) {
         .def_readwrite("origin", &Route::origin)
         .def_readwrite("destination", &Route::destination)
         .def_readwrite("pax_demand", &Route::pax_demand)
+        .def_readwrite("cargo_demand", &Route::cargo_demand)
+        .def_readwrite("routed_aircraft", &Route::routed_aircraft)
         .def_readwrite("distance", &Route::distance)
         .def_readwrite("valid", &Route::valid)
         .def("__repr__", &Route::repr);
@@ -172,6 +198,11 @@ PYBIND11_MODULE(_core, m) {
         .value("CARGO", AircraftType::CARGO)
         .value("VIP", AircraftType::VIP)
         .export_values();
+    
+    py::enum_<PaxConfigAlgorithm>(m_ac, "PaxConfigAlgorithm")
+        .value("FJY", PaxConfigAlgorithm::FJY).value("FYJ", PaxConfigAlgorithm::FYJ)
+        .value("JFY", PaxConfigAlgorithm::JFY).value("JYF", PaxConfigAlgorithm::JYF)
+        .value("YJF", PaxConfigAlgorithm::YJF).value("YFJ", PaxConfigAlgorithm::YFJ);
     
     py::register_exception<DatabaseException>(m, "DatabaseException");
     py::register_exception<AirportNotFoundException>(m_ap, "AirportNotFoundException");

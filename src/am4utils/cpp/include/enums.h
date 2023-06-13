@@ -25,3 +25,9 @@ enum class AircraftSearchType {
     SHORTNAME,
     NAME
 };
+
+enum PaxConfigAlgorithm {
+    FJY, FYJ,
+    JFY, JYF,
+    YJF, YFJ,
+};

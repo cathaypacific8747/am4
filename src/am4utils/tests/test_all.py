@@ -84,3 +84,4 @@ def test_route_with_aircraft():
     r = am4utils.route.from_airports_with_aircraft(a0, a1, ac)
     assert int(r.distance) == 9630
     assert r.pax_demand.y == 1093
+    assert r.routed_aircraft.config.y == 0

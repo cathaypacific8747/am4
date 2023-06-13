@@ -101,3 +101,36 @@ public:
     string get_searchstr() { return searchstr; }
     std::vector<Aircraft> get_suggestions() { return suggestions; }
 };
+
+
+struct PaxConfig {
+    uint16_t y;
+    uint16_t j;
+    uint16_t f;
+    bool valid;
+    PaxConfigAlgorithm algorithm;
+};
+
+// percent
+struct CargoConfig {
+    uint8_t l; 
+    uint8_t h;
+    bool valid;
+};
+
+union RoutedAircaftConfig {
+    PaxConfig pax_config;
+    CargoConfig cargo_config;
+
+    RoutedAircaftConfig() {}
+    RoutedAircaftConfig(const PaxConfig& pax_config) : pax_config(pax_config) {}
+    RoutedAircaftConfig(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
+};
+
+struct PurchasedAircraft {
+    Aircraft aircraft;
+    RoutedAircaftConfig config;
+
+    PurchasedAircraft() {}
+    PurchasedAircraft(const Aircraft& ac, const RoutedAircaftConfig& config) : aircraft(ac), config(config) {}
+};
