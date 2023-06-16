@@ -1,4 +1,3 @@
-"""Aircraft"""
 from __future__ import annotations
 import am4utils._core.aircraft
 import typing

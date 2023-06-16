@@ -202,3 +202,141 @@ const string Aircraft::repr() {
 
     return ss.str();
 }
+
+
+// PURCHASED AIRCRAFT
+
+PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
+    config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
+    config.y = capacity - config.f * 3 - config.j * 2;
+    config.valid = config.y < d_pf.y;
+    config.algorithm = PaxConfig::Algorithm::FJY;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
+    config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
+    config.j = (capacity - config.f * 3 - config.y) / 2;
+    config.valid = config.j < d_pf.j;
+    config.algorithm = PaxConfig::Algorithm::FYJ;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
+    config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
+    config.y = capacity - config.j * 2 - config.f * 3;
+    config.valid = config.y < d_pf.y;
+    config.algorithm = PaxConfig::Algorithm::JFY;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
+    config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
+    config.f = capacity - config.y - config.j * 2;
+    config.valid = config.f < d_pf.f;
+    config.algorithm = PaxConfig::Algorithm::JYF;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.y = d_pf.y > capacity ? capacity : d_pf.y;
+    config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
+    config.j = (capacity - config.y - config.f * 3) / 2;
+    config.valid = config.j < d_pf.j;
+    config.algorithm = PaxConfig::Algorithm::YFJ;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+    PaxConfig config;
+    config.y = d_pf.y > capacity ? capacity : d_pf.y;
+    config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
+    config.f = capacity - config.y - config.j * 2;
+    config.valid = config.f < d_pf.f;
+    config.algorithm = PaxConfig::Algorithm::YJF;
+    return config;
+};
+
+PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day, User::GameMode game_mode) {
+    PaxDemand d_pf = PaxDemand(
+        pax_demand.y / trips_per_day,
+        pax_demand.j / trips_per_day,
+        pax_demand.f / trips_per_day
+    );
+
+    PaxConfig config;
+    if (game_mode == User::GameMode::EASY) {
+        if (distance < 14425) {
+            config = calc_fjy_conf(d_pf, capacity, distance);
+        } else if (distance < 14812.5) {
+            config = calc_fyj_conf(d_pf, capacity, distance);
+        } else if (distance < 15200) {
+            config = calc_yfj_conf(d_pf, capacity, distance);
+        } else {
+            config = calc_yjf_conf(d_pf, capacity, distance);
+        }
+    } else {
+        if (distance < 13888.8888) {
+            config = calc_fjy_conf(d_pf, capacity, distance);
+        } else if (distance < 15694.4444) {
+            config = calc_jfy_conf(d_pf, capacity, distance);
+        } else if (distance < 17500) {
+            config = calc_jyf_conf(d_pf, capacity, distance);
+        } else {
+            config = calc_yjf_conf(d_pf, capacity, distance);
+        }
+    }
+    return config;
+}
+
+
+
+CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
+    double l_cap = capacity * 0.7;
+
+    CargoConfig config;
+    if (d_pf.l > l_cap) {
+        config.l = 100;
+        config.h = 0;
+        config.valid = true;
+    } else {
+        config.l = d_pf.l / l_cap * 100;
+        config.h = 100 - config.l;
+        config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
+    }
+    return config;
+}
+
+// virually useless!
+CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
+    CargoConfig config;
+    if (d_pf.h > capacity) {
+        config.h = 100;
+        config.l = 0;
+        config.valid = true;
+    } else {
+        config.h = d_pf.h / capacity * 100;
+        config.l = 100 - config.h;
+        config.valid = d_pf.l >= capacity - d_pf.h;
+    }
+    return config;
+}
+
+CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day, uint8_t l_training) {
+    CargoDemand d_pf = CargoDemand(
+        cargo_demand.l / trips_per_day,
+        cargo_demand.h / trips_per_day
+    );
+    double true_capacity = capacity * (1 + l_training / 100.0);
+
+    return calc_l_conf(d_pf, true_capacity); // low priority is always more profitable
+}

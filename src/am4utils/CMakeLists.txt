@@ -23,11 +23,13 @@ message("[DEBUG]\n\
    py site-packages ${PYTHON_LIB_DIR}\n")
 
 pybind11_add_module(_core
-    cpp/binder.cpp
     cpp/db.cpp
     cpp/airport.cpp
     cpp/aircraft.cpp
     cpp/route.cpp
+    cpp/demand.cpp
+    cpp/ticket.cpp
+    cpp/binder.cpp
 )
 target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core
@@ -39,17 +41,19 @@ target_link_libraries(_core PRIVATE duckdb)
 
 install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
-install(FILES ${CMAKE_SOURCE_DIR}/__init__.py DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION .) # / is important!
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
 
 # debug executable
 add_executable(_core_executable
-    cpp/main.cpp
     cpp/db.cpp
+    cpp/demand.cpp
+    cpp/ticket.cpp
     cpp/airport.cpp
     cpp/aircraft.cpp
     cpp/route.cpp
+    cpp/main.cpp
 )
 target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable

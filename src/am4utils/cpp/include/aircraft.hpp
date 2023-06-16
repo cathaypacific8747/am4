@@ -1,8 +1,12 @@
 #pragma once
 #include <string>
 #include <cstdint>
-#include <duckdb.hpp>
 #include <iomanip>
+#include <duckdb.hpp>
+
+#include "user.hpp"
+#include "ticket.hpp"
+#include "demand.hpp"
 
 using std::string;
 
@@ -113,7 +117,6 @@ public:
     std::vector<Aircraft> get_suggestions() { return suggestions; }
 };
 
-
 struct PaxConfig {
     enum class Algorithm {
         FJY, FYJ,
@@ -122,11 +125,20 @@ struct PaxConfig {
         NONE
     };
 
-    uint16_t y;
-    uint16_t j;
-    uint16_t f;
-    bool valid;
+    uint16_t y = 0;
+    uint16_t j = 0;
+    uint16_t f = 0;
+    bool valid = false;
     Algorithm algorithm;
+
+    static inline PaxConfig calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+
+    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day = 1, User::GameMode game_mode = User::GameMode::EASY);
 };
 
 struct CargoConfig { // percent
@@ -135,10 +147,15 @@ struct CargoConfig { // percent
         NONE
     };
 
-    uint8_t l; 
-    uint8_t h;
-    bool valid;
+    uint8_t l = 0;
+    uint8_t h = 0;
+    bool valid = false;
     Algorithm algorithm;
+
+    static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity);
+    static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity);
+
+    static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day = 1, uint8_t l_training = 0);
 };
 
 struct PurchasedAircraft : Aircraft {
@@ -151,6 +168,8 @@ struct PurchasedAircraft : Aircraft {
         Config(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
     };
     Config config;
+    // bool has_speed_mod = false;
+    // bool has_co2_mod = false;
 
     PurchasedAircraft() {}
     PurchasedAircraft(const Aircraft& ac, const PaxConfig& pax_config) : Aircraft(ac), config(pax_config) {}

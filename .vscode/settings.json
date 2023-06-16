@@ -2,7 +2,7 @@
     "cmake.buildArgs": [],
     "files.associations": {
         "*.spec": "python",
-        ".env.production": "properties"
     },
-    "cmake.sourceDirectory": "C:/Users/cx/projects/am4bot-new/src/am4utils",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/am4utils",
+    "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build"
 }

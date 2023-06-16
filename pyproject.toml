@@ -26,8 +26,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "rich", "beautifulsoup4", "pyjsparser",
-    "pytest", "ruff"
+    "rich", "loguru",
+    "pytest", "ruff",
+    "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels"
 ]
 
 [tool.pytest.ini_options]

@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <string>
 
-#include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/route.hpp"
+#include "include/db.hpp"
 
 using std::string;
 using namespace duckdb;

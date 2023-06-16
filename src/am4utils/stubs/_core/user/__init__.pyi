@@ -1,4 +1,3 @@
-"""User"""
 from __future__ import annotations
 import am4utils._core.user
 import typing

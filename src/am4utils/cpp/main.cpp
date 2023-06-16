@@ -81,9 +81,9 @@ int main(int argc, char **argv) {
     Airport ap0 = Airport::from_auto("icao:VhHH");
     Airport ap1 = Airport::from_auto("iata:LhR");
     Aircraft ac = Aircraft::from_auto("name:B747-400");
-    // Route r = Route::from_airports(ap0, ap1);
     Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
     cout << r.repr() << endl;
+    // Route r = Route::from_airports(ap0, ap1);
 
     // _debug_query("SELECT current_setting('home_directory')");
     return 0;

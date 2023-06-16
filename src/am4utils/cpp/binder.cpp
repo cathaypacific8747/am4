@@ -1,10 +1,13 @@
 #include <pybind11/pybind11.h>
 
 #include "include/db.hpp"
+#include "include/user.hpp"
+#include "include/ticket.hpp"
+#include "include/demand.hpp"
+
 #include "include/airport.hpp"
 #include "include/aircraft.hpp"
 #include "include/route.hpp"
-#include "include/user.hpp"
 
 #ifdef VERSION_INFO
     string version = MACRO_STRINGIFY(VERSION_INFO);
@@ -16,11 +19,13 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 PYBIND11_MODULE(_core, m) {
-    py::module_ m_db = m.def_submodule("db", "Database");
-    py::module_ m_ac = m.def_submodule("aircraft", "Aircraft");
-    py::module_ m_ap = m.def_submodule("airport", "Airport");
-    py::module_ m_route = m.def_submodule("route", "Route");
-    py::module_ m_user = m.def_submodule("user", "User");
+    py::module_ m_db = m.def_submodule("db");
+    py::module_ m_user = m.def_submodule("user");
+    py::module_ m_ticket = m.def_submodule("ticket");
+    py::module_ m_demand = m.def_submodule("demand");
+    py::module_ m_ac = m.def_submodule("aircraft");
+    py::module_ m_ap = m.def_submodule("airport");
+    py::module_ m_route = m.def_submodule("route");
 
     // needs to be defined before classes for default arguments to work
     py::enum_<User::GameMode>(m_user, "GameMode")
@@ -154,6 +159,7 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("cargo_demand", &Route::cargo_demand)
         .def_readonly("aircraft", &Route::aircraft)
         .def_readonly("ticket", &Route::ticket)
+        .def_readonly("income", &Route::income)
         .def_readonly("direct_distance", &Route::direct_distance)
         .def_readonly("valid", &Route::valid)
         .def_static("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a)
@@ -163,7 +169,7 @@ PYBIND11_MODULE(_core, m) {
         .def("__repr__", &Route::repr);
         
 
-    py::class_<PaxTicket>(m_route, "PaxTicket")
+    py::class_<PaxTicket>(m_ticket, "PaxTicket")
         .def(py::init<>())
         .def_readonly("y", &PaxTicket::y)
         .def_readonly("j", &PaxTicket::j)
@@ -174,7 +180,7 @@ PYBIND11_MODULE(_core, m) {
             }
         );
 
-    py::class_<CargoTicket>(m_route, "CargoTicket")
+    py::class_<CargoTicket>(m_ticket, "CargoTicket")
         .def(py::init<>())
         .def_readonly("l", &CargoTicket::l)
         .def_readonly("h", &CargoTicket::h)
@@ -184,7 +190,7 @@ PYBIND11_MODULE(_core, m) {
             }
         );
     
-    py::class_<VIPTicket>(m_route, "VIPTicket")
+    py::class_<VIPTicket>(m_ticket, "VIPTicket")
         .def(py::init<>())
         .def_readonly("y", &VIPTicket::y)
         .def_readonly("j", &VIPTicket::j)
@@ -195,13 +201,13 @@ PYBIND11_MODULE(_core, m) {
             }
         );
     
-    py::class_<Ticket>(m_route, "Ticket")
+    py::class_<Ticket>(m_ticket, "Ticket")
         .def(py::init<>())
         .def_readonly("pax_ticket", &Ticket::pax_ticket)
         .def_readonly("cargo_ticket", &Ticket::cargo_ticket)
         .def_readonly("vip_ticket", &Ticket::vip_ticket);
     
-    py::class_<PaxDemand>(m_route, "PaxDemand")
+    py::class_<PaxDemand>(m_demand, "PaxDemand")
         .def(py::init<>())
         .def_readonly("y", &PaxDemand::y)
         .def_readonly("j", &PaxDemand::j)
@@ -212,7 +218,7 @@ PYBIND11_MODULE(_core, m) {
             }
         );
     
-    py::class_<CargoDemand>(m_route, "CargoDemand")
+    py::class_<CargoDemand>(m_demand, "CargoDemand")
         .def(py::init<>())
         .def_readonly("l", &CargoDemand::l)
         .def_readonly("h", &CargoDemand::h)

@@ -6,7 +6,9 @@ __all__ = [
     "aircraft",
     "airport",
     "db",
+    "demand",
     "route",
+    "ticket",
     "user"
 ]
 
