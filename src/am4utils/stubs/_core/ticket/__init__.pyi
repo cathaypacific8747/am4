@@ -1,6 +1,7 @@
 from __future__ import annotations
 import am4utils._core.ticket
 import typing
+import am4utils._core.user
 
 __all__ = [
     "CargoTicket",
@@ -11,8 +12,9 @@ __all__ = [
 
 
 class CargoTicket():
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
+    @staticmethod
+    def from_optimal(distance: float, game_mode: am4utils._core.user.GameMode = am4utils._core.user.GameMode.EASY) -> CargoTicket: ...
     @property
     def h(self) -> float:
         """
@@ -25,8 +27,9 @@ class CargoTicket():
         """
     pass
 class PaxTicket():
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
+    @staticmethod
+    def from_optimal(distance: float, game_mode: am4utils._core.user.GameMode = am4utils._core.user.GameMode.EASY) -> PaxTicket: ...
     @property
     def f(self) -> int:
         """
@@ -44,7 +47,6 @@ class PaxTicket():
         """
     pass
 class Ticket():
-    def __init__(self) -> None: ...
     @property
     def cargo_ticket(self) -> CargoTicket:
         """
@@ -62,8 +64,9 @@ class Ticket():
         """
     pass
 class VIPTicket():
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
+    @staticmethod
+    def from_optimal(distance: float) -> VIPTicket: ...
     @property
     def f(self) -> int:
         """

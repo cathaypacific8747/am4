@@ -4,184 +4,129 @@
 #include "include/db.hpp"
 #include "include/aircraft.hpp"
 
-using std::string;
-
 Aircraft::Aircraft() : valid(false) {}
 
-Aircraft Aircraft::from_str(string s) {
-    Aircraft ac;
-    Aircraft::SearchType search_type = Aircraft::SearchType::ALL;
-
+Aircraft::ParseResult Aircraft::parse(const string& s) {
     string s_lower = s;
     std::transform(s_lower.begin(), s_lower.end(), s_lower.begin(), ::tolower);
 
-    // search airports
     if (s_lower.substr(0, 5) == "name:") {
-        search_type = Aircraft::SearchType::NAME;
-        s = s_lower.substr(5);
-        ac = Aircraft::from_name(s);
+        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5));
     } else if (s_lower.substr(0, 10) == "shortname:") {
-        search_type = Aircraft::SearchType::SHORTNAME;
-        s = s_lower.substr(10);
-        ac = Aircraft::from_shortname(s);
-    } else if (s_lower.substr(0, 4) == "all:") {
-        s = s_lower.substr(4);
-        ac = Aircraft::from_all(s);
+        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10));
     } else if (s_lower.substr(0, 3) == "id:") {
-        search_type = Aircraft::SearchType::ID;
-        s = s.substr(3);
         try {
-            ac = Aircraft::from_id(std::stoi(s));
+            uint16_t id = std::stoi(s.substr(3));
+            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3));
         } catch (std::invalid_argument& e) {
-        } catch (std::out_of_range& e) { // silently skipping, empty suggestions will be thrown later on
+        } catch (std::out_of_range& e) {
         }
-    } else {
-        s = s_lower;
-        ac = Aircraft::from_all(s);
+    } else if (s_lower.substr(0, 4) == "all:") {
+        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4));
     }
+    return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower);
+}
 
-    if (ac.valid) return ac;
-    
-    // empty airports, suggest and throw error
-    std::vector<Aircraft> aircrafts;
-    switch (search_type) {
+Aircraft::SearchResult Aircraft::search(const string& s) {
+    auto parse_result = Aircraft::ParseResult(Aircraft::parse(s));
+    int8_t priority = 0; // TODO: attempt to parse engine type!
+    duckdb::unique_ptr<duckdb::QueryResult> result;
+    switch (parse_result.search_type) {
         case Aircraft::SearchType::ALL:
-            aircrafts = Aircraft::suggest_all(s);
+            result = Database::Client()->get_aircraft_by_all->Execute(parse_result.search_str.c_str(), priority);
             break;
         case Aircraft::SearchType::NAME:
-            aircrafts = Aircraft::suggest_name(s);
+            result = Database::Client()->get_aircraft_by_name->Execute(parse_result.search_str.c_str(), priority);
             break;
         case Aircraft::SearchType::SHORTNAME:
-            aircrafts = Aircraft::suggest_shortname(s);
+            result = Database::Client()->get_aircraft_by_shortname->Execute(parse_result.search_str.c_str(), priority);
+            break;
+        case Aircraft::SearchType::ID:
+            result = Database::Client()->get_aircraft_by_id->Execute(std::stoi(parse_result.search_str), priority);
             break;
     }
+    CHECK_SUCCESS(result);
+    duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
+    if (!chunk || chunk->size() == 0) return Aircraft::SearchResult(make_shared<Aircraft>(), parse_result);
 
-    throw AircraftNotFoundException(search_type, s, aircrafts);
+    return Aircraft::SearchResult(make_shared<Aircraft>(chunk, 0), parse_result);
 }
 
-Aircraft::Aircraft(const duckdb::DataChunk& chunk, idx_t row) : 
-    id(chunk.GetValue(0, row).GetValue<uint16_t>()),
-    shortname(chunk.GetValue(1, row).GetValue<string>()),
-    manufacturer(chunk.GetValue(2, row).GetValue<string>()),
-    name(chunk.GetValue(3, row).GetValue<string>()),
-    type(static_cast<Aircraft::Type>(chunk.GetValue(4, row).GetValue<uint8_t>())),
-    priority(chunk.GetValue(5, row).GetValue<uint8_t>()),
-    eid(chunk.GetValue(6, row).GetValue<uint16_t>()),
-    ename(chunk.GetValue(7, row).GetValue<string>()),
-    speed(chunk.GetValue(8, row).GetValue<float>()),
-    fuel(chunk.GetValue(9, row).GetValue<float>()),
-    co2(chunk.GetValue(10, row).GetValue<float>()),
-    cost(chunk.GetValue(11, row).GetValue<uint32_t>()),
-    capacity(chunk.GetValue(12, row).GetValue<uint32_t>()),
-    rwy(chunk.GetValue(13, row).GetValue<uint16_t>()),
-    check_cost(chunk.GetValue(14, row).GetValue<uint32_t>()),
-    range(chunk.GetValue(15, row).GetValue<uint16_t>()),
-    ceil(chunk.GetValue(16, row).GetValue<uint16_t>()),
-    maint(chunk.GetValue(17, row).GetValue<uint16_t>()),
-    pilots(chunk.GetValue(18, row).GetValue<uint8_t>()),
-    crew(chunk.GetValue(19, row).GetValue<uint8_t>()),
-    engineers(chunk.GetValue(20, row).GetValue<uint8_t>()),
-    technicians(chunk.GetValue(21, row).GetValue<uint8_t>()),
-    img(chunk.GetValue(22, row).GetValue<string>()),
-    wingspan(chunk.GetValue(23, row).GetValue<uint8_t>()),
-    length(chunk.GetValue(24, row).GetValue<uint8_t>()),
+std::vector<Aircraft::Suggestion> Aircraft::suggest(const ParseResult& parse_result) {
+    std::vector<Aircraft::Suggestion> suggestions;
+    int8_t priority = 0; // TODO: attempt to parse engine type!
+    if (parse_result.search_type == Aircraft::SearchType::ALL) {
+        for (auto& stmt : {
+            Database::Client()->suggest_aircraft_by_shortname.get(),
+            Database::Client()->suggest_aircraft_by_name.get(),
+        }) {
+            auto result = stmt->Execute(parse_result.search_str.c_str(), priority);
+            CHECK_SUCCESS(result);
+            auto chunk = result->Fetch();
+            if (!chunk || chunk->size() == 0) continue;
+
+            for (idx_t i = 0; i < chunk->size(); i++) {
+                suggestions.emplace_back(
+                    make_shared<Aircraft>(chunk, i),
+                    chunk->GetValue(25, i).GetValue<double>()
+                );
+            }
+        }
+        std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const Aircraft::Suggestion& a, const Aircraft::Suggestion& b) {
+            return a.score > b.score;
+        });
+        suggestions.resize(5);
+    } else {
+        duckdb::unique_ptr<duckdb::QueryResult> result;
+        switch (parse_result.search_type) {
+            case Aircraft::SearchType::NAME:
+                result = Database::Client()->suggest_aircraft_by_name->Execute(parse_result.search_str.c_str(), priority);
+                break;
+            case Aircraft::SearchType::SHORTNAME:
+                result = Database::Client()->suggest_aircraft_by_shortname->Execute(parse_result.search_str.c_str(), priority);
+                break;
+        }
+        CHECK_SUCCESS(result);
+        while (auto chunk = result->Fetch()) {
+            for (idx_t i = 0; i < chunk->size(); i++) {
+                suggestions.emplace_back(
+                    make_shared<Aircraft>(chunk, i),
+                    chunk->GetValue(25, i).GetValue<double>()
+                );
+            }
+        }
+    }
+    return suggestions;
+}
+
+Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) : 
+    id(chunk->GetValue(0, row).GetValue<uint16_t>()),
+    shortname(chunk->GetValue(1, row).GetValue<string>()),
+    manufacturer(chunk->GetValue(2, row).GetValue<string>()),
+    name(chunk->GetValue(3, row).GetValue<string>()),
+    type(static_cast<Aircraft::Type>(chunk->GetValue(4, row).GetValue<uint8_t>())),
+    priority(chunk->GetValue(5, row).GetValue<uint8_t>()),
+    eid(chunk->GetValue(6, row).GetValue<uint16_t>()),
+    ename(chunk->GetValue(7, row).GetValue<string>()),
+    speed(chunk->GetValue(8, row).GetValue<float>()),
+    fuel(chunk->GetValue(9, row).GetValue<float>()),
+    co2(chunk->GetValue(10, row).GetValue<float>()),
+    cost(chunk->GetValue(11, row).GetValue<uint32_t>()),
+    capacity(chunk->GetValue(12, row).GetValue<uint32_t>()),
+    rwy(chunk->GetValue(13, row).GetValue<uint16_t>()),
+    check_cost(chunk->GetValue(14, row).GetValue<uint32_t>()),
+    range(chunk->GetValue(15, row).GetValue<uint16_t>()),
+    ceil(chunk->GetValue(16, row).GetValue<uint16_t>()),
+    maint(chunk->GetValue(17, row).GetValue<uint16_t>()),
+    pilots(chunk->GetValue(18, row).GetValue<uint8_t>()),
+    crew(chunk->GetValue(19, row).GetValue<uint8_t>()),
+    engineers(chunk->GetValue(20, row).GetValue<uint8_t>()),
+    technicians(chunk->GetValue(21, row).GetValue<uint8_t>()),
+    img(chunk->GetValue(22, row).GetValue<string>()),
+    wingspan(chunk->GetValue(23, row).GetValue<uint8_t>()),
+    length(chunk->GetValue(24, row).GetValue<uint8_t>()),
     valid(true)
 {};
-
-Aircraft Aircraft::from_id(uint16_t id, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_id->Execute(id, priority);
-    CHECK_SUCCESS(result);
-    auto chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Aircraft();
-
-    return Aircraft(*chunk, 0);
-}
-
-Aircraft Aircraft::from_shortname(const string& shortname, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_shortname->Execute(shortname.c_str(), priority);
-    CHECK_SUCCESS(result);
-    auto chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Aircraft();
-
-    return Aircraft(*chunk, 0);
-}
-
-// TODO: also search for concat(manufacturer, ' ', name)?
-Aircraft Aircraft::from_name(const string& s, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_name->Execute(s.c_str(), priority);
-    CHECK_SUCCESS(result);
-    auto chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Aircraft();
-
-    return Aircraft(*chunk, 0);
-}
-
-Aircraft Aircraft::from_all(const string& s, uint8_t priority) {
-    auto result = Database::Client()->get_aircraft_by_all->Execute(s.c_str(), priority);
-    CHECK_SUCCESS(result);
-    auto chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Aircraft();
-
-    return Aircraft(*chunk, 0);
-}
-
-
-
-std::vector<Aircraft> Aircraft::suggest_shortname(const string& s, uint8_t priority) {
-    std::vector<Aircraft> aircrafts;
-    auto result = Database::Client()->suggest_aircraft_by_shortname->Execute(s.c_str(), priority);
-    CHECK_SUCCESS(result);
-    while (auto chunk = result->Fetch()) {
-        for (idx_t i = 0; i < chunk->size(); i++) {
-            aircrafts.emplace_back(*chunk, i);
-        }
-    }
-    return aircrafts;
-}
-
-std::vector<Aircraft> Aircraft::suggest_name(const string& s, uint8_t priority) {
-    std::vector<Aircraft> aircrafts;
-    auto result = Database::Client()->suggest_aircraft_by_name->Execute(s.c_str(), priority);
-    CHECK_SUCCESS(result);
-    while (auto chunk = result->Fetch()) {
-        for (idx_t i = 0; i < chunk->size(); i++) {
-            aircrafts.emplace_back(*chunk, i);
-        }
-    }
-    return aircrafts;
-}
-
-// TODO: remove duplicates
-std::vector<Aircraft> Aircraft::suggest_all(const string& s, uint8_t priority) {
-    std::vector<Aircraft> aircrafts;
-    std::vector<AircraftSuggestion> suggestions;
-    for (auto& stmt : {
-        Database::Client()->suggest_aircraft_by_shortname.get(),
-        Database::Client()->suggest_aircraft_by_name.get(),
-    }) {
-        auto result = stmt->Execute(s.c_str(), priority);
-        CHECK_SUCCESS(result);
-        auto chunk = result->Fetch();
-        if (!chunk || chunk->size() == 0) continue;
-
-        for (idx_t i = 0; i < chunk->size(); i++) {
-            suggestions.emplace_back(
-                Aircraft(*chunk, i),
-                chunk->GetValue(5, i).GetValue<double>()
-            );
-        }
-    }
-
-    std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const AircraftSuggestion& a, const AircraftSuggestion& b) {
-        return a.score > b.score;
-    });
-
-    for (size_t i = 0; i < std::min<size_t>(5, suggestions.size()); i++) {
-        aircrafts.push_back(std::move(suggestions[i].ac));
-    }
-
-    return aircrafts;
-}
 
 const string to_string(Aircraft::Type type) {
     switch(type) {
@@ -191,8 +136,9 @@ const string to_string(Aircraft::Type type) {
             return "CARGO";
         case Aircraft::Type::VIP:
             return "VIP";
+        default:
+            return "[UNKNOWN]";
     }
-    return "UNKNOWN";
 }
 
 const string to_string(Aircraft::SearchType searchtype) {
@@ -212,10 +158,8 @@ const string to_string(Aircraft::SearchType searchtype) {
 
 const string Aircraft::repr(const Aircraft& ac) {
     std::stringstream ss;
-    std::string actype = to_string(ac.type);
-    ss << "<Aircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << actype;
+    ss << "<Aircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << to_string(ac.type);
     ss << " f" << ac.fuel << " c" << ac.co2 << " $" << ac.cost << " R" << ac.range << ">";
-
     return ss.str();
 }
 
@@ -327,6 +271,7 @@ CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity)
         config.h = 100 - config.l;
         config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
     }
+    config.algorithm = CargoConfig::Algorithm::L;
     return config;
 }
 
@@ -342,6 +287,7 @@ CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity)
         config.l = 100 - config.h;
         config.valid = d_pf.l >= capacity - d_pf.h;
     }
+    config.algorithm = CargoConfig::Algorithm::H;
     return config;
 }
 

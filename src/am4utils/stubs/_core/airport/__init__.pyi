@@ -3,26 +3,95 @@ import am4utils._core.airport
 import typing
 
 __all__ = [
-    "Airport",
-    "AirportNotFoundException"
+    "Airport"
 ]
 
 
 class Airport():
-    def __init__(self) -> None: ...
+    class ParseResult():
+        def __init__(self, arg0: Airport.SearchType, arg1: str) -> None: ...
+        @property
+        def search_str(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def search_type(self) -> Airport.SearchType:
+            """
+            :type: Airport.SearchType
+            """
+        pass
+    class SearchResult():
+        def __init__(self, arg0: Airport, arg1: Airport.ParseResult) -> None: ...
+        @property
+        def ap(self) -> Airport:
+            """
+            :type: Airport
+            """
+        @property
+        def parse_result(self) -> Airport.ParseResult:
+            """
+            :type: Airport.ParseResult
+            """
+        pass
+    class SearchType():
+        """
+        Members:
+
+          ALL
+
+          IATA
+
+          ICAO
+
+          NAME
+
+          ID
+        """
+        def __eq__(self, other: object) -> bool: ...
+        def __getstate__(self) -> int: ...
+        def __hash__(self) -> int: ...
+        def __index__(self) -> int: ...
+        def __init__(self, value: int) -> None: ...
+        def __int__(self) -> int: ...
+        def __ne__(self, other: object) -> bool: ...
+        def __repr__(self) -> str: ...
+        def __setstate__(self, state: int) -> None: ...
+        @property
+        def name(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def value(self) -> int:
+            """
+            :type: int
+            """
+        ALL: am4utils._core.airport.Airport.SearchType # value = <SearchType.ALL: 0>
+        IATA: am4utils._core.airport.Airport.SearchType # value = <SearchType.IATA: 1>
+        ICAO: am4utils._core.airport.Airport.SearchType # value = <SearchType.ICAO: 2>
+        ID: am4utils._core.airport.Airport.SearchType # value = <SearchType.ID: 4>
+        NAME: am4utils._core.airport.Airport.SearchType # value = <SearchType.NAME: 3>
+        __members__: dict # value = {'ALL': <SearchType.ALL: 0>, 'IATA': <SearchType.IATA: 1>, 'ICAO': <SearchType.ICAO: 2>, 'NAME': <SearchType.NAME: 3>, 'ID': <SearchType.ID: 4>}
+        pass
+    class Suggestion():
+        def __init__(self, arg0: Airport, arg1: float) -> None: ...
+        @property
+        def ap(self) -> Airport:
+            """
+            :type: Airport
+            """
+        @property
+        def score(self) -> float:
+            """
+            :type: float
+            """
+        pass
     def __repr__(self) -> str: ...
     @staticmethod
-    def _from_all(s: str) -> Airport: ...
+    def search(s: str) -> Airport.SearchResult: ...
     @staticmethod
-    def _from_iata(s: str) -> Airport: ...
-    @staticmethod
-    def _from_icao(s: str) -> Airport: ...
-    @staticmethod
-    def _from_id(id: int) -> Airport: ...
-    @staticmethod
-    def _from_name(s: str) -> Airport: ...
-    @staticmethod
-    def from_auto(s: str) -> Airport: ...
+    def suggest(s: Airport.ParseResult) -> typing.List[Airport.Suggestion]: ...
     @property
     def continent(self) -> str:
         """
@@ -93,6 +162,4 @@ class Airport():
         """
         :type: bool
         """
-    pass
-class AirportNotFoundException(Exception, BaseException):
     pass

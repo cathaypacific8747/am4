@@ -9,7 +9,6 @@ __all__ = [
 
 
 class CargoDemand():
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
     @property
     def h(self) -> int:
@@ -23,7 +22,6 @@ class CargoDemand():
         """
     pass
 class PaxDemand():
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
     @property
     def f(self) -> int:

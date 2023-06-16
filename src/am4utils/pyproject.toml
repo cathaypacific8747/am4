@@ -1,6 +1,6 @@
 [project]
 name = "am4utils"
-version = "0.1.2"
+version = "0.1.3"
 description = "Tools and utilities for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
 license = { text = "MIT License" }

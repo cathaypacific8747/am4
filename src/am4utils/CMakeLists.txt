@@ -42,7 +42,7 @@ target_link_libraries(_core PRIVATE duckdb)
 install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION .) # / is important!
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION . OPTIONAL) # / is important!
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
 
 # debug executable

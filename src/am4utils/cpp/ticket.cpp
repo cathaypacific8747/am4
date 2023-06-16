@@ -1,4 +1,5 @@
 #include "include/ticket.hpp"
+#include <cmath>
 
 PaxTicket PaxTicket::from_optimal(float distance, User::GameMode game_mode) {
     PaxTicket ticket;

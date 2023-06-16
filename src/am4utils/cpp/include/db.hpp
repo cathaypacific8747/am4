@@ -9,6 +9,7 @@ using duckdb::PreparedStatement;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 #define CHECK_SUCCESS(q) if (q->HasError()) throw DatabaseException(q->GetError());
+#define CHECK_SUCCESS_REF(q) if (q.HasError()) throw DatabaseException(q.GetError());
 
 // multiple threads can use the same connection?
 // https://github.com/duckdb/duckdb/blob/8c32403411d628a400cc32e5fe73df87eb5aad7d/test/api/test_api.cpp#L142

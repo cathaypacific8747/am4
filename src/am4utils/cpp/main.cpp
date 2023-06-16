@@ -55,36 +55,34 @@ int main(int argc, char **argv) {
 
     try {
         init(executable_path); // 1.3s
+        // cout << "initialised database" << endl;
+
+
+    // auto sr = Airport::search("hong kong");
+    // cout << sr.ap->name << endl;
+    // auto suggestions = Airport::suggest(sr.parse_result);
+    // for (auto s : suggestions) {
+    //     cout << s.ap->name << " (" << s.score << ")" << endl;
+    // }
+
+    auto sr = Aircraft::search("b744");
+    cout << sr.ac->name << endl;
+    auto suggestions = Aircraft::suggest(sr.parse_result);
+    for (auto s : suggestions) {
+        cout << s.ac->name << " (" << s.score << ")" << endl;
+    }
+
+    // Aircraft ac = Aircraft::search("name:B747-400").ac;
+    // Airport ap0 = Airport::search("icao:VhHH").ap;
+    // Airport ap1 = Airport::search("iata:LhR").ap;
+    // Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
+    // cout << Route::repr(r) << endl;
+    // Route r = Route::from_airports(ap0, ap1);
+
+    // _debug_query("SELECT current_setting('home_directory')");
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;
         return 1;
     }
-    // cout << "initialised database" << endl;
-
-    // PaxTicket pt = PaxTicket::from_optimal(10000, User::GameMode::EASY);
-    // cout << pt.y << " | " << pt.j << " | " << pt.f << endl;
-    
-
-    // Aircraft ac;
-    // try {
-    //     ac = Aircraft::from_str("name:B747-400");
-    //     cout << ac.repr() << endl;
-    // } catch (DatabaseException &e) {
-    //     cerr << "DatabaseException: " << e.what() << endl;
-    //     return 1;
-    // } catch (AircraftNotFoundException &e) {
-    //     cerr << "AircraftNotFoundException: " << e.what() << endl;
-    //     return 1;
-    // }
-
-
-    Aircraft ac = Aircraft::from_str("name:B747-400");
-    Airport ap0 = Airport::from_str("icao:VhHH");
-    Airport ap1 = Airport::from_str("iata:LhR");
-    Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
-    cout << Route::repr(r) << endl;
-    // Route r = Route::from_airports(ap0, ap1);
-
-    // _debug_query("SELECT current_setting('home_directory')");
     return 0;
 }

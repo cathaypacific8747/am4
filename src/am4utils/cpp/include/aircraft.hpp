@@ -10,6 +10,8 @@
 
 using std::string;
 using std::to_string;
+using std::shared_ptr;
+using std::make_shared;
 
 struct Aircraft {
     enum class Type {
@@ -52,17 +54,34 @@ struct Aircraft {
     uint8_t length;
     bool valid = false;
 
-    Aircraft();
-    static Aircraft from_str(string s);
+    struct ParseResult {
+        Aircraft::SearchType search_type;
+        string search_str;
 
-    Aircraft(const duckdb::DataChunk& chunk, idx_t row);
-    static Aircraft from_id(uint16_t id, uint8_t priority = 0);
-    static Aircraft from_shortname(const string& s, uint8_t priority = 0);
-    static Aircraft from_name(const string& s, uint8_t priority = 0);
-    static Aircraft from_all(const string& s, uint8_t priority = 0);
-    static std::vector<Aircraft> suggest_shortname(const string& s, uint8_t priority = 0);
-    static std::vector<Aircraft> suggest_name(const string& s, uint8_t priority = 0);
-    static std::vector<Aircraft> suggest_all(const string& s, uint8_t priority = 0);
+        ParseResult(Aircraft::SearchType search_type, const string& search_str) : search_type(search_type), search_str(search_str) {}
+    };
+
+    struct SearchResult {
+        shared_ptr<Aircraft> ac;
+        Aircraft::ParseResult parse_result;
+
+        SearchResult(shared_ptr<Aircraft> ac, Aircraft::ParseResult parse_result) : ac(ac), parse_result(parse_result) {}
+    };
+
+    struct Suggestion {
+        shared_ptr<Aircraft> ac;
+        double score;
+
+        Suggestion() : ac(make_shared<Aircraft>()), score(0) {}
+        Suggestion(shared_ptr<Aircraft> ac, double score) : ac(ac), score(score) {}
+    };
+
+    Aircraft();
+    static ParseResult parse(const string& s);
+    static SearchResult search(const string& s);
+    static std::vector<Aircraft::Suggestion> suggest(const ParseResult& parse_result);
+
+    Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
     static const string repr(const Aircraft& ac);
 };
 
@@ -74,30 +93,6 @@ struct AircraftSuggestion {
     double score;
 
     AircraftSuggestion(const Aircraft& ac, double score) : ac(ac), score(score) {}
-};
-
-class AircraftNotFoundException : public std::exception {
-private:
-    Aircraft::SearchType searchtype;
-    string searchstr;
-    std::vector<Aircraft> suggestions;
-public:
-    AircraftNotFoundException(Aircraft::SearchType searchtype, string searchstr, std::vector<Aircraft> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
-    const char* what() const throw() {
-        std::stringstream ss;
-        string searchtype_str = to_string(searchtype);
-        ss << "Aircraft not found - " << searchtype_str << ":" << searchstr;
-        if (suggestions.size() > 0) {
-            ss << ". Did you mean: ";
-            for (auto ac : suggestions) {
-                ss << "\n  " << std::setw(3) << ac.id << ": " << ac.shortname << "/" << ac.name;
-            }
-        }
-        return ss.str().c_str();
-    }
-    Aircraft::SearchType get_searchtype() { return searchtype; }
-    string get_searchstr() { return searchstr; }
-    std::vector<Aircraft> get_suggestions() { return suggestions; }
 };
 
 struct PaxConfig {

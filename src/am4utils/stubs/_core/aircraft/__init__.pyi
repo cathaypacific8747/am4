@@ -4,7 +4,6 @@ import typing
 
 __all__ = [
     "Aircraft",
-    "AircraftNotFoundException",
     "CargoConfig",
     "PaxConfig",
     "PurchasedAircraft"
@@ -12,6 +11,82 @@ __all__ = [
 
 
 class Aircraft():
+    class ParseResult():
+        def __init__(self, arg0: Aircraft.SearchType, arg1: str) -> None: ...
+        @property
+        def search_str(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def search_type(self) -> Aircraft.SearchType:
+            """
+            :type: Aircraft.SearchType
+            """
+        pass
+    class SearchResult():
+        def __init__(self, arg0: Aircraft, arg1: Aircraft.ParseResult) -> None: ...
+        @property
+        def ac(self) -> Aircraft:
+            """
+            :type: Aircraft
+            """
+        @property
+        def parse_result(self) -> Aircraft.ParseResult:
+            """
+            :type: Aircraft.ParseResult
+            """
+        pass
+    class SearchType():
+        """
+        Members:
+
+          ALL
+
+          ID
+
+          SHORTNAME
+
+          NAME
+        """
+        def __eq__(self, other: object) -> bool: ...
+        def __getstate__(self) -> int: ...
+        def __hash__(self) -> int: ...
+        def __index__(self) -> int: ...
+        def __init__(self, value: int) -> None: ...
+        def __int__(self) -> int: ...
+        def __ne__(self, other: object) -> bool: ...
+        def __repr__(self) -> str: ...
+        def __setstate__(self, state: int) -> None: ...
+        @property
+        def name(self) -> str:
+            """
+            :type: str
+            """
+        @property
+        def value(self) -> int:
+            """
+            :type: int
+            """
+        ALL: am4utils._core.aircraft.Aircraft.SearchType # value = <SearchType.ALL: 0>
+        ID: am4utils._core.aircraft.Aircraft.SearchType # value = <SearchType.ID: 1>
+        NAME: am4utils._core.aircraft.Aircraft.SearchType # value = <SearchType.NAME: 3>
+        SHORTNAME: am4utils._core.aircraft.Aircraft.SearchType # value = <SearchType.SHORTNAME: 2>
+        __members__: dict # value = {'ALL': <SearchType.ALL: 0>, 'ID': <SearchType.ID: 1>, 'SHORTNAME': <SearchType.SHORTNAME: 2>, 'NAME': <SearchType.NAME: 3>}
+        pass
+    class Suggestion():
+        def __init__(self, arg0: Aircraft, arg1: float) -> None: ...
+        @property
+        def ac(self) -> Aircraft:
+            """
+            :type: Aircraft
+            """
+        @property
+        def score(self) -> float:
+            """
+            :type: float
+            """
+        pass
     class Type():
         """
         Members:
@@ -46,18 +121,11 @@ class Aircraft():
         VIP: am4utils._core.aircraft.Aircraft.Type # value = <Type.VIP: 2>
         __members__: dict # value = {'PAX': <Type.PAX: 0>, 'CARGO': <Type.CARGO: 1>, 'VIP': <Type.VIP: 2>}
         pass
-    def __init__(self) -> None: ...
     def __repr__(self) -> str: ...
     @staticmethod
-    def _from_all(s: str, priority: int = 0) -> Aircraft: ...
+    def search(s: str) -> Aircraft.SearchResult: ...
     @staticmethod
-    def _from_id(id: int, priority: int = 0) -> Aircraft: ...
-    @staticmethod
-    def _from_name(s: str, priority: int = 0) -> Aircraft: ...
-    @staticmethod
-    def _from_shortname(s: str, priority: int = 0) -> Aircraft: ...
-    @staticmethod
-    def from_auto(s: str) -> Aircraft: ...
+    def suggest(s: Aircraft.ParseResult) -> typing.List[Aircraft.Suggestion]: ...
     @property
     def capacity(self) -> int:
         """
@@ -189,8 +257,6 @@ class Aircraft():
         :type: int
         """
     pass
-class AircraftNotFoundException(Exception, BaseException):
-    pass
 class CargoConfig():
     class Algorithm():
         """
@@ -198,7 +264,7 @@ class CargoConfig():
 
           L
 
-          HL
+          H
 
           NONE
         """
@@ -221,12 +287,11 @@ class CargoConfig():
             """
             :type: int
             """
-        HL: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.HL: 1>
+        H: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.H: 1>
         L: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.L: 0>
         NONE: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.NONE: 2>
-        __members__: dict # value = {'L': <Algorithm.L: 0>, 'HL': <Algorithm.HL: 1>, 'NONE': <Algorithm.NONE: 2>}
+        __members__: dict # value = {'L': <Algorithm.L: 0>, 'H': <Algorithm.H: 1>, 'NONE': <Algorithm.NONE: 2>}
         pass
-    def __init__(self) -> None: ...
     @property
     def algorithm(self) -> CargoConfig.Algorithm:
         """
@@ -295,7 +360,6 @@ class PaxConfig():
         YJF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YJF: 4>
         __members__: dict # value = {'FJY': <Algorithm.FJY: 0>, 'FYJ': <Algorithm.FYJ: 1>, 'JFY': <Algorithm.JFY: 2>, 'JYF': <Algorithm.JYF: 3>, 'YJF': <Algorithm.YJF: 4>, 'YFJ': <Algorithm.YFJ: 5>, 'NONE': <Algorithm.NONE: 6>}
         pass
-    def __init__(self) -> None: ...
     @property
     def algorithm(self) -> PaxConfig.Algorithm:
         """
@@ -324,7 +388,6 @@ class PaxConfig():
     pass
 class PurchasedAircraft(Aircraft):
     class Config():
-        def __init__(self) -> None: ...
         @property
         def cargo_config(self) -> CargoConfig:
             """
@@ -336,7 +399,7 @@ class PurchasedAircraft(Aircraft):
             :type: PaxConfig
             """
         pass
-    def __init__(self) -> None: ...
+    def __repr__(self) -> str: ...
     @property
     def config(self) -> PurchasedAircraft.Config:
         """

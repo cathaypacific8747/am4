@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
 #include <sstream>
+#include <memory>
 #include <duckdb.hpp>
 
 using std::string;
 using std::to_string;
-using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 
 struct Airport {
     enum class SearchType {
@@ -29,53 +31,37 @@ struct Airport {
     uint8_t market;
     uint32_t hub_cost;
     string rwy_codes;
-    bool valid = false;
+    bool valid;
+
+    struct ParseResult {
+        Airport::SearchType search_type;
+        string search_str;
+
+        ParseResult(Airport::SearchType search_type, const string& search_str) : search_type(search_type), search_str(search_str) {}
+    };
+    
+    struct SearchResult {
+        shared_ptr<Airport> ap;
+        Airport::ParseResult parse_result;
+
+        SearchResult(shared_ptr<Airport> ap, Airport::ParseResult parse_result) : ap(ap), parse_result(parse_result) {}
+    };
+
+    struct Suggestion {
+        shared_ptr<Airport> ap;
+        double score;
+
+        Suggestion() : ap(make_shared<Airport>()), score(0) {}
+        Suggestion(shared_ptr<Airport> ap, double score) : ap(ap), score(score) {}
+    };
 
     Airport();
-    static Airport from_str(string s);
+    static ParseResult parse(const string& s);
+    static SearchResult search(const string& s);
+    static std::vector<Airport::Suggestion> suggest(const ParseResult& parse_result);
 
-    Airport(const duckdb::DataChunk& chunk, idx_t row);
-    static Airport from_id(uint16_t id);
-    static Airport from_iata(const string& s);
-    static Airport from_icao(const string& s);
-    static Airport from_name(const string& s);
-    static Airport from_all(const string& s);
-    static std::vector<Airport> suggest_iata(const string& s);
-    static std::vector<Airport> suggest_icao(const string& s);
-    static std::vector<Airport> suggest_name(const string& s);
-    static std::vector<Airport> suggest_all(const string& s);
+    Airport(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
     static const string repr(const Airport& ap);
 };
 
 inline const string to_string(Airport::SearchType st);
-
-struct AirportSuggestion {
-    Airport ap;
-    double score;
-
-    AirportSuggestion(const Airport& ap, double score) : ap(ap), score(score) {}
-};
-
-class AirportNotFoundException : public std::exception {
-private:
-    Airport::SearchType searchtype;
-    string searchstr;
-    std::vector<Airport> suggestions;
-public:
-    AirportNotFoundException(Airport::SearchType searchtype, string searchstr, std::vector<Airport> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
-    const char* what() const throw() {
-        std::stringstream ss;
-        string searchtype_str = to_string(searchtype);
-        ss << "Airport not found - " << searchtype_str << ":" << searchstr;
-        if (suggestions.size() > 0) {
-            ss << ". Did you mean: ";
-            for (auto ap : suggestions) {
-                ss << "\n  " << ap.id << ": " << ap.iata << "/" << ap.icao << "/" << ap.name;
-            }
-        }
-        return ss.str().c_str();
-    }
-    Airport::SearchType get_searchtype() { return searchtype; }
-    string get_searchstr() { return searchstr; }
-    std::vector<Airport> get_suggestions() { return suggestions; }
-};

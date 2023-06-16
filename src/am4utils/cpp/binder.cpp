@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "include/db.hpp"
 #include "include/user.hpp"
@@ -35,15 +36,59 @@ PYBIND11_MODULE(_core, m) {
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");
 
-    // needs to be defined before classes for default arguments to work
+    /*** USER ***/
     py::enum_<User::GameMode>(m_user, "GameMode")
         .value("EASY", User::GameMode::EASY)
         .value("REALISM", User::GameMode::REALISM);
 
+    /*** TICKET ***/
+    py::class_<PaxTicket>(m_ticket, "PaxTicket")
+        .def_readonly("y", &PaxTicket::y)
+        .def_readonly("j", &PaxTicket::j)
+        .def_readonly("f", &PaxTicket::f)
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a = User::GameMode::EASY)
+        .def("__repr__", &PaxTicket::repr);
+
+    py::class_<CargoTicket>(m_ticket, "CargoTicket")
+        .def_readonly("l", &CargoTicket::l)
+        .def_readonly("h", &CargoTicket::h)
+        .def_static("from_optimal", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a = User::GameMode::EASY)
+        .def("__repr__", &CargoTicket::repr);
+    
+    py::class_<VIPTicket>(m_ticket, "VIPTicket")
+        .def_readonly("y", &VIPTicket::y)
+        .def_readonly("j", &VIPTicket::j)
+        .def_readonly("f", &VIPTicket::f)
+        .def_static("from_optimal", &VIPTicket::from_optimal, "distance"_a)
+        .def("__repr__", &VIPTicket::repr);
+    
+    py::class_<Ticket>(m_ticket, "Ticket")
+        .def_readonly("pax_ticket", &Ticket::pax_ticket)
+        .def_readonly("cargo_ticket", &Ticket::cargo_ticket)
+        .def_readonly("vip_ticket", &Ticket::vip_ticket);
+    
+
+    /*** DEMAND ***/
+    py::class_<PaxDemand>(m_demand, "PaxDemand")
+        .def_readonly("y", &PaxDemand::y)
+        .def_readonly("j", &PaxDemand::j)
+        .def_readonly("f", &PaxDemand::f)
+        .def("__repr__", &PaxDemand::repr);
+    
+    py::class_<CargoDemand>(m_demand, "CargoDemand")
+        .def_readonly("l", &CargoDemand::l)
+        .def_readonly("h", &CargoDemand::h)
+        .def("__repr__", &CargoDemand::repr);
+
+
     /*** AIRCRAFT ***/
-    py::class_<Aircraft> ac_class(m_ac, "Aircraft");
+    py::class_<Aircraft, std::shared_ptr<Aircraft>> ac_class(m_ac, "Aircraft");
+    py::enum_<Aircraft::Type>(ac_class, "Type")
+        .value("PAX", Aircraft::Type::PAX)
+        .value("CARGO", Aircraft::Type::CARGO)
+        .value("VIP", Aircraft::Type::VIP);
+
     ac_class
-        .def(py::init())
         .def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
         .def_readonly("manufacturer", &Aircraft::manufacturer)
@@ -70,62 +115,69 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("wingspan", &Aircraft::wingspan)
         .def_readonly("length", &Aircraft::length)
         .def_readonly("valid", &Aircraft::valid)
-        .def_static("from_str", &Aircraft::from_str, "s"_a)
-        .def("__repr__", [](const Aircraft &ac) {
-            return Aircraft::repr(ac);
-        });
+        .def("__repr__", &Aircraft::repr);
     
-    py::enum_<Aircraft::Type>(ac_class, "Type")
-        .value("PAX", Aircraft::Type::PAX)
-        .value("CARGO", Aircraft::Type::CARGO)
-        .value("VIP", Aircraft::Type::VIP);
+    py::enum_<Aircraft::SearchType>(ac_class, "SearchType")
+        .value("ALL", Aircraft::SearchType::ALL)
+        .value("ID", Aircraft::SearchType::ID)
+        .value("SHORTNAME", Aircraft::SearchType::SHORTNAME)
+        .value("NAME", Aircraft::SearchType::NAME);
+
+    py::class_<Aircraft::ParseResult>(ac_class, "ParseResult")
+        .def(py::init<Aircraft::SearchType, const std::string&>())
+        .def_readonly("search_type", &Aircraft::ParseResult::search_type)
+        .def_readonly("search_str", &Aircraft::ParseResult::search_str);
+
+    py::class_<Aircraft::SearchResult>(ac_class, "SearchResult")
+        .def(py::init<std::shared_ptr<Aircraft>, Aircraft::ParseResult>())
+        .def_readonly("ac", &Aircraft::SearchResult::ac)
+        .def_readonly("parse_result", &Aircraft::SearchResult::parse_result);
+
+    py::class_<Aircraft::Suggestion>(ac_class, "Suggestion")
+        .def(py::init<std::shared_ptr<Aircraft>, double>())
+        .def_readonly("ac", &Aircraft::Suggestion::ac)
+        .def_readonly("score", &Aircraft::Suggestion::score);
+
+    ac_class
+        .def_static("search", &Aircraft::search, "s"_a)
+        .def_static("suggest", &Aircraft::suggest, "s"_a);
     
-    py::class_<PurchasedAircraft, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
-    p_ac_class
-        .def(py::init<>())
-        .def_readonly("config", &PurchasedAircraft::config)
-        .def("__repr__", [](const PurchasedAircraft &ac) {
-            return PurchasedAircraft::repr(ac);
-        })
-    
-    py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
-        .def(py::init<>())
-        .def_readonly("pax_config", &PurchasedAircraft::Config::pax_config)
-        .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
-    
+    /*** PURCHASED AIRCRAFT ***/
     py::class_<PaxConfig> pc_class(m_ac, "PaxConfig");
+    py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
+        .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)
+        .value("JFY", PaxConfig::Algorithm::JFY).value("JYF", PaxConfig::Algorithm::JYF)
+        .value("YJF", PaxConfig::Algorithm::YJF).value("YFJ", PaxConfig::Algorithm::YFJ)
+        .value("NONE", PaxConfig::Algorithm::NONE);
     pc_class
-        .def(py::init<>())
         .def_readonly("y", &PaxConfig::y)
         .def_readonly("j", &PaxConfig::j)
         .def_readonly("f", &PaxConfig::f)
         .def_readonly("valid", &PaxConfig::valid)
         .def_readonly("algorithm", &PaxConfig::algorithm);
 
-    py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
-        .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)
-        .value("JFY", PaxConfig::Algorithm::JFY).value("JYF", PaxConfig::Algorithm::JYF)
-        .value("YJF", PaxConfig::Algorithm::YJF).value("YFJ", PaxConfig::Algorithm::YFJ)
-        .value("NONE", PaxConfig::Algorithm::NONE);
-
     py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
+    py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
+        .value("L", CargoConfig::Algorithm::L).value("H", CargoConfig::Algorithm::H)
+        .value("NONE", CargoConfig::Algorithm::NONE);
     cc_class
-        .def(py::init<>())
         .def_readonly("l", &CargoConfig::l)
         .def_readonly("h", &CargoConfig::h)
         .def_readonly("valid", &CargoConfig::valid)
         .def_readonly("algorithm", &CargoConfig::algorithm);
 
-    py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
-        .value("L", CargoConfig::Algorithm::L).value("H", CargoConfig::Algorithm::H)
-        .value("NONE", CargoConfig::Algorithm::NONE);
-
-    py::register_exception<AircraftNotFoundException>(m_ac, "AircraftNotFoundException");
+    py::class_<PurchasedAircraft, std::shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
+    py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
+        .def_readonly("pax_config", &PurchasedAircraft::Config::pax_config)
+        .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
+    p_ac_class
+        .def_readonly("config", &PurchasedAircraft::config)
+        .def("__repr__", &PurchasedAircraft::repr);
 
 
     /*** AIRPORT ***/
-    py::class_<Airport>(m_ap, "Airport")
-        .def(py::init<>())
+    py::class_<Airport, std::shared_ptr<Airport>> ap_class(m_ap, "Airport");
+    ap_class
         .def_readonly("id", &Airport::id)
         .def_readonly("name", &Airport::name)
         .def_readonly("fullname", &Airport::fullname)
@@ -140,17 +192,37 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("hub_cost", &Airport::hub_cost)
         .def_readonly("rwy_codes", &Airport::rwy_codes)
         .def_readonly("valid", &Airport::valid)
-        .def_static("from_str", &Airport::from_str, "s"_a)
-        .def("__repr__", [](const Airport &ac) {
-            return Airport::repr(ac);
-        });
+        .def("__repr__", &Airport::repr);
 
-    py::register_exception<AirportNotFoundException>(m_ap, "AirportNotFoundException");
+    py::enum_<Airport::SearchType>(ap_class, "SearchType")
+        .value("ALL", Airport::SearchType::ALL)
+        .value("IATA", Airport::SearchType::IATA)
+        .value("ICAO", Airport::SearchType::ICAO)
+        .value("NAME", Airport::SearchType::NAME)
+        .value("ID", Airport::SearchType::ID);
+    
+    py::class_<Airport::ParseResult>(ap_class, "ParseResult")
+        .def(py::init<Airport::SearchType, const std::string&>())
+        .def_readonly("search_type", &Airport::ParseResult::search_type)
+        .def_readonly("search_str", &Airport::ParseResult::search_str);
 
+    py::class_<Airport::SearchResult>(ap_class, "SearchResult")
+        .def(py::init<std::shared_ptr<Airport>, Airport::ParseResult>())
+        .def_readonly("ap", &Airport::SearchResult::ap)
+        .def_readonly("parse_result", &Airport::SearchResult::parse_result);
+
+    py::class_<Airport::Suggestion>(ap_class, "Suggestion")
+        .def(py::init<std::shared_ptr<Airport>, double>())
+        .def_readonly("ap", &Airport::Suggestion::ap)
+        .def_readonly("score", &Airport::Suggestion::score);
+
+    // defined after nested classes
+    ap_class
+        .def_static("search", &Airport::search, "s"_a)
+        .def_static("suggest", &Airport::suggest, "s"_a);
 
     /*** ROUTE ***/
     py::class_<Route>(m_route, "Route")
-        .def(py::init<>())
         .def_readonly("origin", &Route::origin)
         .def_readonly("destination", &Route::destination)
         .def_readonly("pax_demand", &Route::pax_demand)
@@ -160,63 +232,9 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("income", &Route::income)
         .def_readonly("direct_distance", &Route::direct_distance)
         .def_readonly("valid", &Route::valid)
-        .def_static("create_optimal_pax_ticket", &PaxTicket::from_optimal, "distance"_a, "game_mode"_a)
-        .def_static("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def_static("from_airports", &Route::from_airports, "ap1"_a, "ap2"_a)
         .def_static("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a, "trips_per_day"_a = 1, "game_mode"_a = User::GameMode::EASY)
-        .def("__repr__", [](const Route& r) {
-            return Route::repr(r);
-        });
-        
+        .def("__repr__", &Route::repr);
 
-    py::class_<PaxTicket>(m_ticket, "PaxTicket")
-        .def(py::init<>())
-        .def_readonly("y", &PaxTicket::y)
-        .def_readonly("j", &PaxTicket::j)
-        .def_readonly("f", &PaxTicket::f)
-        .def("__repr__", [](const PaxTicket &a) {
-            return PaxTicket::repr(a);
-        });
-
-    py::class_<CargoTicket>(m_ticket, "CargoTicket")
-        .def(py::init<>())
-        .def_readonly("l", &CargoTicket::l)
-        .def_readonly("h", &CargoTicket::h)
-        .def("__repr__", [](const CargoTicket &a) {
-            return CargoTicket::repr(a);
-        });
-    
-    py::class_<VIPTicket>(m_ticket, "VIPTicket")
-        .def(py::init<>())
-        .def_readonly("y", &VIPTicket::y)
-        .def_readonly("j", &VIPTicket::j)
-        .def_readonly("f", &VIPTicket::f)
-        .def("__repr__", [](const VIPTicket &a) {
-            return VIPTicket::repr(a);
-        });
-    
-    py::class_<Ticket>(m_ticket, "Ticket")
-        .def(py::init<>())
-        .def_readonly("pax_ticket", &Ticket::pax_ticket)
-        .def_readonly("cargo_ticket", &Ticket::cargo_ticket)
-        .def_readonly("vip_ticket", &Ticket::vip_ticket);
-    
-    py::class_<PaxDemand>(m_demand, "PaxDemand")
-        .def(py::init<>())
-        .def_readonly("y", &PaxDemand::y)
-        .def_readonly("j", &PaxDemand::j)
-        .def_readonly("f", &PaxDemand::f)
-        .def("__repr__", [](const PaxDemand &a) {
-            return PaxDemand::repr(a);
-        });
-    
-    py::class_<CargoDemand>(m_demand, "CargoDemand")
-        .def(py::init<>())
-        .def_readonly("l", &CargoDemand::l)
-        .def_readonly("h", &CargoDemand::h)
-        .def("__repr__", [](const CargoDemand &a) {
-            return CargoDemand::repr(a);
-        });
-    
     m.attr("__version__") = version;
 }
