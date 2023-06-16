@@ -17,6 +17,7 @@
 
 namespace py = pybind11;
 using namespace pybind11::literals;
+using std::string;
 
 PYBIND11_MODULE(_core, m) {
     py::module_ m_db = m.def_submodule("db");
@@ -27,11 +28,6 @@ PYBIND11_MODULE(_core, m) {
     py::module_ m_ap = m.def_submodule("airport");
     py::module_ m_route = m.def_submodule("route");
 
-    // needs to be defined before classes for default arguments to work
-    py::enum_<User::GameMode>(m_user, "GameMode")
-        .value("EASY", User::GameMode::EASY)
-        .value("REALISM", User::GameMode::REALISM);
-
     /*** DATABASE ***/
     m_db
         .def("init", &init)
@@ -39,11 +35,15 @@ PYBIND11_MODULE(_core, m) {
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");
 
+    // needs to be defined before classes for default arguments to work
+    py::enum_<User::GameMode>(m_user, "GameMode")
+        .value("EASY", User::GameMode::EASY)
+        .value("REALISM", User::GameMode::REALISM);
 
     /*** AIRCRAFT ***/
     py::class_<Aircraft> ac_class(m_ac, "Aircraft");
     ac_class
-        .def(py::init<>())
+        .def(py::init())
         .def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
         .def_readonly("manufacturer", &Aircraft::manufacturer)
@@ -70,12 +70,10 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("wingspan", &Aircraft::wingspan)
         .def_readonly("length", &Aircraft::length)
         .def_readonly("valid", &Aircraft::valid)
-        .def_static("_from_id", &Aircraft::_from_id, "id"_a, "priority"_a = 0)
-        .def_static("_from_shortname", &Aircraft::_from_shortname, "s"_a, "priority"_a = 0)
-        .def_static("_from_name", &Aircraft::_from_name, "s"_a, "priority"_a = 0)
-        .def_static("_from_all", &Aircraft::_from_all, "s"_a, "priority"_a = 0)
-        .def_static("from_auto", &Aircraft::from_auto, "s"_a)
-        .def("__repr__", &Aircraft::repr);
+        .def_static("from_str", &Aircraft::from_str, "s"_a)
+        .def("__repr__", [](const Aircraft &ac) {
+            return Aircraft::repr(ac);
+        });
     
     py::enum_<Aircraft::Type>(ac_class, "Type")
         .value("PAX", Aircraft::Type::PAX)
@@ -85,7 +83,10 @@ PYBIND11_MODULE(_core, m) {
     py::class_<PurchasedAircraft, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
     p_ac_class
         .def(py::init<>())
-        .def_readonly("config", &PurchasedAircraft::config);
+        .def_readonly("config", &PurchasedAircraft::config)
+        .def("__repr__", [](const PurchasedAircraft &ac) {
+            return PurchasedAircraft::repr(ac);
+        })
     
     py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
         .def(py::init<>())
@@ -116,7 +117,7 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("algorithm", &CargoConfig::algorithm);
 
     py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
-        .value("L", CargoConfig::Algorithm::L).value("HL", CargoConfig::Algorithm::H)
+        .value("L", CargoConfig::Algorithm::L).value("H", CargoConfig::Algorithm::H)
         .value("NONE", CargoConfig::Algorithm::NONE);
 
     py::register_exception<AircraftNotFoundException>(m_ac, "AircraftNotFoundException");
@@ -139,13 +140,10 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("hub_cost", &Airport::hub_cost)
         .def_readonly("rwy_codes", &Airport::rwy_codes)
         .def_readonly("valid", &Airport::valid)
-        .def_static("_from_id", &Airport::_from_id, "id"_a)
-        .def_static("_from_iata", &Airport::_from_iata, "s"_a)
-        .def_static("_from_icao", &Airport::_from_icao, "s"_a)
-        .def_static("_from_name", &Airport::_from_name, "s"_a)
-        .def_static("_from_all", &Airport::_from_all, "s"_a)
-        .def_static("from_auto", &Airport::from_auto, "s"_a)
-        .def("__repr__", &Airport::repr);
+        .def_static("from_str", &Airport::from_str, "s"_a)
+        .def("__repr__", [](const Airport &ac) {
+            return Airport::repr(ac);
+        });
 
     py::register_exception<AirportNotFoundException>(m_ap, "AirportNotFoundException");
 
@@ -166,7 +164,9 @@ PYBIND11_MODULE(_core, m) {
         .def_static("create_optimal_cargo_ticket", &CargoTicket::from_optimal, "distance"_a, "game_mode"_a)
         .def_static("from_airports", &Route::from_airports, "ap1"_a, "ap2"_a)
         .def_static("from_airports_with_aircraft", &Route::from_airports_with_aircraft, "ap1"_a, "ap2"_a, "ac"_a, "trips_per_day"_a = 1, "game_mode"_a = User::GameMode::EASY)
-        .def("__repr__", &Route::repr);
+        .def("__repr__", [](const Route& r) {
+            return Route::repr(r);
+        });
         
 
     py::class_<PaxTicket>(m_ticket, "PaxTicket")
@@ -174,32 +174,26 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("y", &PaxTicket::y)
         .def_readonly("j", &PaxTicket::j)
         .def_readonly("f", &PaxTicket::f)
-        .def("__repr__",
-            [](const PaxTicket &a) {
-                return "<PaxTicket y=" + std::to_string(a.y) + " j=" + std::to_string(a.j) + " f=" + std::to_string(a.f) + ">";
-            }
-        );
+        .def("__repr__", [](const PaxTicket &a) {
+            return PaxTicket::repr(a);
+        });
 
     py::class_<CargoTicket>(m_ticket, "CargoTicket")
         .def(py::init<>())
         .def_readonly("l", &CargoTicket::l)
         .def_readonly("h", &CargoTicket::h)
-        .def("__repr__",
-            [](const CargoTicket &a) {
-                return "<CargoTicket l=" + std::to_string(a.l) + " h=" + std::to_string(a.h) + ">";
-            }
-        );
+        .def("__repr__", [](const CargoTicket &a) {
+            return CargoTicket::repr(a);
+        });
     
     py::class_<VIPTicket>(m_ticket, "VIPTicket")
         .def(py::init<>())
         .def_readonly("y", &VIPTicket::y)
         .def_readonly("j", &VIPTicket::j)
         .def_readonly("f", &VIPTicket::f)
-        .def("__repr__",
-            [](const VIPTicket &a) {
-                return "<VIPTicket y=" + std::to_string(a.y) + " j=" + std::to_string(a.j) + " f=" + std::to_string(a.f) + ">";
-            }
-        );
+        .def("__repr__", [](const VIPTicket &a) {
+            return VIPTicket::repr(a);
+        });
     
     py::class_<Ticket>(m_ticket, "Ticket")
         .def(py::init<>())
@@ -212,21 +206,17 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("y", &PaxDemand::y)
         .def_readonly("j", &PaxDemand::j)
         .def_readonly("f", &PaxDemand::f)
-        .def("__repr__",
-            [](const PaxDemand &a) {
-                return "<PaxDemand y=" + std::to_string(a.y) + " j=" + std::to_string(a.j) + " f=" + std::to_string(a.f) + ">";
-            }
-        );
+        .def("__repr__", [](const PaxDemand &a) {
+            return PaxDemand::repr(a);
+        });
     
     py::class_<CargoDemand>(m_demand, "CargoDemand")
         .def(py::init<>())
         .def_readonly("l", &CargoDemand::l)
         .def_readonly("h", &CargoDemand::h)
-        .def("__repr__",
-            [](const CargoDemand &a) {
-                return "<CargoDemand l=" + std::to_string(a.l) + " h=" + std::to_string(a.h) + ">";
-            }
-        );
+        .def("__repr__", [](const CargoDemand &a) {
+            return CargoDemand::repr(a);
+        });
     
     m.attr("__version__") = version;
 }

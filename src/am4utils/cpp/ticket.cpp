@@ -33,3 +33,15 @@ VIPTicket VIPTicket::from_optimal(float distance) {
     ticket.f = (uint16_t)(1.17 * 1.7489 * (1.2 * distance + 1200)) - 2;
     return ticket;
 }
+
+const string PaxTicket::repr(const PaxTicket& ticket) {
+    return "<PaxTicket " + to_string(ticket.y) + "|" + to_string(ticket.j) + "|" + to_string(ticket.f) + ">";
+}
+
+const string CargoTicket::repr(const CargoTicket& ticket) {
+    return "<CargoTicket " + to_string(ticket.l) + "|" + to_string(ticket.h) + ">";
+}
+
+const string VIPTicket::repr(const VIPTicket& ticket) {
+    return "<VIPTicket " + to_string(ticket.y) + "|" + to_string(ticket.j) + "|" + to_string(ticket.f) + ">";
+}

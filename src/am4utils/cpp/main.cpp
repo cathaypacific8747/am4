@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
     // Aircraft ac;
     // try {
-    //     ac = Aircraft::from_auto("name:B747-400");
+    //     ac = Aircraft::from_str("name:B747-400");
     //     cout << ac.repr() << endl;
     // } catch (DatabaseException &e) {
     //     cerr << "DatabaseException: " << e.what() << endl;
@@ -78,11 +78,11 @@ int main(int argc, char **argv) {
     // }
 
 
-    Airport ap0 = Airport::from_auto("icao:VhHH");
-    Airport ap1 = Airport::from_auto("iata:LhR");
-    Aircraft ac = Aircraft::from_auto("name:B747-400");
+    Aircraft ac = Aircraft::from_str("name:B747-400");
+    Airport ap0 = Airport::from_str("icao:VhHH");
+    Airport ap1 = Airport::from_str("iata:LhR");
     Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
-    cout << r.repr() << endl;
+    cout << Route::repr(r) << endl;
     // Route r = Route::from_airports(ap0, ap1);
 
     // _debug_query("SELECT current_setting('home_directory')");

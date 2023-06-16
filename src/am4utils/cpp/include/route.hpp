@@ -37,5 +37,5 @@ struct Route {
     static inline double calc_distance(const Airport& a0, const Airport& a1);
     static inline double estimate_load(uint8_t reputation, double autoprice_ratio, bool has_stopover);
 
-    const string repr();
+    static const string repr(const Route& r);
 };

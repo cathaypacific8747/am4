@@ -139,10 +139,10 @@ double inline estimate_load(uint8_t reputation, double autoprice_ratio, bool has
     }
 }
 
-const string Route::repr() {
-    if (!valid) return "<Route valid=false>";
-    std::string s = "<Route origin.id=" + std::to_string(origin.id) + " destination.id=" + std::to_string(destination.id) + " direct_distance=" + std::to_string(direct_distance) +
-                    " pax_demand=(" + std::to_string(pax_demand.y) + ", " + std::to_string(pax_demand.j) + ", " + std::to_string(pax_demand.f) + ")" +
-                    " cargo_demand=(" + std::to_string(cargo_demand.l) + ", " + std::to_string(cargo_demand.h) + ")>";
+const string Route::repr(const Route& r) {
+    if (!r.valid) return "<Route invalid>";
+    std::string s = "<Route " + to_string(r.origin.id) + "->" + to_string(r.destination.id) + " direct=" + to_string(r.direct_distance) + "km"
+                    " pax_dem=" + to_string(r.pax_demand.y) + "|" + to_string(r.pax_demand.j) + "|" + to_string(r.pax_demand.f) +
+                    " cargo_dem=" + to_string(r.cargo_demand.l) + "|" + to_string(r.cargo_demand.h) + ">";
     return s;
 }

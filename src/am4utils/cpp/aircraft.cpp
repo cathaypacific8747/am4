@@ -8,6 +8,57 @@ using std::string;
 
 Aircraft::Aircraft() : valid(false) {}
 
+Aircraft Aircraft::from_str(string s) {
+    Aircraft ac;
+    Aircraft::SearchType search_type = Aircraft::SearchType::ALL;
+
+    string s_lower = s;
+    std::transform(s_lower.begin(), s_lower.end(), s_lower.begin(), ::tolower);
+
+    // search airports
+    if (s_lower.substr(0, 5) == "name:") {
+        search_type = Aircraft::SearchType::NAME;
+        s = s_lower.substr(5);
+        ac = Aircraft::from_name(s);
+    } else if (s_lower.substr(0, 10) == "shortname:") {
+        search_type = Aircraft::SearchType::SHORTNAME;
+        s = s_lower.substr(10);
+        ac = Aircraft::from_shortname(s);
+    } else if (s_lower.substr(0, 4) == "all:") {
+        s = s_lower.substr(4);
+        ac = Aircraft::from_all(s);
+    } else if (s_lower.substr(0, 3) == "id:") {
+        search_type = Aircraft::SearchType::ID;
+        s = s.substr(3);
+        try {
+            ac = Aircraft::from_id(std::stoi(s));
+        } catch (std::invalid_argument& e) {
+        } catch (std::out_of_range& e) { // silently skipping, empty suggestions will be thrown later on
+        }
+    } else {
+        s = s_lower;
+        ac = Aircraft::from_all(s);
+    }
+
+    if (ac.valid) return ac;
+    
+    // empty airports, suggest and throw error
+    std::vector<Aircraft> aircrafts;
+    switch (search_type) {
+        case Aircraft::SearchType::ALL:
+            aircrafts = Aircraft::suggest_all(s);
+            break;
+        case Aircraft::SearchType::NAME:
+            aircrafts = Aircraft::suggest_name(s);
+            break;
+        case Aircraft::SearchType::SHORTNAME:
+            aircrafts = Aircraft::suggest_shortname(s);
+            break;
+    }
+
+    throw AircraftNotFoundException(search_type, s, aircrafts);
+}
+
 Aircraft::Aircraft(const duckdb::DataChunk& chunk, idx_t row) : 
     id(chunk.GetValue(0, row).GetValue<uint16_t>()),
     shortname(chunk.GetValue(1, row).GetValue<string>()),
@@ -37,7 +88,7 @@ Aircraft::Aircraft(const duckdb::DataChunk& chunk, idx_t row) :
     valid(true)
 {};
 
-Aircraft Aircraft::_from_id(uint16_t id, uint8_t priority) {
+Aircraft Aircraft::from_id(uint16_t id, uint8_t priority) {
     auto result = Database::Client()->get_aircraft_by_id->Execute(id, priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -46,7 +97,7 @@ Aircraft Aircraft::_from_id(uint16_t id, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
-Aircraft Aircraft::_from_shortname(const string& shortname, uint8_t priority) {
+Aircraft Aircraft::from_shortname(const string& shortname, uint8_t priority) {
     auto result = Database::Client()->get_aircraft_by_shortname->Execute(shortname.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -56,7 +107,7 @@ Aircraft Aircraft::_from_shortname(const string& shortname, uint8_t priority) {
 }
 
 // TODO: also search for concat(manufacturer, ' ', name)?
-Aircraft Aircraft::_from_name(const string& s, uint8_t priority) {
+Aircraft Aircraft::from_name(const string& s, uint8_t priority) {
     auto result = Database::Client()->get_aircraft_by_name->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -65,7 +116,7 @@ Aircraft Aircraft::_from_name(const string& s, uint8_t priority) {
     return Aircraft(*chunk, 0);
 }
 
-Aircraft Aircraft::_from_all(const string& s, uint8_t priority) {
+Aircraft Aircraft::from_all(const string& s, uint8_t priority) {
     auto result = Database::Client()->get_aircraft_by_all->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -75,7 +126,8 @@ Aircraft Aircraft::_from_all(const string& s, uint8_t priority) {
 }
 
 
-std::vector<Aircraft> Aircraft::_suggest_shortname(const string& s, uint8_t priority) {
+
+std::vector<Aircraft> Aircraft::suggest_shortname(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
     auto result = Database::Client()->suggest_aircraft_by_shortname->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
@@ -87,7 +139,7 @@ std::vector<Aircraft> Aircraft::_suggest_shortname(const string& s, uint8_t prio
     return aircrafts;
 }
 
-std::vector<Aircraft> Aircraft::_suggest_name(const string& s, uint8_t priority) {
+std::vector<Aircraft> Aircraft::suggest_name(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
     auto result = Database::Client()->suggest_aircraft_by_name->Execute(s.c_str(), priority);
     CHECK_SUCCESS(result);
@@ -100,7 +152,7 @@ std::vector<Aircraft> Aircraft::_suggest_name(const string& s, uint8_t priority)
 }
 
 // TODO: remove duplicates
-std::vector<Aircraft> Aircraft::_suggest_all(const string& s, uint8_t priority) {
+std::vector<Aircraft> Aircraft::suggest_all(const string& s, uint8_t priority) {
     std::vector<Aircraft> aircrafts;
     std::vector<AircraftSuggestion> suggestions;
     for (auto& stmt : {
@@ -131,81 +183,44 @@ std::vector<Aircraft> Aircraft::_suggest_all(const string& s, uint8_t priority) 
     return aircrafts;
 }
 
-
-Aircraft Aircraft::from_auto(string s) {
-    Aircraft ac;
-    Aircraft::SearchType search_type = Aircraft::SearchType::ALL;
-
-    string s_lower = s;
-    std::transform(s_lower.begin(), s_lower.end(), s_lower.begin(), ::tolower);
-
-    // search airports
-    if (s_lower.substr(0, 5) == "name:") {
-        search_type = Aircraft::SearchType::NAME;
-        s = s_lower.substr(5);
-        ac = Aircraft::_from_name(s);
-    } else if (s_lower.substr(0, 10) == "shortname:") {
-        search_type = Aircraft::SearchType::SHORTNAME;
-        s = s_lower.substr(10);
-        ac = Aircraft::_from_shortname(s);
-    } else if (s_lower.substr(0, 4) == "all:") {
-        s = s_lower.substr(4);
-        ac = Aircraft::_from_all(s);
-    } else if (s_lower.substr(0, 3) == "id:") {
-        search_type = Aircraft::SearchType::ID;
-        s = s.substr(3);
-        try {
-            ac = Aircraft::_from_id(std::stoi(s));
-        } catch (std::invalid_argument& e) {
-        } catch (std::out_of_range& e) { // silently skipping, empty suggestions will be thrown later on
-        }
-    } else {
-        s = s_lower;
-        ac = Aircraft::_from_all(s);
-    }
-
-    if (ac.valid) return ac;
-    
-    // empty airports, suggest and throw error
-    std::vector<Aircraft> aircrafts;
-    switch (search_type) {
-        case Aircraft::SearchType::ALL:
-            aircrafts = Aircraft::_suggest_all(s);
-            break;
-        case Aircraft::SearchType::NAME:
-            aircrafts = Aircraft::_suggest_name(s);
-            break;
-        case Aircraft::SearchType::SHORTNAME:
-            aircrafts = Aircraft::_suggest_shortname(s);
-            break;
-    }
-
-    throw AircraftNotFoundException(search_type, s, aircrafts);
-}
-
-const string Aircraft::repr() {
-    std::stringstream ss;
-    std::string actype;
+const string to_string(Aircraft::Type type) {
     switch(type) {
         case Aircraft::Type::PAX:
-            actype = "PAX";
-            break;
+            return "PAX";
         case Aircraft::Type::CARGO:
-            actype = "CARGO";
-            break;
+            return "CARGO";
         case Aircraft::Type::VIP:
-            actype = "VIP";
-            break;
+            return "VIP";
     }
+    return "UNKNOWN";
+}
 
-    ss << "<Aircraft id=" << id << " shortname='" << shortname << "' manufacturer='" << manufacturer << "' name='" << name << "' type=" << actype << " priority=" << priority << " eid=" << eid << " ename='" << ename << "' speed=" << speed << " fuel=" << fuel << " co2=" << co2 << " cost=" << cost << " capacity=" << capacity << " rwy=" << rwy << " check_cost=" << check_cost << " range=" << range << " ceil=" << ceil << " maint=" << maint << " pilots=" << pilots << " crew=" << crew << " engineers=" << engineers << " technicians=" << technicians << " img='" << img << "' wingspan=" << wingspan << " length=" << length << ">";
+const string to_string(Aircraft::SearchType searchtype) {
+    switch (searchtype) {
+        case Aircraft::SearchType::ALL:
+            return "ALL";
+        case Aircraft::SearchType::ID:
+            return "ID";
+        case Aircraft::SearchType::SHORTNAME:
+            return "SHORTNAME";
+        case Aircraft::SearchType::NAME:
+            return "NAME";
+        default:
+            return "[UNKNOWN]";
+    }
+}
+
+const string Aircraft::repr(const Aircraft& ac) {
+    std::stringstream ss;
+    std::string actype = to_string(ac.type);
+    ss << "<Aircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << actype;
+    ss << " f" << ac.fuel << " c" << ac.co2 << " $" << ac.cost << " R" << ac.range << ">";
 
     return ss.str();
 }
 
 
 // PURCHASED AIRCRAFT
-
 PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
     PaxConfig config;
     config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
@@ -299,7 +314,6 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacit
 }
 
 
-
 CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
     double l_cap = capacity * 0.7;
 
@@ -316,7 +330,7 @@ CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity)
     return config;
 }
 
-// virually useless!
+// virually useless, never profitable unless distance > ~23000 km
 CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
     CargoConfig config;
     if (d_pf.h > capacity) {
@@ -339,4 +353,13 @@ CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& cargo_demand, uint32
     double true_capacity = capacity * (1 + l_training / 100.0);
 
     return calc_l_conf(d_pf, true_capacity); // low priority is always more profitable
+}
+
+const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
+    std::stringstream ss;
+    std::string actype = to_string(ac.type);
+    ss << "<PurchasedAircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << actype;
+    ss << " f" << ac.fuel << " c" << ac.co2 << " $" << ac.cost << " R" << ac.range << ">";
+
+    return ss.str();
 }

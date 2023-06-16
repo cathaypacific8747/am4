@@ -11,6 +11,65 @@ using namespace duckdb;
 
 Airport::Airport() : valid(false) {}
 
+Airport Airport::from_str(string s) {
+    Airport ap;
+    Airport::SearchType search_type = Airport::SearchType::ALL;
+
+    string s_upper = s;
+    std::transform(s_upper.begin(), s_upper.end(), s_upper.begin(), ::toupper);
+
+    // search airports
+    if (s_upper.substr(0, 5) == "IATA:") {
+        search_type = Airport::SearchType::IATA;
+        s = s_upper.substr(5);
+        ap = Airport::from_iata(s);
+    } else if (s_upper.substr(0, 5) == "ICAO:") {
+        search_type = Airport::SearchType::ICAO;
+        s = s_upper.substr(5);
+        ap = Airport::from_icao(s);
+    } else if (s_upper.substr(0, 5) == "NAME:") {
+        search_type = Airport::SearchType::NAME;
+        s = s_upper.substr(5);
+        ap = Airport::from_name(s);
+    } else if (s_upper.substr(0, 3) == "ID:") {
+        search_type = Airport::SearchType::ID;
+        s = s.substr(3);
+        try {
+            ap = Airport::from_id(std::stoi(s));
+        } catch (std::invalid_argument& e) {
+        } catch (std::out_of_range& e) { // silently skipping, empty suggestions will be thrown later on
+        }
+    } else if (s_upper.substr(0, 4) == "ALL:") {
+        s = s_upper.substr(4);
+        ap = Airport::from_all(s);
+    } else {
+        s = s_upper;
+        ap = Airport::from_all(s);
+    }
+
+    if (ap.valid) return ap;
+    
+    // empty airports, suggest and throw error
+    std::vector<Airport> airports;
+    switch (search_type) {
+        case Airport::SearchType::ALL:
+            airports = Airport::suggest_all(s);
+            break;
+        case Airport::SearchType::IATA:
+            airports = Airport::suggest_iata(s);
+            break;
+        case Airport::SearchType::ICAO:
+            airports = Airport::suggest_icao(s);
+            break;
+        case Airport::SearchType::NAME:
+            airports = Airport::suggest_name(s);
+            break;
+    }
+
+    throw AirportNotFoundException(search_type, s, airports);
+}
+
+
 Airport::Airport(const duckdb::DataChunk& chunk, idx_t row) :
     id(chunk.GetValue(0, row).GetValue<uint16_t>()),
     name(chunk.GetValue(1, row).GetValue<string>()),
@@ -27,7 +86,7 @@ Airport::Airport(const duckdb::DataChunk& chunk, idx_t row) :
     rwy_codes(chunk.GetValue(12, row).GetValue<string>()),
     valid(true) {}
 
-Airport Airport::_from_id(uint16_t id) {
+Airport Airport::from_id(uint16_t id) {
     auto result = Database::Client()->get_airport_by_id->Execute(id);
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -36,7 +95,7 @@ Airport Airport::_from_id(uint16_t id) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_iata(const string& s) {
+Airport Airport::from_iata(const string& s) {
     auto result = Database::Client()->get_airport_by_iata->Execute(s.c_str()); // note: std::string somehow converts to BLOB
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -45,7 +104,7 @@ Airport Airport::_from_iata(const string& s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_icao(const string& s) {
+Airport Airport::from_icao(const string& s) {
     auto result = Database::Client()->get_airport_by_icao->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -54,7 +113,7 @@ Airport Airport::_from_icao(const string& s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_name(const string& s) {
+Airport Airport::from_name(const string& s) {
     auto result = Database::Client()->get_airport_by_name->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -63,7 +122,7 @@ Airport Airport::_from_name(const string& s) {
     return Airport(*chunk, 0);
 }
 
-Airport Airport::_from_all(const string& s) {
+Airport Airport::from_all(const string& s) {
     auto result = Database::Client()->get_airport_by_all->Execute(s.c_str());
     CHECK_SUCCESS(result);
     auto chunk = result->Fetch();
@@ -73,7 +132,7 @@ Airport Airport::_from_all(const string& s) {
 }
 
 
-std::vector<Airport> Airport::_suggest_iata(const string& s) {
+std::vector<Airport> Airport::suggest_iata(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_iata->Execute(s.c_str());
     CHECK_SUCCESS(result);
@@ -85,7 +144,7 @@ std::vector<Airport> Airport::_suggest_iata(const string& s) {
     return airports;
 }
 
-std::vector<Airport> Airport::_suggest_icao(const string& s) {
+std::vector<Airport> Airport::suggest_icao(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_icao->Execute(s.c_str());
     CHECK_SUCCESS(result);
@@ -97,7 +156,7 @@ std::vector<Airport> Airport::_suggest_icao(const string& s) {
     return airports;
 }
 
-std::vector<Airport> Airport::_suggest_name(const string& s) {
+std::vector<Airport> Airport::suggest_name(const string& s) {
     std::vector<Airport> airports;
     auto result = Database::Client()->suggest_airport_by_name->Execute(s.c_str());
     CHECK_SUCCESS(result);
@@ -110,7 +169,7 @@ std::vector<Airport> Airport::_suggest_name(const string& s) {
 }
 
 // TODO: remove duplicates
-std::vector<Airport> Airport::_suggest_all(const string& s) {
+std::vector<Airport> Airport::suggest_all(const string& s) {
     std::vector<Airport> airports;
     std::vector<AirportSuggestion> suggestions;
     for (auto& stmt : {
@@ -142,64 +201,25 @@ std::vector<Airport> Airport::_suggest_all(const string& s) {
     return airports;
 }
 
-Airport Airport::from_auto(string s) {
-    Airport ap;
-    Airport::SearchType search_type = Airport::SearchType::ALL;
-
-    string s_upper = s;
-    std::transform(s_upper.begin(), s_upper.end(), s_upper.begin(), ::toupper);
-
-    // search airports
-    if (s_upper.substr(0, 5) == "IATA:") {
-        search_type = Airport::SearchType::IATA;
-        s = s_upper.substr(5);
-        ap = Airport::_from_iata(s);
-    } else if (s_upper.substr(0, 5) == "ICAO:") {
-        search_type = Airport::SearchType::ICAO;
-        s = s_upper.substr(5);
-        ap = Airport::_from_icao(s);
-    } else if (s_upper.substr(0, 5) == "NAME:") {
-        search_type = Airport::SearchType::NAME;
-        s = s_upper.substr(5);
-        ap = Airport::_from_name(s);
-    } else if (s_upper.substr(0, 3) == "ID:") {
-        search_type = Airport::SearchType::ID;
-        s = s.substr(3);
-        try {
-            ap = Airport::_from_id(std::stoi(s));
-        } catch (std::invalid_argument& e) {
-        } catch (std::out_of_range& e) { // silently skipping, empty suggestions will be thrown later on
-        }
-    } else if (s_upper.substr(0, 4) == "ALL:") {
-        s = s_upper.substr(4);
-        ap = Airport::_from_all(s);
-    } else {
-        s = s_upper;
-        ap = Airport::_from_all(s);
-    }
-
-    if (ap.valid) return ap;
-    
-    // empty airports, suggest and throw error
-    std::vector<Airport> airports;
-    switch (search_type) {
+const string to_string(Airport::SearchType st) {
+    switch (st) {
         case Airport::SearchType::ALL:
-            airports = Airport::_suggest_all(s);
-            break;
+            return "ALL";
         case Airport::SearchType::IATA:
-            airports = Airport::_suggest_iata(s);
-            break;
+            return "IATA";
         case Airport::SearchType::ICAO:
-            airports = Airport::_suggest_icao(s);
-            break;
+            return "ICAO";
         case Airport::SearchType::NAME:
-            airports = Airport::_suggest_name(s);
-            break;
+            return "NAME";
+        case Airport::SearchType::ID:
+            return "ID";
+        default:
+            return "[UNKNOWN]";
     }
-
-    throw AirportNotFoundException(search_type, s, airports);
 }
 
-const string Airport::repr() {
-    return "<Airport id=" + std::to_string(id) + " name='" + name + "' fullname='" + fullname + "' country='" + country + "' continent='" + continent + "' iata='" + iata + "' icao='" + icao + "' lat=" + std::to_string(lat) + " lng=" + std::to_string(lng) + " rwy=" + std::to_string(rwy) + " market=" + std::to_string(market) + " hub_cost=" + std::to_string(hub_cost) + " rwy_codes='" + rwy_codes + "'>";
+const string Airport::repr(const Airport& ap) {
+    return "<Airport." + to_string(ap.id) + " " + ap.iata + "|" + ap.icao + "|" + ap.name + "," +
+    ap.country + " @ " + to_string(ap.lat) + "," + to_string(ap.lng) + " " +
+    to_string(ap.rwy) + "ft " + to_string(ap.market) + "% $" + to_string(ap.hub_cost) + ">";
 }

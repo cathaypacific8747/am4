@@ -4,6 +4,7 @@
 #include <duckdb.hpp>
 
 using std::string;
+using std::to_string;
 using std::vector;
 
 struct Airport {
@@ -31,23 +32,22 @@ struct Airport {
     bool valid = false;
 
     Airport();
+    static Airport from_str(string s);
+
     Airport(const duckdb::DataChunk& chunk, idx_t row);
-
-    static Airport _from_id(uint16_t id);
-    static Airport _from_iata(const string& s);
-    static Airport _from_icao(const string& s);
-    static Airport _from_name(const string& s);
-    static Airport _from_all(const string& s);
-
-    static std::vector<Airport> _suggest_iata(const string& s);
-    static std::vector<Airport> _suggest_icao(const string& s);
-    static std::vector<Airport> _suggest_name(const string& s);
-    static std::vector<Airport> _suggest_all(const string& s);
-
-    static Airport from_auto(string s);
-
-    const string repr();
+    static Airport from_id(uint16_t id);
+    static Airport from_iata(const string& s);
+    static Airport from_icao(const string& s);
+    static Airport from_name(const string& s);
+    static Airport from_all(const string& s);
+    static std::vector<Airport> suggest_iata(const string& s);
+    static std::vector<Airport> suggest_icao(const string& s);
+    static std::vector<Airport> suggest_name(const string& s);
+    static std::vector<Airport> suggest_all(const string& s);
+    static const string repr(const Airport& ap);
 };
+
+inline const string to_string(Airport::SearchType st);
 
 struct AirportSuggestion {
     Airport ap;
@@ -65,27 +65,7 @@ public:
     AirportNotFoundException(Airport::SearchType searchtype, string searchstr, std::vector<Airport> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
     const char* what() const throw() {
         std::stringstream ss;
-        string searchtype_str;
-        switch (searchtype) {
-            case Airport::SearchType::ALL:
-                searchtype_str = "all";
-                break;
-            case Airport::SearchType::IATA:
-                searchtype_str = "iata";
-                break;
-            case Airport::SearchType::ICAO:
-                searchtype_str = "icao";
-                break;
-            case Airport::SearchType::NAME:
-                searchtype_str = "name";
-                break;
-            case Airport::SearchType::ID:
-                searchtype_str = "id";
-                break;
-            default:
-                searchtype_str = "(unknown)";
-                break;
-        }
+        string searchtype_str = to_string(searchtype);
         ss << "Airport not found - " << searchtype_str << ":" << searchstr;
         if (suggestions.size() > 0) {
             ss << ". Did you mean: ";

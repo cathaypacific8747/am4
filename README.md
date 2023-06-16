@@ -24,7 +24,7 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
     - member tracking: cheat detection tools, departure pattern identification
 
 ## Development
-Requirements: python3.9+, C++11 compliant compiler
+Requirements: python3.9+, C++17 compliant compiler
 
 ```bash
 # windows

@@ -9,6 +9,7 @@
 #include "demand.hpp"
 
 using std::string;
+using std::to_string;
 
 struct Aircraft {
     enum class Type {
@@ -49,25 +50,24 @@ struct Aircraft {
     string img;
     uint8_t wingspan;
     uint8_t length;
-
     bool valid = false;
 
     Aircraft();
+    static Aircraft from_str(string s);
+
     Aircraft(const duckdb::DataChunk& chunk, idx_t row);
-
-    static Aircraft _from_id(uint16_t id, uint8_t priority = 0);
-    static Aircraft _from_shortname(const string& s, uint8_t priority = 0);
-    static Aircraft _from_name(const string& s, uint8_t priority = 0);
-    static Aircraft _from_all(const string& s, uint8_t priority = 0);
-
-    static std::vector<Aircraft> _suggest_shortname(const string& s, uint8_t priority = 0);
-    static std::vector<Aircraft> _suggest_name(const string& s, uint8_t priority = 0);
-    static std::vector<Aircraft> _suggest_all(const string& s, uint8_t priority = 0);
-
-    static Aircraft from_auto(string s);
-
-    const string repr();
+    static Aircraft from_id(uint16_t id, uint8_t priority = 0);
+    static Aircraft from_shortname(const string& s, uint8_t priority = 0);
+    static Aircraft from_name(const string& s, uint8_t priority = 0);
+    static Aircraft from_all(const string& s, uint8_t priority = 0);
+    static std::vector<Aircraft> suggest_shortname(const string& s, uint8_t priority = 0);
+    static std::vector<Aircraft> suggest_name(const string& s, uint8_t priority = 0);
+    static std::vector<Aircraft> suggest_all(const string& s, uint8_t priority = 0);
+    static const string repr(const Aircraft& ac);
 };
+
+inline const string to_string(Aircraft::Type type);
+inline const string to_string(Aircraft::SearchType searchtype);
 
 struct AircraftSuggestion {
     Aircraft ac;
@@ -85,24 +85,7 @@ public:
     AircraftNotFoundException(Aircraft::SearchType searchtype, string searchstr, std::vector<Aircraft> suggestions) : searchtype(searchtype), searchstr(searchstr), suggestions(suggestions) {}
     const char* what() const throw() {
         std::stringstream ss;
-        string searchtype_str;
-        switch (searchtype) {
-            case Aircraft::SearchType::ALL:
-                searchtype_str = "all";
-                break;
-            case Aircraft::SearchType::ID:
-                searchtype_str = "id";
-                break;
-            case Aircraft::SearchType::SHORTNAME:
-                searchtype_str = "shortname";
-                break;
-            case Aircraft::SearchType::NAME:
-                searchtype_str = "name";
-                break;
-            default:
-                searchtype_str = "(unknown)";
-                break;
-        }
+        string searchtype_str = to_string(searchtype);
         ss << "Aircraft not found - " << searchtype_str << ":" << searchstr;
         if (suggestions.size() > 0) {
             ss << ". Did you mean: ";
@@ -174,4 +157,6 @@ struct PurchasedAircraft : Aircraft {
     PurchasedAircraft() {}
     PurchasedAircraft(const Aircraft& ac, const PaxConfig& pax_config) : Aircraft(ac), config(pax_config) {}
     PurchasedAircraft(const Aircraft& ac, const CargoConfig& cargo_config) : Aircraft(ac), config(cargo_config) {}
+
+    static const string repr(const PurchasedAircraft& ac);
 };
