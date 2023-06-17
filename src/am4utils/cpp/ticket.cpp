@@ -1,7 +1,7 @@
 #include "include/ticket.hpp"
 #include <cmath>
 
-PaxTicket PaxTicket::from_optimal(float distance, User::GameMode game_mode) {
+PaxTicket PaxTicket::from_optimal(double distance, User::GameMode game_mode) {
     PaxTicket ticket;
     if (game_mode == User::GameMode::EASY) {
         ticket.y = (uint16_t)(1.10 * (0.4 * distance + 170)) - 2;
@@ -15,19 +15,19 @@ PaxTicket PaxTicket::from_optimal(float distance, User::GameMode game_mode) {
     return ticket;
 };
 
-CargoTicket CargoTicket::from_optimal(float distance, User::GameMode game_mode) {
+CargoTicket CargoTicket::from_optimal(double distance, User::GameMode game_mode) {
     CargoTicket ticket;
     if (game_mode == User::GameMode::EASY) {
-        ticket.l = floorf(1.10 * (0.0948283724581252 * distance + 85.2045432642377000)) / 100;
-        ticket.h = floorf(1.08 * (0.0689663577640275 * distance + 28.2981124272893000)) / 100;
+        ticket.l = floorf(static_cast<float>(1.10 * (0.0948283724581252 * distance + 85.2045432642377000))) / 100;
+        ticket.h = floorf(static_cast<float>(1.08 * (0.0689663577640275 * distance + 28.2981124272893000))) / 100;
     } else {
-        ticket.l = floorf(1.10 * (0.0776321822039374 * distance + 85.0567600367807000)) / 100;
-        ticket.h = floorf(1.08 * (0.0517742799409248 * distance + 24.6369915396414000)) / 100;
+        ticket.l = floorf(static_cast<float>(1.10 * (0.0776321822039374 * distance + 85.0567600367807000))) / 100;
+        ticket.h = floorf(static_cast<float>(1.08 * (0.0517742799409248 * distance + 24.6369915396414000))) / 100;
     }
     return ticket;
 };
 
-VIPTicket VIPTicket::from_optimal(float distance) {
+VIPTicket VIPTicket::from_optimal(double distance) {
     VIPTicket ticket;
     ticket.y = (uint16_t)(1.22 * 1.7489 * (0.4 * distance + 170)) - 2;
     ticket.j = (uint16_t)(1.20 * 1.7489 * (0.8 * distance + 560)) - 2;

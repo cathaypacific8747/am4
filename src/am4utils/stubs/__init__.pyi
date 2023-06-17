@@ -5,18 +5,18 @@ import am4utils._core.aircraft
 import am4utils._core.airport
 import am4utils._core.db
 import am4utils._core.demand
+import am4utils._core.game
 import am4utils._core.route
 import am4utils._core.ticket
-import am4utils._core.user
 
 __all__ = [
     "aircraft",
     "airport",
     "db",
     "demand",
+    "game",
     "route",
-    "ticket",
-    "user"
+    "ticket"
 ]
 
 

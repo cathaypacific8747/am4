@@ -9,6 +9,12 @@ __all__ = [
 
 
 class CargoDemand():
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(self, l: int, h: int) -> None: ...
+    @typing.overload
+    def __init__(self, pax_demand: PaxDemand) -> None: ...
     def __repr__(self) -> str: ...
     @property
     def h(self) -> int:
@@ -22,6 +28,10 @@ class CargoDemand():
         """
     pass
 class PaxDemand():
+    @typing.overload
+    def __init__(self) -> None: ...
+    @typing.overload
+    def __init__(self, y: int, j: int, f: int) -> None: ...
     def __repr__(self) -> str: ...
     @property
     def f(self) -> int:

@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <duckdb.hpp>
 
-#include "user.hpp"
+#include "game.hpp"
 #include "ticket.hpp"
 #include "demand.hpp"
 
@@ -88,13 +88,6 @@ struct Aircraft {
 inline const string to_string(Aircraft::Type type);
 inline const string to_string(Aircraft::SearchType searchtype);
 
-struct AircraftSuggestion {
-    Aircraft ac;
-    double score;
-
-    AircraftSuggestion(const Aircraft& ac, double score) : ac(ac), score(score) {}
-};
-
 struct PaxConfig {
     enum class Algorithm {
         FJY, FYJ,
@@ -109,14 +102,14 @@ struct PaxConfig {
     bool valid = false;
     Algorithm algorithm;
 
-    static inline PaxConfig calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
-    static inline PaxConfig calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
-    static inline PaxConfig calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
-    static inline PaxConfig calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
-    static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
-    static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance);
+    static inline PaxConfig calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity);
+    static inline PaxConfig calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity);
+    static inline PaxConfig calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity);
+    static inline PaxConfig calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity);
+    static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity);
+    static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity);
 
-    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day = 1, User::GameMode game_mode = User::GameMode::EASY);
+    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, uint16_t trips_per_day = 1, User::GameMode game_mode = User::GameMode::EASY);
 };
 
 struct CargoConfig { // percent

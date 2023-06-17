@@ -3,31 +3,46 @@ import am4utils._core.route
 import typing
 import am4utils._core.aircraft
 import am4utils._core.airport
-import am4utils._core.user
+import am4utils._core.game
 import am4utils._core.ticket
 import am4utils._core.demand
 
 __all__ = [
+    "AircraftRoute",
     "Route"
 ]
 
 
-class Route():
+class AircraftRoute():
     def __repr__(self) -> str: ...
     @staticmethod
-    def from_airports(ap1: am4utils._core.airport.Airport, ap2: am4utils._core.airport.Airport) -> Route: ...
-    @staticmethod
-    def from_airports_with_aircraft(ap1: am4utils._core.airport.Airport, ap2: am4utils._core.airport.Airport, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, game_mode: am4utils._core.user.GameMode = am4utils._core.user.GameMode.EASY) -> Route: ...
+    def create(route: Route, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
     @property
     def aircraft(self) -> am4utils._core.aircraft.PurchasedAircraft:
         """
         :type: am4utils._core.aircraft.PurchasedAircraft
         """
     @property
-    def cargo_demand(self) -> am4utils._core.demand.CargoDemand:
+    def income(self) -> float:
         """
-        :type: am4utils._core.demand.CargoDemand
+        :type: float
         """
+    @property
+    def route(self) -> Route:
+        """
+        :type: Route
+        """
+    @property
+    def ticket(self) -> am4utils._core.ticket.Ticket:
+        """
+        :type: am4utils._core.ticket.Ticket
+        """
+    pass
+class Route():
+    def __repr__(self) -> str: ...
+    def assign(self, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
+    @staticmethod
+    def create(ap1: am4utils._core.airport.Airport, ap2: am4utils._core.airport.Airport) -> Route: ...
     @property
     def destination(self) -> am4utils._core.airport.Airport:
         """
@@ -39,11 +54,6 @@ class Route():
         :type: float
         """
     @property
-    def income(self) -> int:
-        """
-        :type: int
-        """
-    @property
     def origin(self) -> am4utils._core.airport.Airport:
         """
         :type: am4utils._core.airport.Airport
@@ -52,11 +62,6 @@ class Route():
     def pax_demand(self) -> am4utils._core.demand.PaxDemand:
         """
         :type: am4utils._core.demand.PaxDemand
-        """
-    @property
-    def ticket(self) -> am4utils._core.ticket.Ticket:
-        """
-        :type: am4utils._core.ticket.Ticket
         """
     @property
     def valid(self) -> bool:

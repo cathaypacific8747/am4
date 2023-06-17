@@ -15,6 +15,7 @@ if __name__ == '__main__':
     pybind11_stubgen.main(
         [
             "-o", ".",
+            # "--ignore-invalid", "all",
             "--no-setup-py",
             "am4utils",
         ],
@@ -32,11 +33,10 @@ if __name__ == '__main__':
             f.truncate()
     
     replace('stubs/_core/route/__init__.pyi', {
-        'import am4utils._core.user': 'import am4utils._core.user\nimport am4utils._core.ticket\nimport am4utils._core.demand',
-        'GameMode = GameMode.EASY': 'GameMode = am4utils._core.user.GameMode.EASY',
+        'import am4utils._core.game': 'import am4utils._core.game\nimport am4utils._core.ticket\nimport am4utils._core.demand',
     })
     replace('stubs/_core/ticket/__init__.pyi', {
-        'GameMode = GameMode.EASY': 'GameMode = am4utils._core.user.GameMode.EASY',
+        'import am4utils._core.ticket': 'import am4utils._core.ticket\nimport am4utils._core.game',
     })
 
     try:

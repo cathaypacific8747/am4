@@ -1,12 +1,14 @@
 import pytest
 
 import am4utils
+from am4utils.demand import CargoDemand
 from am4utils.aircraft import (
     Aircraft,
     PaxConfig, CargoConfig
 )
 from am4utils.airport import Airport
 from am4utils.route import Route
+from am4utils.game import Campaign, User
 
 am4utils.db.init(am4utils.__path__[0])
 
@@ -61,7 +63,7 @@ def test_airport_fail_and_suggest(inp):
 def test_route():
     a0 = Airport.search('VHHH').ap
     a1 = Airport.search('LHR').ap
-    r = Route.from_airports(a0, a1)
+    r = Route.create(a0, a1)
     assert int(r.direct_distance) == 9630
     assert r.pax_demand.y == 1093
 
@@ -69,15 +71,15 @@ def test_invalid_route_to_self():
     a0 = Airport.search('VHHH').ap
 
     with pytest.raises(ValueError):
-        _r = Route.from_airports(a0, a0)
+        _r = Route.create(a0, a0)
 
 def test_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744').ac
-    r = Route.from_airports_with_aircraft(ap0, ap1, ac)
-    assert int(r.direct_distance) == 9630
-    assert r.pax_demand.y == 1093
+    r = Route.create(ap0, ap1).assign(ac)
+    assert int(r.route.direct_distance) == 9630
+    assert r.route.pax_demand.y == 1093
     cfg = r.aircraft.config.pax_config
     assert cfg.y == 0
     assert cfg.j == 16
@@ -85,9 +87,9 @@ def test_route_with_aircraft():
     assert cfg.algorithm == PaxConfig.Algorithm.FJY
 
     ap2 = Airport.search('MTR').ap
-    r = Route.from_airports_with_aircraft(ap0, ap2, ac)
-    assert int(r.direct_distance) == 16394
-    assert r.pax_demand.y == 303
+    r = Route.create(ap0, ap2).assign(ac)
+    assert int(r.route.direct_distance) == 16394
+    assert r.route.pax_demand.y == 303
     cfg = r.aircraft.config.pax_config
     assert cfg.y == 303
     assert cfg.j == 56
@@ -98,19 +100,60 @@ def test_cargo_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744f').ac
-    r = Route.from_airports_with_aircraft(ap0, ap1, ac)
-    assert r.cargo_demand.l == 547000
-    assert r.cargo_demand.h == 681000
+    r = Route.create(ap0, ap1).assign(ac)
+    cargo_demand = CargoDemand(r.route.pax_demand)
+    assert cargo_demand.l == 547000
+    assert cargo_demand.h == 681000
     cfg = r.aircraft.config.cargo_config
     assert cfg.l == 100
     assert cfg.h == 0
     assert cfg.algorithm == CargoConfig.Algorithm.L
 
     ap1 = Airport.search('BPC').ap
-    r = Route.from_airports_with_aircraft(ap0, ap1, ac)
-    assert r.cargo_demand.l == 148000
-    assert r.cargo_demand.h == 220000
+    r = Route.create(ap0, ap1).assign(ac)
+    cargo_demand = CargoDemand(r.route.pax_demand)
+    assert cargo_demand.l == 148000
+    assert cargo_demand.h == 220000
     cfg = r.aircraft.config.cargo_config
     assert cfg.l == 70
     assert cfg.h == 30
     assert cfg.algorithm == CargoConfig.Algorithm.L
+
+
+# game tests
+def test_default_user():
+    c = User()
+    assert c.game_mode == User.GameMode.EASY
+    assert c.fuel_price == 700
+    assert c.co2_price == 120
+    assert c.override_load is False
+    assert c.load == 85
+
+def test_campaign():
+    c = Campaign.parse("c1, e")
+    assert c.pax_activated == Campaign.Airline.C1_24HR
+    assert c.cargo_activated == Campaign.Airline.C1_24HR
+    assert c.eco_activated == Campaign.Eco.C_24HR
+
+    c = Campaign.parse("e")
+    assert c.pax_activated == Campaign.Airline.NONE
+    assert c.cargo_activated == Campaign.Airline.NONE
+    assert c.eco_activated == Campaign.Eco.C_24HR
+
+    c = Campaign.Default()
+    assert c.pax_activated == Campaign.Airline.C4_24HR
+    assert c.cargo_activated == Campaign.Airline.C4_24HR
+    assert c.eco_activated == Campaign.Eco.C_24HR
+
+def test_campaign_reputation():
+    c = Campaign.parse("c1, e")
+    rep = c.estimate_pax_reputation()
+    assert rep == 45 + 7.5 + 10
+
+    c = Campaign.parse("c4, e")
+    rep = c.estimate_pax_reputation()
+    assert rep == 45 + 30 + 10
+
+    c = Campaign.parse("e")
+    rep = c.estimate_pax_reputation()
+    assert rep == 45 + 10

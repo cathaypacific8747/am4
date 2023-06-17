@@ -6,6 +6,10 @@
 #include <chrono>
 
 #include "include/db.hpp"
+#include "include/game.hpp"
+#include "include/ticket.hpp"
+#include "include/demand.hpp"
+
 #include "include/airport.hpp"
 #include "include/aircraft.hpp"
 #include "include/route.hpp"
@@ -49,37 +53,24 @@ string get_executable_path() {
     std::chrono::duration<double> elapsed = finish - start; \
     cout << "elapsed: " << elapsed.count() * 1000 << " ms\n";
 
-int main(int argc, char **argv) {
+int main() {
     string executable_path = get_executable_path();
     cout << "am4utils (v" << version << "), executable_path: " << executable_path << "\n_______" << std::setprecision(15) << endl;
 
     try {
-        init(executable_path); // 1.3s
-        // cout << "initialised database" << endl;
-
-
-    // auto sr = Airport::search("hong kong");
-    // cout << sr.ap->name << endl;
-    // auto suggestions = Airport::suggest(sr.parse_result);
-    // for (auto s : suggestions) {
-    //     cout << s.ap->name << " (" << s.score << ")" << endl;
-    // }
-
-    auto sr = Aircraft::search("b744");
-    cout << sr.ac->name << endl;
-    auto suggestions = Aircraft::suggest(sr.parse_result);
-    for (auto s : suggestions) {
-        cout << s.ac->name << " (" << s.score << ")" << endl;
-    }
-
-    // Aircraft ac = Aircraft::search("name:B747-400").ac;
-    // Airport ap0 = Airport::search("icao:VhHH").ap;
-    // Airport ap1 = Airport::search("iata:LhR").ap;
-    // Route r = Route::from_airports_with_aircraft(ap0, ap1, ac);
-    // cout << Route::repr(r) << endl;
-    // Route r = Route::from_airports(ap0, ap1);
-
+    init(executable_path); // 1.3s
+    // cout << "initialised database" << endl;
     // _debug_query("SELECT current_setting('home_directory')");
+
+    // Campaign campaign = Campaign::Default();
+    // cout << campaign.estimate_pax_reputation() << endl;
+
+    Aircraft ac = *Aircraft::search("b744").ac;
+    Airport ap0 = *Airport::search("vhhh").ap;
+    Airport ap1 = *Airport::search("egll").ap;
+    AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
+    cout << AircraftRoute::repr(ar) << endl;
+
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;
         return 1;

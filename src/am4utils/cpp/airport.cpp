@@ -20,10 +20,10 @@ Airport::ParseResult Airport::parse(const string& s) {
         return Airport::ParseResult(Airport::SearchType::NAME, s_upper.substr(5));
     } else if (s_upper.substr(0, 3) == "ID:") {
         try {
-            uint16_t _ = std::stoi(s.substr(3));
+            std::ignore = std::stoi(s.substr(3));
             return Airport::ParseResult(Airport::SearchType::ID, s.substr(3));
-        } catch (std::invalid_argument& e) {
-        } catch (std::out_of_range& e) {
+        } catch (const std::invalid_argument&) {
+        } catch (const std::out_of_range&) {
         }
     } else if (s_upper.substr(0, 4) == "ALL:") {
         return Airport::ParseResult(Airport::SearchType::ALL, s_upper.substr(4));

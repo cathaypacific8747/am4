@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 
 #include "include/db.hpp"
 #include "include/aircraft.hpp"
@@ -16,10 +15,10 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
         return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10));
     } else if (s_lower.substr(0, 3) == "id:") {
         try {
-            uint16_t id = std::stoi(s.substr(3));
+            std::ignore = std::stoi(s.substr(3));
             return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3));
-        } catch (std::invalid_argument& e) {
-        } catch (std::out_of_range& e) {
+        } catch (const std::invalid_argument&) {
+        } catch (const std::out_of_range&) {
         }
     } else if (s_lower.substr(0, 4) == "all:") {
         return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4));
@@ -157,15 +156,15 @@ const string to_string(Aircraft::SearchType searchtype) {
 }
 
 const string Aircraft::repr(const Aircraft& ac) {
-    std::stringstream ss;
-    ss << "<Aircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << to_string(ac.type);
-    ss << " f" << ac.fuel << " c" << ac.co2 << " $" << ac.cost << " R" << ac.range << ">";
-    return ss.str();
+    string result;
+    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " " + to_string(ac.type) + " " + ac.shortname;
+    result += " f" + to_string(ac.fuel) + " c" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng" + to_string(ac.range) + ">";
+    return result;
 }
 
 
 // PURCHASED AIRCRAFT
-PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
     config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
@@ -175,7 +174,7 @@ PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
     config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
@@ -185,7 +184,7 @@ PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
     config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
@@ -195,7 +194,7 @@ PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
     config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
@@ -205,7 +204,7 @@ PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.y = d_pf.y > capacity ? capacity : d_pf.y;
     config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
@@ -215,7 +214,7 @@ PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, float distance) {
+PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.y = d_pf.y > capacity ? capacity : d_pf.y;
     config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
@@ -225,7 +224,7 @@ PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity, flo
     return config;
 };
 
-PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, float distance, uint16_t trips_per_day, User::GameMode game_mode) {
+PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, uint16_t trips_per_day, User::GameMode game_mode) {
     PaxDemand d_pf = PaxDemand(
         pax_demand.y / trips_per_day,
         pax_demand.j / trips_per_day,
@@ -235,23 +234,23 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacit
     PaxConfig config;
     if (game_mode == User::GameMode::EASY) {
         if (distance < 14425) {
-            config = calc_fjy_conf(d_pf, capacity, distance);
+            config = calc_fjy_conf(d_pf, capacity);
         } else if (distance < 14812.5) {
-            config = calc_fyj_conf(d_pf, capacity, distance);
+            config = calc_fyj_conf(d_pf, capacity);
         } else if (distance < 15200) {
-            config = calc_yfj_conf(d_pf, capacity, distance);
+            config = calc_yfj_conf(d_pf, capacity);
         } else {
-            config = calc_yjf_conf(d_pf, capacity, distance);
+            config = calc_yjf_conf(d_pf, capacity);
         }
     } else {
         if (distance < 13888.8888) {
-            config = calc_fjy_conf(d_pf, capacity, distance);
+            config = calc_fjy_conf(d_pf, capacity);
         } else if (distance < 15694.4444) {
-            config = calc_jfy_conf(d_pf, capacity, distance);
+            config = calc_jfy_conf(d_pf, capacity);
         } else if (distance < 17500) {
-            config = calc_jyf_conf(d_pf, capacity, distance);
+            config = calc_jyf_conf(d_pf, capacity);
         } else {
-            config = calc_yjf_conf(d_pf, capacity, distance);
+            config = calc_yjf_conf(d_pf, capacity);
         }
     }
     return config;
@@ -267,7 +266,7 @@ CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity)
         config.h = 0;
         config.valid = true;
     } else {
-        config.l = d_pf.l / l_cap * 100;
+        config.l = static_cast<uint8_t>(d_pf.l / l_cap * 100);
         config.h = 100 - config.l;
         config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
     }
@@ -283,7 +282,7 @@ CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity)
         config.l = 0;
         config.valid = true;
     } else {
-        config.h = d_pf.h / capacity * 100;
+        config.h = static_cast<uint8_t>(d_pf.h / capacity * 100);
         config.l = 100 - config.h;
         config.valid = d_pf.l >= capacity - d_pf.h;
     }
@@ -296,16 +295,14 @@ CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& cargo_demand, uint32
         cargo_demand.l / trips_per_day,
         cargo_demand.h / trips_per_day
     );
-    double true_capacity = capacity * (1 + l_training / 100.0);
+    uint32_t true_capacity = static_cast<uint32_t>(capacity * (1 + l_training / 100.0));
 
     return calc_l_conf(d_pf, true_capacity); // low priority is always more profitable
 }
 
 const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
-    std::stringstream ss;
-    std::string actype = to_string(ac.type);
-    ss << "<PurchasedAircraft." << ac.id << "." << ac.eid << " " << ac.shortname << " '" << ac.manufacturer << " " << ac.name << "' " << actype;
-    ss << " f" << ac.fuel << " c" << ac.co2 << " $" << ac.cost << " R" << ac.range << ">";
-
-    return ss.str();
+    string result;
+    result += "<PurchasedAircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " " + to_string(ac.type) + " " + ac.shortname;
+    result += " f" + to_string(ac.fuel) + " c" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng" + to_string(ac.range) + ">";
+    return result;
 }

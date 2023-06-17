@@ -1,7 +1,7 @@
 from __future__ import annotations
 import am4utils._core.ticket
+import am4utils._core.game
 import typing
-import am4utils._core.user
 
 __all__ = [
     "CargoTicket",
@@ -14,7 +14,7 @@ __all__ = [
 class CargoTicket():
     def __repr__(self) -> str: ...
     @staticmethod
-    def from_optimal(distance: float, game_mode: am4utils._core.user.GameMode = am4utils._core.user.GameMode.EASY) -> CargoTicket: ...
+    def from_optimal(distance: float, game_mode: am4utils._core.game.User.GameMode = am4utils._core.game.User.GameMode) -> PaxTicket: ...
     @property
     def h(self) -> float:
         """
@@ -29,7 +29,7 @@ class CargoTicket():
 class PaxTicket():
     def __repr__(self) -> str: ...
     @staticmethod
-    def from_optimal(distance: float, game_mode: am4utils._core.user.GameMode = am4utils._core.user.GameMode.EASY) -> PaxTicket: ...
+    def from_optimal(distance: float, game_mode: am4utils._core.game.User.GameMode = am4utils._core.game.User.GameMode) -> PaxTicket: ...
     @property
     def f(self) -> int:
         """

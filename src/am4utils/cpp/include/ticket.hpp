@@ -1,5 +1,5 @@
 #pragma once
-#include "user.hpp"
+#include "game.hpp"
 
 using std::string;
 using std::to_string;
@@ -9,7 +9,7 @@ struct PaxTicket {
     uint16_t j;
     uint16_t f;
     
-    static PaxTicket from_optimal(float distance, User::GameMode game_mode = User::GameMode::EASY);
+    static PaxTicket from_optimal(double distance, User::GameMode game_mode = User::GameMode::EASY);
     static const string repr(const PaxTicket& ticket);
 };
 
@@ -17,7 +17,7 @@ struct CargoTicket {
     float l;
     float h;
 
-    static CargoTicket from_optimal(float distance, User::GameMode game_mode = User::GameMode::EASY);
+    static CargoTicket from_optimal(double distance, User::GameMode game_mode = User::GameMode::EASY);
     static const string repr(const CargoTicket& ticket);
 };
 
@@ -26,7 +26,7 @@ struct VIPTicket {
     uint16_t j;
     uint16_t f;
     
-    static VIPTicket from_optimal(float distance);
+    static VIPTicket from_optimal(double distance);
     static const string repr(const VIPTicket& ticket);
 };
 

@@ -12,6 +12,12 @@ project(am4utils LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 include(libduckdb.cmake)
 
+if (MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
 file(TO_CMAKE_PATH "${Python_SITELIB}/${SKBUILD_WHEEL_INSTALL_DIR}" PYTHON_LIB_DIR)
@@ -24,11 +30,12 @@ message("[DEBUG]\n\
 
 pybind11_add_module(_core
     cpp/db.cpp
+    cpp/game.cpp
+    cpp/demand.cpp
+    cpp/ticket.cpp
     cpp/airport.cpp
     cpp/aircraft.cpp
     cpp/route.cpp
-    cpp/demand.cpp
-    cpp/ticket.cpp
     cpp/binder.cpp
 )
 target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
@@ -48,6 +55,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
 # debug executable
 add_executable(_core_executable
     cpp/db.cpp
+    cpp/game.cpp
     cpp/demand.cpp
     cpp/ticket.cpp
     cpp/airport.cpp

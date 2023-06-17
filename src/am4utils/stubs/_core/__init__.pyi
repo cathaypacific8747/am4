@@ -7,9 +7,9 @@ __all__ = [
     "airport",
     "db",
     "demand",
+    "game",
     "route",
-    "ticket",
-    "user"
+    "ticket"
 ]
 
 

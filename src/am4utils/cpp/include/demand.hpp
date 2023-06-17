@@ -11,7 +11,7 @@ struct PaxDemand {
 
     PaxDemand();
     PaxDemand(uint16_t y, uint16_t j, uint16_t f);
-    PaxDemand(const duckdb::DataChunk& chunk, idx_t row);
+    PaxDemand(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
 
     static const string repr(const PaxDemand& demand);
 };
@@ -22,8 +22,6 @@ struct CargoDemand {
 
     CargoDemand();
     CargoDemand(uint32_t l, uint32_t h);
-    CargoDemand(uint16_t y, uint16_t j);
-    CargoDemand(const duckdb::DataChunk& chunk, idx_t row);
     CargoDemand(const PaxDemand& pax_demand);
 
     static const string repr(const CargoDemand& demand);
