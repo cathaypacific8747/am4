@@ -48,7 +48,7 @@ struct AircraftRoute {
         Stopover();
         Stopover(const Airport& airport, double full_distance);
         static Stopover find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode);
-        static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const Aircraft& aircraft, double target_distance, User::GameMode game_mode);
+        // static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const Aircraft& aircraft, double target_distance, User::GameMode game_mode);
         const static string repr(const Stopover& s);
     };
     Stopover stopover;

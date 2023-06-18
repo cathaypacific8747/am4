@@ -4,7 +4,6 @@
 
 #include "include/db.hpp"
 
-using std::string;
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
@@ -168,3 +167,21 @@ void _debug_query(string query) {
     auto result = client->connection->Query(query);
     result->Print();
 }
+
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_db(py::module_& m) {
+    py::module_ m_db = m.def_submodule("db");
+
+    m_db
+        .def("init", &init)
+        .def("_debug_query", &_debug_query);
+
+    py::register_exception<DatabaseException>(m_db, "DatabaseException");
+}
+#endif

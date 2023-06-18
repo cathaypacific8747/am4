@@ -20,3 +20,31 @@ const string PaxDemand::repr(const PaxDemand& demand) {
 const string CargoDemand::repr(const CargoDemand& demand) {
     return "<CargoDemand " + to_string(demand.l) + "|" + to_string(demand.h) + ">";
 };
+
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_demand(py::module_& m) {
+    py::module_ m_demand = m.def_submodule("demand");
+    
+    py::class_<PaxDemand>(m_demand, "PaxDemand")
+        .def(py::init<>())
+        .def(py::init<int, int, int>(), "y"_a, "j"_a, "f"_a)
+        .def_readonly("y", &PaxDemand::y)
+        .def_readonly("j", &PaxDemand::j)
+        .def_readonly("f", &PaxDemand::f)
+        .def("__repr__", &PaxDemand::repr);
+    
+    py::class_<CargoDemand>(m_demand, "CargoDemand")
+        .def(py::init<>())
+        .def(py::init<int, int>(), "l"_a, "h"_a)
+        .def(py::init<const PaxDemand&>(), "pax_demand"_a)
+        .def_readonly("l", &CargoDemand::l)
+        .def_readonly("h", &CargoDemand::h)
+        .def("__repr__", &CargoDemand::repr);
+}
+#endif

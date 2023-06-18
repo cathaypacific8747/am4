@@ -5,6 +5,7 @@
 #define ROUTE_COUNT AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2
 
 using std::string;
+using std::shared_ptr;
 using duckdb::DuckDB;
 using duckdb::Connection;
 using duckdb::PreparedStatement;
@@ -46,8 +47,8 @@ struct Database {
     };
     AirportCache airport_cache[AIRPORT_COUNT]; // 125024 B, for stopovers
     
-    static std::shared_ptr<Database> default_client;
-    static std::shared_ptr<Database> Client();
+    static shared_ptr<Database> default_client;
+    static shared_ptr<Database> Client();
 
     void insert(string home_dir);
     void prepare_statements();

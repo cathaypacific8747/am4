@@ -220,8 +220,40 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
     return s;
 }
 
-#if BUILD_EXECUTABLES==OFF
-int main() {
-    return 0;
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_route(py::module_& m) {
+    py::module_ m_route = m.def_submodule("route");
+    
+    py::class_<AircraftRoute> acr_class(m_route, "AircraftRoute");
+    
+    py::class_<Route>(m_route, "Route")
+        .def_readonly("origin", &Route::origin)
+        .def_readonly("destination", &Route::destination)
+        .def_readonly("pax_demand", &Route::pax_demand)
+        .def_readonly("direct_distance", &Route::direct_distance)
+        .def_readonly("valid", &Route::valid)
+        .def_static("create", &Route::create, "ap1"_a, "ap2"_a)
+        .def("assign", &Route::assign, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
+        .def("__repr__", &Route::repr);
+    
+    py::class_<AircraftRoute::Stopover>(acr_class, "Stopover")
+        .def_readonly("airport", &AircraftRoute::Stopover::airport)
+        .def_readonly("full_distance", &AircraftRoute::Stopover::full_distance)
+        .def_readonly("exists", &AircraftRoute::Stopover::exists)
+        .def_static("find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a, "aircraft"_a, "game_mode"_a);
+
+    acr_class
+        .def_readonly("route", &AircraftRoute::route)
+        .def_readonly("aircraft", &AircraftRoute::aircraft)
+        .def_readonly("ticket", &AircraftRoute::ticket)
+        .def_readonly("income", &AircraftRoute::income)
+        .def_static("create", &AircraftRoute::from, "route"_a, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
+        .def("__repr__", &Route::repr);
 }
 #endif

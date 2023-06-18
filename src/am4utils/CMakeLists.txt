@@ -40,7 +40,7 @@ pybind11_add_module(_core
 )
 target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core
-    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION}
+    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=${BUILD_PYBIND}
 )
 
 set_rpath(_core)
@@ -51,6 +51,7 @@ install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION . OPTIONAL) # / is important!
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
+
 
 # debug executable
 add_executable(_core_executable
@@ -63,9 +64,10 @@ add_executable(_core_executable
     cpp/route.cpp
     cpp/main.cpp
 )
+
 target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable
-    PRIVATE VERSION_INFO=0.0.0-dev
+    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION}
 )
 
 set_rpath(_core_executable)
@@ -81,6 +83,6 @@ add_custom_command(
         $<TARGET_FILE_DIR:_core_executable>/data
 )
 
-if (NOT BUILD_EXECUTABLES)
+if (EXCLUDE_EXECUTABLES)
     set_target_properties(_core_executable PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 endif()

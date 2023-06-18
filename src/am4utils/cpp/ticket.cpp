@@ -46,3 +46,40 @@ const string CargoTicket::repr(const CargoTicket& ticket) {
 const string VIPTicket::repr(const VIPTicket& ticket) {
     return "<VIPTicket " + to_string(ticket.y) + "|" + to_string(ticket.j) + "|" + to_string(ticket.f) + ">";
 }
+
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_ticket(py::module_& m) {
+    py::module_ m_ticket = m.def_submodule("ticket");
+    
+    py::class_<PaxTicket>(m_ticket, "PaxTicket")
+        .def_readonly("y", &PaxTicket::y)
+        .def_readonly("j", &PaxTicket::j)
+        .def_readonly("f", &PaxTicket::f)
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY")) // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
+        .def("__repr__", &PaxTicket::repr);
+
+    py::class_<CargoTicket>(m_ticket, "CargoTicket")
+        .def_readonly("l", &CargoTicket::l)
+        .def_readonly("h", &CargoTicket::h)
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY"))
+        .def("__repr__", &CargoTicket::repr);
+    
+    py::class_<VIPTicket>(m_ticket, "VIPTicket")
+        .def_readonly("y", &VIPTicket::y)
+        .def_readonly("j", &VIPTicket::j)
+        .def_readonly("f", &VIPTicket::f)
+        .def_static("from_optimal", &VIPTicket::from_optimal, "distance"_a)
+        .def("__repr__", &VIPTicket::repr);
+    
+    py::class_<Ticket>(m_ticket, "Ticket")
+        .def_readonly("pax_ticket", &Ticket::pax_ticket)
+        .def_readonly("cargo_ticket", &Ticket::cargo_ticket)
+        .def_readonly("vip_ticket", &Ticket::vip_ticket);
+}
+#endif

@@ -149,3 +149,59 @@ const string Airport::repr(const Airport& ap) {
     ap.country + " @ " + to_string(ap.lat) + "," + to_string(ap.lng) + " " +
     to_string(ap.rwy) + "ft " + to_string(ap.market) + "% $" + to_string(ap.hub_cost) + ">";
 }
+
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_airport(py::module_& m) {
+    py::module_ m_ap = m.def_submodule("airport");
+    
+    py::class_<Airport, shared_ptr<Airport>> ap_class(m_ap, "Airport");
+    ap_class
+        .def_readonly("id", &Airport::id)
+        .def_readonly("name", &Airport::name)
+        .def_readonly("fullname", &Airport::fullname)
+        .def_readonly("country", &Airport::country)
+        .def_readonly("continent", &Airport::continent)
+        .def_readonly("iata", &Airport::iata)
+        .def_readonly("icao", &Airport::icao)
+        .def_readonly("lat", &Airport::lat)
+        .def_readonly("lng", &Airport::lng)
+        .def_readonly("rwy", &Airport::rwy)
+        .def_readonly("market", &Airport::market)
+        .def_readonly("hub_cost", &Airport::hub_cost)
+        .def_readonly("rwy_codes", &Airport::rwy_codes)
+        .def_readonly("valid", &Airport::valid)
+        .def("__repr__", &Airport::repr);
+    
+    py::enum_<Airport::SearchType>(ap_class, "SearchType")
+        .value("ALL", Airport::SearchType::ALL)
+        .value("IATA", Airport::SearchType::IATA)
+        .value("ICAO", Airport::SearchType::ICAO)
+        .value("NAME", Airport::SearchType::NAME)
+        .value("ID", Airport::SearchType::ID);
+    
+    py::class_<Airport::ParseResult>(ap_class, "ParseResult")
+        .def(py::init<Airport::SearchType, const string&>())
+        .def_readonly("search_type", &Airport::ParseResult::search_type)
+        .def_readonly("search_str", &Airport::ParseResult::search_str);
+
+    py::class_<Airport::SearchResult>(ap_class, "SearchResult")
+        .def(py::init<shared_ptr<Airport>, Airport::ParseResult>())
+        .def_readonly("ap", &Airport::SearchResult::ap)
+        .def_readonly("parse_result", &Airport::SearchResult::parse_result);
+
+    py::class_<Airport::Suggestion>(ap_class, "Suggestion")
+        .def(py::init<shared_ptr<Airport>, double>())
+        .def_readonly("ap", &Airport::Suggestion::ap)
+        .def_readonly("score", &Airport::Suggestion::score);
+
+    ap_class
+        .def_static("search", &Airport::search, "s"_a)
+        .def_static("suggest", &Airport::suggest, "s"_a);
+}
+#endif

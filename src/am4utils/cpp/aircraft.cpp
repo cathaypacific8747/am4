@@ -306,3 +306,101 @@ const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
     result += " f" + to_string(ac.fuel) + " c" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng" + to_string(ac.range) + ">";
     return result;
 }
+
+#if BUILD_PYBIND == 1
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace py::literals;
+
+void pybind_init_aircraft(py::module_& m) {
+    py::module_ m_ac = m.def_submodule("aircraft");
+    
+    py::class_<Aircraft, shared_ptr<Aircraft>> ac_class(m_ac, "Aircraft");
+    py::enum_<Aircraft::Type>(ac_class, "Type")
+        .value("PAX", Aircraft::Type::PAX)
+        .value("CARGO", Aircraft::Type::CARGO)
+        .value("VIP", Aircraft::Type::VIP);
+    ac_class
+        .def_readonly("id", &Aircraft::id)
+        .def_readonly("shortname", &Aircraft::shortname)
+        .def_readonly("manufacturer", &Aircraft::manufacturer)
+        .def_readonly("name", &Aircraft::name)
+        .def_readonly("type", &Aircraft::type)
+        .def_readonly("priority", &Aircraft::priority)
+        .def_readonly("eid", &Aircraft::eid)
+        .def_readonly("ename", &Aircraft::ename)
+        .def_readonly("speed", &Aircraft::speed)
+        .def_readonly("fuel", &Aircraft::fuel)
+        .def_readonly("co2", &Aircraft::co2)
+        .def_readonly("cost", &Aircraft::cost)
+        .def_readonly("capacity", &Aircraft::capacity)
+        .def_readonly("rwy", &Aircraft::rwy)
+        .def_readonly("check_cost", &Aircraft::check_cost)
+        .def_readonly("range", &Aircraft::range)
+        .def_readonly("ceil", &Aircraft::ceil)
+        .def_readonly("maint", &Aircraft::maint)
+        .def_readonly("pilots", &Aircraft::pilots)
+        .def_readonly("crew", &Aircraft::crew)
+        .def_readonly("engineers", &Aircraft::engineers)
+        .def_readonly("technicians", &Aircraft::technicians)
+        .def_readonly("img", &Aircraft::img)
+        .def_readonly("wingspan", &Aircraft::wingspan)
+        .def_readonly("length", &Aircraft::length)
+        .def_readonly("valid", &Aircraft::valid)
+        .def("__repr__", &Aircraft::repr);
+    py::enum_<Aircraft::SearchType>(ac_class, "SearchType")
+        .value("ALL", Aircraft::SearchType::ALL)
+        .value("ID", Aircraft::SearchType::ID)
+        .value("SHORTNAME", Aircraft::SearchType::SHORTNAME)
+        .value("NAME", Aircraft::SearchType::NAME);
+    py::class_<Aircraft::ParseResult>(ac_class, "ParseResult")
+        .def(py::init<Aircraft::SearchType, const string&>())
+        .def_readonly("search_type", &Aircraft::ParseResult::search_type)
+        .def_readonly("search_str", &Aircraft::ParseResult::search_str);
+    py::class_<Aircraft::SearchResult>(ac_class, "SearchResult")
+        .def(py::init<shared_ptr<Aircraft>, Aircraft::ParseResult>())
+        .def_readonly("ac", &Aircraft::SearchResult::ac)
+        .def_readonly("parse_result", &Aircraft::SearchResult::parse_result);
+    py::class_<Aircraft::Suggestion>(ac_class, "Suggestion")
+        .def(py::init<shared_ptr<Aircraft>, double>())
+        .def_readonly("ac", &Aircraft::Suggestion::ac)
+        .def_readonly("score", &Aircraft::Suggestion::score);
+    ac_class
+        .def_static("search", &Aircraft::search, "s"_a)
+        .def_static("suggest", &Aircraft::suggest, "s"_a);
+    
+    // puchased aircraft
+    py::class_<PaxConfig> pc_class(m_ac, "PaxConfig");
+    py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
+        .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)
+        .value("JFY", PaxConfig::Algorithm::JFY).value("JYF", PaxConfig::Algorithm::JYF)
+        .value("YJF", PaxConfig::Algorithm::YJF).value("YFJ", PaxConfig::Algorithm::YFJ)
+        .value("NONE", PaxConfig::Algorithm::NONE);
+    pc_class
+        .def_readonly("y", &PaxConfig::y)
+        .def_readonly("j", &PaxConfig::j)
+        .def_readonly("f", &PaxConfig::f)
+        .def_readonly("valid", &PaxConfig::valid)
+        .def_readonly("algorithm", &PaxConfig::algorithm);
+
+    py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
+    py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
+        .value("L", CargoConfig::Algorithm::L).value("H", CargoConfig::Algorithm::H)
+        .value("NONE", CargoConfig::Algorithm::NONE);
+    cc_class
+        .def_readonly("l", &CargoConfig::l)
+        .def_readonly("h", &CargoConfig::h)
+        .def_readonly("valid", &CargoConfig::valid)
+        .def_readonly("algorithm", &CargoConfig::algorithm);
+
+    py::class_<PurchasedAircraft, shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
+    py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
+        .def_readonly("pax_config", &PurchasedAircraft::Config::pax_config)
+        .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
+    p_ac_class
+        .def_readonly("config", &PurchasedAircraft::config)
+        .def("__repr__", &PurchasedAircraft::repr);
+}
+#endif
