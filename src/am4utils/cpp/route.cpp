@@ -6,6 +6,8 @@
 #include "include/route.hpp"
 #include "include/db.hpp"
 
+constexpr double PI = 3.14159265358979323846;
+
 Route::Route() : direct_distance(0.0), valid(false) {};
 
 // creates a basic route, assignout aircraft or ticket information
@@ -29,7 +31,7 @@ AircraftRoute Route::assign(const Aircraft& ac, uint16_t trips_per_day, const Us
     return AircraftRoute::from(*this, ac, trips_per_day, user);
 }
 
-AircraftRoute::AircraftRoute() : has_stopover(false), valid(false) {};
+AircraftRoute::AircraftRoute() : valid(false) {};
 
 // depending on ac type, populate either pax or cargo demands
 AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t trips_per_day, const User& user) {
@@ -98,9 +100,48 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
             );
             break;
     }
-    
+    acr.needs_stopover = acr.route.direct_distance > acr.aircraft.range;
+    // if (acr.needs_stopover) {
+    //     acr.populate_distance_efficient_stopover(user.game_mode);
+    // }
+    acr.stopover = Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, acr.aircraft, user.game_mode);
+
     acr.valid = true;
     return acr;
+}
+
+AircraftRoute::Stopover::Stopover() : exists(false) {}
+AircraftRoute::Stopover::Stopover(const Airport& airport, double full_distance) : airport(airport), full_distance(full_distance), exists(true) {}
+AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode) {
+    uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
+    
+    const auto& airport_cache = Database::Client()->airport_cache;
+    uint16_t candidate_id = 0;
+    double candidate_distance = 99999;
+    for (int i = 0; i < AIRPORT_COUNT; i++) {
+        const auto& ap = airport_cache[i];
+        if (ap.rwy < rwy_requirement || ap.id == origin.id || ap.id == destination.id) continue;
+        double d_o = Route::calc_distance(ap.lat, ap.lng, origin.lat, origin.lng);
+        if (d_o > aircraft.range || d_o < 100) continue;
+        double d_d = Route::calc_distance(ap.lat, ap.lng, destination.lat, destination.lng);
+        if (d_d > aircraft.range || d_d < 100) continue;
+        if (d_o + d_d < candidate_distance) {
+            candidate_id = ap.id;
+            candidate_distance = d_o + d_d;
+        }
+    }
+    if (candidate_id == 0) return Stopover();
+
+    auto result = Database::Client()->get_airport_by_id->Execute(candidate_id);
+    CHECK_SUCCESS(result);
+    duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
+    if (!chunk || chunk->size() == 0) return Stopover();
+    return Stopover(Airport(chunk, 0), candidate_distance);
+}
+
+const string AircraftRoute::Stopover::repr(const Stopover& stopover) {
+    if (!stopover.exists) return "<Stopover NONEXISTENT>";
+    return "<Stopover airport=" + Airport::repr(stopover.airport) + " full_distance=" + to_string(stopover.full_distance) + ">";
 }
 
 duckdb::unique_ptr<duckdb::QueryResult> inline Route::_get_route_result(uint16_t id0, uint16_t id1) {
@@ -159,21 +200,28 @@ const string Route::repr(const Route& r) {
 const string AircraftRoute::repr(const AircraftRoute& ar) {
     string s;
     if (ar.valid) {
-        s = "<AircraftRoute " + PurchasedAircraft::repr(ar.aircraft) + " " + Route::repr(ar.route) + " income=" + to_string(ar.income);
+        s = "<AircraftRoute aircraft=" + PurchasedAircraft::repr(ar.aircraft) + " route=" + Route::repr(ar.route) + " income=" + to_string(ar.income);
         switch (ar.aircraft.type) {
             case Aircraft::Type::VIP:
-                s += " ticket=" + VIPTicket::repr(ar.ticket.vip_ticket);
+                s += " ticket.vip_ticket=" + VIPTicket::repr(ar.ticket.vip_ticket);
                 break;
             case Aircraft::Type::PAX:
-                s += " ticket=" + PaxTicket::repr(ar.ticket.pax_ticket);
+                s += " ticket.pax_ticket=" + PaxTicket::repr(ar.ticket.pax_ticket);
                 break;
             case Aircraft::Type::CARGO:
-                s += " ticket=" + CargoTicket::repr(ar.ticket.cargo_ticket);
+                s += " ticket.cargo_ticket=" + CargoTicket::repr(ar.ticket.cargo_ticket);
                 break;
         }
+        s += " stopover=" + AircraftRoute::Stopover::repr(ar.stopover);
         s += ">";
     } else {
         s = "<AircraftRoute INVALID>";
     }
     return s;
 }
+
+#if BUILD_EXECUTABLES==OFF
+int main() {
+    return 0;
+}
+#endif

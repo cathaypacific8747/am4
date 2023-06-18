@@ -8,7 +8,9 @@
 #include "airport.hpp"
 #include "aircraft.hpp"
 
-constexpr double PI = 3.14159265358979323846;
+using std::string;
+using std::to_string;
+using std::vector;
 
 struct AircraftRoute;
 
@@ -34,15 +36,26 @@ struct AircraftRoute {
     PurchasedAircraft aircraft;
     Ticket ticket;
     double income;
+    bool needs_stopover;
     bool valid;
+    // vector<string> warnings;
 
-    Airport stopover;
-    bool has_stopover;
-    double stopover_extra_distance;
+    struct Stopover {
+        Airport airport;
+        double full_distance;
+        bool exists;
+
+        Stopover();
+        Stopover(const Airport& airport, double full_distance);
+        static Stopover find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode);
+        static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const Aircraft& aircraft, double target_distance, User::GameMode game_mode);
+        const static string repr(const Stopover& s);
+    };
+    Stopover stopover;
 
     AircraftRoute();
     static AircraftRoute from(const Route& r, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
+    
     static inline double estimate_load(uint8_t reputation, double autoprice_ratio, bool has_stopover = false);
-
     static const string repr(const AircraftRoute& acr);
 };

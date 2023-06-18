@@ -8,19 +8,14 @@ using std::string;
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
-shared_ptr<Database> Database::CreateClient() {
-    shared_ptr<Database> client = make_shared<Database>();
-    client->database = make_uniq<DuckDB>(nullptr);
-    client->connection = make_uniq<Connection>(*client->database);
-
-    return client;
-}
 
 shared_ptr<Database> Database::Client() {
-	if (!default_client) {
-		default_client = Database::CreateClient();
-	}
-	return default_client;
+    if (!default_client) {
+        default_client = make_shared<Database>();
+        default_client->database = make_uniq<DuckDB>(":memory:");
+        default_client->connection = make_uniq<Connection>(*default_client->database);
+    }
+    return default_client;
 }
 
 // sets the home directory and inserts airports, aircrafts and routes
@@ -144,9 +139,27 @@ void Database::prepare_statements() {
     CHECK_SUCCESS(get_route_demands_by_id);
 }
 
+void Database::populate_cache() {
+    auto result = connection->Query("SELECT id, lat, lng, rwy FROM airports;");
+    CHECK_SUCCESS(result);
+    int i = 0;
+    while (auto chunk = result->Fetch()) {
+        for (idx_t j = 0; j < chunk->size(); j++, i++) {
+            airport_cache[i] = {
+                chunk->GetValue(0, j).GetValue<uint16_t>(),
+                chunk->GetValue(1, j).GetValue<double>(),
+                chunk->GetValue(2, j).GetValue<double>(),
+                chunk->GetValue(3, j).GetValue<uint16_t>()
+            };
+        }
+    }
+}
+
 void init(string home_dir) {
-    Database::Client()->insert(home_dir);
-    Database::Client()->prepare_statements();
+    auto client = Database::Client();
+    client->insert(home_dir);
+    client->prepare_statements();
+    client->populate_cache();
 }
 
 void _debug_query(string query) {

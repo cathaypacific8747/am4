@@ -1,6 +1,9 @@
 #include <duckdb.hpp>
 #include <vector>
 
+#define AIRPORT_COUNT 3907
+#define ROUTE_COUNT AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2
+
 using std::string;
 using duckdb::DuckDB;
 using duckdb::Connection;
@@ -34,13 +37,21 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> suggest_aircraft_by_name;
 
     duckdb::unique_ptr<PreparedStatement> get_route_demands_by_id;
+
+    struct AirportCache {
+        uint16_t id;
+        double lat;
+        double lng;
+        uint16_t rwy;
+    };
+    AirportCache airport_cache[AIRPORT_COUNT]; // 125024 B, for stopovers
     
     static std::shared_ptr<Database> default_client;
     static std::shared_ptr<Database> Client();
-    static std::shared_ptr<Database> CreateClient();
 
     void insert(string home_dir);
     void prepare_statements();
+    void populate_cache();
 };
 
 void init(string home_dir);

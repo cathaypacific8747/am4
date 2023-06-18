@@ -14,6 +14,25 @@ __all__ = [
 
 
 class AircraftRoute():
+    class Stopover():
+        @staticmethod
+        def find_by_efficiency(origin: am4utils._core.airport.Airport, destination: am4utils._core.airport.Airport, aircraft: am4utils._core.aircraft.Aircraft, game_mode: am4utils._core.game.User.GameMode) -> AircraftRoute.Stopover: ...
+        @property
+        def airport(self) -> am4utils._core.airport.Airport:
+            """
+            :type: am4utils._core.airport.Airport
+            """
+        @property
+        def exists(self) -> bool:
+            """
+            :type: bool
+            """
+        @property
+        def full_distance(self) -> float:
+            """
+            :type: float
+            """
+        pass
     def __repr__(self) -> str: ...
     @staticmethod
     def create(route: Route, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...

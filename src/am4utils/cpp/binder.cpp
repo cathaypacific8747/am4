@@ -83,13 +83,13 @@ PYBIND11_MODULE(_core, m) {
         .def_readonly("y", &PaxTicket::y)
         .def_readonly("j", &PaxTicket::j)
         .def_readonly("f", &PaxTicket::f)
-        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode")) // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY")) // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
         .def("__repr__", &PaxTicket::repr);
 
     py::class_<CargoTicket>(m_ticket, "CargoTicket")
         .def_readonly("l", &CargoTicket::l)
         .def_readonly("h", &CargoTicket::h)
-        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode"))
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY"))
         .def("__repr__", &CargoTicket::repr);
     
     py::class_<VIPTicket>(m_ticket, "VIPTicket")
