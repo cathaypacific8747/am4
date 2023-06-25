@@ -169,18 +169,21 @@ void _debug_query(string query) {
 }
 
 #if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-using namespace py::literals;
+#include "include/binder.hpp"
 
 void pybind_init_db(py::module_& m) {
     py::module_ m_db = m.def_submodule("db");
 
     m_db
-        .def("init", &init)
-        .def("_debug_query", &_debug_query);
+        .def("init", [](std::optional<string> home_dir) {
+            if (!home_dir.has_value()) {
+                py::gil_scoped_acquire acquire;
+                init(py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>()); // am4utils.__path__[0]
+            } else {
+                init(home_dir.value());
+            }
+        }, "home_dir"_a = py::none())
+        .def("_debug_query", &_debug_query, "query"_a);
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");
 }

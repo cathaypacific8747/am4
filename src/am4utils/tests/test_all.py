@@ -1,6 +1,7 @@
 import pytest
 
 import am4utils
+from am4utils.db import init
 from am4utils.demand import CargoDemand
 from am4utils.aircraft import (
     Aircraft,
@@ -10,7 +11,7 @@ from am4utils.airport import Airport
 from am4utils.route import Route
 from am4utils.game import Campaign, User
 
-am4utils.db.init(am4utils.__path__[0])
+init()
 
 ## aircraft tests
 @pytest.mark.parametrize("inp", [
@@ -119,6 +120,25 @@ def test_cargo_route_with_aircraft():
     assert cfg.h == 30
     assert cfg.algorithm == CargoConfig.Algorithm.L
 
+def test_route_stopover():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    r = Route.create(ap0, ap1).assign(Aircraft.search('b744').ac)
+    assert r.needs_stopover is False
+    assert r.stopover.exists is False
+
+    ac1 = Aircraft.search('mc214').ac
+    r = Route.create(ap0, ap1).assign(ac1)
+    assert r.needs_stopover is True
+    assert r.stopover.exists is True
+    assert r.stopover.airport.iata == "PLX"
+    assert 0.00455 < r.stopover.full_distance - r.route.direct_distance < 0.00475
+
+    r = Route.create(ap0, Airport.search('TNR').ap).assign(ac1)
+    assert r.needs_stopover is True
+    assert r.stopover.exists is True
+    assert r.stopover.airport.iata == "GAN"
+    assert 7.5 < r.stopover.full_distance - r.route.direct_distance < 7.6
 
 # game tests
 def test_default_user():

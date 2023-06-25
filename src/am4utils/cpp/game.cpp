@@ -1,29 +1,5 @@
 #include "include/game.hpp"
 
-User::User() :
-    id(0), game_id(0),
-    game_mode(GameMode::EASY),
-    l_training(0), h_training(0),
-    fuel_price(700), co2_price(120),
-    fuel_training(0), co2_training(0),
-    override_load(false), load(85)
-{};
-
-const string to_string(User::GameMode game_mode) {
-    switch (game_mode) {
-        case User::GameMode::EASY:
-            return "EASY";
-        case User::GameMode::REALISM:
-            return "HARD";
-        default:
-            return "[UNKNOWN]";
-    }
-}
-
-const string User::repr(const User& user) {
-    return "<User " + to_string(user.game_mode) + " id=" + to_string(user.id) + " game_id=" + to_string(user.game_id) + ">";
-}
-
 Campaign::Campaign() :
     pax_activated(Airline::NONE),
     cargo_activated(Airline::NONE),
@@ -40,14 +16,14 @@ Campaign Campaign::Default() {
     return Campaign(Airline::C4_24HR, Airline::C4_24HR, Eco::C_24HR);
 }
 
-const double Campaign::estimate_pax_reputation(double base_reputation) {
+const double Campaign::estimate_pax_reputation(double base_reputation) const {
     double reputation = base_reputation;
     reputation += Campaign::_estimate_airline_reputation(pax_activated);
     reputation += Campaign::_estimate_eco_reputation(eco_activated);
     return reputation;
 }
 
-const double Campaign::estimate_cargo_reputation(double base_reputation) {
+const double Campaign::estimate_cargo_reputation(double base_reputation) const {
     double reputation = base_reputation;
     reputation += Campaign::_estimate_airline_reputation(cargo_activated);
     reputation += Campaign::_estimate_eco_reputation(eco_activated);
@@ -122,15 +98,54 @@ Campaign Campaign::parse(const string& s) {
     return campaign;
 }
 
-#if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+User::User() :
+    id(0), game_id(0),
+    game_mode(GameMode::EASY),
+    l_training(0), h_training(0),
+    fuel_price(700), co2_price(120),
+    fuel_training(0), co2_training(0),
+    campaign(Campaign::Default()), override_load(false), load(85)
+{};
 
-namespace py = pybind11;
-using namespace py::literals;
+const string to_string(User::GameMode game_mode) {
+    switch (game_mode) {
+        case User::GameMode::EASY:
+            return "EASY";
+        case User::GameMode::REALISM:
+            return "HARD";
+        default:
+            return "[UNKNOWN]";
+    }
+}
+
+const string User::repr(const User& user) {
+    return "<User " + to_string(user.game_mode) + " id=" + to_string(user.id) + " game_id=" + to_string(user.game_id) + ">";
+}
+
+#if BUILD_PYBIND == 1
+#include "include/binder.hpp"
 
 void pybind_init_game(py::module_& m) {
     py::module_ m_game = m.def_submodule("game");
+
+    py::class_<Campaign> campaign_class(m_game, "Campaign");
+    py::enum_<Campaign::Airline>(campaign_class, "Airline")
+        .value("C4_4HR", Campaign::Airline::C4_4HR).value("C4_8HR", Campaign::Airline::C4_8HR).value("C4_12HR", Campaign::Airline::C4_12HR).value("C4_16HR", Campaign::Airline::C4_16HR).value("C4_20HR", Campaign::Airline::C4_20HR).value("C4_24HR", Campaign::Airline::C4_24HR)
+        .value("C3_4HR", Campaign::Airline::C3_4HR).value("C3_8HR", Campaign::Airline::C3_8HR).value("C3_12HR", Campaign::Airline::C3_12HR).value("C3_16HR", Campaign::Airline::C3_16HR).value("C3_20HR", Campaign::Airline::C3_20HR).value("C3_24HR", Campaign::Airline::C3_24HR)
+        .value("C2_4HR", Campaign::Airline::C2_4HR).value("C2_8HR", Campaign::Airline::C2_8HR).value("C2_12HR", Campaign::Airline::C2_12HR).value("C2_16HR", Campaign::Airline::C2_16HR).value("C2_20HR", Campaign::Airline::C2_20HR).value("C2_24HR", Campaign::Airline::C2_24HR)
+        .value("C1_4HR", Campaign::Airline::C1_4HR).value("C1_8HR", Campaign::Airline::C1_8HR).value("C1_12HR", Campaign::Airline::C1_12HR).value("C1_16HR", Campaign::Airline::C1_16HR).value("C1_20HR", Campaign::Airline::C1_20HR).value("C1_24HR", Campaign::Airline::C1_24HR)
+        .value("NONE", Campaign::Airline::NONE);
+    py::enum_<Campaign::Eco>(campaign_class, "Eco")
+        .value("C_4HR", Campaign::Eco::C_4HR).value("C_8HR", Campaign::Eco::C_8HR).value("C_12HR", Campaign::Eco::C_12HR).value("C_16HR", Campaign::Eco::C_16HR).value("C_20HR", Campaign::Eco::C_20HR).value("C_24HR", Campaign::Eco::C_24HR)
+        .value("NONE", Campaign::Eco::NONE);
+    campaign_class
+        .def_readonly("pax_activated", &Campaign::pax_activated)
+        .def_readonly("cargo_activated", &Campaign::cargo_activated)
+        .def_readonly("eco_activated", &Campaign::eco_activated)
+        .def_static("Default", &Campaign::Default)
+        .def_static("parse", &Campaign::parse, "s"_a)
+        .def("estimate_pax_reputation", &Campaign::estimate_pax_reputation, "base_reputation"_a = 45)
+        .def("estimate_cargo_reputation", &Campaign::estimate_cargo_reputation, "base_reputation"_a = 45);
 
     py::class_<User> user_class(m_game, "User");
     py::enum_<User::GameMode>(user_class, "GameMode")
@@ -151,24 +166,5 @@ void pybind_init_game(py::module_& m) {
         .def_readonly("override_load", &User::override_load)
         .def_readonly("load", &User::load)
         .def("__repr__", &User::repr);
-    
-    py::class_<Campaign> campaign_class(m_game, "Campaign");
-    py::enum_<Campaign::Airline>(campaign_class, "Airline")
-        .value("C4_4HR", Campaign::Airline::C4_4HR).value("C4_8HR", Campaign::Airline::C4_8HR).value("C4_12HR", Campaign::Airline::C4_12HR).value("C4_16HR", Campaign::Airline::C4_16HR).value("C4_20HR", Campaign::Airline::C4_20HR).value("C4_24HR", Campaign::Airline::C4_24HR)
-        .value("C3_4HR", Campaign::Airline::C3_4HR).value("C3_8HR", Campaign::Airline::C3_8HR).value("C3_12HR", Campaign::Airline::C3_12HR).value("C3_16HR", Campaign::Airline::C3_16HR).value("C3_20HR", Campaign::Airline::C3_20HR).value("C3_24HR", Campaign::Airline::C3_24HR)
-        .value("C2_4HR", Campaign::Airline::C2_4HR).value("C2_8HR", Campaign::Airline::C2_8HR).value("C2_12HR", Campaign::Airline::C2_12HR).value("C2_16HR", Campaign::Airline::C2_16HR).value("C2_20HR", Campaign::Airline::C2_20HR).value("C2_24HR", Campaign::Airline::C2_24HR)
-        .value("C1_4HR", Campaign::Airline::C1_4HR).value("C1_8HR", Campaign::Airline::C1_8HR).value("C1_12HR", Campaign::Airline::C1_12HR).value("C1_16HR", Campaign::Airline::C1_16HR).value("C1_20HR", Campaign::Airline::C1_20HR).value("C1_24HR", Campaign::Airline::C1_24HR)
-        .value("NONE", Campaign::Airline::NONE);
-    py::enum_<Campaign::Eco>(campaign_class, "Eco")
-        .value("C_4HR", Campaign::Eco::C_4HR).value("C_8HR", Campaign::Eco::C_8HR).value("C_12HR", Campaign::Eco::C_12HR).value("C_16HR", Campaign::Eco::C_16HR).value("C_20HR", Campaign::Eco::C_20HR).value("C_24HR", Campaign::Eco::C_24HR)
-        .value("NONE", Campaign::Eco::NONE);
-    campaign_class
-        .def_readonly("pax_activated", &Campaign::pax_activated)
-        .def_readonly("cargo_activated", &Campaign::cargo_activated)
-        .def_readonly("eco_activated", &Campaign::eco_activated)
-        .def_static("Default", &Campaign::Default)
-        .def_static("parse", &Campaign::parse, "s"_a)
-        .def("estimate_pax_reputation", &Campaign::estimate_pax_reputation, "base_reputation"_a = 45)
-        .def("estimate_cargo_reputation", &Campaign::estimate_cargo_reputation, "base_reputation"_a = 45);
 }
 #endif

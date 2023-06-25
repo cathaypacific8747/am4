@@ -9,7 +9,7 @@ if (NOT DEFINED SKBUILD_WHEEL_INSTALL_DIR)
 endif()
 
 project(am4utils LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 include(libduckdb.cmake)
 
 if (MSVC)

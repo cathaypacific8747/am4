@@ -23,7 +23,7 @@ struct Route {
     
     Route();
     static Route create(const Airport& a0, const Airport& a1);
-    AircraftRoute assign(const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
+    AircraftRoute assign(const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User()) const;
     
     static inline duckdb::unique_ptr<duckdb::QueryResult> _get_route_result(uint16_t id0, uint16_t id1);
     static inline double calc_distance(double lat1, double lon1, double lat2, double lon2);
@@ -35,7 +35,8 @@ struct AircraftRoute {
     Route route;
     PurchasedAircraft aircraft;
     Ticket ticket;
-    double income;
+    double max_income;
+    double load;
     bool needs_stopover;
     bool valid;
     // vector<string> warnings;
@@ -56,6 +57,6 @@ struct AircraftRoute {
     AircraftRoute();
     static AircraftRoute from(const Route& r, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
     
-    static inline double estimate_load(uint8_t reputation, double autoprice_ratio, bool has_stopover = false);
+    static inline double estimate_load(double reputation, double autoprice_ratio, bool has_stopover = false);
     static const string repr(const AircraftRoute& acr);
 };

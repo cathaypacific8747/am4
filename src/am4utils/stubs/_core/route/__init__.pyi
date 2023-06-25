@@ -15,6 +15,7 @@ __all__ = [
 
 class AircraftRoute():
     class Stopover():
+        def __repr__(self) -> str: ...
         @staticmethod
         def find_by_efficiency(origin: am4utils._core.airport.Airport, destination: am4utils._core.airport.Airport, aircraft: am4utils._core.aircraft.Aircraft, game_mode: am4utils._core.game.User.GameMode) -> AircraftRoute.Stopover: ...
         @property
@@ -42,9 +43,19 @@ class AircraftRoute():
         :type: am4utils._core.aircraft.PurchasedAircraft
         """
     @property
-    def income(self) -> float:
+    def load(self) -> float:
         """
         :type: float
+        """
+    @property
+    def max_income(self) -> float:
+        """
+        :type: float
+        """
+    @property
+    def needs_stopover(self) -> bool:
+        """
+        :type: bool
         """
     @property
     def route(self) -> Route:
@@ -52,9 +63,19 @@ class AircraftRoute():
         :type: Route
         """
     @property
+    def stopover(self) -> AircraftRoute.Stopover:
+        """
+        :type: AircraftRoute.Stopover
+        """
+    @property
     def ticket(self) -> am4utils._core.ticket.Ticket:
         """
         :type: am4utils._core.ticket.Ticket
+        """
+    @property
+    def valid(self) -> bool:
+        """
+        :type: bool
         """
     pass
 class Route():

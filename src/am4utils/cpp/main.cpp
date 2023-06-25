@@ -65,11 +65,13 @@ int main() {
     // Campaign campaign = Campaign::Default();
     // cout << campaign.estimate_pax_reputation() << endl;
 
-    Aircraft ac = *Aircraft::search("b744").ac;
+    Aircraft ac = *Aircraft::search("mc214").ac;
     Airport ap0 = *Airport::search("vhhh").ap;
     Airport ap1 = *Airport::search("egll").ap;
     AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
     cout << AircraftRoute::repr(ar) << endl;
+
+    // _debug_query("EXPORT DATABASE 'abc123456' (FORMAT PARQUET, COMPRESSION ZSTD);");
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;

@@ -48,11 +48,7 @@ const string VIPTicket::repr(const VIPTicket& ticket) {
 }
 
 #if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-using namespace py::literals;
+#include "include/binder.hpp"
 
 void pybind_init_ticket(py::module_& m) {
     py::module_ m_ticket = m.def_submodule("ticket");

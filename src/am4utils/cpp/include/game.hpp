@@ -5,31 +5,6 @@
 using std::string;
 using std::to_string;
 
-struct User {
-    enum class GameMode {
-        EASY,
-        REALISM
-    };
-
-    uint64_t id;
-    uint32_t game_id;
-    string ign;
-    GameMode game_mode;
-    uint8_t l_training; // 0-6
-    uint8_t h_training; // 0-6
-    uint16_t fuel_price; // 0-3000
-    uint8_t co2_price; // 0-200
-    uint8_t fuel_training; // 0-3
-    uint8_t co2_training; // 0-5
-    bool override_load;
-    uint8_t load; // 0-100
-
-    User();
-    static const string repr(const User& r);
-};
-
-const string to_string(User::GameMode game_mode);
-
 struct Campaign {
     // type | duration
     enum class Airline : uint8_t {
@@ -53,13 +28,40 @@ struct Campaign {
     Campaign(Airline pax_activated, Airline cargo_activated, Eco eco_activated);
     static Campaign Default();
     static Campaign parse(const string& s);
-    const double estimate_pax_reputation(double base_reputation = 45);
-    const double estimate_cargo_reputation(double base_reputation = 45); // todo: get estimation range
+    const double estimate_pax_reputation(double base_reputation = 45) const;
+    const double estimate_cargo_reputation(double base_reputation = 45) const; // todo: get estimation range
 
     static const double _estimate_airline_reputation(Airline airline);
     static const double _estimate_eco_reputation(Eco eco);
     bool _set(const string& s);
 };
+
+struct User {
+    enum class GameMode {
+        EASY = 0,
+        REALISM = 1,
+    };
+
+    uint64_t id;
+    uint32_t game_id;
+    string ign;
+    GameMode game_mode;
+    uint8_t l_training; // 0-6
+    uint8_t h_training; // 0-6
+    uint16_t fuel_price; // 0-3000
+    uint8_t co2_price; // 0-200
+    uint8_t fuel_training; // 0-3
+    uint8_t co2_training; // 0-5
+    
+    Campaign campaign;
+    bool override_load;
+    double load; // 0-100
+
+    User();
+    static const string repr(const User& r);
+};
+
+const string to_string(User::GameMode game_mode);
 
 struct Guild {
     uint64_t id;

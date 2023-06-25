@@ -262,9 +262,9 @@ class User():
         :type: int
         """
     @property
-    def load(self) -> int:
+    def load(self) -> float:
         """
-        :type: int
+        :type: float
         """
     @property
     def override_load(self) -> bool:

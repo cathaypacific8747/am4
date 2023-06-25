@@ -292,6 +292,8 @@ class CargoConfig():
         NONE: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.NONE: 2>
         __members__: dict # value = {'L': <Algorithm.L: 0>, 'H': <Algorithm.H: 1>, 'NONE': <Algorithm.NONE: 2>}
         pass
+    @staticmethod
+    def repr(arg0: CargoConfig) -> str: ...
     @property
     def algorithm(self) -> CargoConfig.Algorithm:
         """
@@ -360,6 +362,8 @@ class PaxConfig():
         YJF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YJF: 4>
         __members__: dict # value = {'FJY': <Algorithm.FJY: 0>, 'FYJ': <Algorithm.FYJ: 1>, 'JFY': <Algorithm.JFY: 2>, 'JYF': <Algorithm.JYF: 3>, 'YJF': <Algorithm.YJF: 4>, 'YFJ': <Algorithm.YFJ: 5>, 'NONE': <Algorithm.NONE: 6>}
         pass
+    @staticmethod
+    def repr(arg0: PaxConfig) -> str: ...
     @property
     def algorithm(self) -> PaxConfig.Algorithm:
         """

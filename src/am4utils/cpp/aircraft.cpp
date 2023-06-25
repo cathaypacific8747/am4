@@ -157,8 +157,8 @@ const string to_string(Aircraft::SearchType searchtype) {
 
 const string Aircraft::repr(const Aircraft& ac) {
     string result;
-    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " " + to_string(ac.type) + " " + ac.shortname;
-    result += " f" + to_string(ac.fuel) + " c" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng" + to_string(ac.range) + ">";
+    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname;
+    result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
 
@@ -224,36 +224,32 @@ PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, uint16_t trips_per_day, User::GameMode game_mode) {
-    PaxDemand d_pf = PaxDemand(
-        pax_demand.y / trips_per_day,
-        pax_demand.j / trips_per_day,
-        pax_demand.f / trips_per_day
-    );
-
-    PaxConfig config;
+PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode) {
     if (game_mode == User::GameMode::EASY) {
         if (distance < 14425) {
-            config = calc_fjy_conf(d_pf, capacity);
+            return calc_fjy_conf(d_pf, capacity);
         } else if (distance < 14812.5) {
-            config = calc_fyj_conf(d_pf, capacity);
+            return calc_fyj_conf(d_pf, capacity);
         } else if (distance < 15200) {
-            config = calc_yfj_conf(d_pf, capacity);
+            return calc_yfj_conf(d_pf, capacity);
         } else {
-            config = calc_yjf_conf(d_pf, capacity);
+            return calc_yjf_conf(d_pf, capacity);
         }
     } else {
         if (distance < 13888.8888) {
-            config = calc_fjy_conf(d_pf, capacity);
+            return calc_fjy_conf(d_pf, capacity);
         } else if (distance < 15694.4444) {
-            config = calc_jfy_conf(d_pf, capacity);
+            return calc_jfy_conf(d_pf, capacity);
         } else if (distance < 17500) {
-            config = calc_jyf_conf(d_pf, capacity);
+            return calc_jyf_conf(d_pf, capacity);
         } else {
-            config = calc_yjf_conf(d_pf, capacity);
+            return calc_yjf_conf(d_pf, capacity);
         }
     }
-    return config;
+}
+
+const string PaxConfig::repr(const PaxConfig& config) {
+    return "<PaxConfig " + to_string(config.f) + "|" + to_string(config.j) + "|" + to_string(config.y) + ">";
 }
 
 
@@ -290,29 +286,37 @@ CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity)
     return config;
 }
 
-CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day, uint8_t l_training) {
-    CargoDemand d_pf = CargoDemand(
-        cargo_demand.l / trips_per_day,
-        cargo_demand.h / trips_per_day
-    );
-    uint32_t true_capacity = static_cast<uint32_t>(capacity * (1 + l_training / 100.0));
-
-    return calc_l_conf(d_pf, true_capacity); // low priority is always more profitable
+CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training) {
+    return calc_l_conf(
+        d_pf,
+        static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
+    ); // low priority is always more profitable
 }
+
+const string CargoConfig::repr(const CargoConfig& config) {
+    return "<CargoConfig " + to_string(config.l) + "|" + to_string(config.h) + ">";
+}
+
 
 const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
     string result;
-    result += "<PurchasedAircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " " + to_string(ac.type) + " " + ac.shortname;
-    result += " f" + to_string(ac.fuel) + " c" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng" + to_string(ac.range) + ">";
+    result += "<PurchasedAircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname;
+    switch (ac.type) {
+        case Aircraft::Type::VIP:
+        case Aircraft::Type::PAX:
+            result += " config.pax_config=" + PaxConfig::repr(ac.config.pax_config);
+            break;
+        case Aircraft::Type::CARGO:
+            result += " config.cargo_config=" + CargoConfig::repr(ac.config.cargo_config);
+            break;
+    }
+    
+    result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
 
 #if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-using namespace py::literals;
+#include "include/binder.hpp"
 
 void pybind_init_aircraft(py::module_& m) {
     py::module_ m_ac = m.def_submodule("aircraft");
@@ -383,7 +387,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("j", &PaxConfig::j)
         .def_readonly("f", &PaxConfig::f)
         .def_readonly("valid", &PaxConfig::valid)
-        .def_readonly("algorithm", &PaxConfig::algorithm);
+        .def_readonly("algorithm", &PaxConfig::algorithm)
+        .def_static("repr", &PaxConfig::repr);
 
     py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
     py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
@@ -393,7 +398,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("l", &CargoConfig::l)
         .def_readonly("h", &CargoConfig::h)
         .def_readonly("valid", &CargoConfig::valid)
-        .def_readonly("algorithm", &CargoConfig::algorithm);
+        .def_readonly("algorithm", &CargoConfig::algorithm)
+        .def_static("repr", &CargoConfig::repr);
 
     py::class_<PurchasedAircraft, shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
     py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")

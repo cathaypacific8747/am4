@@ -22,11 +22,7 @@ const string CargoDemand::repr(const CargoDemand& demand) {
 };
 
 #if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-using namespace py::literals;
+#include "include/binder.hpp"
 
 void pybind_init_demand(py::module_& m) {
     py::module_ m_demand = m.def_submodule("demand");

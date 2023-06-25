@@ -109,7 +109,8 @@ struct PaxConfig {
     static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity);
     static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity);
 
-    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, uint16_t trips_per_day = 1, User::GameMode game_mode = User::GameMode::EASY);
+    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, User::GameMode game_mode = User::GameMode::EASY);
+    static const string repr(const PaxConfig& pax_config);
 };
 
 struct CargoConfig { // percent
@@ -126,7 +127,8 @@ struct CargoConfig { // percent
     static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity);
     static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity);
 
-    static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint16_t trips_per_day = 1, uint8_t l_training = 0);
+    static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0);
+    static const string repr(const CargoConfig& cargo_config);
 };
 
 struct PurchasedAircraft : Aircraft {

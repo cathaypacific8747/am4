@@ -1,5 +1,4 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "include/binder.hpp"
 
 #include "include/db.hpp"
 #include "include/game.hpp"
@@ -9,9 +8,6 @@
 #include "include/airport.hpp"
 #include "include/aircraft.hpp"
 #include "include/route.hpp"
-
-namespace py = pybind11;
-using namespace py::literals;
 
 void pybind_init_db(py::module_&);
 void pybind_init_game(py::module_&);

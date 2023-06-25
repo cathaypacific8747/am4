@@ -10,7 +10,7 @@ __all__ = [
 
 class DatabaseException(Exception, BaseException):
     pass
-def _debug_query(arg0: str) -> None:
+def _debug_query(query: str) -> None:
     pass
-def init(arg0: str) -> None:
+def init(home_dir: typing.Optional[str] = None) -> None:
     pass

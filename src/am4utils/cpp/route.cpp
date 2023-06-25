@@ -27,7 +27,7 @@ Route Route::create(const Airport& ap1, const Airport& ap2) {
     return route;
 }
 
-AircraftRoute Route::assign(const Aircraft& ac, uint16_t trips_per_day, const User& user) {
+AircraftRoute Route::assign(const Aircraft& ac, uint16_t trips_per_day, const User& user) const {
     return AircraftRoute::from(*this, ac, trips_per_day, user);
 }
 
@@ -38,15 +38,27 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
     AircraftRoute acr;
     acr.route = r;
 
+    acr.needs_stopover = acr.route.direct_distance > acr.aircraft.range;
+    acr.stopover = acr.needs_stopover ? Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, acr.aircraft, user.game_mode) : Stopover();
+    acr.load = user.override_load ? user.load / 100 : estimate_load(
+        ac.type == Aircraft::Type::CARGO ? user.campaign.estimate_cargo_reputation() : user.campaign.estimate_pax_reputation(),
+        1.06, // just to trigger >autoprice branch
+        acr.stopover.exists
+    );
+    PaxDemand pd_pf = PaxDemand(
+        r.pax_demand.y / trips_per_day / acr.load,
+        r.pax_demand.j / trips_per_day / acr.load,
+        r.pax_demand.f / trips_per_day / acr.load
+    );
+
     switch (ac.type) {
         case Aircraft::Type::PAX:
             acr.aircraft = PurchasedAircraft(
                 ac,
                 PaxConfig::calc_pax_conf(
-                    r.pax_demand,
+                    pd_pf,
                     static_cast<uint16_t>(ac.capacity),
                     r.direct_distance,
-                    trips_per_day,
                     user.game_mode
                 )
             );
@@ -54,8 +66,7 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
                 r.direct_distance,
                 user.game_mode
             ));
-            // acr.load = user.override_load ? user.load / 100.0 : estimate_load(acr.aircraft.reputation, acr.aircraft.autoprice_ratio);
-            acr.income = (
+            acr.max_income = (
                 acr.aircraft.config.pax_config.y * acr.ticket.pax_ticket.y +
                 acr.aircraft.config.pax_config.j * acr.ticket.pax_ticket.j +
                 acr.aircraft.config.pax_config.f * acr.ticket.pax_ticket.f
@@ -65,16 +76,16 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
             acr.aircraft = PurchasedAircraft(
                 ac,
                 CargoConfig::calc_cargo_conf(
-                    CargoDemand(r.pax_demand),
+                    CargoDemand(pd_pf),
                     ac.capacity,
-                    trips_per_day
+                    user.l_training
                 )
             );
             acr.ticket = Ticket(CargoTicket::from_optimal(
                 r.direct_distance,
                 user.game_mode
             ));
-            acr.income = (
+            acr.max_income = (
                 acr.aircraft.config.cargo_config.l * 0.7 * acr.ticket.cargo_ticket.l +
                 acr.aircraft.config.cargo_config.h * acr.ticket.cargo_ticket.h
             ) * ac.capacity / 100.0 / 1000;
@@ -83,28 +94,22 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
             acr.aircraft = PurchasedAircraft(
                 ac,
                 PaxConfig::calc_pax_conf(
-                    r.pax_demand,
+                    pd_pf,
                     static_cast<uint16_t>(ac.capacity),
                     r.direct_distance,
-                    trips_per_day,
                     user.game_mode
                 )
             );
             acr.ticket = Ticket(VIPTicket::from_optimal(
                 r.direct_distance
             ));
-            acr.income = (
+            acr.max_income = (
                 acr.aircraft.config.pax_config.y * acr.ticket.pax_ticket.y +
                 acr.aircraft.config.pax_config.j * acr.ticket.pax_ticket.j +
                 acr.aircraft.config.pax_config.f * acr.ticket.pax_ticket.f
             );
             break;
     }
-    acr.needs_stopover = acr.route.direct_distance > acr.aircraft.range;
-    // if (acr.needs_stopover) {
-    //     acr.populate_distance_efficient_stopover(user.game_mode);
-    // }
-    acr.stopover = Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, acr.aircraft, user.game_mode);
 
     acr.valid = true;
     return acr;
@@ -168,7 +173,7 @@ double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
 }
 
-double inline AircraftRoute::estimate_load(uint8_t reputation, double autoprice_ratio, bool has_stopover) {
+double inline AircraftRoute::estimate_load(double reputation, double autoprice_ratio, bool has_stopover) {
     if (autoprice_ratio > 1) { // normal (sorta triangular?) distribution, [Z+(0: .00019, 1: .0068, 2: .0092), max: .001] * reputation
         if (has_stopover) {
             return 0.0085855 * reputation;
@@ -200,7 +205,7 @@ const string Route::repr(const Route& r) {
 const string AircraftRoute::repr(const AircraftRoute& ar) {
     string s;
     if (ar.valid) {
-        s = "<AircraftRoute aircraft=" + PurchasedAircraft::repr(ar.aircraft) + " route=" + Route::repr(ar.route) + " income=" + to_string(ar.income);
+        s = "<AircraftRoute aircraft=" + PurchasedAircraft::repr(ar.aircraft) + " route=" + Route::repr(ar.route) + " max_income=" + to_string(ar.max_income);
         switch (ar.aircraft.type) {
             case Aircraft::Type::VIP:
                 s += " ticket.vip_ticket=" + VIPTicket::repr(ar.ticket.vip_ticket);
@@ -213,6 +218,7 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
                 break;
         }
         s += " stopover=" + AircraftRoute::Stopover::repr(ar.stopover);
+        s += " max_income=" + to_string(ar.max_income) + " load=" + to_string(ar.load);
         s += ">";
     } else {
         s = "<AircraftRoute INVALID>";
@@ -221,11 +227,7 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
 }
 
 #if BUILD_PYBIND == 1
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-using namespace py::literals;
+#include "include/binder.hpp"
 
 void pybind_init_route(py::module_& m) {
     py::module_ m_route = m.def_submodule("route");
@@ -246,13 +248,18 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("airport", &AircraftRoute::Stopover::airport)
         .def_readonly("full_distance", &AircraftRoute::Stopover::full_distance)
         .def_readonly("exists", &AircraftRoute::Stopover::exists)
-        .def_static("find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a, "aircraft"_a, "game_mode"_a);
-
+        .def_static("find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a, "aircraft"_a, "game_mode"_a)
+        .def("__repr__", &AircraftRoute::Stopover::repr);
+    
     acr_class
         .def_readonly("route", &AircraftRoute::route)
         .def_readonly("aircraft", &AircraftRoute::aircraft)
         .def_readonly("ticket", &AircraftRoute::ticket)
-        .def_readonly("income", &AircraftRoute::income)
+        .def_readonly("max_income", &AircraftRoute::max_income)
+        .def_readonly("load", &AircraftRoute::load)
+        .def_readonly("needs_stopover", &AircraftRoute::needs_stopover)
+        .def_readonly("valid", &AircraftRoute::valid)
+        .def_readonly("stopover", &AircraftRoute::stopover)
         .def_static("create", &AircraftRoute::from, "route"_a, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
         .def("__repr__", &Route::repr);
 }

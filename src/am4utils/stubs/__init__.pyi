@@ -20,3 +20,4 @@ __all__ = [
 ]
 
 
+__all__ = ['aircraft', 'airport', 'db', 'demand', 'game', 'route', 'ticket']
