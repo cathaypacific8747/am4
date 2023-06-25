@@ -74,6 +74,7 @@ def test_invalid_route_to_self():
     with pytest.raises(ValueError):
         _r = Route.create(a0, a0)
 
+# WARN: Route.create() uses default user with non-100% load!
 def test_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
@@ -83,8 +84,8 @@ def test_route_with_aircraft():
     assert r.route.pax_demand.y == 1093
     cfg = r.aircraft.config.pax_config
     assert cfg.y == 0
-    assert cfg.j == 16
-    assert cfg.f == 128
+    assert cfg.j == 1
+    assert cfg.f == 138
     assert cfg.algorithm == PaxConfig.Algorithm.FJY
 
     ap2 = Airport.search('MTR').ap
@@ -92,8 +93,8 @@ def test_route_with_aircraft():
     assert int(r.route.direct_distance) == 16394
     assert r.route.pax_demand.y == 303
     cfg = r.aircraft.config.pax_config
-    assert cfg.y == 303
-    assert cfg.j == 56
+    assert cfg.y == 415
+    assert cfg.j == 0
     assert cfg.f == 1
     assert cfg.algorithm == PaxConfig.Algorithm.YJF
 
@@ -116,8 +117,8 @@ def test_cargo_route_with_aircraft():
     assert cargo_demand.l == 148000
     assert cargo_demand.h == 220000
     cfg = r.aircraft.config.cargo_config
-    assert cfg.l == 70
-    assert cfg.h == 30
+    assert cfg.l == 96
+    assert cfg.h == 4
     assert cfg.algorithm == CargoConfig.Algorithm.L
 
 def test_route_stopover():

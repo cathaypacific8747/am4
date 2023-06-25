@@ -38,18 +38,21 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
     AircraftRoute acr;
     acr.route = r;
 
-    acr.needs_stopover = acr.route.direct_distance > acr.aircraft.range;
-    acr.stopover = acr.needs_stopover ? Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, acr.aircraft, user.game_mode) : Stopover();
+    acr.needs_stopover = acr.route.direct_distance > ac.range;
+    acr.stopover = acr.needs_stopover ? Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, ac, user.game_mode) : Stopover();
     acr.load = user.override_load ? user.load / 100 : estimate_load(
         ac.type == Aircraft::Type::CARGO ? user.campaign.estimate_cargo_reputation() : user.campaign.estimate_pax_reputation(),
         1.06, // just to trigger >autoprice branch
         acr.stopover.exists
     );
+
+    #pragma warning(disable:4244)
     PaxDemand pd_pf = PaxDemand(
         r.pax_demand.y / trips_per_day / acr.load,
         r.pax_demand.j / trips_per_day / acr.load,
         r.pax_demand.f / trips_per_day / acr.load
     );
+    #pragma warning(default:4244)
 
     switch (ac.type) {
         case Aircraft::Type::PAX:

@@ -249,7 +249,7 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, dou
 }
 
 const string PaxConfig::repr(const PaxConfig& config) {
-    return "<PaxConfig " + to_string(config.f) + "|" + to_string(config.j) + "|" + to_string(config.y) + ">";
+    return "<PaxConfig " + to_string(config.y) + "|" + to_string(config.j) + "|" + to_string(config.f) + ">";
 }
 
 
@@ -388,7 +388,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("f", &PaxConfig::f)
         .def_readonly("valid", &PaxConfig::valid)
         .def_readonly("algorithm", &PaxConfig::algorithm)
-        .def_static("repr", &PaxConfig::repr);
+        .def("__repr__", &PaxConfig::repr);
 
     py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
     py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
@@ -399,7 +399,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("h", &CargoConfig::h)
         .def_readonly("valid", &CargoConfig::valid)
         .def_readonly("algorithm", &CargoConfig::algorithm)
-        .def_static("repr", &CargoConfig::repr);
+        .def("__repr__", &CargoConfig::repr);
 
     py::class_<PurchasedAircraft, shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
     py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
