@@ -57,6 +57,6 @@ struct AircraftRoute {
     AircraftRoute();
     static AircraftRoute from(const Route& r, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
     
-    static inline double estimate_load(double reputation, double autoprice_ratio, bool has_stopover = false);
+    static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
     static const string repr(const AircraftRoute& acr);
 };

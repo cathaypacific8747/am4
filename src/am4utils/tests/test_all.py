@@ -8,7 +8,7 @@ from am4utils.aircraft import (
     PaxConfig, CargoConfig
 )
 from am4utils.airport import Airport
-from am4utils.route import Route
+from am4utils.route import Route, AircraftRoute
 from am4utils.game import Campaign, User
 
 init()
@@ -93,9 +93,9 @@ def test_route_with_aircraft():
     assert int(r.route.direct_distance) == 16394
     assert r.route.pax_demand.y == 303
     cfg = r.aircraft.config.pax_config
-    assert cfg.y == 415
-    assert cfg.j == 0
-    assert cfg.f == 1
+    assert cfg.y == 348
+    assert cfg.j == 34
+    assert cfg.f == 0
     assert cfg.algorithm == PaxConfig.Algorithm.YJF
 
 def test_cargo_route_with_aircraft():
@@ -117,8 +117,8 @@ def test_cargo_route_with_aircraft():
     assert cargo_demand.l == 148000
     assert cargo_demand.h == 220000
     cfg = r.aircraft.config.cargo_config
-    assert cfg.l == 96
-    assert cfg.h == 4
+    assert cfg.l == 80
+    assert cfg.h == 20
     assert cfg.algorithm == CargoConfig.Algorithm.L
 
 def test_route_stopover():
@@ -147,8 +147,7 @@ def test_default_user():
     assert c.game_mode == User.GameMode.EASY
     assert c.fuel_price == 700
     assert c.co2_price == 120
-    assert c.override_load is False
-    assert c.load == 85
+    assert c.load == 87
 
 def test_campaign():
     c = Campaign.parse("c1, e")
@@ -178,3 +177,6 @@ def test_campaign_reputation():
     c = Campaign.parse("e")
     rep = c.estimate_pax_reputation()
     assert rep == 45 + 10
+
+def test_load():
+    assert AircraftRoute.estimate_load() == 0.7867845

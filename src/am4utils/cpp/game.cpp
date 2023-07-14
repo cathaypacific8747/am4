@@ -16,21 +16,21 @@ Campaign Campaign::Default() {
     return Campaign(Airline::C4_24HR, Airline::C4_24HR, Eco::C_24HR);
 }
 
-const double Campaign::estimate_pax_reputation(double base_reputation) const {
+double Campaign::estimate_pax_reputation(double base_reputation) {
     double reputation = base_reputation;
     reputation += Campaign::_estimate_airline_reputation(pax_activated);
     reputation += Campaign::_estimate_eco_reputation(eco_activated);
     return reputation;
 }
 
-const double Campaign::estimate_cargo_reputation(double base_reputation) const {
+double Campaign::estimate_cargo_reputation(double base_reputation) {
     double reputation = base_reputation;
     reputation += Campaign::_estimate_airline_reputation(cargo_activated);
     reputation += Campaign::_estimate_eco_reputation(eco_activated);
     return reputation;
 }
 
-const double Campaign::_estimate_airline_reputation(Airline airline) {
+double Campaign::_estimate_airline_reputation(Airline airline) {
     switch (airline) {
         case Airline::C4_4HR: case Airline::C4_8HR: case Airline::C4_12HR: case Airline::C4_16HR: case Airline::C4_20HR: case Airline::C4_24HR:
             return 30;
@@ -46,7 +46,7 @@ const double Campaign::_estimate_airline_reputation(Airline airline) {
     return 0;
 }
 
-const double Campaign::_estimate_eco_reputation(Eco eco) {
+double Campaign::_estimate_eco_reputation(Eco eco) {
     switch (eco) {
         case Eco::C_4HR: case Eco::C_8HR: case Eco::C_12HR: case Eco::C_16HR: case Eco::C_20HR: case Eco::C_24HR:
             return 10;
@@ -104,7 +104,7 @@ User::User() :
     l_training(0), h_training(0),
     fuel_price(700), co2_price(120),
     fuel_training(0), co2_training(0),
-    campaign(Campaign::Default()), override_load(false), load(85)
+    load(87)
 {};
 
 const string to_string(User::GameMode game_mode) {
@@ -163,7 +163,6 @@ void pybind_init_game(py::module_& m) {
         .def_readonly("co2_price", &User::co2_price)
         .def_readonly("fuel_training", &User::fuel_training)
         .def_readonly("co2_training", &User::co2_training)
-        .def_readonly("override_load", &User::override_load)
         .def_readonly("load", &User::load)
         .def("__repr__", &User::repr);
 }

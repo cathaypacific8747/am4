@@ -11,7 +11,7 @@ bot = commands.Bot(command_prefix=Config.COMMAND_PREFIX, intents=intents, help_c
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} on {", ".join([g.name for g in bot.guilds])}')
-    am4utils.db.init(am4utils.__path__[0])
+    am4utils.db.init()
     print(f'am4utils ({am4utils._core.__version__}), executable_path={am4utils.__path__[0]} loaded')
 
 @bot.command()

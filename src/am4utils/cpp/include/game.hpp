@@ -28,11 +28,11 @@ struct Campaign {
     Campaign(Airline pax_activated, Airline cargo_activated, Eco eco_activated);
     static Campaign Default();
     static Campaign parse(const string& s);
-    const double estimate_pax_reputation(double base_reputation = 45) const;
-    const double estimate_cargo_reputation(double base_reputation = 45) const; // todo: get estimation range
+    double estimate_pax_reputation(double base_reputation = 45);
+    double estimate_cargo_reputation(double base_reputation = 45); // todo: get estimation range
 
-    static const double _estimate_airline_reputation(Airline airline);
-    static const double _estimate_eco_reputation(Eco eco);
+    static double _estimate_airline_reputation(Airline airline);
+    static double _estimate_eco_reputation(Eco eco);
     bool _set(const string& s);
 };
 
@@ -53,8 +53,6 @@ struct User {
     uint8_t fuel_training; // 0-3
     uint8_t co2_training; // 0-5
     
-    Campaign campaign;
-    bool override_load;
     double load; // 0-100
 
     User();

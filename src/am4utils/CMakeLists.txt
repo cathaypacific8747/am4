@@ -8,6 +8,10 @@ if (NOT DEFINED SKBUILD_WHEEL_INSTALL_DIR)
     set(SKBUILD_WHEEL_INSTALL_DIR "am4utils")
 endif()
 
+if (NOT DEFINED BUILD_PYBIND)
+    set(BUILD_PYBIND 1)
+endif()
+
 project(am4utils LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 include(libduckdb.cmake)
@@ -67,7 +71,7 @@ add_executable(_core_executable
 
 target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable
-    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION}
+    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=0
 )
 
 set_rpath(_core_executable)

@@ -1,0 +1,9 @@
+[
+    {
+        "name": "GCC in virtualenv",
+        "compilers": {
+            "CXX": "/usr/bin/g++"
+        },
+        "environmentSetupScript": "${workspaceFolder}/.venv/bin/activate"
+    }
+]

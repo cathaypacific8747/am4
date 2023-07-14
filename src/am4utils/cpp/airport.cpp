@@ -96,6 +96,8 @@ std::vector<Airport::Suggestion> Airport::suggest(const Airport::ParseResult& pa
             case Airport::SearchType::NAME:
                 result = Database::Client()->suggest_airport_by_name->Execute(parse_result.search_str.c_str());
                 break;
+            default:
+                return suggestions;
         }
         CHECK_SUCCESS(result);
         while (auto chunk = result->Fetch()) {

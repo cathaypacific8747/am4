@@ -8,6 +8,8 @@ class Config:
     PRICEALERT_ROLEID: int = 0
     MODERATOR_ROLEID: int = 0
     HELPER_ROLEID: int = 0
+    KEY_FILE: str = ''
+    CERT_FILE: str = ''
     
     def __init__(self, cfg: dict):
         self.__dict__.update(cfg)

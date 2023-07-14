@@ -84,6 +84,8 @@ std::vector<Aircraft::Suggestion> Aircraft::suggest(const ParseResult& parse_res
             case Aircraft::SearchType::SHORTNAME:
                 result = Database::Client()->suggest_aircraft_by_shortname->Execute(parse_result.search_str.c_str(), priority);
                 break;
+            default:
+                return suggestions;
         }
         CHECK_SUCCESS(result);
         while (auto chunk = result->Fetch()) {
@@ -314,7 +316,6 @@ const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
     result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
-
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 

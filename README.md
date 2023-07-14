@@ -23,7 +23,7 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
     - realtime alliance-member comparisons: SV/contribution distribution
     - member tracking: cheat detection tools, departure pattern identification
 
-## Development
+## AM4Utils Development
 Requirements: python3.9+, C++17 compliant compiler
 
 ```bash
@@ -32,7 +32,7 @@ virtualenv .venv
 .venv\Scripts\activate
 
 # linux
-sudo apt install build-essential
+sudo apt install build-essential python3-dev
 virtualenv .venv
 source .venv/bin/activate
 
@@ -54,6 +54,17 @@ python3 -m pip wheel . --wheel-dir=wheelhouse no-deps -v
 pip install wheelhouse/am4utils-*.whl --force-reinstall
 
 .venv/scripts/deactivate
+```
+
+## AM4 Bot development
+```bash
+sudo apt install libnss3-tools
+curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+chmod +x mkcert-v*-linux-amd64
+sudo cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+pip3 install --verbose ".[dev]"
+
+rsync -avzo 
 ```
 
 ## Commands

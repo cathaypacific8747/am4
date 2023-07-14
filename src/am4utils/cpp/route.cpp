@@ -40,11 +40,7 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
 
     acr.needs_stopover = acr.route.direct_distance > ac.range;
     acr.stopover = acr.needs_stopover ? Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, ac, user.game_mode) : Stopover();
-    acr.load = user.override_load ? user.load / 100 : estimate_load(
-        ac.type == Aircraft::Type::CARGO ? user.campaign.estimate_cargo_reputation() : user.campaign.estimate_pax_reputation(),
-        1.06, // just to trigger >autoprice branch
-        acr.stopover.exists
-    );
+    acr.load = user.load / 100;
 
     #pragma warning(disable:4244)
     PaxDemand pd_pf = PaxDemand(
@@ -176,6 +172,7 @@ double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
 }
 
+// TODO: expose to pybind!
 double inline AircraftRoute::estimate_load(double reputation, double autoprice_ratio, bool has_stopover) {
     if (autoprice_ratio > 1) { // normal (sorta triangular?) distribution, [Z+(0: .00019, 1: .0068, 2: .0092), max: .001] * reputation
         if (has_stopover) {
@@ -264,6 +261,7 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("valid", &AircraftRoute::valid)
         .def_readonly("stopover", &AircraftRoute::stopover)
         .def_static("create", &AircraftRoute::from, "route"_a, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
+        .def_static("estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06, "has_stopover"_a = false)
         .def("__repr__", &Route::repr);
 }
 #endif

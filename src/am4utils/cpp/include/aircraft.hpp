@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <map>
 #include <cstdint>
 #include <iomanip>
 #include <duckdb.hpp>
