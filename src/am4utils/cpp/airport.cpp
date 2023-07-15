@@ -155,6 +155,25 @@ const string Airport::repr(const Airport& ap) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict ap_to_dict(const Airport& ap) {
+    py::dict d(
+        "id"_a=ap.id,
+        "name"_a=ap.name,
+        "fullname"_a=ap.fullname,
+        "country"_a=ap.country,
+        "continent"_a=ap.continent,
+        "iata"_a=ap.iata,
+        "icao"_a=ap.icao,
+        "lat"_a=ap.lat,
+        "lng"_a=ap.lng,
+        "rwy"_a=ap.rwy,
+        "market"_a=ap.market,
+        "hub_cost"_a=ap.hub_cost,
+        "rwy_codes"_a=ap.rwy_codes
+    );
+    return d;
+}
+
 void pybind_init_airport(py::module_& m) {
     py::module_ m_ap = m.def_submodule("airport");
     
@@ -174,7 +193,8 @@ void pybind_init_airport(py::module_& m) {
         .def_readonly("hub_cost", &Airport::hub_cost)
         .def_readonly("rwy_codes", &Airport::rwy_codes)
         .def_readonly("valid", &Airport::valid)
-        .def("__repr__", &Airport::repr);
+        .def("__repr__", &Airport::repr)
+        .def("to_dict", &ap_to_dict);
     
     py::enum_<Airport::SearchType>(ap_class, "SearchType")
         .value("ALL", Airport::SearchType::ALL)

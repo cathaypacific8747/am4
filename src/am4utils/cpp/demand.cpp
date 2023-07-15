@@ -24,6 +24,23 @@ const string CargoDemand::repr(const CargoDemand& demand) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict pax_demand_to_dict(const PaxDemand& pd) {
+    py::dict d(
+        "y"_a=pd.y,
+        "j"_a=pd.j,
+        "f"_a=pd.f
+    );
+    return d;
+}
+
+py::dict cargo_demand_to_dict(const CargoDemand& cd) {
+    py::dict d(
+        "l"_a=cd.l,
+        "h"_a=cd.h
+    );
+    return d;
+}
+
 void pybind_init_demand(py::module_& m) {
     py::module_ m_demand = m.def_submodule("demand");
     
@@ -33,7 +50,8 @@ void pybind_init_demand(py::module_& m) {
         .def_readonly("y", &PaxDemand::y)
         .def_readonly("j", &PaxDemand::j)
         .def_readonly("f", &PaxDemand::f)
-        .def("__repr__", &PaxDemand::repr);
+        .def("__repr__", &PaxDemand::repr)
+        .def("to_dict", &pax_demand_to_dict);
     
     py::class_<CargoDemand>(m_demand, "CargoDemand")
         .def(py::init<>())
@@ -41,6 +59,7 @@ void pybind_init_demand(py::module_& m) {
         .def(py::init<const PaxDemand&>(), "pax_demand"_a)
         .def_readonly("l", &CargoDemand::l)
         .def_readonly("h", &CargoDemand::h)
-        .def("__repr__", &CargoDemand::repr);
+        .def("__repr__", &CargoDemand::repr)
+        .def("to_dict", &cargo_demand_to_dict);
 }
 #endif

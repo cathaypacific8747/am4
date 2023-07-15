@@ -65,3 +65,9 @@ struct Airport {
 };
 
 inline const string to_string(Airport::SearchType st);
+
+#if BUILD_PYBIND == 1
+#include "binder.hpp"
+
+py::dict ap_to_dict(const Airport& ap);
+#endif

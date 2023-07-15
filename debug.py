@@ -12,14 +12,15 @@ if __name__ == '__main__':
     ap = Airport.search('iata:IPC').ap
     print(ap)
 
-    # ap0 = Airport.from_auto('HKG')
-    # ap1 = Airport.from_auto('MTR')
-    # ac = Aircraft.from_auto('b744')
-    # r = Route.from_airports_with_aircraft(ap0, ap1, ac)
-    # cfg = r.aircraft.config.pax_config
+    ap0 = Airport.search('LPB').ap
+    ap1 = Airport.search('CNF').ap
+    ac = Aircraft.search('erj192').ac
+    # print(ac)
+    r = Route.create(ap0, ap1).assign(ac)
+    cfg = r.aircraft.config.pax_config
     # print(cfg.y, cfg.j, cfg.f, cfg.algorithm)
-    # print(r.direct_distance)
-    # print(r.ticket.pax_ticket.y)
-    # print(r.ticket.pax_ticket.j)
-    # print(r.ticket.pax_ticket.f)
+    print(r.route.direct_distance)
+    print(r.ticket.pax_ticket.y)
+    print(r.ticket.pax_ticket.j)
+    print(r.ticket.pax_ticket.f)
     # print(r.income)

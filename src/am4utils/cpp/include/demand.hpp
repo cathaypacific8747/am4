@@ -26,3 +26,10 @@ struct CargoDemand {
 
     static const string repr(const CargoDemand& demand);
 };
+
+#if BUILD_PYBIND == 1
+#include "binder.hpp"
+
+py::dict pax_demand_to_dict(const PaxDemand& ap);
+py::dict cargo_demand_to_dict(const CargoDemand& ap);
+#endif

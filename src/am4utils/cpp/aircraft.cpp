@@ -319,6 +319,50 @@ const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict ac_to_dict(const Aircraft& ac) {
+    string actype_str;
+    switch (ac.type) {
+        case Aircraft::Type::VIP:
+            actype_str = "VIP";
+            break;
+        case Aircraft::Type::PAX:
+            actype_str = "PAX";
+            break;
+        case Aircraft::Type::CARGO:
+            actype_str = "CARGO";
+            break;
+    }
+
+    py::dict d(
+        "id"_a=ac.id,
+        "shortname"_a=ac.shortname,
+        "manufacturer"_a=ac.manufacturer,
+        "name"_a=ac.name,
+        "type"_a=actype_str,
+        "priority"_a=ac.priority,
+        "eid"_a=ac.eid,
+        "ename"_a=ac.ename,
+        "speed"_a=ac.speed,
+        "fuel"_a=ac.fuel,
+        "co2"_a=ac.co2,
+        "cost"_a=ac.cost,
+        "capacity"_a=ac.capacity,
+        "rwy"_a=ac.rwy,
+        "check_cost"_a=ac.check_cost,
+        "range"_a=ac.range,
+        "ceil"_a=ac.ceil,
+        "maint"_a=ac.maint,
+        "pilots"_a=ac.pilots,
+        "crew"_a=ac.crew,
+        "engineers"_a=ac.engineers,
+        "technicians"_a=ac.technicians,
+        "img"_a=ac.img,
+        "wingspan"_a=ac.wingspan,
+        "length"_a=ac.length
+    );
+    return d;
+}
+
 void pybind_init_aircraft(py::module_& m) {
     py::module_ m_ac = m.def_submodule("aircraft");
     
@@ -354,7 +398,9 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("wingspan", &Aircraft::wingspan)
         .def_readonly("length", &Aircraft::length)
         .def_readonly("valid", &Aircraft::valid)
-        .def("__repr__", &Aircraft::repr);
+        .def("__repr__", &Aircraft::repr)
+        .def("to_dict", &ac_to_dict);
+
     py::enum_<Aircraft::SearchType>(ac_class, "SearchType")
         .value("ALL", Aircraft::SearchType::ALL)
         .value("ID", Aircraft::SearchType::ID)
@@ -376,7 +422,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_static("search", &Aircraft::search, "s"_a)
         .def_static("suggest", &Aircraft::suggest, "s"_a);
     
-    // puchased aircraft
+    // purchased aircraft
     py::class_<PaxConfig> pc_class(m_ac, "PaxConfig");
     py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
         .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)

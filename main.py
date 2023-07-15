@@ -14,7 +14,7 @@ if __name__ == '__main__':
         uvicorn.run(
             "src.am4bot.api.main:app",
             host="127.0.0.1",
-            port=8000,
+            port=8001,
             reload=True,
             ssl_keyfile=config.KEY_FILE,
             ssl_certfile=config.CERT_FILE,

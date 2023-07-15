@@ -229,6 +229,17 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict route_to_dict(const Route& r) {
+    py::dict d(
+        "origin"_a = ap_to_dict(r.origin),
+        "destination"_a = ap_to_dict(r.destination),
+        "pax_demand"_a = pax_demand_to_dict(r.pax_demand),
+        "cargo_demand"_a = cargo_demand_to_dict(CargoDemand(r.pax_demand)),
+        "direct_distance"_a = r.direct_distance
+    );
+    return d;
+}
+
 void pybind_init_route(py::module_& m) {
     py::module_ m_route = m.def_submodule("route");
     
@@ -242,7 +253,8 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("valid", &Route::valid)
         .def_static("create", &Route::create, "ap1"_a, "ap2"_a)
         .def("assign", &Route::assign, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
-        .def("__repr__", &Route::repr);
+        .def("__repr__", &Route::repr)
+        .def("to_dict", &route_to_dict);
     
     py::class_<AircraftRoute::Stopover>(acr_class, "Stopover")
         .def_readonly("airport", &AircraftRoute::Stopover::airport)
