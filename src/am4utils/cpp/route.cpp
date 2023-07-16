@@ -87,7 +87,7 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
             acr.max_income = (
                 acr.aircraft.config.cargo_config.l * 0.7 * acr.ticket.cargo_ticket.l +
                 acr.aircraft.config.cargo_config.h * acr.ticket.cargo_ticket.h
-            ) * ac.capacity / 100.0 / 1000;
+            ) * ac.capacity / 100.0;
             break;
         case Aircraft::Type::VIP:
             acr.aircraft = PurchasedAircraft(
@@ -135,7 +135,6 @@ AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airpor
         }
     }
     if (candidate_id == 0) return Stopover();
-
     auto result = Database::Client()->get_airport_by_id->Execute(candidate_id);
     CHECK_SUCCESS(result);
     duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
@@ -230,14 +229,48 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
 #include "include/binder.hpp"
 
 py::dict route_to_dict(const Route& r) {
-    py::dict d(
+    return py::dict(
         "origin"_a = ap_to_dict(r.origin),
         "destination"_a = ap_to_dict(r.destination),
         "pax_demand"_a = pax_demand_to_dict(r.pax_demand),
         "cargo_demand"_a = cargo_demand_to_dict(CargoDemand(r.pax_demand)),
         "direct_distance"_a = r.direct_distance
     );
-    return d;
+}
+
+py::dict stopover_to_dict(const AircraftRoute::Stopover& s) {
+    return s.exists ? py::dict(
+        "airport"_a = ap_to_dict(s.airport),
+        "full_distance"_a = s.full_distance,
+        "exists"_a = true
+    ) : py::dict(
+        "exists"_a = false
+    );
+}
+
+py::dict ac_route_to_dict(const AircraftRoute& ar) {
+    py::dict ticket_d;
+    switch (ar.aircraft.type) {
+        case Aircraft::Type::PAX:
+            ticket_d = paxticket_to_dict(ar.ticket.pax_ticket);
+            break;
+        case Aircraft::Type::VIP:
+            ticket_d = vipticket_to_dict(ar.ticket.vip_ticket);
+            break;
+        case Aircraft::Type::CARGO:
+            ticket_d = cargoticket_to_dict(ar.ticket.cargo_ticket);
+            break;
+    }
+
+    return py::dict(
+        "route"_a = route_to_dict(ar.route),
+        "aircraft"_a = pac_to_dict(ar.aircraft),
+        "ticket"_a = ticket_d,
+        "max_income"_a = ar.max_income,
+        "load"_a = ar.load,
+        "needs_stopover"_a = ar.needs_stopover,
+        "stopover"_a = stopover_to_dict(ar.stopover)
+    );
 }
 
 void pybind_init_route(py::module_& m) {
@@ -261,7 +294,8 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("full_distance", &AircraftRoute::Stopover::full_distance)
         .def_readonly("exists", &AircraftRoute::Stopover::exists)
         .def_static("find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a, "aircraft"_a, "game_mode"_a)
-        .def("__repr__", &AircraftRoute::Stopover::repr);
+        .def("__repr__", &AircraftRoute::Stopover::repr)
+        .def("to_dict", &stopover_to_dict);
     
     acr_class
         .def_readonly("route", &AircraftRoute::route)
@@ -270,10 +304,11 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("max_income", &AircraftRoute::max_income)
         .def_readonly("load", &AircraftRoute::load)
         .def_readonly("needs_stopover", &AircraftRoute::needs_stopover)
-        .def_readonly("valid", &AircraftRoute::valid)
         .def_readonly("stopover", &AircraftRoute::stopover)
+        .def_readonly("valid", &AircraftRoute::valid)
         .def_static("create", &AircraftRoute::from, "route"_a, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
         .def_static("estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06, "has_stopover"_a = false)
-        .def("__repr__", &Route::repr);
+        .def("__repr__", &Route::repr)
+        .def("to_dict", &ac_route_to_dict);
 }
 #endif

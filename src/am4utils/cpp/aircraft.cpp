@@ -250,6 +250,27 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, dou
     }
 }
 
+const string to_string(PaxConfig::Algorithm algorithm) {
+    switch (algorithm) {
+        case PaxConfig::Algorithm::FJY:
+            return "FJY";
+        case PaxConfig::Algorithm::FYJ:
+            return "FYJ";
+        case PaxConfig::Algorithm::JFY:
+            return "JFY";
+        case PaxConfig::Algorithm::JYF:
+            return "JYF";
+        case PaxConfig::Algorithm::YFJ:
+            return "YFJ";
+        case PaxConfig::Algorithm::YJF:
+            return "YJF";
+        case PaxConfig::Algorithm::NONE:
+            return "NONE";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 const string PaxConfig::repr(const PaxConfig& config) {
     return "<PaxConfig " + to_string(config.y) + "|" + to_string(config.j) + "|" + to_string(config.f) + ">";
 }
@@ -295,6 +316,19 @@ CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capac
     ); // low priority is always more profitable
 }
 
+const string to_string(CargoConfig::Algorithm algorithm) {
+    switch (algorithm) {
+        case CargoConfig::Algorithm::L:
+            return "L";
+        case CargoConfig::Algorithm::H:
+            return "H";
+        case CargoConfig::Algorithm::NONE:
+            return "NONE";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 const string CargoConfig::repr(const CargoConfig& config) {
     return "<CargoConfig " + to_string(config.l) + "|" + to_string(config.h) + ">";
 }
@@ -316,29 +350,17 @@ const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
     result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
+
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
 py::dict ac_to_dict(const Aircraft& ac) {
-    string actype_str;
-    switch (ac.type) {
-        case Aircraft::Type::VIP:
-            actype_str = "VIP";
-            break;
-        case Aircraft::Type::PAX:
-            actype_str = "PAX";
-            break;
-        case Aircraft::Type::CARGO:
-            actype_str = "CARGO";
-            break;
-    }
-
-    py::dict d(
+    return py::dict(
         "id"_a=ac.id,
         "shortname"_a=ac.shortname,
         "manufacturer"_a=ac.manufacturer,
         "name"_a=ac.name,
-        "type"_a=actype_str,
+        "type"_a=to_string(ac.type),
         "priority"_a=ac.priority,
         "eid"_a=ac.eid,
         "ename"_a=ac.ename,
@@ -360,6 +382,28 @@ py::dict ac_to_dict(const Aircraft& ac) {
         "wingspan"_a=ac.wingspan,
         "length"_a=ac.length
     );
+}
+
+py::dict pax_conf_to_dict(const PaxConfig& pc) {
+    return py::dict(
+        "y"_a=pc.y,
+        "j"_a=pc.j,
+        "f"_a=pc.f,
+        "algorithm"_a=to_string(pc.algorithm)
+    );
+}
+
+py::dict cargo_conf_to_dict(const CargoConfig& cc) {
+    return py::dict(
+        "l"_a=cc.l,
+        "h"_a=cc.h,
+        "algorithm"_a=to_string(cc.algorithm)
+    );
+}
+
+py::dict pac_to_dict(const PurchasedAircraft& pac) {
+    py::dict d = ac_to_dict(pac);
+    d["config"] = pac.type == Aircraft::Type::PAX ? pax_conf_to_dict(pac.config.pax_config) : cargo_conf_to_dict(pac.config.cargo_config);
     return d;
 }
 
@@ -435,7 +479,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("f", &PaxConfig::f)
         .def_readonly("valid", &PaxConfig::valid)
         .def_readonly("algorithm", &PaxConfig::algorithm)
-        .def("__repr__", &PaxConfig::repr);
+        .def("__repr__", &PaxConfig::repr)
+        .def("to_dict", &pax_conf_to_dict);
 
     py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
     py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
@@ -446,7 +491,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("h", &CargoConfig::h)
         .def_readonly("valid", &CargoConfig::valid)
         .def_readonly("algorithm", &CargoConfig::algorithm)
-        .def("__repr__", &CargoConfig::repr);
+        .def("__repr__", &CargoConfig::repr)
+        .def("to_dict", &cargo_conf_to_dict);
 
     py::class_<PurchasedAircraft, shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
     py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
@@ -454,6 +500,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
     p_ac_class
         .def_readonly("config", &PurchasedAircraft::config)
-        .def("__repr__", &PurchasedAircraft::repr);
+        .def("__repr__", &PurchasedAircraft::repr)
+        .def("to_dict", &pac_to_dict);
 }
 #endif

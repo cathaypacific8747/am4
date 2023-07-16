@@ -50,6 +50,18 @@ const string VIPTicket::repr(const VIPTicket& ticket) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict pax_ticket_to_dict(const PaxTicket& ticket) {
+    return py::dict("y"_a=ticket.y, "j"_a=ticket.j, "f"_a=ticket.f);
+}
+
+py::dict cargo_ticket_to_dict(const CargoTicket& ticket) {
+    return py::dict("l"_a=ticket.l, "h"_a=ticket.h);
+}
+
+py::dict vip_ticket_to_dict(const VIPTicket& ticket) {
+    return py::dict("y"_a=ticket.y, "j"_a=ticket.j, "f"_a=ticket.f);
+}
+
 void pybind_init_ticket(py::module_& m) {
     py::module_ m_ticket = m.def_submodule("ticket");
     
@@ -58,20 +70,23 @@ void pybind_init_ticket(py::module_& m) {
         .def_readonly("j", &PaxTicket::j)
         .def_readonly("f", &PaxTicket::f)
         .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY")) // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
-        .def("__repr__", &PaxTicket::repr);
+        .def("__repr__", &PaxTicket::repr)
+        .def("to_dict", &pax_ticket_to_dict);
 
     py::class_<CargoTicket>(m_ticket, "CargoTicket")
         .def_readonly("l", &CargoTicket::l)
         .def_readonly("h", &CargoTicket::h)
         .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4utils._core.game.User.GameMode.EASY"))
-        .def("__repr__", &CargoTicket::repr);
+        .def("__repr__", &CargoTicket::repr)
+        .def("to_dict", &cargo_ticket_to_dict);
     
     py::class_<VIPTicket>(m_ticket, "VIPTicket")
         .def_readonly("y", &VIPTicket::y)
         .def_readonly("j", &VIPTicket::j)
         .def_readonly("f", &VIPTicket::f)
         .def_static("from_optimal", &VIPTicket::from_optimal, "distance"_a)
-        .def("__repr__", &VIPTicket::repr);
+        .def("__repr__", &VIPTicket::repr)
+        .def("to_dict", &vip_ticket_to_dict);
     
     py::class_<Ticket>(m_ticket, "Ticket")
         .def_readonly("pax_ticket", &Ticket::pax_ticket)

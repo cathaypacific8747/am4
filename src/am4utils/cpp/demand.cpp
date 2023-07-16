@@ -25,20 +25,18 @@ const string CargoDemand::repr(const CargoDemand& demand) {
 #include "include/binder.hpp"
 
 py::dict pax_demand_to_dict(const PaxDemand& pd) {
-    py::dict d(
+    return py::dict(
         "y"_a=pd.y,
         "j"_a=pd.j,
         "f"_a=pd.f
     );
-    return d;
 }
 
 py::dict cargo_demand_to_dict(const CargoDemand& cd) {
-    py::dict d(
+    return py::dict(
         "l"_a=cd.l,
         "h"_a=cd.h
     );
-    return d;
 }
 
 void pybind_init_demand(py::module_& m) {

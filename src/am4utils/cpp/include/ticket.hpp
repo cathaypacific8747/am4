@@ -40,3 +40,11 @@ union Ticket {
     Ticket(const CargoTicket& cargo_ticket) : cargo_ticket(cargo_ticket) {}
     Ticket(const VIPTicket& vip_ticket) : vip_ticket(vip_ticket) {}
 };
+
+#if BUILD_PYBIND == 1
+#include "binder.hpp"
+
+py::dict pax_ticket_to_dict(const PaxTicket& ticket);
+py::dict cargo_ticket_to_dict(const CargoTicket& ticket);
+py::dict vip_ticket_to_dict(const VIPTicket& ticket);
+#endif

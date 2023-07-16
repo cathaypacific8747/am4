@@ -44,6 +44,7 @@ ignore = [
     "PT011",
     "W292",
     "E501", # line too long
+    "E741", # ambiguous variable name
 ]
 
 exclude = ["src-old", "src-v2-v3", "research/nn"]

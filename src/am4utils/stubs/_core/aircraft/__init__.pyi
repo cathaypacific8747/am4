@@ -294,6 +294,7 @@ class CargoConfig():
         __members__: dict # value = {'L': <Algorithm.L: 0>, 'H': <Algorithm.H: 1>, 'NONE': <Algorithm.NONE: 2>}
         pass
     def __repr__(self) -> str: ...
+    def to_dict(self) -> dict: ...
     @property
     def algorithm(self) -> CargoConfig.Algorithm:
         """
@@ -363,6 +364,7 @@ class PaxConfig():
         __members__: dict # value = {'FJY': <Algorithm.FJY: 0>, 'FYJ': <Algorithm.FYJ: 1>, 'JFY': <Algorithm.JFY: 2>, 'JYF': <Algorithm.JYF: 3>, 'YJF': <Algorithm.YJF: 4>, 'YFJ': <Algorithm.YFJ: 5>, 'NONE': <Algorithm.NONE: 6>}
         pass
     def __repr__(self) -> str: ...
+    def to_dict(self) -> dict: ...
     @property
     def algorithm(self) -> PaxConfig.Algorithm:
         """
@@ -403,6 +405,7 @@ class PurchasedAircraft(Aircraft):
             """
         pass
     def __repr__(self) -> str: ...
+    def to_dict(self) -> dict: ...
     @property
     def config(self) -> PurchasedAircraft.Config:
         """

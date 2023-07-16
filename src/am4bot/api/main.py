@@ -6,12 +6,9 @@ import am4utils
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
 from am4utils.route import Route
-
-from src.am4bot.api.models import (
-    AircraftResponse, AircraftNotFoundResponse,
-    AirportResponse, AirportNotFoundResponse,
-    RouteResponse
-)
+from src.am4bot.api.models.aircraft import AircraftResponse, AircraftNotFoundResponse
+from src.am4bot.api.models.airport import AirportResponse, AirportNotFoundResponse
+from src.am4bot.api.models.route import RouteResponse, ACRouteResponse
 
 app = FastAPI()
 
@@ -101,4 +98,26 @@ async def route_info(
     return {
         "status": "success",
         "route": route.to_dict()
+    }
+
+@app.get("/ac_route/info", response_model=ACRouteResponse, responses={404: {"model": AirportNotFoundResponse | AircraftNotFoundResponse}})
+async def ac_route_info(
+    ap0: str = Query(description="Origin airport"),
+    ap1: str = Query(description="Destination airport"),
+    ac: str = Query(description="Aircraft")
+):
+    apsr0 = Airport.search(ap0)
+    if not apsr0.ap.valid:
+        return construct_apnf_response("ap0", Airport.suggest(apsr0.parse_result))
+    apsr1 = Airport.search(ap1)
+    if not apsr1.ap.valid:
+        return construct_apnf_response("ap1", Airport.suggest(apsr1.parse_result))
+    acsr = Aircraft.search(ac)
+    if not acsr.ac.valid:
+        return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
+    
+    ac_route = Route.create(apsr0.ap, apsr1.ap).assign(acsr.ac)
+    return {
+        "status": "success",
+        "ac_route": ac_route.to_dict(),
     }

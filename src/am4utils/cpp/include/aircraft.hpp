@@ -151,3 +151,10 @@ struct PurchasedAircraft : Aircraft {
 
     static const string repr(const PurchasedAircraft& ac);
 };
+
+#if BUILD_PYBIND == 1
+#include "binder.hpp"
+
+py::dict ac_to_dict(const Aircraft& ac);
+py::dict pac_to_dict(const PurchasedAircraft& pac);
+#endif
