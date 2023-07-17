@@ -27,6 +27,9 @@ class AircraftDict(BaseModel):
     img: str
     wingspan: int
     length: int
+    speed_mod: bool
+    fuel_mod: bool
+    co2_mod: bool
 
 class AircraftSuggestionDict(BaseModel):
     aircraft: AircraftDict

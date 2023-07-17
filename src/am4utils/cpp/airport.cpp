@@ -32,7 +32,7 @@ Airport::ParseResult Airport::parse(const string& s) {
 }
 
 Airport::SearchResult Airport::search(const string& s) {
-    auto parse_result = Airport::ParseResult(Airport::parse(s));
+    auto parse_result = Airport::parse(s);
     Airport ap;
     switch (parse_result.search_type) {
         case Airport::SearchType::ALL:

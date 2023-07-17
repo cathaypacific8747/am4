@@ -1,48 +1,110 @@
 #include <iostream>
+#include <algorithm>
+#include <string>
 
 #include "include/db.hpp"
 #include "include/aircraft.hpp"
 
-Aircraft::Aircraft() : valid(false) {}
+Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), valid(false) {}
+
+// removes trailing spaces or spaces that suceed commas in-place
+void remove_spaces_custom(string& str) {
+    bool space_found = false;
+    int len = str.length();
+
+    for (int i = 0; i < len; i++) {
+        if (str[i] == ' ' && ((i == 0 || i == len - 1 || str[i-1] == ',') || space_found)) {
+            space_found = true;
+            str.erase(i, 1);
+            i--;
+            len--;
+        } else {
+            space_found = false;
+        }
+    }
+}
 
 Aircraft::ParseResult Aircraft::parse(const string& s) {
     string s_lower = s;
     std::transform(s_lower.begin(), s_lower.end(), s_lower.begin(), ::tolower);
 
+    uint8_t priority = 0;
+    bool speed_mod = false;
+    bool fuel_mod = false;
+    bool co2_mod = false;
+
+    // attempt to get modifiers, e.g. mc214[0,s,c,f] -> priority: true, speed_mod: true, co2_mod: true, fuel_mod: true
+    size_t start = s_lower.find('[');
+    if (start != string::npos && s_lower.at(s_lower.size() - 1) == ']') {
+        string parsed = s_lower.substr(start + 1, s_lower.size() - start - 2);
+        remove_spaces_custom(parsed);
+        s_lower = s_lower.substr(0, start);
+
+        std::vector<string> tokens;
+        size_t last = 0, next = 0;
+        while ((next = parsed.find(',', last)) != string::npos) {
+            tokens.push_back(parsed.substr(last, next-last));
+            last = next + 1;
+        }
+        tokens.push_back(parsed.substr(last));
+
+        for (const string& token : tokens) {
+            if (token.length() <= 3) {
+                if (token.find('s') != string::npos) speed_mod = true;
+                if (token.find('f') != string::npos) fuel_mod = true;
+                if (token.find('c') != string::npos) co2_mod = true;
+            }
+            try {
+                if (priority == 0) priority = std::stoi(token);
+            } catch (const std::invalid_argument&) {
+            } catch (const std::out_of_range&) {
+            }
+            // TODO: handle eid:XXX
+        }
+    }
     if (s_lower.substr(0, 5) == "name:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5));
+        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5), priority, speed_mod, fuel_mod, co2_mod);
     } else if (s_lower.substr(0, 10) == "shortname:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10));
+        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod, co2_mod);
     } else if (s_lower.substr(0, 3) == "id:") {
         try {
             std::ignore = std::stoi(s.substr(3));
-            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3));
+            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod);
         } catch (const std::invalid_argument&) {
         } catch (const std::out_of_range&) {
         }
     } else if (s_lower.substr(0, 4) == "all:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4));
+        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4), priority, speed_mod, fuel_mod, co2_mod);
     }
-    return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower);
+    return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower, priority, speed_mod, fuel_mod, co2_mod);
 }
 
 Aircraft::SearchResult Aircraft::search(const string& s) {
-    auto parse_result = Aircraft::ParseResult(Aircraft::parse(s));
+    auto parse_result = Aircraft::parse(s);
     Aircraft ac;
     switch (parse_result.search_type) {
         case Aircraft::SearchType::ALL:
-            ac = Database::Client()->get_aircraft_by_all(parse_result.search_str);
+            ac = Database::Client()->get_aircraft_by_all(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::NAME:
-            ac = Database::Client()->get_aircraft_by_name(parse_result.search_str);
+            ac = Database::Client()->get_aircraft_by_name(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::SHORTNAME:
-            ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str);
+            ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::ID:
-            ac = Database::Client()->get_aircraft_by_id(std::stoi(parse_result.search_str));
+            ac = Database::Client()->get_aircraft_by_id(std::stoi(parse_result.search_str), parse_result.priority);
             break;
     }
+    ac.speed_mod = parse_result.speed_mod;
+    if (ac.speed_mod) ac.speed *= 1.1;
+
+    ac.fuel_mod = parse_result.fuel_mod;
+    if (ac.fuel_mod) ac.fuel *= 0.9;
+    
+    ac.co2_mod = parse_result.co2_mod;
+    if (ac.co2_mod) ac.co2 *= 0.9;
+    
     return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
 }
 
@@ -124,8 +186,12 @@ const string to_string(Aircraft::SearchType searchtype) {
 const string Aircraft::repr(const Aircraft& ac) {
     if (!ac.valid) return "<Aircraft.INVALID>";
     string result;
-    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname;
-    result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
+    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname + " name=" + ac.name + " priority=" + to_string(ac.priority);
+    result += " mod=";
+    if (ac.speed_mod) result += "s";
+    if (ac.fuel_mod) result += "f";
+    if (ac.co2_mod) result += "c";
+    result += " speed=" + to_string(ac.speed) + " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
 
@@ -345,7 +411,10 @@ py::dict ac_to_dict(const Aircraft& ac) {
         "technicians"_a=ac.technicians,
         "img"_a=ac.img,
         "wingspan"_a=ac.wingspan,
-        "length"_a=ac.length
+        "length"_a=ac.length,
+        "speed_mod"_a=ac.speed_mod,
+        "fuel_mod"_a=ac.fuel_mod,
+        "co2_mod"_a=ac.co2_mod
     );
 }
 
@@ -406,6 +475,9 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("img", &Aircraft::img)
         .def_readonly("wingspan", &Aircraft::wingspan)
         .def_readonly("length", &Aircraft::length)
+        .def_readonly("speed_mod", &Aircraft::speed_mod)
+        .def_readonly("fuel_mod", &Aircraft::fuel_mod)
+        .def_readonly("co2_mod", &Aircraft::co2_mod)
         .def_readonly("valid", &Aircraft::valid)
         .def("__repr__", &Aircraft::repr)
         .def("to_dict", &ac_to_dict);
@@ -416,9 +488,12 @@ void pybind_init_aircraft(py::module_& m) {
         .value("SHORTNAME", Aircraft::SearchType::SHORTNAME)
         .value("NAME", Aircraft::SearchType::NAME);
     py::class_<Aircraft::ParseResult>(ac_class, "ParseResult")
-        .def(py::init<Aircraft::SearchType, const string&>())
         .def_readonly("search_type", &Aircraft::ParseResult::search_type)
-        .def_readonly("search_str", &Aircraft::ParseResult::search_str);
+        .def_readonly("search_str", &Aircraft::ParseResult::search_str)
+        .def_readonly("priority", &Aircraft::ParseResult::priority)
+        .def_readonly("speed_mod", &Aircraft::ParseResult::speed_mod)
+        .def_readonly("fuel_mod", &Aircraft::ParseResult::fuel_mod)
+        .def_readonly("co2_mod", &Aircraft::ParseResult::co2_mod);
     py::class_<Aircraft::SearchResult>(ac_class, "SearchResult")
         .def(py::init<shared_ptr<Aircraft>, Aircraft::ParseResult>())
         .def_readonly("ac", &Aircraft::SearchResult::ac)

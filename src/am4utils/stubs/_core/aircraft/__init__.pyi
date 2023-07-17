@@ -12,7 +12,21 @@ __all__ = [
 
 class Aircraft():
     class ParseResult():
-        def __init__(self, arg0: Aircraft.SearchType, arg1: str) -> None: ...
+        @property
+        def co2_mod(self) -> bool:
+            """
+            :type: bool
+            """
+        @property
+        def fuel_mod(self) -> bool:
+            """
+            :type: bool
+            """
+        @property
+        def priority(self) -> int:
+            """
+            :type: int
+            """
         @property
         def search_str(self) -> str:
             """
@@ -22,6 +36,11 @@ class Aircraft():
         def search_type(self) -> Aircraft.SearchType:
             """
             :type: Aircraft.SearchType
+            """
+        @property
+        def speed_mod(self) -> bool:
+            """
+            :type: bool
             """
         pass
     class SearchResult():
@@ -148,6 +167,11 @@ class Aircraft():
         :type: float
         """
     @property
+    def co2_mod(self) -> bool:
+        """
+        :type: bool
+        """
+    @property
     def cost(self) -> int:
         """
         :type: int
@@ -176,6 +200,11 @@ class Aircraft():
     def fuel(self) -> float:
         """
         :type: float
+        """
+    @property
+    def fuel_mod(self) -> bool:
+        """
+        :type: bool
         """
     @property
     def id(self) -> int:
@@ -236,6 +265,11 @@ class Aircraft():
     def speed(self) -> float:
         """
         :type: float
+        """
+    @property
+    def speed_mod(self) -> bool:
+        """
+        :type: bool
         """
     @property
     def technicians(self) -> int:

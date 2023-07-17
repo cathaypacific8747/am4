@@ -73,8 +73,9 @@ int main() {
     // cout << AircraftRoute::repr(ar) << endl;
     
     // const auto& db = Database::Client();
-    // auto ap = Aircraft::search("mc215");
-    // cout << Aircraft::repr(*ap.ac) << endl;
+    auto ap = Aircraft::search("id:1[1,sc]");
+    cout << Aircraft::repr(*ap.ac) << endl;
+    cout << ap.parse_result.priority;
     // auto ac_sugg = Aircraft::suggest(ap.parse_result);
     // for (auto &s : ac_sugg) {
     //     cout << Aircraft::repr(*s.ac) << s.score << endl;

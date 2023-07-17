@@ -351,23 +351,23 @@ Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
 }
 
 // TODO: allow priority to be passed in
-Aircraft Database::get_aircraft_by_shortname(const string& shortname) {
+Aircraft Database::get_aircraft_by_shortname(const string& shortname, uint8_t priority) {
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
-        return a.shortname == shortname && a.priority == 0;
+        return a.shortname == shortname && a.priority == priority;
     });
     return it == std::end(aircrafts) ? Aircraft() : *it;
 }
 
-Aircraft Database::get_aircraft_by_name(const string& name) {
+Aircraft Database::get_aircraft_by_name(const string& name, uint8_t priority) {
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::tolower);
-        return db_name == name && a.priority == 0;
+        return db_name == name && a.priority == priority;
     });
     return it == std::end(aircrafts) ? Aircraft() : *it;
 }
 
-Aircraft Database::get_aircraft_by_all(const string& shortname) {
+Aircraft Database::get_aircraft_by_all(const string& shortname, uint8_t priority) {
     try {
         uint16_t id = std::stoi(shortname);
         Aircraft ac = get_aircraft_by_id(id, 0);
@@ -377,7 +377,7 @@ Aircraft Database::get_aircraft_by_all(const string& shortname) {
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::tolower);
-        return (a.shortname == shortname || db_name == shortname) && a.priority == 0;
+        return (a.shortname == shortname || db_name == shortname) && a.priority == priority;
     });
     return it == std::end(aircrafts) ? Aircraft() : *it;
 }

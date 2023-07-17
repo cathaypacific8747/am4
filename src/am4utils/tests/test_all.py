@@ -35,6 +35,41 @@ def test_aircraft_fail_and_suggest(inp):
     suggs = Aircraft.suggest(a0.parse_result)
     assert suggs[0].ac.shortname == "b744"
 
+@pytest.mark.parametrize("inp", [
+    'b744[sfc]',
+    'b744[s,fc]',
+    'b744[sf,c]',
+    'b744[s,f,c]',
+    'b744[s, f, c]',
+    'b744[ , s, f,, c,,,  ]',
+    'id:1[sfc]',
+    'shortname:b744[sfc]',
+    'name:B747-400[sfc]',
+])
+def test_aircraft_modifiers_syntax(inp):
+    a0 = Aircraft.search(inp)
+    assert a0.ac.shortname == "b744"
+    assert a0.parse_result.speed_mod is True
+    assert a0.ac.speed_mod is True
+    assert a0.parse_result.fuel_mod is True
+    assert a0.ac.fuel_mod is True
+    assert a0.parse_result.co2_mod is True
+    assert a0.ac.co2_mod is True
+
+def test_aircraft_engine_modifier():
+    a = Aircraft.search('b744')
+    a0 = Aircraft.search('b744[0]')
+    a1 = Aircraft.search('b744[1]')
+    a1sfc = Aircraft.search('b744[1,sfc]')
+    assert a0.ac.id == a1.ac.id == a.ac.id == 1
+    assert a0.ac.eid == a.ac.eid == 4
+    assert a1.ac.eid == 2
+    assert abs(a1.ac.fuel - 21.21) < 0.001
+    assert abs(a1.ac.co2 - 0.18) < 0.001
+    assert abs(a1sfc.ac.speed / a1.ac.speed - 1.1) < 0.001
+    assert abs(a1sfc.ac.fuel / a1.ac.fuel - 0.9) < 0.001
+    assert abs(a1sfc.ac.co2 / a1.ac.co2 - 0.9) < 0.001
+
 ## airport tests
 @pytest.mark.parametrize("inp", [
     'id:3500',

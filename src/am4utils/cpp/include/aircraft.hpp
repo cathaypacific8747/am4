@@ -53,13 +53,20 @@ struct Aircraft {
     string img;
     uint8_t wingspan;
     uint8_t length;
-    bool valid = false;
+    bool speed_mod;
+    bool fuel_mod;
+    bool co2_mod;
+    bool valid;
 
     struct ParseResult {
         Aircraft::SearchType search_type;
         string search_str;
+        uint8_t priority;
+        bool speed_mod;
+        bool fuel_mod;
+        bool co2_mod;
 
-        ParseResult(Aircraft::SearchType search_type, const string& search_str) : search_type(search_type), search_str(search_str) {}
+        ParseResult(Aircraft::SearchType search_type, const string& search_str, uint8_t priority, bool speed_mod, bool fuel_mod, bool co2_mod) : search_type(search_type), search_str(search_str), priority(priority), speed_mod(speed_mod), fuel_mod(fuel_mod), co2_mod(co2_mod) {}
     };
 
     struct SearchResult {
@@ -142,8 +149,6 @@ struct PurchasedAircraft : Aircraft {
         Config(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
     };
     Config config;
-    // bool has_speed_mod = false;
-    // bool has_co2_mod = false;
 
     PurchasedAircraft() {}
     PurchasedAircraft(const Aircraft& ac, const PaxConfig& pax_config) : Aircraft(ac), config(pax_config) {}
