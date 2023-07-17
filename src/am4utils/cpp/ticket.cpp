@@ -13,7 +13,7 @@ PaxTicket PaxTicket::from_optimal(double distance, User::GameMode game_mode) {
         ticket.f = (uint16_t)(1.06 * (0.9 * distance + 1000)) - 2;
     }
     return ticket;
-};
+}
 
 CargoTicket CargoTicket::from_optimal(double distance, User::GameMode game_mode) {
     CargoTicket ticket;
@@ -25,7 +25,7 @@ CargoTicket CargoTicket::from_optimal(double distance, User::GameMode game_mode)
         ticket.h = floorf(static_cast<float>(1.08 * (0.0517742799409248 * distance + 24.6369915396414000))) / 100;
     }
     return ticket;
-};
+}
 
 VIPTicket VIPTicket::from_optimal(double distance) {
     VIPTicket ticket;

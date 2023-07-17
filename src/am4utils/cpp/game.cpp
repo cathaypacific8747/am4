@@ -4,13 +4,13 @@ Campaign::Campaign() :
     pax_activated(Airline::NONE),
     cargo_activated(Airline::NONE),
     eco_activated(Eco::NONE)
-{};
+{}
 
 Campaign::Campaign(Airline pax_activated, Airline cargo_activated, Eco eco_activated) :
     pax_activated(pax_activated),
     cargo_activated(cargo_activated),
     eco_activated(eco_activated)
-{};
+{}
 
 Campaign Campaign::Default() {
     return Campaign(Airline::C4_24HR, Airline::C4_24HR, Eco::C_24HR);
@@ -105,7 +105,7 @@ User::User() :
     fuel_price(700), co2_price(120),
     fuel_training(0), co2_training(0),
     load(87)
-{};
+{}
 
 const string to_string(User::GameMode game_mode) {
     switch (game_mode) {

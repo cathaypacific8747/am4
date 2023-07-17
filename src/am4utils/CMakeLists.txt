@@ -17,9 +17,9 @@ set(CMAKE_CXX_STANDARD 17)
 include(libduckdb.cmake)
 
 if (MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /std:c++17)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
 endif()
 
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
@@ -46,6 +46,7 @@ target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core
     PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=${BUILD_PYBIND}
 )
+target_compile_features(_core PRIVATE cxx_std_17)
 
 set_rpath(_core)
 target_link_libraries(_core PRIVATE duckdb)
@@ -73,6 +74,7 @@ target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable
     PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=0
 )
+target_compile_features(_core_executable PRIVATE cxx_std_17)
 
 set_rpath(_core_executable)
 target_link_libraries(_core_executable PRIVATE duckdb)

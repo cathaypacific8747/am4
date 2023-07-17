@@ -77,8 +77,9 @@ jobs:
         working-directory: ./src/am4utils
         env:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
-          CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_24_x86_64"
+          CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_28_x86_64"
           CIBW_ARCHS: all
+          MACOSX_DEPLOYMENT_TARGET: 10.14
         run: pipx run cibuildwheel --output-dir wheelhouse
         
       - name: Store artifacts

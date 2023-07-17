@@ -3,6 +3,7 @@
 #include <duckdb.hpp>
 #include <algorithm>
 #include <queue>
+#include <optional>
 
 #include "include/db.hpp"
 #include "include/ext/jaro.hpp"
@@ -335,7 +336,7 @@ idx_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
         return search->second + priority;
     }
     return 0;
-};
+}
 
 Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
     const uint16_t missing_ids[] = {
