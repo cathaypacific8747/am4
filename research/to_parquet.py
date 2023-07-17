@@ -76,6 +76,6 @@ def convert_aircrafts():
     pq.write_table(table, 'aircrafts.parquet')
 
 if __name__ == '__main__':
-    convert_routes()
+    # convert_routes()
     # convert_airports()
-    # convert_aircrafts()
+    convert_aircrafts()

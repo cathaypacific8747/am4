@@ -28,74 +28,38 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
 
 Aircraft::SearchResult Aircraft::search(const string& s) {
     auto parse_result = Aircraft::ParseResult(Aircraft::parse(s));
-    int8_t priority = 0; // TODO: attempt to parse engine type!
-    duckdb::unique_ptr<duckdb::QueryResult> result;
+    Aircraft ac;
     switch (parse_result.search_type) {
         case Aircraft::SearchType::ALL:
-            result = Database::Client()->get_aircraft_by_all->Execute(parse_result.search_str.c_str(), priority);
+            ac = Database::Client()->get_aircraft_by_all(parse_result.search_str);
             break;
         case Aircraft::SearchType::NAME:
-            result = Database::Client()->get_aircraft_by_name->Execute(parse_result.search_str.c_str(), priority);
+            ac = Database::Client()->get_aircraft_by_name(parse_result.search_str);
             break;
         case Aircraft::SearchType::SHORTNAME:
-            result = Database::Client()->get_aircraft_by_shortname->Execute(parse_result.search_str.c_str(), priority);
+            ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str);
             break;
         case Aircraft::SearchType::ID:
-            result = Database::Client()->get_aircraft_by_id->Execute(std::stoi(parse_result.search_str), priority);
+            ac = Database::Client()->get_aircraft_by_id(std::stoi(parse_result.search_str));
             break;
     }
-    CHECK_SUCCESS(result);
-    duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Aircraft::SearchResult(make_shared<Aircraft>(), parse_result);
-
-    return Aircraft::SearchResult(make_shared<Aircraft>(chunk, 0), parse_result);
+    return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
 }
 
 std::vector<Aircraft::Suggestion> Aircraft::suggest(const ParseResult& parse_result) {
     std::vector<Aircraft::Suggestion> suggestions;
-    int8_t priority = 0; // TODO: attempt to parse engine type!
-    if (parse_result.search_type == Aircraft::SearchType::ALL) {
-        for (auto& stmt : {
-            Database::Client()->suggest_aircraft_by_shortname.get(),
-            Database::Client()->suggest_aircraft_by_name.get(),
-        }) {
-            auto result = stmt->Execute(parse_result.search_str.c_str(), priority);
-            CHECK_SUCCESS(result);
-            auto chunk = result->Fetch();
-            if (!chunk || chunk->size() == 0) continue;
-
-            for (idx_t i = 0; i < chunk->size(); i++) {
-                suggestions.emplace_back(
-                    make_shared<Aircraft>(chunk, i),
-                    chunk->GetValue(25, i).GetValue<double>()
-                );
-            }
-        }
-        std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const Aircraft::Suggestion& a, const Aircraft::Suggestion& b) {
-            return a.score > b.score;
-        });
-        suggestions.resize(5);
-    } else {
-        duckdb::unique_ptr<duckdb::QueryResult> result;
-        switch (parse_result.search_type) {
-            case Aircraft::SearchType::NAME:
-                result = Database::Client()->suggest_aircraft_by_name->Execute(parse_result.search_str.c_str(), priority);
-                break;
-            case Aircraft::SearchType::SHORTNAME:
-                result = Database::Client()->suggest_aircraft_by_shortname->Execute(parse_result.search_str.c_str(), priority);
-                break;
-            default:
-                return suggestions;
-        }
-        CHECK_SUCCESS(result);
-        while (auto chunk = result->Fetch()) {
-            for (idx_t i = 0; i < chunk->size(); i++) {
-                suggestions.emplace_back(
-                    make_shared<Aircraft>(chunk, i),
-                    chunk->GetValue(25, i).GetValue<double>()
-                );
-            }
-        }
+    switch (parse_result.search_type) {
+        case Aircraft::SearchType::ALL:
+            suggestions = Database::Client()->suggest_aircraft_by_all(parse_result.search_str);
+            break;
+        case Aircraft::SearchType::NAME:
+            suggestions = Database::Client()->suggest_aircraft_by_name(parse_result.search_str);
+            break;
+        case Aircraft::SearchType::SHORTNAME:
+            suggestions = Database::Client()->suggest_aircraft_by_shortname(parse_result.search_str);
+            break;
+        default:
+            return suggestions;
     }
     return suggestions;
 }
@@ -158,6 +122,7 @@ const string to_string(Aircraft::SearchType searchtype) {
 }
 
 const string Aircraft::repr(const Aircraft& ac) {
+    if (!ac.valid) return "<Aircraft.INVALID>";
     string result;
     result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname;
     result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";

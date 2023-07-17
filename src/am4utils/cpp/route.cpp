@@ -14,14 +14,14 @@ Route::Route() : direct_distance(0.0), valid(false) {};
 Route Route::create(const Airport& ap1, const Airport& ap2) {
     if (ap1.id == ap2.id) throw std::invalid_argument("Cannot create route with same origin and destination");
 
-    Database::RouteCache route_cache = Database::Client()->get_route_by_ids(ap1.id, ap2.id);
+    Database::DBRoute db_route = Database::Client()->get_dbroute_by_ids(ap1.id, ap2.id);
     Route route;
     route.origin = ap1;
     route.destination = ap2;
     route.pax_demand = PaxDemand(
-        route_cache.yd,
-        route_cache.jd,
-        route_cache.fd
+        db_route.yd,
+        db_route.jd,
+        db_route.fd
     );
     route.direct_distance = calc_distance(ap1, ap2);
     route.valid = true;
@@ -126,12 +126,12 @@ AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airpor
     const uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
     const idx_t origin_idx = Database::get_airport_idx_by_id(origin.id);
     const idx_t destination_idx = Database::get_airport_idx_by_id(destination.id);
-    for (const Airport& ap : db->airport_cache) {
+    for (const Airport& ap : db->airports) {
         if (ap.rwy < rwy_requirement || ap.id == origin.id || ap.id == destination.id) continue;
         idx_t this_idx = Database::get_airport_idx_by_id(ap.id);
-        double d_o = db->route_cache[Database::get_routecache_idx(origin_idx, this_idx)].distance;
+        double d_o = db->routes[Database::get_dbroute_idx(origin_idx, this_idx)].distance;
         if (d_o > aircraft.range || d_o < 100) continue;
-        double d_d = db->route_cache[Database::get_routecache_idx(this_idx, destination_idx)].distance;
+        double d_d = db->routes[Database::get_dbroute_idx(this_idx, destination_idx)].distance;
         if (d_d > aircraft.range || d_d < 100) continue;
         if (d_o + d_d < candidate_distance) {
             candidate = ap;

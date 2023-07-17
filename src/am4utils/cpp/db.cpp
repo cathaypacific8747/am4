@@ -20,92 +20,24 @@ shared_ptr<Database> Database::Client() {
     return default_client;
 }
 
-// sets the home directory and inserts airports, aircrafts
-void Database::insert(string home_dir) {
+void Database::populate_data(const string& home_dir) {
     CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
 
-    // airports
-    CHECK_SUCCESS(connection->Query(
-        "CREATE TABLE airports ("
-        "  id         USMALLINT PRIMARY KEY NOT NULL,"
-        "  name       VARCHAR NOT NULL,"
-        "  fullname   VARCHAR NOT NULL,"
-        "  country    VARCHAR NOT NULL,"
-        "  continent  VARCHAR NOT NULL,"
-        "  iata       VARCHAR UNIQUE NOT NULL,"
-        "  icao       VARCHAR UNIQUE NOT NULL,"
-        "  lat        DOUBLE NOT NULL,"
-        "  lng        DOUBLE NOT NULL,"
-        "  rwy        USMALLINT NOT NULL,"
-        "  market     UTINYINT NOT NULL,"
-        "  hub_cost   UINTEGER NOT NULL,"
-        "  rwy_codes  VARCHAR NOT NULL"
-        ");"
-    ));
-    CHECK_SUCCESS(connection->Query("INSERT INTO airports SELECT * FROM read_parquet('~/data/airports.parquet');"));
-    CHECK_SUCCESS(connection->Query("CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);"));
-
-    // aircrafts
-    CHECK_SUCCESS(connection->Query(
-        "CREATE TABLE aircrafts ("
-        "  id           USMALLINT NOT NULL,"
-        "  shortname    VARCHAR NOT NULL,"
-        "  manufacturer VARCHAR NOT NULL,"
-        "  name         VARCHAR NOT NULL,"
-        "  type         UTINYINT NOT NULL,"
-        "  priority     UTINYINT NOT NULL,"
-        "  eid          USMALLINT NOT NULL,"
-        "  ename        VARCHAR NOT NULL,"
-        "  speed        FLOAT NOT NULL,"
-        "  fuel         FLOAT NOT NULL,"
-        "  co2          FLOAT NOT NULL,"
-        "  cost         UINTEGER NOT NULL,"
-        "  capacity     UINTEGER NOT NULL,"
-        "  rwy          USMALLINT NOT NULL,"
-        "  check_cost   UINTEGER NOT NULL,"
-        "  range        USMALLINT NOT NULL,"
-        "  ceil         USMALLINT NOT NULL,"
-        "  maint        USMALLINT NOT NULL,"
-        "  pilots       UTINYINT NOT NULL,"
-        "  crew         UTINYINT NOT NULL,"
-        "  engineers    UTINYINT NOT NULL,"
-        "  technicians  UTINYINT NOT NULL,"
-        "  img          VARCHAR NOT NULL,"
-        "  wingspan     UTINYINT NOT NULL,"
-        "  length       UTINYINT NOT NULL,"
-        ");"
-    ));
-    CHECK_SUCCESS(connection->Query("INSERT INTO aircrafts SELECT * FROM read_parquet('~/data/aircrafts.parquet');"));
-    CHECK_SUCCESS(connection->Query("CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);"));
-}
-
-void Database::prepare_statements() {
-    get_aircraft_by_id = connection->Prepare("SELECT * FROM aircrafts WHERE id = $1 AND priority = $2 LIMIT 1");
-    CHECK_SUCCESS(get_aircraft_by_id);
-
-    get_aircraft_by_shortname = connection->Prepare("SELECT * FROM aircrafts WHERE shortname = $1 AND priority = $2 LIMIT 1"); // $1: expects lowercase
-    CHECK_SUCCESS(get_aircraft_by_shortname);
-
-    get_aircraft_by_name = connection->Prepare("SELECT * FROM aircrafts WHERE lower(name) = $1 AND priority = $2 LIMIT 1");
-    CHECK_SUCCESS(get_aircraft_by_name);
-
-    get_aircraft_by_all = connection->Prepare("SELECT * FROM aircrafts WHERE (shortname = $1 OR lower(name) = $1) AND priority = $2 LIMIT 1");
-    CHECK_SUCCESS(get_aircraft_by_all);
-
-    suggest_aircraft_by_shortname = connection->Prepare("SELECT *, jaro_winkler_similarity(shortname, $1) AS score FROM aircrafts WHERE priority = $2 ORDER BY score DESC LIMIT 5");
-    CHECK_SUCCESS(suggest_aircraft_by_shortname);
-
-    suggest_aircraft_by_name = connection->Prepare("SELECT *, jaro_winkler_similarity(lower(name), $1) AS score FROM aircrafts WHERE priority = $2 ORDER BY score DESC LIMIT 5");
-    CHECK_SUCCESS(suggest_aircraft_by_name);
-}
-
-void Database::populate_cache() {
-    auto result = connection->Query("SELECT * FROM airports;");
+    auto result = connection->Query("SELECT * FROM read_parquet('~/data/airports.parquet');");
     CHECK_SUCCESS(result);
     idx_t i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
-            airport_cache[i] = Airport(chunk, j);
+            airports[i] = Airport(chunk, j);
+        }
+    }
+
+    result = connection->Query("SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
+    CHECK_SUCCESS(result);
+    i = 0;
+    while (auto chunk = result->Fetch()) {
+        for (idx_t j = 0; j < chunk->size(); j++, i++) {
+            aircrafts[i] = Aircraft(chunk, j);
         }
     }
 
@@ -114,7 +46,7 @@ void Database::populate_cache() {
     i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
-            route_cache[i] = {
+            routes[i] = {
                 chunk->GetValue(0, j).GetValue<uint16_t>(),
                 chunk->GetValue(1, j).GetValue<uint16_t>(),
                 chunk->GetValue(2, j).GetValue<uint16_t>(),
@@ -231,32 +163,32 @@ Airport Database::get_airport_by_id(uint16_t id) {
         2664,2666,2667,2673,3053,3194,3507,3508,3550,3899
     };
     if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Airport();
-    if (id >= 3983) return Airport();
-    return airport_cache[Database::get_airport_idx_by_id(id)];
+    if (id > 3982) return Airport();
+    return airports[Database::get_airport_idx_by_id(id)];
 }
 
 // TODO: use gperf
 Airport Database::get_airport_by_iata(const std::string& iata) {
-    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+    auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         return a.iata == iata;
     });
-    return it == std::end(airport_cache) ? Airport() : *it;
+    return it == std::end(airports) ? Airport() : *it;
 }
 
 Airport Database::get_airport_by_icao(const std::string& icao) {
-    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+    auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         return a.icao == icao;
     });
-    return it == std::end(airport_cache) ? Airport() : *it;
+    return it == std::end(airports) ? Airport() : *it;
 }
 
 Airport Database::get_airport_by_name(const std::string& name) {
-    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+    auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
         return db_name == name;
     });
-    return it == std::end(airport_cache) ? Airport() : *it;
+    return it == std::end(airports) ? Airport() : *it;
 }
 
 Airport Database::get_airport_by_all(const std::string& all) {
@@ -266,17 +198,17 @@ Airport Database::get_airport_by_all(const std::string& all) {
         if (ap.valid) return ap;
     } catch (std::invalid_argument& e) {
     }
-    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+    auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
         return a.iata == all || a.icao == all || db_name == all;
     });
-    return it == std::end(airport_cache) ? Airport() : *it;
+    return it == std::end(airports) ? Airport() : *it;
 }
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const std::string& iata) {
     std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airport_cache) {
+    for (const Airport& ap : airports) {
         double score = jaro_winkler_distance(iata, ap.iata);
         if (pq.size() < 5) {
             pq.emplace(std::make_shared<Airport>(ap), score);
@@ -295,7 +227,7 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const std::st
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const std::string& icao) {
     std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airport_cache) {
+    for (const Airport& ap : airports) {
         double score = jaro_winkler_distance(icao, ap.icao);
         if (pq.size() < 5) {
             pq.emplace(std::make_shared<Airport>(ap), score);
@@ -314,7 +246,7 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const std::st
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const std::string& name) {
     std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airport_cache) {
+    for (const Airport& ap : airports) {
         string ap_name = ap.name;
         std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
         double score = jaro_winkler_distance(name, ap_name);
@@ -335,7 +267,7 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const std::st
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const std::string& all) {
     std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airport_cache) {
+    for (const Airport& ap : airports) {
         string ap_name = ap.name;
         std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
         double score = std::max(
@@ -358,36 +290,185 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const std::str
 }
 
 
-idx_t Database::get_routecache_idx(idx_t oidx, idx_t didx) {
+idx_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
+    const std::map<uint16_t, idx_t> idx_id_map{
+        {1,0},{2,4},{3,7},{4,8},{5,10},{6,12},{7,14},{8,17},{9,21},{10,22},
+        {11,23},{12,24},{13,25},{14,29},{15,30},{16,32},{17,34},{18,36},{19,37},{20,38},
+        {21,39},{22,41},{23,42},{24,43},{25,46},{26,47},{27,48},{28,49},{29,50},{30,51},
+        {31,52},{32,53},{33,57},{34,59},{35,60},{36,61},{37,64},{38,66},{39,69},{40,72},
+        {41,73},{42,74},{43,75},{44,76},{45,77},{46,78},{47,79},{48,81},{49,82},{50,84},
+        {51,85},{52,89},{53,93},{55,99},{56,105},{58,106},{59,107},{60,108},{61,109},{62,112},
+        {63,115},{64,118},{66,120},{67,122},{68,124},{69,127},{71,129},{72,133},{73,137},{74,140},
+        {75,143},{76,146},{85,147},{86,148},{87,149},{89,151},{90,152},{91,153},{92,154},{93,155},
+        {94,157},{95,158},{96,159},{97,160},{99,161},{100,162},{101,163},{102,164},{103,166},{104,167},
+        {105,168},{106,169},{107,170},{108,171},{109,172},{110,173},{111,174},{112,175},{113,178},{114,180},
+        {115,182},{116,183},{117,184},{118,185},{119,186},{120,187},{124,190},{126,191},{127,192},{128,193},
+        {129,194},{130,195},{131,196},{132,197},{133,198},{134,199},{135,200},{136,201},{137,202},{138,203},
+        {139,204},{140,205},{141,206},{142,207},{143,208},{144,209},{145,210},{146,211},{147,212},{148,213},
+        {149,214},{150,216},{151,217},{152,218},{153,219},{154,220},{155,221},{156,222},{157,223},{158,224},
+        {159,225},{160,226},{161,227},{162,228},{163,229},{164,230},{165,231},{166,232},{167,234},{168,235},
+        {169,236},{170,238},{171,241},{172,242},{173,243},{177,246},{178,247},{179,248},{180,249},{181,250},
+        {182,251},{183,252},{184,253},{185,254},{186,255},{187,256},{189,257},{190,258},{191,259},{192,260},
+        {193,261},{194,262},{195,264},{196,265},{197,266},{198,267},{199,268},{200,269},{201,270},{202,272},
+        {203,273},{204,274},{205,276},{206,277},{207,278},{208,279},{209,280},{210,281},{211,282},{212,283},
+        {213,284},{214,285},{215,286},{216,287},{218,288},{219,289},{220,290},{221,291},{222,292},{226,293},
+        {227,296},{228,299},{229,300},{230,303},{231,304},{232,305},{233,307},{234,309},{241,310},{242,313},
+        {243,319},{244,320},{245,322},{246,323},{247,324},{248,325},{249,326},{250,328},{251,329},{252,330},
+        {253,331},{254,332},{255,333},{256,334},{257,335},{258,336},{259,337},{260,338},{266,339},{267,340},
+        {268,341},{269,343},{270,344},{271,345},{272,348},{273,349},{274,350},{275,351},{276,352},{277,354},
+        {281,355},{282,356},{283,357},{284,358},{285,359},{287,360},{288,362},{289,363},{290,364},{291,365},
+        {292,366},{293,367},{294,368},{295,369},{298,370},{299,371},{300,372},{302,374},{303,377},{304,379},
+        {305,380},{306,381},{307,383},{308,384},{309,385},{310,386},{311,390},{312,394},{313,395},{314,396},
+        {315,397},{316,399},{317,400},{318,401},{320,405},{321,407},{322,409},{323,413},{324,417},{325,418},
+        {326,419},{327,420},{328,421},{329,422},{330,423},{331,424},{332,425},{333,426},{334,427},{335,428},
+        {336,432},{337,434},{338,435},{339,436},{340,438},{341,439},{342,440},{343,441},{344,442},{345,443},
+        {346,444},{347,445},{348,446},{349,447},{350,448},{351,449},{352,450},{353,451},{355,453},{356,454},
+        {357,455},{358,457},{359,459},{360,460},{361,464},{362,468},{363,471},{364,474},{365,475},{366,477},
+        {367,479},{368,480},{369,482},{370,483},{371,484},{372,485},{373,486}
+    };
+    auto search = idx_id_map.find(id);
+    if (search != idx_id_map.end()) {
+        auto next = std::next(search);
+        if (next != idx_id_map.end()) {
+            if (priority > next->second - search->second - 1) priority = 0;
+        }
+        return search->second + priority;
+    }
+    return 0;
+};
+
+Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
+    const uint16_t missing_ids[] = {
+        54,57,65,70,77,78,79,80,81,82,
+        83,84,88,98,121,122,123,125,174,175,
+        176,188,217,223,224,225,235,236,237,
+        238,239,240,261,262,263,264,265,278,
+        279,280,286,296,297,301,319,354
+    };
+    if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Aircraft();
+    if (id > 373) return Aircraft();
+    return aircrafts[Database::get_aircraft_idx_by_id(id, priority)];
+}
+
+// TODO: allow priority to be passed in
+Aircraft Database::get_aircraft_by_shortname(const string& shortname) {
+    auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
+        return a.shortname == shortname && a.priority == 0;
+    });
+    return it == std::end(aircrafts) ? Aircraft() : *it;
+}
+
+Aircraft Database::get_aircraft_by_name(const string& name) {
+    auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
+        string db_name = a.name;
+        std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::tolower);
+        return db_name == name && a.priority == 0;
+    });
+    return it == std::end(aircrafts) ? Aircraft() : *it;
+}
+
+Aircraft Database::get_aircraft_by_all(const string& shortname) {
+    try {
+        uint16_t id = std::stoi(shortname);
+        Aircraft ac = get_aircraft_by_id(id, 0);
+        if (ac.valid) return ac;
+    } catch (std::invalid_argument& e) {
+    }
+    auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
+        string db_name = a.name;
+        std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::tolower);
+        return (a.shortname == shortname || db_name == shortname) && a.priority == 0;
+    });
+    return it == std::end(aircrafts) ? Aircraft() : *it;
+}
+
+std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_shortname(const string& name) {
+    std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
+    for (const Aircraft& ac : aircrafts) {
+        if (ac.priority != 0) continue;
+        double score = jaro_winkler_distance(name, ac.shortname);
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        }
+    }
+    std::vector<Aircraft::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_name(const string& name) {
+    std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
+    for (const Aircraft& ac : aircrafts) {
+        if (ac.priority != 0) continue;
+        string ac_name = ac.name;
+        std::transform(ac_name.begin(), ac_name.end(), ac_name.begin(), ::tolower);
+        double score = jaro_winkler_distance(name, ac_name);
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        }
+    }
+    std::vector<Aircraft::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_all(const string& all) {
+    std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
+    for (const Aircraft& ac : aircrafts) {
+        if (ac.priority != 0) continue;
+        string ac_name = ac.name;
+        std::transform(ac_name.begin(), ac_name.end(), ac_name.begin(), ::tolower);
+        double score = std::max(jaro_winkler_distance(all, ac.shortname), jaro_winkler_distance(all, ac_name));
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Aircraft>(ac), score);
+        }
+    }
+
+    std::vector<Aircraft::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+
+
+idx_t Database::get_dbroute_idx(idx_t oidx, idx_t didx) {
     if (oidx > didx) {
         return didx * (AIRPORT_COUNT - 1) - (didx * (didx + 1)) / 2 + oidx - 1;
     }
     return oidx * (AIRPORT_COUNT - 1) - (oidx * (oidx + 1)) / 2 + didx - 1;
 }
 
-idx_t Database::get_routecache_idx_by_ids(uint16_t oid, uint16_t did) {
+idx_t Database::get_dbroute_idx_by_ids(uint16_t oid, uint16_t did) {
     uint16_t i = get_airport_idx_by_id(oid);
     uint16_t j = get_airport_idx_by_id(did);
-    return get_routecache_idx(i, j);
+    return get_dbroute_idx(i, j);
 }
 
-Database::RouteCache Database::get_route_by_ids(uint16_t oid, uint16_t did) {
-    return route_cache[Database::get_routecache_idx_by_ids(oid, did)];
-}
-
-
-void Database::_debug() {
-    auto suggs = suggest_airport_by_all("hong kong");
-    for (const auto& sugg : suggs) {
-        std::cout << sugg.ap->iata << ":" << sugg.score << std::endl;
-    }
+Database::DBRoute Database::get_dbroute_by_ids(uint16_t oid, uint16_t did) {
+    return routes[Database::get_dbroute_idx_by_ids(oid, did)];
 }
 
 void init(string home_dir) {
     auto client = Database::Client();
-    client->insert(home_dir);
-    client->prepare_statements();
-    client->populate_cache();
+    client->populate_data(home_dir);
 }
 
 void _debug_query(string query) {

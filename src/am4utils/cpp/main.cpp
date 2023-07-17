@@ -70,15 +70,16 @@ int main() {
     // Airport ap0 = *Airport::search("id:3500").ap;
     // Airport ap1 = *Airport::search("EGLLL").ap;
     // AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
-    auto ap = Airport::search("hong kong");
-    auto ap_sugg = Airport::suggest(ap.parse_result);
-    for (auto &s : ap_sugg) {
-        cout << Airport::repr(*s.ap) << s.score << endl;
-    }
-    END_TIMER
     // cout << AircraftRoute::repr(ar) << endl;
-
-    Database::Client()->_debug();
+    
+    // const auto& db = Database::Client();
+    // auto ap = Aircraft::search("mc215");
+    // cout << Aircraft::repr(*ap.ac) << endl;
+    // auto ac_sugg = Aircraft::suggest(ap.parse_result);
+    // for (auto &s : ac_sugg) {
+    //     cout << Aircraft::repr(*s.ac) << s.score << endl;
+    // }
+    END_TIMER
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;
