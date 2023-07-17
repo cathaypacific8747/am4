@@ -66,14 +66,19 @@ int main() {
     // cout << campaign.estimate_pax_reputation() << endl;
 
     START_TIMER
-    Aircraft ac = *Aircraft::search("mc214").ac;
-    Airport ap0 = *Airport::search("vhhh").ap;
-    Airport ap1 = *Airport::search("egll").ap;
-    AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
+    // Aircraft ac = *Aircraft::search("mc214").ac;
+    // Airport ap0 = *Airport::search("id:3500").ap;
+    // Airport ap1 = *Airport::search("EGLLL").ap;
+    // AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
+    auto ap = Airport::search("hong kong");
+    auto ap_sugg = Airport::suggest(ap.parse_result);
+    for (auto &s : ap_sugg) {
+        cout << Airport::repr(*s.ap) << s.score << endl;
+    }
     END_TIMER
-    cout << AircraftRoute::repr(ar) << endl;
+    // cout << AircraftRoute::repr(ar) << endl;
 
-    // cout << Airport::repr(*Airport::search("id:3284").ap) << endl;
+    Database::Client()->_debug();
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;

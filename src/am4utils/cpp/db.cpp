@@ -1,8 +1,11 @@
 #include <iostream>
 #include <string>
 #include <duckdb.hpp>
+#include <algorithm>
+#include <queue>
 
 #include "include/db.hpp"
+#include "include/ext/jaro.hpp"
 
 using namespace duckdb;
 
@@ -77,31 +80,6 @@ void Database::insert(string home_dir) {
 }
 
 void Database::prepare_statements() {
-    get_airport_by_id = connection->Prepare("SELECT * FROM airports WHERE id = $1 LIMIT 1");
-    CHECK_SUCCESS(get_airport_by_id);
-
-    get_airport_by_iata = connection->Prepare("SELECT * FROM airports WHERE iata = $1 LIMIT 1"); // $1: expects uppercase
-    CHECK_SUCCESS(get_airport_by_iata);
-
-    get_airport_by_icao = connection->Prepare("SELECT * FROM airports WHERE icao = $1 LIMIT 1"); // $1: expects uppercase
-    CHECK_SUCCESS(get_airport_by_icao);
-
-    get_airport_by_name = connection->Prepare("SELECT * FROM airports WHERE upper(name) = $1 LIMIT 1");
-    CHECK_SUCCESS(get_airport_by_name);
-
-    get_airport_by_all = connection->Prepare("SELECT * FROM airports WHERE iata = $1 OR icao = $1 OR upper(name) = $1 LIMIT 1");
-    CHECK_SUCCESS(get_airport_by_all);
-
-    suggest_airport_by_iata = connection->Prepare("SELECT *, jaro_winkler_similarity(iata, $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
-    CHECK_SUCCESS(suggest_airport_by_iata);
-
-    suggest_airport_by_icao = connection->Prepare("SELECT *, jaro_winkler_similarity(icao, $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
-    CHECK_SUCCESS(suggest_airport_by_icao);
-
-    suggest_airport_by_name = connection->Prepare("SELECT *, jaro_winkler_similarity(upper(name), $1) AS score FROM airports ORDER BY score DESC LIMIT 5");
-    CHECK_SUCCESS(suggest_airport_by_name);
-
-
     get_aircraft_by_id = connection->Prepare("SELECT * FROM aircrafts WHERE id = $1 AND priority = $2 LIMIT 1");
     CHECK_SUCCESS(get_aircraft_by_id);
 
@@ -122,17 +100,12 @@ void Database::prepare_statements() {
 }
 
 void Database::populate_cache() {
-    auto result = connection->Query("SELECT id, lat, lng, rwy FROM airports;");
+    auto result = connection->Query("SELECT * FROM airports;");
     CHECK_SUCCESS(result);
-    int i = 0;
+    idx_t i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
-            airport_cache[i] = {
-                chunk->GetValue(0, j).GetValue<uint16_t>(),
-                chunk->GetValue(1, j).GetValue<double>(),
-                chunk->GetValue(2, j).GetValue<double>(),
-                chunk->GetValue(3, j).GetValue<uint16_t>()
-            };
+            airport_cache[i] = Airport(chunk, j);
         }
     }
 
@@ -151,6 +124,7 @@ void Database::populate_cache() {
     }
 }
 
+// assumes id actually exists!
 idx_t Database::get_airport_idx_by_id(uint16_t id) {
     // if (id > 3982) return 3906;
     // static const uint16_t breakpoints[] = {
@@ -243,8 +217,146 @@ idx_t Database::get_airport_idx_by_id(uint16_t id) {
     if (id < 3551) return id - 74;
     if (id < 3900) return id - 75;
     if (id < 3983) return id - 76;
-    return 3907;
+    return 3906;
 }
+
+Airport Database::get_airport_by_id(uint16_t id) {
+    const uint16_t missing_ids[] = {
+        52,178,248,318,538,542,544,552,558,562,
+        571,572,577,597,1110,1130,1162,1200,1249,1265,1306,
+        1310,1311,1313,1326,1328,1356,1358,1378,1381,1388,1391,
+        1468,1481,1513,1528,1532,1537,1540,1542,1543,1571,1592,
+        1598,1625,1683,1696,2382,2400,2533,2557,2559,2566,2573,
+        2577,2591,2597,2610,2627,2630,2647,2648,2656,2660,2662,
+        2664,2666,2667,2673,3053,3194,3507,3508,3550,3899
+    };
+    if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Airport();
+    if (id >= 3983) return Airport();
+    return airport_cache[Database::get_airport_idx_by_id(id)];
+}
+
+// TODO: use gperf
+Airport Database::get_airport_by_iata(const std::string& iata) {
+    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+        return a.iata == iata;
+    });
+    return it == std::end(airport_cache) ? Airport() : *it;
+}
+
+Airport Database::get_airport_by_icao(const std::string& icao) {
+    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+        return a.icao == icao;
+    });
+    return it == std::end(airport_cache) ? Airport() : *it;
+}
+
+Airport Database::get_airport_by_name(const std::string& name) {
+    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+        string db_name = a.name;
+        std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
+        return db_name == name;
+    });
+    return it == std::end(airport_cache) ? Airport() : *it;
+}
+
+Airport Database::get_airport_by_all(const std::string& all) {
+    try {
+        uint16_t id = std::stoi(all);
+        Airport ap = get_airport_by_id(id);
+        if (ap.valid) return ap;
+    } catch (std::invalid_argument& e) {
+    }
+    auto it = std::find_if(std::begin(airport_cache), std::end(airport_cache), [&](const Airport& a) {
+        string db_name = a.name;
+        std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
+        return a.iata == all || a.icao == all || db_name == all;
+    });
+    return it == std::end(airport_cache) ? Airport() : *it;
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const std::string& iata) {
+    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
+    for (const Airport& ap : airport_cache) {
+        double score = jaro_winkler_distance(iata, ap.iata);
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        }
+    }
+    std::vector<Airport::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const std::string& icao) {
+    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
+    for (const Airport& ap : airport_cache) {
+        double score = jaro_winkler_distance(icao, ap.icao);
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        }
+    }
+    std::vector<Airport::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const std::string& name) {
+    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
+    for (const Airport& ap : airport_cache) {
+        string ap_name = ap.name;
+        std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
+        double score = jaro_winkler_distance(name, ap_name);
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        }
+    }
+    std::vector<Airport::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const std::string& all) {
+    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
+    for (const Airport& ap : airport_cache) {
+        string ap_name = ap.name;
+        std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
+        double score = std::max(
+            std::max(jaro_winkler_distance(all, ap.iata), jaro_winkler_distance(all, ap.icao)),
+            jaro_winkler_distance(all, ap_name)
+        );
+        if (pq.size() < 5) {
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        } else if (score > pq.top().score) {
+            pq.pop();
+            pq.emplace(std::make_shared<Airport>(ap), score);
+        }
+    }
+    std::vector<Airport::Suggestion> suggestions;
+    while (!pq.empty()) {
+        suggestions.insert(suggestions.begin(), pq.top());
+        pq.pop();
+    }
+    return suggestions;
+}
+
 
 idx_t Database::get_routecache_idx(idx_t oidx, idx_t didx) {
     if (oidx > didx) {
@@ -263,8 +375,12 @@ Database::RouteCache Database::get_route_by_ids(uint16_t oid, uint16_t did) {
     return route_cache[Database::get_routecache_idx_by_ids(oid, did)];
 }
 
-void Database::_debug() {
 
+void Database::_debug() {
+    auto suggs = suggest_airport_by_all("hong kong");
+    for (const auto& sugg : suggs) {
+        std::cout << sugg.ap->iata << ":" << sugg.score << std::endl;
+    }
 }
 
 void init(string home_dir) {

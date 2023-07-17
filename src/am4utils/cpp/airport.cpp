@@ -33,81 +33,45 @@ Airport::ParseResult Airport::parse(const string& s) {
 
 Airport::SearchResult Airport::search(const string& s) {
     auto parse_result = Airport::ParseResult(Airport::parse(s));
-    duckdb::unique_ptr<duckdb::QueryResult> result;
+    Airport ap;
     switch (parse_result.search_type) {
         case Airport::SearchType::ALL:
-            result = Database::Client()->get_airport_by_all->Execute(parse_result.search_str.c_str());
+            ap = Database::Client()->get_airport_by_all(parse_result.search_str);
             break;
         case Airport::SearchType::IATA:
-            result = Database::Client()->get_airport_by_iata->Execute(parse_result.search_str.c_str());
+            ap = Database::Client()->get_airport_by_iata(parse_result.search_str);
             break;
         case Airport::SearchType::ICAO:
-            result = Database::Client()->get_airport_by_icao->Execute(parse_result.search_str.c_str());
+            ap = Database::Client()->get_airport_by_icao(parse_result.search_str);
             break;
         case Airport::SearchType::NAME:
-            result = Database::Client()->get_airport_by_name->Execute(parse_result.search_str.c_str());
+            ap = Database::Client()->get_airport_by_name(parse_result.search_str);
             break;
         case Airport::SearchType::ID:
-            result = Database::Client()->get_airport_by_id->Execute(std::stoi(parse_result.search_str));
+            ap = Database::Client()->get_airport_by_id(std::stoi(parse_result.search_str));
             break;
     }
-    CHECK_SUCCESS(result);
-    duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Airport::SearchResult(make_shared<Airport>(), parse_result);
-
-    return Airport::SearchResult(make_shared<Airport>(chunk, 0), parse_result);
+    return Airport::SearchResult(make_shared<Airport>(ap), parse_result);
 }
 
 // note: searchtype id will return no suggestions.
 std::vector<Airport::Suggestion> Airport::suggest(const Airport::ParseResult& parse_result) {
     std::vector<Airport::Suggestion> suggestions;
-    if (parse_result.search_type == Airport::SearchType::ALL) {
-        for (auto& stmt : {
-            Database::Client()->suggest_airport_by_iata.get(),
-            Database::Client()->suggest_airport_by_icao.get(),
-            Database::Client()->suggest_airport_by_name.get(),
-        }) {
-            auto result = stmt->Execute(parse_result.search_str.c_str());
-            CHECK_SUCCESS(result);
-            auto chunk = result->Fetch();
-            if (!chunk || chunk->size() == 0) continue;
-
-            for (idx_t i = 0; i < chunk->size(); i++) {
-                // TODO: ensure no duplicates
-                suggestions.emplace_back(
-                    make_shared<Airport>(chunk, i),
-                    chunk->GetValue(13, i).GetValue<double>()
-                );
-            }
-        }
-        std::partial_sort(suggestions.begin(), suggestions.begin() + 5, suggestions.end(), [](const Airport::Suggestion& a, const Airport::Suggestion& b) {
-            return a.score > b.score;
-        });
-        suggestions.resize(5);
-    } else {
-        duckdb::unique_ptr<duckdb::QueryResult> result;
-        switch (parse_result.search_type) {
-            case Airport::SearchType::IATA:
-                result = Database::Client()->suggest_airport_by_iata->Execute(parse_result.search_str.c_str());
-                break;
-            case Airport::SearchType::ICAO:
-                result = Database::Client()->suggest_airport_by_icao->Execute(parse_result.search_str.c_str());
-                break;
-            case Airport::SearchType::NAME:
-                result = Database::Client()->suggest_airport_by_name->Execute(parse_result.search_str.c_str());
-                break;
-            default:
-                return suggestions;
-        }
-        CHECK_SUCCESS(result);
-        while (auto chunk = result->Fetch()) {
-            for (idx_t i = 0; i < chunk->size(); i++) {
-                suggestions.emplace_back(
-                    make_shared<Airport>(chunk, i),
-                    chunk->GetValue(13, i).GetValue<double>()
-                );
-            }
-        }
+    switch (parse_result.search_type) {
+        case Airport::SearchType::ALL:
+            suggestions = Database::Client()->suggest_airport_by_all(parse_result.search_str);
+            break;
+        case Airport::SearchType::IATA:
+            suggestions = Database::Client()->suggest_airport_by_iata(parse_result.search_str);
+            break;
+        case Airport::SearchType::ICAO:
+            suggestions = Database::Client()->suggest_airport_by_icao(parse_result.search_str);
+            break;
+        case Airport::SearchType::NAME:
+            suggestions = Database::Client()->suggest_airport_by_name(parse_result.search_str);
+            break;
+        default:
+            return suggestions;
     }
     return suggestions;
 }
@@ -147,6 +111,7 @@ const string to_string(Airport::SearchType st) {
 }
 
 const string Airport::repr(const Airport& ap) {
+    if (!ap.valid) return "<Airport.INVALID>";
     return "<Airport." + to_string(ap.id) + " " + ap.iata + "|" + ap.icao + "|" + ap.name + "," +
     ap.country + " @ " + to_string(ap.lat) + "," + to_string(ap.lng) + " " +
     to_string(ap.rwy) + "ft " + to_string(ap.market) + "% $" + to_string(ap.hub_cost) + ">";

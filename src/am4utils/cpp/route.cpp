@@ -119,14 +119,14 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
 AircraftRoute::Stopover::Stopover() : exists(false) {}
 AircraftRoute::Stopover::Stopover(const Airport& airport, double full_distance) : airport(airport), full_distance(full_distance), exists(true) {}
 AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode) {
-    uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
-    
     const auto& db = Database::Client();
-    uint16_t candidate_id = 0;
+    Airport candidate = Airport();
     double candidate_distance = 99999;
+    
+    const uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
     const idx_t origin_idx = Database::get_airport_idx_by_id(origin.id);
     const idx_t destination_idx = Database::get_airport_idx_by_id(destination.id);
-    for (const auto& ap : db->airport_cache) {
+    for (const Airport& ap : db->airport_cache) {
         if (ap.rwy < rwy_requirement || ap.id == origin.id || ap.id == destination.id) continue;
         idx_t this_idx = Database::get_airport_idx_by_id(ap.id);
         double d_o = db->route_cache[Database::get_routecache_idx(origin_idx, this_idx)].distance;
@@ -134,18 +134,12 @@ AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airpor
         double d_d = db->route_cache[Database::get_routecache_idx(this_idx, destination_idx)].distance;
         if (d_d > aircraft.range || d_d < 100) continue;
         if (d_o + d_d < candidate_distance) {
-            candidate_id = ap.id;
+            candidate = ap;
             candidate_distance = d_o + d_d;
         }
     }
-    if (candidate_id == 0) return Stopover();
-
-    // TODO: remove db altogether!
-    auto result = Database::Client()->get_airport_by_id->Execute(candidate_id);
-    CHECK_SUCCESS(result);
-    duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Stopover();
-    return Stopover(Airport(chunk, 0), candidate_distance);
+    if (!candidate.valid) return Stopover();
+    return Stopover(candidate, candidate_distance);
 }
 
 const string AircraftRoute::Stopover::repr(const Stopover& stopover) {

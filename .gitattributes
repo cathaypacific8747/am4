@@ -1,3 +1,4 @@
 research/** linguist-vendored
 src/am4utils/stubs/** linguist-vendored
+src/am4utils/cpp/include/ext/** linguist-vendored
 src-v2-v3/** linguist-vendored
