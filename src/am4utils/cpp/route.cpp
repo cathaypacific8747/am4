@@ -42,13 +42,14 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
 
     acr.needs_stopover = acr.route.direct_distance > ac.range;
     acr.stopover = acr.needs_stopover ? Stopover::find_by_efficiency(acr.route.origin, acr.route.destination, ac, user.game_mode) : Stopover();
-    acr.load = user.load / 100;
+    if (acr.needs_stopover && !acr.stopover.exists) return acr;
+    double load = user.load / 100.0;
 
     #pragma warning(disable:4244)
     PaxDemand pd_pf = PaxDemand(
-        r.pax_demand.y / trips_per_day / acr.load,
-        r.pax_demand.j / trips_per_day / acr.load,
-        r.pax_demand.f / trips_per_day / acr.load
+        r.pax_demand.y / trips_per_day / load,
+        r.pax_demand.j / trips_per_day / load,
+        r.pax_demand.f / trips_per_day / load
     );
     #pragma warning(default:4244)
 
@@ -111,6 +112,9 @@ AircraftRoute AircraftRoute::from(const Route& r, const Aircraft& ac, uint16_t t
             );
             break;
     }
+    acr.income = acr.max_income * load;
+    acr.fuel = AircraftRoute::calc_fuel(acr.aircraft, acr.stopover.exists ? acr.stopover.full_distance : r.direct_distance, user);
+    acr.co2 = AircraftRoute::calc_co2(acr.aircraft, acr.stopover.exists ? acr.stopover.full_distance : r.direct_distance, load, user);
 
     acr.valid = true;
     return acr;
@@ -158,7 +162,6 @@ double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
 }
 
-// TODO: expose to pybind!
 double inline AircraftRoute::estimate_load(double reputation, double autoprice_ratio, bool has_stopover) {
     if (autoprice_ratio > 1) { // normal (sorta triangular?) distribution, [Z+(0: .00019, 1: .0068, 2: .0092), max: .001] * reputation
         if (has_stopover) {
@@ -175,6 +178,32 @@ double inline AircraftRoute::estimate_load(double reputation, double autoprice_r
         }
         return (base_load - 1) * autoprice_ratio + 1;
     }
+}
+
+double inline AircraftRoute::calc_fuel(const PurchasedAircraft& ac, double distance, const User& user, uint8_t ci) {
+    return (
+        (1 - user.fuel_training / 100.0) *
+        ceil(distance * 100.0) / 100.0 *
+        (ac.fuel_mod ? 0.9 : 1) *
+        ac.fuel
+    ) * (ci/500.0 + 0.6);
+}
+
+double inline AircraftRoute::calc_co2(const PurchasedAircraft& ac, double distance, double load, const User& user, uint8_t ci) {
+    return (
+        (1 - user.co2_training / 100.0) *
+        ceil(distance * 100.0) / 100.0 *
+        (ac.co2_mod ? 0.9 : 1) *
+        ac.co2 * (
+            ac.type == Aircraft::Type::CARGO ?
+            (ac.config.cargo_config.l / 100.0 * 0.7 / 1000.0 + ac.config.cargo_config.h / 100.0 / 500.0) * load * ac.capacity :
+            (ac.config.pax_config.y + ac.config.pax_config.j * 2 + ac.config.pax_config.f * 3) * load
+        ) + (
+            ac.type == Aircraft::Type::CARGO ?
+            ac.capacity :
+            ac.config.pax_config.y + ac.config.pax_config.j + ac.config.pax_config.f
+        )
+    ) * (ci/2000.0 + 0.9);
 }
 
 const string Route::repr(const Route& r) {
@@ -204,7 +233,8 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
                 break;
         }
         s += " stopover=" + AircraftRoute::Stopover::repr(ar.stopover);
-        s += " max_income=" + to_string(ar.max_income) + " load=" + to_string(ar.load);
+        s += " max_income=" + to_string(ar.max_income) + " income=" + to_string(ar.income);
+        s += " fuel=" + to_string(ar.fuel) + " co2=" + to_string(ar.co2);
         s += ">";
     } else {
         s = "<AircraftRoute INVALID>";
@@ -254,7 +284,9 @@ py::dict ac_route_to_dict(const AircraftRoute& ar) {
         "aircraft"_a = pac_to_dict(ar.aircraft),
         "ticket"_a = ticket_d,
         "max_income"_a = ar.max_income,
-        "load"_a = ar.load,
+        "income"_a = ar.income,
+        "fuel"_a = ar.fuel,
+        "co2"_a = ar.co2,
         "needs_stopover"_a = ar.needs_stopover,
         "stopover"_a = stopover_to_dict(ar.stopover)
     );
@@ -289,12 +321,16 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("aircraft", &AircraftRoute::aircraft)
         .def_readonly("ticket", &AircraftRoute::ticket)
         .def_readonly("max_income", &AircraftRoute::max_income)
-        .def_readonly("load", &AircraftRoute::load)
+        .def_readonly("income", &AircraftRoute::income)
+        .def_readonly("fuel", &AircraftRoute::fuel)
+        .def_readonly("co2", &AircraftRoute::co2)
         .def_readonly("needs_stopover", &AircraftRoute::needs_stopover)
         .def_readonly("stopover", &AircraftRoute::stopover)
         .def_readonly("valid", &AircraftRoute::valid)
         .def_static("create", &AircraftRoute::from, "route"_a, "ac"_a, "trips_per_day"_a = 1, py::arg_v("user", User(), "am4utils._core.game.User()"))
         .def_static("estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06, "has_stopover"_a = false)
+        .def_static("calc_fuel", &AircraftRoute::calc_fuel, "pac"_a, "distance"_a, py::arg_v("user", User(), "am4utils._core.game.User()"), "ci"_a = 200)
+        .def_static("calc_co2", &AircraftRoute::calc_co2, "pac"_a, "distance"_a, "load"_a, py::arg_v("user", User(), "am4utils._core.game.User()"), "ci"_a = 200)
         .def("__repr__", &Route::repr)
         .def("to_dict", &ac_route_to_dict);
 }

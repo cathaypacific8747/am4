@@ -43,7 +43,7 @@ def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion])
         }
     )
 @app.get("/ac/search", response_model=AircraftResponse, responses={404: {"model": AircraftNotFoundResponse}})
-async def ac_search(query: str = Query(description="Search query for aircraft. Examples: `id:1`, `shortname:b744`, `name:B747-400`, `b744`, `B747-400`")):
+async def ac_search(query: str = Query(description="Search query for aircraft. Examples: `id:1`, `shortname:b744`, `name:B747-400`, `b744`, `B747-400`, `b744[1]`, `b744[1,sfc]`, `b744[3,s,f]`")):
     ac = Aircraft.search(query)
     if ac.ac.valid:
         return {

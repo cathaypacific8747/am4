@@ -152,6 +152,9 @@ Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row
     img(chunk->GetValue(22, row).GetValue<string>()),
     wingspan(chunk->GetValue(23, row).GetValue<uint8_t>()),
     length(chunk->GetValue(24, row).GetValue<uint8_t>()),
+    speed_mod(false),
+    fuel_mod(false),
+    co2_mod(false),
     valid(true)
 {};
 
@@ -386,7 +389,9 @@ const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
 #include "include/binder.hpp"
 
 py::dict ac_to_dict(const Aircraft& ac) {
-    return py::dict(
+    py::gil_scoped_acquire acquire;
+    py::function round = py::module::import("builtins").attr("round");
+    py::dict d(
         "id"_a=ac.id,
         "shortname"_a=ac.shortname,
         "manufacturer"_a=ac.manufacturer,
@@ -395,9 +400,9 @@ py::dict ac_to_dict(const Aircraft& ac) {
         "priority"_a=ac.priority,
         "eid"_a=ac.eid,
         "ename"_a=ac.ename,
-        "speed"_a=ac.speed,
-        "fuel"_a=ac.fuel,
-        "co2"_a=ac.co2,
+        "speed"_a=round(ac.speed, 3),
+        "fuel"_a=round(ac.fuel, 3),
+        "co2"_a=round(ac.co2, 3),
         "cost"_a=ac.cost,
         "capacity"_a=ac.capacity,
         "rwy"_a=ac.rwy,
@@ -416,6 +421,8 @@ py::dict ac_to_dict(const Aircraft& ac) {
         "fuel_mod"_a=ac.fuel_mod,
         "co2_mod"_a=ac.co2_mod
     );
+    py::gil_scoped_release release;
+    return d;
 }
 
 py::dict pax_conf_to_dict(const PaxConfig& pc) {

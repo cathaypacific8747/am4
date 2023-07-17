@@ -31,7 +31,9 @@ class ACRouteDict(BaseModel):
     aircraft: PurchasedAircraftDict
     ticket: PaxTicketDict | CargoTicketDict | VIPTicketDict
     max_income: float
-    load: float
+    income: float
+    fuel: float
+    co2: float
     needs_stopover: bool
     stopover: StopoverDict | StopoverNonExistentDict
 

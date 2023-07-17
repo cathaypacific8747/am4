@@ -35,7 +35,9 @@ struct AircraftRoute {
     PurchasedAircraft aircraft;
     Ticket ticket;
     double max_income;
-    double load;
+    double income;
+    double co2;
+    double fuel;
     bool needs_stopover;
     bool valid;
     // vector<string> warnings;
@@ -57,5 +59,7 @@ struct AircraftRoute {
     static AircraftRoute from(const Route& r, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
     
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
+    static inline double calc_fuel(const PurchasedAircraft& ac, double distance, const User& user = User(), uint8_t ci = 200);
+    static inline double calc_co2(const PurchasedAircraft& ac, double distance, double load, const User& user = User(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };

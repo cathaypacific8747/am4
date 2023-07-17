@@ -350,7 +350,6 @@ Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
     return aircrafts[Database::get_aircraft_idx_by_id(id, priority)];
 }
 
-// TODO: allow priority to be passed in
 Aircraft Database::get_aircraft_by_shortname(const string& shortname, uint8_t priority) {
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
         return a.shortname == shortname && a.priority == priority;
@@ -489,6 +488,7 @@ void pybind_init_db(py::module_& m) {
             if (!home_dir.has_value()) {
                 py::gil_scoped_acquire acquire;
                 init(py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>()); // am4utils.__path__[0]
+                py::gil_scoped_release release;
             } else {
                 init(home_dir.value());
             }

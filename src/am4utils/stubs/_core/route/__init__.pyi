@@ -37,6 +37,10 @@ class AircraftRoute():
         pass
     def __repr__(self) -> str: ...
     @staticmethod
+    def calc_co2(pac: am4utils._core.aircraft.PurchasedAircraft, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
+    @staticmethod
+    def calc_fuel(pac: am4utils._core.aircraft.PurchasedAircraft, distance: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
+    @staticmethod
     def create(route: Route, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
     @staticmethod
     def estimate_load(reputation: float = 87, autoprice_ratio: float = 1.06, has_stopover: bool = False) -> float: ...
@@ -47,7 +51,17 @@ class AircraftRoute():
         :type: am4utils._core.aircraft.PurchasedAircraft
         """
     @property
-    def load(self) -> float:
+    def co2(self) -> float:
+        """
+        :type: float
+        """
+    @property
+    def fuel(self) -> float:
+        """
+        :type: float
+        """
+    @property
+    def income(self) -> float:
         """
         :type: float
         """
