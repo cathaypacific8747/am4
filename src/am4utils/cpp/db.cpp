@@ -3,7 +3,6 @@
 #include <duckdb.hpp>
 #include <algorithm>
 #include <queue>
-#include <optional>
 
 #include "include/db.hpp"
 #include "include/ext/jaro.hpp"
@@ -480,19 +479,36 @@ void _debug_query(string query) {
 
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
+#include <optional>
+#include <filesystem>
 
 void pybind_init_db(py::module_& m) {
     py::module_ m_db = m.def_submodule("db");
 
     m_db
         .def("init", [](std::optional<string> home_dir) {
+            py::gil_scoped_acquire acquire;
             if (!home_dir.has_value()) {
-                py::gil_scoped_acquire acquire;
-                init(py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>()); // am4utils.__path__[0]
-                py::gil_scoped_release release;
+                string hdir = py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>(); // am4utils.__path__[0]
+                py::function urlretrieve = py::module::import("urllib.request").attr("urlretrieve");
+                if (!std::filesystem::exists(hdir + "/data")) {
+                    std::cout << "WARN: data directory not found, creating..." << std::endl;
+                    std::filesystem::create_directory(hdir + "/data");
+                }
+                for (const std::string fn : {"airports.parquet", "aircrafts.parquet", "routes.parquet"}) {
+                    if (!std::filesystem::exists(hdir + "/data/" + fn)) {
+                        std::cout << "WARN: " << fn << " not found, downloading from GitHub..." << std::endl;
+                        urlretrieve(
+                            "https://github.com/cathaypacific8747/am4bot/releases/latest/download/" + fn,
+                            hdir + "/data/" + fn
+                        );
+                    }
+                }
+                init(hdir);
             } else {
                 init(home_dir.value());
             }
+            py::gil_scoped_release release;
         }, "home_dir"_a = py::none())
         .def("_debug_query", &_debug_query, "query"_a);
 

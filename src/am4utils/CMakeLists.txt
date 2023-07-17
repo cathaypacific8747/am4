@@ -12,6 +12,10 @@ if (NOT DEFINED BUILD_PYBIND)
     set(BUILD_PYBIND 1)
 endif()
 
+if (NOT DEFINED COPY_DATA)
+    set(COPY_DATA 0)
+endif()
+
 project(am4utils LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 include(libduckdb.cmake)
@@ -53,10 +57,11 @@ target_link_libraries(_core PRIVATE duckdb)
 
 install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION . OPTIONAL) # / is important!
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
-
+if (COPY_DATA)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
+endif()
 
 # debug executable
 add_executable(_core_executable

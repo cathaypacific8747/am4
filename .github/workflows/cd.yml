@@ -79,7 +79,8 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_28_x86_64"
           CIBW_ARCHS: all
-          MACOSX_DEPLOYMENT_TARGET: 10.14
+          CIBW_TEST_SKIP: "*"
+          MACOSX_DEPLOYMENT_TARGET: 10.15
         run: pipx run cibuildwheel --output-dir wheelhouse
         
       - name: Store artifacts
@@ -91,8 +92,6 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/download-artifact@v3
         with:

@@ -22,7 +22,7 @@
         {
             "label": "py: install",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m pip install --verbose \"src/am4utils/.[dev]\""
+            "command": "${command:python.interpreterPath} -m pip install --verbose \"src/am4utils/.[dev]\" --config-settings=cmake.define.COPY_DATA=1"
         },
         {
             "label": "py: reinstall",
