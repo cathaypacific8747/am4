@@ -70,6 +70,7 @@ __pycache__/
 .Python
 build/
 build-wsl/
+build-vscode/
 develop-eggs/
 dist/
 downloads/

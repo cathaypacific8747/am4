@@ -1,5 +1,6 @@
 #include <duckdb.hpp>
 #include <vector>
+// #include "airport.hpp"
 
 #define AIRPORT_COUNT 3907
 #define ROUTE_COUNT AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2
@@ -37,15 +38,26 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> suggest_aircraft_by_shortname;
     duckdb::unique_ptr<PreparedStatement> suggest_aircraft_by_name;
 
-    duckdb::unique_ptr<PreparedStatement> get_route_demands_by_id;
-
     struct AirportCache {
         uint16_t id;
         double lat;
         double lng;
         uint16_t rwy;
     };
-    AirportCache airport_cache[AIRPORT_COUNT]; // 125024 B, for stopovers
+    AirportCache airport_cache[AIRPORT_COUNT]; // 125,024 B, for stopovers
+    // Airport full_airport_cache[AIRPORT_COUNT];
+    static idx_t get_airport_idx_by_id(uint16_t id);
+
+    struct RouteCache {
+        uint16_t yd;
+        uint16_t jd;
+        uint16_t fd;
+        double distance;
+    };
+    RouteCache route_cache[ROUTE_COUNT]; // 91,564,452 B
+    static idx_t get_routecache_idx(idx_t oidx, idx_t didx);
+    idx_t get_routecache_idx_by_ids(uint16_t oid, uint16_t did);
+    RouteCache get_route_by_ids(uint16_t oid, uint16_t did);
     
     static shared_ptr<Database> default_client;
     static shared_ptr<Database> Client();
@@ -53,6 +65,8 @@ struct Database {
     void insert(string home_dir);
     void prepare_statements();
     void populate_cache();
+
+    void _debug();
 };
 
 void init(string home_dir);

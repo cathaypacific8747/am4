@@ -12,15 +12,17 @@ Route::Route() : direct_distance(0.0), valid(false) {};
 
 // creates a basic route, assignout aircraft or ticket information
 Route Route::create(const Airport& ap1, const Airport& ap2) {
-    auto result = _get_route_result(ap1.id, ap2.id);
+    if (ap1.id == ap2.id) throw std::invalid_argument("Cannot create route with same origin and destination");
 
-    auto chunk = result->Fetch();
-    if (!chunk || chunk->size() == 0) return Route();
-
+    Database::RouteCache route_cache = Database::Client()->get_route_by_ids(ap1.id, ap2.id);
     Route route;
     route.origin = ap1;
     route.destination = ap2;
-    route.pax_demand = PaxDemand(chunk, 0);
+    route.pax_demand = PaxDemand(
+        route_cache.yd,
+        route_cache.jd,
+        route_cache.fd
+    );
     route.direct_distance = calc_distance(ap1, ap2);
     route.valid = true;
     
@@ -119,15 +121,17 @@ AircraftRoute::Stopover::Stopover(const Airport& airport, double full_distance) 
 AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode) {
     uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
     
-    const auto& airport_cache = Database::Client()->airport_cache;
+    const auto& db = Database::Client();
     uint16_t candidate_id = 0;
     double candidate_distance = 99999;
-    for (int i = 0; i < AIRPORT_COUNT; i++) {
-        const auto& ap = airport_cache[i];
+    const idx_t origin_idx = Database::get_airport_idx_by_id(origin.id);
+    const idx_t destination_idx = Database::get_airport_idx_by_id(destination.id);
+    for (const auto& ap : db->airport_cache) {
         if (ap.rwy < rwy_requirement || ap.id == origin.id || ap.id == destination.id) continue;
-        double d_o = Route::calc_distance(ap.lat, ap.lng, origin.lat, origin.lng);
+        idx_t this_idx = Database::get_airport_idx_by_id(ap.id);
+        double d_o = db->route_cache[Database::get_routecache_idx(origin_idx, this_idx)].distance;
         if (d_o > aircraft.range || d_o < 100) continue;
-        double d_d = Route::calc_distance(ap.lat, ap.lng, destination.lat, destination.lng);
+        double d_d = db->route_cache[Database::get_routecache_idx(this_idx, destination_idx)].distance;
         if (d_d > aircraft.range || d_d < 100) continue;
         if (d_o + d_d < candidate_distance) {
             candidate_id = ap.id;
@@ -135,6 +139,8 @@ AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airpor
         }
     }
     if (candidate_id == 0) return Stopover();
+
+    // TODO: remove db altogether!
     auto result = Database::Client()->get_airport_by_id->Execute(candidate_id);
     CHECK_SUCCESS(result);
     duckdb::unique_ptr<duckdb::DataChunk> chunk = result->Fetch();
@@ -145,19 +151,6 @@ AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airpor
 const string AircraftRoute::Stopover::repr(const Stopover& stopover) {
     if (!stopover.exists) return "<Stopover NONEXISTENT>";
     return "<Stopover airport=" + Airport::repr(stopover.airport) + " full_distance=" + to_string(stopover.full_distance) + ">";
-}
-
-duckdb::unique_ptr<duckdb::QueryResult> inline Route::_get_route_result(uint16_t id0, uint16_t id1) {
-    if (id0 < id1) {
-        auto result = Database::Client()->get_route_demands_by_id->Execute(id0, id1);
-        CHECK_SUCCESS(result);
-        return result;
-    } else if (id0 > id1) {
-        auto result = Database::Client()->get_route_demands_by_id->Execute(id1, id0);
-        CHECK_SUCCESS(result);
-        return result;
-    }
-    throw std::invalid_argument("Cannot create route from same airport");
 }
 
 
@@ -252,13 +245,13 @@ py::dict ac_route_to_dict(const AircraftRoute& ar) {
     py::dict ticket_d;
     switch (ar.aircraft.type) {
         case Aircraft::Type::PAX:
-            ticket_d = paxticket_to_dict(ar.ticket.pax_ticket);
+            ticket_d = pax_ticket_to_dict(ar.ticket.pax_ticket);
             break;
         case Aircraft::Type::VIP:
-            ticket_d = vipticket_to_dict(ar.ticket.vip_ticket);
+            ticket_d = vip_ticket_to_dict(ar.ticket.vip_ticket);
             break;
         case Aircraft::Type::CARGO:
-            ticket_d = cargoticket_to_dict(ar.ticket.cargo_ticket);
+            ticket_d = cargo_ticket_to_dict(ar.ticket.cargo_ticket);
             break;
     }
 

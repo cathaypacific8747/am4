@@ -4,6 +4,6 @@
         "*.spec": "python",
     },
     "cmake.sourceDirectory": "${workspaceFolder}/src/am4utils",
-    "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build",
+    "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build-vscode",
     "C_Cpp.autoAddFileAssociations": false
 }

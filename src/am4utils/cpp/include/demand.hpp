@@ -11,7 +11,6 @@ struct PaxDemand {
 
     PaxDemand();
     PaxDemand(uint16_t y, uint16_t j, uint16_t f);
-    PaxDemand(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
 
     static const string repr(const PaxDemand& demand);
 };

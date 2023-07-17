@@ -25,7 +25,6 @@ struct Route {
     static Route create(const Airport& a0, const Airport& a1);
     AircraftRoute assign(const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User()) const;
     
-    static inline duckdb::unique_ptr<duckdb::QueryResult> _get_route_result(uint16_t id0, uint16_t id1);
     static inline double calc_distance(double lat1, double lon1, double lat2, double lon2);
     static inline double calc_distance(const Airport& a0, const Airport& a1);
     static const string repr(const Route& r);
