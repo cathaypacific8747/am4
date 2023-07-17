@@ -44,7 +44,7 @@ union Ticket {
 #if BUILD_PYBIND == 1
 #include "binder.hpp"
 
-py::dict pax_ticket_to_dict(const PaxTicket& ticket);
-py::dict cargo_ticket_to_dict(const CargoTicket& ticket);
-py::dict vip_ticket_to_dict(const VIPTicket& ticket);
+py::dict to_dict(const PaxTicket& ticket);
+py::dict to_dict(const CargoTicket& ticket);
+py::dict to_dict(const VIPTicket& ticket);
 #endif

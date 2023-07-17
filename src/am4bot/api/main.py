@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import am4utils
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
-from am4utils.route import Route
+from am4utils.route import Route, AircraftRoute
 from src.am4bot.api.models.aircraft import AircraftResponse, AircraftNotFoundResponse
 from src.am4bot.api.models.airport import AirportResponse, AirportNotFoundResponse
 from src.am4bot.api.models.route import RouteResponse, ACRouteResponse
@@ -97,6 +97,8 @@ async def route_info(
     route = Route.create(apsr0.ap, apsr1.ap)
     return {
         "status": "success",
+        "ap_origin": apsr0.ap.to_dict(),
+        "ap_destination": apsr1.ap.to_dict(),
         "route": route.to_dict()
     }
 
@@ -116,8 +118,11 @@ async def ac_route_info(
     if not acsr.ac.valid:
         return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
     
-    ac_route = Route.create(apsr0.ap, apsr1.ap).assign(acsr.ac)
+    ac_route = AircraftRoute.create(apsr0.ap, apsr1.ap, acsr.ac)
     return {
         "status": "success",
+        "ap_origin": apsr0.ap.to_dict(),
+        "ap_destination": apsr1.ap.to_dict(),
+        "ac": acsr.ac.to_dict(),
         "ac_route": ac_route.to_dict(),
     }

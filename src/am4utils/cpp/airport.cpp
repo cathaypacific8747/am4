@@ -120,7 +120,7 @@ const string Airport::repr(const Airport& ap) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
-py::dict ap_to_dict(const Airport& ap) {
+py::dict to_dict(const Airport& ap) {
     return py::dict(
         "id"_a=ap.id,
         "name"_a=ap.name,
@@ -158,7 +158,7 @@ void pybind_init_airport(py::module_& m) {
         .def_readonly("rwy_codes", &Airport::rwy_codes)
         .def_readonly("valid", &Airport::valid)
         .def("__repr__", &Airport::repr)
-        .def("to_dict", &ap_to_dict);
+        .def("to_dict", py::overload_cast<const Airport&>(&to_dict));
     
     py::enum_<Airport::SearchType>(ap_class, "SearchType")
         .value("ALL", Airport::SearchType::ALL)

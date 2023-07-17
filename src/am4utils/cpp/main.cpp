@@ -69,7 +69,7 @@ int main() {
     // Aircraft ac = *Aircraft::search("mc214").ac;
     // Airport ap0 = *Airport::search("id:3500").ap;
     // Airport ap1 = *Airport::search("EGLLL").ap;
-    // AircraftRoute ar = Route::create(ap0, ap1).assign(ac);
+    // AircraftRoute ar = AircraftRoute::create(ap0, ap1, ac);
     // cout << AircraftRoute::repr(ar) << endl;
     
     // const auto& db = Database::Client();

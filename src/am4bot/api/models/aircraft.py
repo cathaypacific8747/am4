@@ -49,12 +49,8 @@ class PaxConfigDict(BaseModel):
     j: int
     f: int
     algorithm: Literal["FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF", "NONE"]
-    
 
 class CargoConfigDict(BaseModel):
     l: int
     h: int
     algorithm: Literal["L", "H", "NONE"]
-
-class PurchasedAircraftDict(AircraftDict):
-    config: PaxConfigDict | CargoConfigDict

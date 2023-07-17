@@ -5,12 +5,23 @@ import typing
 __all__ = [
     "Aircraft",
     "CargoConfig",
-    "PaxConfig",
-    "PurchasedAircraft"
+    "PaxConfig"
 ]
 
 
 class Aircraft():
+    class Config():
+        @property
+        def cargo_config(self) -> CargoConfig:
+            """
+            :type: CargoConfig
+            """
+        @property
+        def pax_config(self) -> PaxConfig:
+            """
+            :type: PaxConfig
+            """
+        pass
     class ParseResult():
         @property
         def co2_mod(self) -> bool:
@@ -423,26 +434,5 @@ class PaxConfig():
     def y(self) -> int:
         """
         :type: int
-        """
-    pass
-class PurchasedAircraft(Aircraft):
-    class Config():
-        @property
-        def cargo_config(self) -> CargoConfig:
-            """
-            :type: CargoConfig
-            """
-        @property
-        def pax_config(self) -> PaxConfig:
-            """
-            :type: PaxConfig
-            """
-        pass
-    def __repr__(self) -> str: ...
-    def to_dict(self) -> dict: ...
-    @property
-    def config(self) -> PurchasedAircraft.Config:
-        """
-        :type: PurchasedAircraft.Config
         """
     pass

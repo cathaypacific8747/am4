@@ -37,23 +37,23 @@ class AircraftRoute():
         pass
     def __repr__(self) -> str: ...
     @staticmethod
-    def calc_co2(pac: am4utils._core.aircraft.PurchasedAircraft, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
+    def calc_co2(ac: am4utils._core.aircraft.Aircraft, cfg: am4utils._core.aircraft.Aircraft.Config, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
     @staticmethod
-    def calc_fuel(pac: am4utils._core.aircraft.PurchasedAircraft, distance: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
+    def calc_fuel(ac: am4utils._core.aircraft.Aircraft, distance: float, user: am4utils._core.game.User = am4utils._core.game.User(), ci: int = 200) -> float: ...
     @staticmethod
-    def create(route: Route, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
+    def create(ap0: am4utils._core.airport.Airport, ap1: am4utils._core.airport.Airport, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
     @staticmethod
     def estimate_load(reputation: float = 87, autoprice_ratio: float = 1.06, has_stopover: bool = False) -> float: ...
     def to_dict(self) -> dict: ...
     @property
-    def aircraft(self) -> am4utils._core.aircraft.PurchasedAircraft:
-        """
-        :type: am4utils._core.aircraft.PurchasedAircraft
-        """
-    @property
     def co2(self) -> float:
         """
         :type: float
+        """
+    @property
+    def config(self) -> am4utils._core.aircraft.Aircraft.Config:
+        """
+        :type: am4utils._core.aircraft.Aircraft.Config
         """
     @property
     def fuel(self) -> float:
@@ -98,24 +98,13 @@ class AircraftRoute():
     pass
 class Route():
     def __repr__(self) -> str: ...
-    def assign(self, ac: am4utils._core.aircraft.Aircraft, trips_per_day: int = 1, user: am4utils._core.game.User = am4utils._core.game.User()) -> AircraftRoute: ...
     @staticmethod
-    def create(ap1: am4utils._core.airport.Airport, ap2: am4utils._core.airport.Airport) -> Route: ...
+    def create(ap0: am4utils._core.airport.Airport, ap1: am4utils._core.airport.Airport) -> Route: ...
     def to_dict(self) -> dict: ...
-    @property
-    def destination(self) -> am4utils._core.airport.Airport:
-        """
-        :type: am4utils._core.airport.Airport
-        """
     @property
     def direct_distance(self) -> float:
         """
         :type: float
-        """
-    @property
-    def origin(self) -> am4utils._core.airport.Airport:
-        """
-        :type: am4utils._core.airport.Airport
         """
     @property
     def pax_demand(self) -> am4utils._core.demand.PaxDemand:

@@ -158,7 +158,7 @@ Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row
     valid(true)
 {};
 
-const string to_string(Aircraft::Type type) {
+inline const string to_string(Aircraft::Type type) {
     switch(type) {
         case Aircraft::Type::PAX:
             return "PAX";
@@ -171,7 +171,7 @@ const string to_string(Aircraft::Type type) {
     }
 }
 
-const string to_string(Aircraft::SearchType searchtype) {
+inline const string to_string(Aircraft::SearchType searchtype) {
     switch (searchtype) {
         case Aircraft::SearchType::ALL:
             return "ALL";
@@ -368,27 +368,10 @@ const string CargoConfig::repr(const CargoConfig& config) {
 }
 
 
-const string PurchasedAircraft::repr(const PurchasedAircraft& ac) {
-    string result;
-    result += "<PurchasedAircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname;
-    switch (ac.type) {
-        case Aircraft::Type::VIP:
-        case Aircraft::Type::PAX:
-            result += " config.pax_config=" + PaxConfig::repr(ac.config.pax_config);
-            break;
-        case Aircraft::Type::CARGO:
-            result += " config.cargo_config=" + CargoConfig::repr(ac.config.cargo_config);
-            break;
-    }
-    
-    result += " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
-    return result;
-}
-
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
-py::dict ac_to_dict(const Aircraft& ac) {
+py::dict to_dict(const Aircraft& ac) {
     py::gil_scoped_acquire acquire;
     py::function round = py::module::import("builtins").attr("round");
     py::dict d(
@@ -425,7 +408,7 @@ py::dict ac_to_dict(const Aircraft& ac) {
     return d;
 }
 
-py::dict pax_conf_to_dict(const PaxConfig& pc) {
+py::dict to_dict(const PaxConfig& pc) {
     return py::dict(
         "y"_a=pc.y,
         "j"_a=pc.j,
@@ -434,18 +417,12 @@ py::dict pax_conf_to_dict(const PaxConfig& pc) {
     );
 }
 
-py::dict cargo_conf_to_dict(const CargoConfig& cc) {
+py::dict to_dict(const CargoConfig& cc) {
     return py::dict(
         "l"_a=cc.l,
         "h"_a=cc.h,
         "algorithm"_a=to_string(cc.algorithm)
     );
-}
-
-py::dict pac_to_dict(const PurchasedAircraft& pac) {
-    py::dict d = ac_to_dict(pac);
-    d["config"] = pac.type == Aircraft::Type::PAX ? pax_conf_to_dict(pac.config.pax_config) : cargo_conf_to_dict(pac.config.cargo_config);
-    return d;
 }
 
 void pybind_init_aircraft(py::module_& m) {
@@ -456,6 +433,9 @@ void pybind_init_aircraft(py::module_& m) {
         .value("PAX", Aircraft::Type::PAX)
         .value("CARGO", Aircraft::Type::CARGO)
         .value("VIP", Aircraft::Type::VIP);
+    py::class_<Aircraft::Config>(ac_class, "Config")
+        .def_readonly("pax_config", &Aircraft::Config::pax_config)
+        .def_readonly("cargo_config", &Aircraft::Config::cargo_config);
     ac_class
         .def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
@@ -487,7 +467,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("co2_mod", &Aircraft::co2_mod)
         .def_readonly("valid", &Aircraft::valid)
         .def("__repr__", &Aircraft::repr)
-        .def("to_dict", &ac_to_dict);
+        .def("to_dict", py::overload_cast<const Aircraft&>(&to_dict));
 
     py::enum_<Aircraft::SearchType>(ac_class, "SearchType")
         .value("ALL", Aircraft::SearchType::ALL)
@@ -527,7 +507,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("valid", &PaxConfig::valid)
         .def_readonly("algorithm", &PaxConfig::algorithm)
         .def("__repr__", &PaxConfig::repr)
-        .def("to_dict", &pax_conf_to_dict);
+        .def("to_dict", py::overload_cast<const PaxConfig&>(&to_dict));
 
     py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
     py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
@@ -539,15 +519,6 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("valid", &CargoConfig::valid)
         .def_readonly("algorithm", &CargoConfig::algorithm)
         .def("__repr__", &CargoConfig::repr)
-        .def("to_dict", &cargo_conf_to_dict);
-
-    py::class_<PurchasedAircraft, shared_ptr<PurchasedAircraft>, Aircraft> p_ac_class(m_ac, "PurchasedAircraft");
-    py::class_<PurchasedAircraft::Config>(p_ac_class, "Config")
-        .def_readonly("pax_config", &PurchasedAircraft::Config::pax_config)
-        .def_readonly("cargo_config", &PurchasedAircraft::Config::cargo_config);
-    p_ac_class
-        .def_readonly("config", &PurchasedAircraft::config)
-        .def("__repr__", &PurchasedAircraft::repr)
-        .def("to_dict", &pac_to_dict);
+        .def("to_dict", py::overload_cast<const CargoConfig&>(&to_dict));
 }
 #endif

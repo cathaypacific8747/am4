@@ -15,15 +15,12 @@ using std::vector;
 struct AircraftRoute;
 
 struct Route {
-    Airport origin;
-    Airport destination;
     PaxDemand pax_demand;
     double direct_distance;
     bool valid;
     
     Route();
     static Route create(const Airport& a0, const Airport& a1);
-    AircraftRoute assign(const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User()) const;
     
     static inline double calc_distance(double lat1, double lon1, double lat2, double lon2);
     static inline double calc_distance(const Airport& a0, const Airport& a1);
@@ -32,16 +29,14 @@ struct Route {
 
 struct AircraftRoute {
     Route route;
-    PurchasedAircraft aircraft;
+    Aircraft::Type _ac_type;
+    Aircraft::Config config;
     Ticket ticket;
     double max_income;
     double income;
-    double co2;
     double fuel;
+    double co2;
     bool needs_stopover;
-    bool valid;
-    // vector<string> warnings;
-
     struct Stopover {
         Airport airport;
         double full_distance;
@@ -54,12 +49,13 @@ struct AircraftRoute {
         const static string repr(const Stopover& s);
     };
     Stopover stopover;
+    bool valid;
 
     AircraftRoute();
-    static AircraftRoute from(const Route& r, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
+    static AircraftRoute create(const Airport& a0, const Airport& a1, const Aircraft& ac, uint16_t trips_per_day = 1, const User& user = User());
     
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
-    static inline double calc_fuel(const PurchasedAircraft& ac, double distance, const User& user = User(), uint8_t ci = 200);
-    static inline double calc_co2(const PurchasedAircraft& ac, double distance, double load, const User& user = User(), uint8_t ci = 200);
+    static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::Config& cfg, double distance, double load, const User& user = User(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
