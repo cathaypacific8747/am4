@@ -10,12 +10,17 @@
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
-
-shared_ptr<Database> Database::Client() {
+shared_ptr<Database> Database::Client(const string& home_dir) {
     if (!default_client) {
         default_client = make_shared<Database>();
-        default_client->database = make_uniq<DuckDB>(":memory:");
+        default_client->database = make_uniq<DuckDB>(home_dir + "/data/main.db");
         default_client->connection = make_uniq<Connection>(*default_client->database);
+    }
+    return default_client;
+}
+shared_ptr<Database> Database::Client() {
+    if (!default_client) {
+        Database::Client(".");
     }
     return default_client;
 }
@@ -466,7 +471,7 @@ Database::DBRoute Database::get_dbroute_by_ids(uint16_t oid, uint16_t did) {
 }
 
 void init(string home_dir) {
-    auto client = Database::Client();
+    auto client = Database::Client(home_dir);
     client->populate_data(home_dir);
 }
 

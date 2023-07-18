@@ -107,7 +107,7 @@ User::User() :
     load(87)
 {}
 
-const string to_string(User::GameMode game_mode) {
+inline const string to_string(User::GameMode game_mode) {
     switch (game_mode) {
         case User::GameMode::EASY:
             return "EASY";

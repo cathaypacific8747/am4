@@ -58,6 +58,7 @@ struct Database {
     
     static shared_ptr<Database> default_client;
     static shared_ptr<Database> Client();
+    static shared_ptr<Database> Client(const string& home_dir);
 
     void populate_data(const string& home_dir);
 };

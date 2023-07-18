@@ -284,7 +284,7 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, dou
     }
 }
 
-const string to_string(PaxConfig::Algorithm algorithm) {
+inline const string to_string(PaxConfig::Algorithm algorithm) {
     switch (algorithm) {
         case PaxConfig::Algorithm::FJY:
             return "FJY";
@@ -350,7 +350,7 @@ CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capac
     ); // low priority is always more profitable
 }
 
-const string to_string(CargoConfig::Algorithm algorithm) {
+inline const string to_string(CargoConfig::Algorithm algorithm) {
     switch (algorithm) {
         case CargoConfig::Algorithm::L:
             return "L";

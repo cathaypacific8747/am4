@@ -93,7 +93,7 @@ Airport::Airport(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) 
     rwy_codes(chunk->GetValue(12, row).GetValue<string>()),
     valid(true) {}
 
-const string to_string(Airport::SearchType st) {
+inline const string to_string(Airport::SearchType st) {
     switch (st) {
         case Airport::SearchType::ALL:
             return "ALL";

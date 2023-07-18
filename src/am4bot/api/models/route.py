@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from pydantic import BaseModel, Field
 from src.am4bot.api.models.aircraft import AircraftDict, PaxConfigDict, CargoConfigDict
 from src.am4bot.api.models.airport import AirportDict
@@ -28,14 +28,19 @@ class StopoverNonExistentDict(BaseModel):
 
 class ACRouteDict(BaseModel):
     route: RouteDict
-    config: PaxConfigDict | CargoConfigDict
-    ticket: PaxTicketDict | CargoTicketDict | VIPTicketDict
-    max_income: float
-    income: float
-    fuel: float
-    co2: float
-    needs_stopover: bool
-    stopover: StopoverDict | StopoverNonExistentDict
+    config: Optional[PaxConfigDict | CargoConfigDict]
+    ticket: Optional[PaxTicketDict | CargoTicketDict | VIPTicketDict]
+    max_income: Optional[float]
+    income: Optional[float]
+    fuel: Optional[float]
+    co2: Optional[float]
+    acheck_cost: Optional[float]
+    repair_cost: Optional[float]
+    profit: Optional[float]
+    flight_time: Optional[float]
+    needs_stopover: Optional[bool]
+    stopover: Optional[StopoverDict | StopoverNonExistentDict]
+    warnings: list[Literal["ERR_DISTANCE_ABOVE_SPECIFIED", "ERR_DISTANCE_TOO_LONG", "ERR_DISTANCE_TOO_SHORT", "REDUCED_CONTRIBUTION", "ERR_NO_STOPOVER", "ERR_FLIGHT_TIME_ABOVE_SPECIFIED", "ERR_INSUFFICIENT_DEMAND"]]
 
 class ACRouteResponse(BaseModel):
     status: str = Field("success", frozen=True)
@@ -43,3 +48,11 @@ class ACRouteResponse(BaseModel):
     ap_destination: AirportDict
     ac: AircraftDict
     ac_route: ACRouteDict
+
+class DestinationDict(BaseModel):
+    airport: AirportDict
+    ac_route: RouteDict
+
+class ACRouteFindResponse(BaseModel):
+    status: str = Field("success", frozen=True)
+    destinations: list[DestinationDict]

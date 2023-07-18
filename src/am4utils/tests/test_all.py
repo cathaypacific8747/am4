@@ -8,7 +8,7 @@ from am4utils.aircraft import (
     PaxConfig, CargoConfig
 )
 from am4utils.airport import Airport
-from am4utils.route import Route, AircraftRoute
+from am4utils.route import Route, AircraftRoute, find_routes
 from am4utils.game import Campaign, User
 
 init()
@@ -64,11 +64,11 @@ def test_aircraft_engine_modifier():
     assert a0.ac.id == a1.ac.id == a.ac.id == 1
     assert a0.ac.eid == a.ac.eid == 4
     assert a1.ac.eid == 2
-    assert abs(a1.ac.fuel - 21.21) < 0.001
-    assert abs(a1.ac.co2 - 0.18) < 0.001
-    assert abs(a1sfc.ac.speed / a1.ac.speed - 1.1) < 0.001
-    assert abs(a1sfc.ac.fuel / a1.ac.fuel - 0.9) < 0.001
-    assert abs(a1sfc.ac.co2 / a1.ac.co2 - 0.9) < 0.001
+    assert a1.ac.fuel == pytest.approx(21.21)
+    assert a1.ac.co2 == pytest.approx(0.18)
+    assert a1sfc.ac.speed / a1.ac.speed == pytest.approx(1.1)
+    assert a1sfc.ac.fuel / a1.ac.fuel == pytest.approx(0.9)
+    assert a1sfc.ac.co2 / a1.ac.co2 == pytest.approx(0.9)
 
 ## airport tests
 @pytest.mark.parametrize("inp", [
@@ -168,13 +168,78 @@ def test_route_stopover():
     assert r.needs_stopover is True
     assert r.stopover.exists is True
     assert r.stopover.airport.iata == "PLX"
-    assert 0.00455 < r.stopover.full_distance - r.route.direct_distance < 0.00475
+    assert r.stopover.full_distance - r.route.direct_distance == pytest.approx(0.00465903702)
 
     r = AircraftRoute.create(ap0, Airport.search('TNR').ap, ac1)
     assert r.needs_stopover is True
     assert r.stopover.exists is True
     assert r.stopover.airport.iata == "GAN"
-    assert 7.5 < r.stopover.full_distance - r.route.direct_distance < 7.6
+    assert r.stopover.full_distance - r.route.direct_distance == pytest.approx(7.550770485)
+
+def test_route_above_specified():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('b744').ac
+    options = AircraftRoute.Options(max_distance=1000)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
+    assert r.valid is False
+    assert AircraftRoute.Warning.ERR_DISTANCE_ABOVE_SPECIFIED in r.warnings
+
+def test_route_too_long():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('c172').ac
+    r = AircraftRoute.create(ap0, ap1, ac)
+    assert r.valid is False
+    assert AircraftRoute.Warning.ERR_DISTANCE_TOO_LONG in r.warnings
+
+def test_route_too_short():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('VMMC').ap
+    ac = Aircraft.search('b744').ac
+    r = AircraftRoute.create(ap0, ap1, ac)
+    assert r.valid is False
+    assert AircraftRoute.Warning.ERR_DISTANCE_TOO_SHORT in r.warnings
+
+def test_route_reduced_contribution():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('RCKH').ap
+    ac = Aircraft.search('b744').ac
+    r = AircraftRoute.create(ap0, ap1, ac)
+    assert AircraftRoute.Warning.REDUCED_CONTRIBUTION in r.warnings
+
+def test_route_no_stopover():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('FAEL').ap
+    ac = Aircraft.search('mc214').ac
+    r = AircraftRoute.create(ap0, ap1, ac)
+    assert AircraftRoute.Warning.ERR_NO_STOPOVER in r.warnings
+
+def test_route_flight_time_above_specified():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('b744').ac
+    options = AircraftRoute.Options(max_flight_time=1)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
+    assert r.valid is False
+    assert AircraftRoute.Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED in r.warnings
+
+def test_route_insufficient_demand():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('b744').ac
+    options = AircraftRoute.Options(trips_per_day=100)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
+    assert AircraftRoute.Warning.ERR_INSUFFICIENT_DEMAND in r.warnings
+
+def test_find_routes():
+    ap0 = Airport.search('VHHH').ap
+    ac = Aircraft.search('mc214').ac
+    dests = find_routes(ap0, ac)
+    assert len(dests) == 2248
+    assert dests[0].airport.iata == "ZND"
+    assert dests[0].ac_route.route.direct_distance == pytest.approx(10909.51)
+
 
 # game tests
 def test_default_user():

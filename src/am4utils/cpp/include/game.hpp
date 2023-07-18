@@ -59,7 +59,7 @@ struct User {
     static const string repr(const User& r);
 };
 
-const string to_string(User::GameMode game_mode);
+inline const string to_string(User::GameMode game_mode);
 
 struct Guild {
     uint64_t id;

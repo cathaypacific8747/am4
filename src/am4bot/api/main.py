@@ -1,14 +1,14 @@
 from fastapi import FastAPI, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import am4utils
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
-from am4utils.route import Route, AircraftRoute
+from am4utils.route import Route, AircraftRoute, find_routes
 from src.am4bot.api.models.aircraft import AircraftResponse, AircraftNotFoundResponse
 from src.am4bot.api.models.airport import AirportResponse, AirportNotFoundResponse
-from src.am4bot.api.models.route import RouteResponse, ACRouteResponse
+from src.am4bot.api.models.route import RouteResponse, ACRouteResponse, ACRouteFindResponse
 
 app = FastAPI()
 
@@ -126,3 +126,23 @@ async def ac_route_info(
         "ac": acsr.ac.to_dict(),
         "ac_route": ac_route.to_dict(),
     }
+
+@app.get("/ac_route/find", response_model=ACRouteFindResponse, responses={404: {"model": AirportNotFoundResponse | AircraftNotFoundResponse}})
+async def ac_route_find_routes(
+    ap0: str = Query(description="Origin airport"),
+    ac: str = Query(description="Aircraft")
+):
+    apsr0 = Airport.search(ap0)
+    if not apsr0.ap.valid:
+        return construct_apnf_response("ap0", Airport.suggest(apsr0.parse_result))
+    acsr = Aircraft.search(ac)
+    if not acsr.ac.valid:
+        return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
+    
+    destinations = find_routes(apsr0.ap, acsr.ac)
+    return ORJSONResponse(
+        content={
+            "status": "success",
+            "destinations": [destination.to_dict() for destination in destinations]
+        }
+    )
