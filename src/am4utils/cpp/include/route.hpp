@@ -79,11 +79,11 @@ struct AircraftRoute {
     bool valid;
 
     AircraftRoute();
-    static AircraftRoute create(const Airport& a0, const Airport& a1, const Aircraft& ac, const Options& options = Options(), const User& user = User());
+    static AircraftRoute create(const Airport& a0, const Airport& a1, const Aircraft& ac, const Options& options = Options(), const User& user = User::Default());
     
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
-    static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User(), uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::Config& cfg, double distance, double load, const User& user = User(), uint8_t ci = 200);
+    static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::Config& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
 
@@ -94,4 +94,4 @@ struct Destination {
     Destination(const Airport& destination, const AircraftRoute& route);
 };
 
-vector<Destination> find_routes(const Airport& origin, const Aircraft& aircraft, const AircraftRoute::Options& options = AircraftRoute::Options(), const User& user = User());
+vector<Destination> find_routes(const Airport& origin, const Aircraft& aircraft, const AircraftRoute::Options& options = AircraftRoute::Options(), const User& user = User::Default());

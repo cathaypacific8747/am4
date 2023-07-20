@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse, ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +25,10 @@ app.add_middleware(
 # on startup
 @app.on_event("startup")
 async def startup():
-    am4utils.db.init()
+    if (os.environ.get("PRODUCTION") == '1'):
+        am4utils.db.init()
+    else:
+        am4utils.db.init(db_name='main_debug')
 
 
 

@@ -1,7 +1,6 @@
 import pytest
 
-import am4utils
-from am4utils.db import init
+from am4utils.db import init, reset
 from am4utils.demand import CargoDemand
 from am4utils.aircraft import (
     Aircraft,
@@ -11,7 +10,8 @@ from am4utils.airport import Airport
 from am4utils.route import Route, AircraftRoute, find_routes
 from am4utils.game import Campaign, User
 
-init()
+init(db_name='main_test')
+reset()
 
 ## aircraft tests
 @pytest.mark.parametrize("inp", [
@@ -240,15 +240,10 @@ def test_find_routes():
     assert dests[0].airport.iata == "ZND"
     assert dests[0].ac_route.route.direct_distance == pytest.approx(10909.51)
 
+def test_load():
+    assert AircraftRoute.estimate_load() == pytest.approx(0.7867845)
 
 # game tests
-def test_default_user():
-    c = User()
-    assert c.game_mode == User.GameMode.EASY
-    assert c.fuel_price == 700
-    assert c.co2_price == 120
-    assert c.load == 87
-
 def test_campaign():
     c = Campaign.parse("c1, e")
     assert c.pax_activated == Campaign.Airline.C1_24HR
@@ -278,5 +273,34 @@ def test_campaign_reputation():
     rep = c.estimate_pax_reputation()
     assert rep == 45 + 10
 
-def test_load():
-    assert AircraftRoute.estimate_load() == 0.7867845
+def test_default_user():
+    u = User.Default()
+    ur = User.Default(True)
+    assert u.game_mode == User.GameMode.EASY
+    assert ur.game_mode == User.GameMode.REALISM
+    assert u.fuel_price == 700
+    assert u.co2_price == 120
+    assert u.load == 87
+
+def test_create_user():
+    u = User.create("test_username", "<TODO:hashed_password>", 69, "test_gamename")
+    assert u.username == "test_username"
+    assert u.game_id == 69
+    assert u.game_name == "test_gamename"
+    assert u.game_mode == User.GameMode.EASY
+    assert u.discord_id == 0
+
+    u0 = User.from_id(u.id)
+    assert u0.id == u.id
+
+    u1 = User.from_username("test_username")
+    assert u1.id == u.id
+
+    u2 = User.from_game_id(69)
+    assert u2.id == u.id
+
+    u3 = User.from_game_name("test_gamename")
+    assert u3.id == u.id
+
+    u4 = User.from_discord_id(0)
+    assert u4.id == u.id

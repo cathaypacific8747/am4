@@ -10,24 +10,74 @@
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
-shared_ptr<Database> Database::Client(const string& home_dir) {
+shared_ptr<Database> Database::Client(const string& home_dir, const string& db_name) {
     if (!default_client) {
         default_client = make_shared<Database>();
-        default_client->database = make_uniq<DuckDB>(home_dir + "/data/main.db");
+        default_client->database = make_uniq<DuckDB>(home_dir + "/data/" + db_name + ".db");
         default_client->connection = make_uniq<Connection>(*default_client->database);
+
+        auto result = default_client->connection->Query("SET home_directory = '" + home_dir + "';");
+        CHECK_SUCCESS(result);
     }
     return default_client;
 }
 shared_ptr<Database> Database::Client() {
     if (!default_client) {
-        Database::Client(".");
+        Database::Client(".", "main");
     }
     return default_client;
 }
 
-void Database::populate_data(const string& home_dir) {
-    CHECK_SUCCESS(connection->Query("SET home_directory = '" + home_dir + "';"));
+void Database::populate_database() {
+    auto result = connection->Query(
+        "CREATE TABLE IF NOT EXISTS users ("
+        "  id                UUID PRIMARY KEY NOT NULL DEFAULT uuid(),"
+        "  username          VARCHAR UNIQUE NOT NULL DEFAULT '',"
+        "  password          VARCHAR NOT NULL DEFAULT '',"
+        "  game_id           UBIGINT NOT NULL DEFAULT 0,"
+        "  game_name         VARCHAR NOT NULL DEFAULT '',"
+        "  game_mode         BOOLEAN NOT NULL DEFAULT FALSE,"
+        "  discord_id        UBIGINT NOT NULL DEFAULT 0,"
+        "  wear_training     UTINYINT NOT NULL DEFAULT 0,"
+        "  repair_training   UTINYINT NOT NULL DEFAULT 0,"
+        "  l_training        UTINYINT NOT NULL DEFAULT 0,"
+        "  h_training        UTINYINT NOT NULL DEFAULT 0,"
+        "  fuel_training     UTINYINT NOT NULL DEFAULT 0,"
+        "  co2_training      UTINYINT NOT NULL DEFAULT 0,"
+        "  fuel_price        USMALLINT NOT NULL DEFAULT 700,"
+        "  co2_price         UTINYINT NOT NULL DEFAULT 120,"
+        "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
+        "  load              DOUBLE NOT NULL DEFAULT 87,"
+        "  role              VARCHAR NOT NULL DEFAULT 'user',"
+        ");"
+    );
+    CHECK_SUCCESS(result);
+    result = connection->Query("CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, game_id, game_name, discord_id);");
+    CHECK_SUCCESS(result);
 
+    insert_user = connection->Prepare(INSERT_USER_STATEMENT);
+    CHECK_SUCCESS(insert_user);
+
+    get_user_by_id = connection->Prepare(SELECT_USER_STATEMENT("id"));
+    CHECK_SUCCESS(get_user_by_id);
+
+    get_user_by_username = connection->Prepare(SELECT_USER_STATEMENT("username"));
+    CHECK_SUCCESS(get_user_by_username);
+
+    get_user_by_discord_id = connection->Prepare(SELECT_USER_STATEMENT("discord_id"));
+    CHECK_SUCCESS(get_user_by_discord_id);
+
+    get_user_by_game_id = connection->Prepare(SELECT_USER_STATEMENT("game_id"));
+    CHECK_SUCCESS(get_user_by_game_id);
+
+    get_user_by_ign = connection->Prepare(SELECT_USER_STATEMENT("game_name"));
+    CHECK_SUCCESS(get_user_by_ign);
+
+    update_user_game_mode = connection->Prepare("UPDATE users SET game_mode = $1 WHERE id = $2;");
+    CHECK_SUCCESS(update_user_game_mode);
+}
+
+void Database::populate_internal() {
     auto result = connection->Query("SELECT * FROM read_parquet('~/data/airports.parquet');");
     CHECK_SUCCESS(result);
     idx_t i = 0;
@@ -78,6 +128,7 @@ idx_t Database::get_airport_idx_by_id(uint16_t id) {
     // auto it = std::lower_bound(std::begin(breakpoints), std::end(breakpoints), id);
     // return id - (it - std::begin(breakpoints)) - 1;
 
+    // this is stupid but its much faster
     if (id < 53) return id - 1;
     if (id < 179) return id - 2;
     if (id < 249) return id - 3;
@@ -470,9 +521,17 @@ Database::DBRoute Database::get_dbroute_by_ids(uint16_t oid, uint16_t did) {
     return routes[Database::get_dbroute_idx_by_ids(oid, did)];
 }
 
-void init(string home_dir) {
-    auto client = Database::Client(home_dir);
-    client->populate_data(home_dir);
+void init(string home_dir, string db_name) {
+    auto client = Database::Client(home_dir, db_name);
+    client->populate_internal();
+    client->populate_database();
+}
+
+void reset() {
+    auto client = Database::Client();
+    auto result = client->connection->Query("DROP TABLE users;");
+    CHECK_SUCCESS(result);
+    client->populate_database();
 }
 
 void _debug_query(string query) {
@@ -480,6 +539,9 @@ void _debug_query(string query) {
 
     auto result = client->connection->Query(query);
     result->Print();
+    // while (auto chunk = result->Fetch()) {
+    //     chunk->Print();
+    // }
 }
 
 #if BUILD_PYBIND == 1
@@ -491,8 +553,9 @@ void pybind_init_db(py::module_& m) {
     py::module_ m_db = m.def_submodule("db");
 
     m_db
-        .def("init", [](std::optional<string> home_dir) {
+        .def("init", [](std::optional<string> home_dir, std::optional<string> db_name) {
             py::gil_scoped_acquire acquire;
+            string db_name_str = db_name.value_or("main");
             if (!home_dir.has_value()) {
                 string hdir = py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>(); // am4utils.__path__[0]
                 py::function urlretrieve = py::module::import("urllib.request").attr("urlretrieve");
@@ -509,12 +572,13 @@ void pybind_init_db(py::module_& m) {
                         );
                     }
                 }
-                init(hdir);
+                init(hdir, db_name_str);
             } else {
-                init(home_dir.value());
+                init(home_dir.value(), db_name_str);
             }
             py::gil_scoped_release release;
-        }, "home_dir"_a = py::none())
+        }, "home_dir"_a = py::none(), "db_name"_a = "main")
+        .def("reset", &reset)
         .def("_debug_query", &_debug_query, "query"_a);
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");

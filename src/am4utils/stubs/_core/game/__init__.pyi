@@ -209,8 +209,26 @@ class User():
         REALISM: am4utils._core.game.User.GameMode # value = <GameMode.REALISM: 1>
         __members__: dict # value = {'EASY': <GameMode.EASY: 0>, 'REALISM': <GameMode.REALISM: 1>}
         pass
-    def __init__(self) -> None: ...
+    @staticmethod
+    def Default(realism: bool = False) -> User: ...
     def __repr__(self) -> str: ...
+    @staticmethod
+    def create(username: str, password: str, game_id: int, game_name: str, game_mode: User.GameMode = GameMode.EASY, discord_id: int = 0) -> User: ...
+    @staticmethod
+    def from_discord_id(discord_id: int) -> User: ...
+    @staticmethod
+    def from_game_id(game_id: int) -> User: ...
+    @staticmethod
+    def from_game_name(game_name: str) -> User: ...
+    @staticmethod
+    def from_id(id: str) -> User: ...
+    @staticmethod
+    def from_username(username: str) -> User: ...
+    @property
+    def accumulated_count(self) -> int:
+        """
+        :type: int
+        """
     @property
     def co2_price(self) -> int:
         """
@@ -218,6 +236,11 @@ class User():
         """
     @property
     def co2_training(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def discord_id(self) -> int:
         """
         :type: int
         """
@@ -242,17 +265,17 @@ class User():
         :type: User.GameMode
         """
     @property
+    def game_name(self) -> str:
+        """
+        :type: str
+        """
+    @property
     def h_training(self) -> int:
         """
         :type: int
         """
     @property
-    def id(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def ign(self) -> str:
+    def id(self) -> str:
         """
         :type: str
         """
@@ -265,5 +288,30 @@ class User():
     def load(self) -> float:
         """
         :type: float
+        """
+    @property
+    def repair_training(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def role(self) -> str:
+        """
+        :type: str
+        """
+    @property
+    def username(self) -> str:
+        """
+        :type: str
+        """
+    @property
+    def valid(self) -> bool:
+        """
+        :type: bool
+        """
+    @property
+    def wear_training(self) -> int:
+        """
+        :type: int
         """
     pass

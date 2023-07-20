@@ -464,10 +464,10 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("stopover", &AircraftRoute::stopover)
         .def_readonly("warnings", &AircraftRoute::warnings)
         .def_readonly("valid", &AircraftRoute::valid)
-        .def_static("create", &AircraftRoute::create, "ap0"_a, "ap1"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User(), "am4utils._core.game.User()"))
+        .def_static("create", &AircraftRoute::create, "ap0"_a, "ap1"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"))
         .def_static("estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06, "has_stopover"_a = false)
-        .def_static("calc_fuel", &AircraftRoute::calc_fuel, "ac"_a, "distance"_a, py::arg_v("user", User(), "am4utils._core.game.User()"), "ci"_a = 200)
-        .def_static("calc_co2", &AircraftRoute::calc_co2, "ac"_a, "cfg"_a, "distance"_a, "load"_a, py::arg_v("user", User(), "am4utils._core.game.User()"), "ci"_a = 200)
+        .def_static("calc_fuel", &AircraftRoute::calc_fuel, "ac"_a, "distance"_a, py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"), "ci"_a = 200)
+        .def_static("calc_co2", &AircraftRoute::calc_co2, "ac"_a, "cfg"_a, "distance"_a, "load"_a, py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"), "ci"_a = 200)
         .def("__repr__", &Route::repr)
         .def("to_dict", py::overload_cast<const AircraftRoute&>(&to_dict));
     
@@ -476,6 +476,6 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("ac_route", &Destination::ac_route)
         .def("to_dict", py::overload_cast<const Destination&>(&to_dict));
 
-    m_route.def("find_routes", &find_routes, "ap0"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User(), "am4utils._core.game.User()"));
+    m_route.def("find_routes", &find_routes, "ap0"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"));
 }
 #endif

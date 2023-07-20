@@ -1,4 +1,5 @@
 #pragma once
+#include <duckdb.hpp>
 #include <string>
 #include <algorithm>
 
@@ -42,20 +43,37 @@ struct User {
         REALISM = 1,
     };
 
-    uint64_t id;
+    string id;
+    string username;
     uint32_t game_id;
-    string ign;
+    string game_name;
     GameMode game_mode;
+    uint64_t discord_id;
+    uint8_t wear_training; // 0-5
+    uint8_t repair_training; // 0-5
     uint8_t l_training; // 0-6
     uint8_t h_training; // 0-6
-    uint16_t fuel_price; // 0-3000
-    uint8_t co2_price; // 0-200
     uint8_t fuel_training; // 0-3
     uint8_t co2_training; // 0-5
-    
+    uint16_t fuel_price; // 0-3000
+    uint8_t co2_price; // 0-200
+    uint16_t accumulated_count; // for use in reputation price calculation
     double load; // 0-100
+    string role; // user
+    bool valid;
 
     User();
+    User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
+    static User Default(bool realism = false);
+    
+    static User create(const string& username, const string& password, uint32_t game_id, const string& game_name, GameMode game_mode = GameMode::EASY, uint64_t discord_id = 0);
+    static User from_id(const string& id);
+    static User from_username(const string& username);
+    static User from_discord_id(uint64_t discord_id);
+    static User from_game_id(uint32_t game_id);
+    static User from_game_name(const string& game_name);
+    void set_game_mode(GameMode game_mode);
+
     static const string repr(const User& r);
 };
 

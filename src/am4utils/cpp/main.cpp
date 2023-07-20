@@ -41,7 +41,7 @@ string get_executable_path() {
 #include <limits.h>
 string get_executable_path() {
     char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    std::ignore = readlink("/proc/self/exe", result, PATH_MAX);
     string::size_type pos = string(result).find_last_of("\\/");
     return string(result).substr(0, pos);
 }
@@ -59,27 +59,15 @@ int main() {
 
     try {
     init(executable_path); // 1.3s
-    // cout << "initialised database" << endl;
-    // _debug_query("SELECT current_setting('home_directory')");
-
-    // Campaign campaign = Campaign::Default();
-    // cout << campaign.estimate_pax_reputation() << endl;
-
     START_TIMER
-    // Aircraft ac = *Aircraft::search("mc214").ac;
-    // Airport ap0 = *Airport::search("id:3500").ap;
-    // Airport ap1 = *Airport::search("EGLLL").ap;
-    // AircraftRoute ar = AircraftRoute::create(ap0, ap1, ac);
-    // cout << AircraftRoute::repr(ar) << endl;
-    
-    // const auto& db = Database::Client();
-    auto ap = Aircraft::search("id:1[1,sc]");
-    cout << Aircraft::repr(*ap.ac) << endl;
-    cout << ap.parse_result.priority;
-    // auto ac_sugg = Aircraft::suggest(ap.parse_result);
-    // for (auto &s : ac_sugg) {
-    //     cout << Aircraft::repr(*s.ac) << s.score << endl;
-    // }
+
+    const auto& db = Database::Client();
+    reset();
+    auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);
+    cout << User::repr(inserted_user) << endl;
+    auto user = User::from_id(inserted_user.id);
+    // auto user = User::from_username("cathayexpress");
+    cout << User::repr(user) << endl;
     END_TIMER
 
     } catch (DatabaseException &e) {
