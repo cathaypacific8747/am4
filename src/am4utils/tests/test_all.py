@@ -117,7 +117,7 @@ def test_route_with_aircraft():
     r = AircraftRoute.create(ap0, ap1, ac)
     assert int(r.route.direct_distance) == 9630
     assert r.route.pax_demand.y == 1093
-    cfg = r.config.pax_config
+    cfg = r.config
     assert cfg.y == 0
     assert cfg.j == 1
     assert cfg.f == 138
@@ -127,7 +127,7 @@ def test_route_with_aircraft():
     r = AircraftRoute.create(ap0, ap2, ac)
     assert int(r.route.direct_distance) == 16394
     assert r.route.pax_demand.y == 303
-    cfg = r.config.pax_config
+    cfg = r.config
     assert cfg.y == 348
     assert cfg.j == 34
     assert cfg.f == 0
@@ -141,7 +141,7 @@ def test_cargo_route_with_aircraft():
     cargo_demand = CargoDemand(r.route.pax_demand)
     assert cargo_demand.l == 547000
     assert cargo_demand.h == 681000
-    cfg = r.config.cargo_config
+    cfg = r.config
     assert cfg.l == 100
     assert cfg.h == 0
     assert cfg.algorithm == CargoConfig.Algorithm.L
@@ -151,7 +151,7 @@ def test_cargo_route_with_aircraft():
     cargo_demand = CargoDemand(r.route.pax_demand)
     assert cargo_demand.l == 148000
     assert cargo_demand.h == 220000
-    cfg = r.config.cargo_config
+    cfg = r.config
     assert cfg.l == 80
     assert cfg.h == 20
     assert cfg.algorithm == CargoConfig.Algorithm.L

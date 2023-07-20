@@ -8,7 +8,6 @@ using std::string;
 using std::shared_ptr;
 using duckdb::DuckDB;
 using duckdb::Connection;
-using duckdb::QueryResult;
 using duckdb::MaterializedQueryResult;
 using duckdb::PreparedStatement;
 

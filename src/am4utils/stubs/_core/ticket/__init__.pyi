@@ -6,7 +6,6 @@ import typing
 __all__ = [
     "CargoTicket",
     "PaxTicket",
-    "Ticket",
     "VIPTicket"
 ]
 
@@ -46,23 +45,6 @@ class PaxTicket():
     def y(self) -> int:
         """
         :type: int
-        """
-    pass
-class Ticket():
-    @property
-    def cargo_ticket(self) -> CargoTicket:
-        """
-        :type: CargoTicket
-        """
-    @property
-    def pax_ticket(self) -> PaxTicket:
-        """
-        :type: PaxTicket
-        """
-    @property
-    def vip_ticket(self) -> VIPTicket:
-        """
-        :type: VIPTicket
         """
     pass
 class VIPTicket():

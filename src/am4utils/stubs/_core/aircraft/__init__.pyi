@@ -3,23 +3,67 @@ import am4utils._core.aircraft
 import typing
 
 __all__ = [
-    "Aircraft",
-    "CargoConfig",
-    "PaxConfig"
+    "Aircraft"
 ]
 
 
 class Aircraft():
-    class Config():
+    class CargoConfig():
+        class Algorithm():
+            """
+            Members:
+
+              AUTO
+
+              L
+
+              H
+            """
+            def __eq__(self, other: object) -> bool: ...
+            def __getstate__(self) -> int: ...
+            def __hash__(self) -> int: ...
+            def __index__(self) -> int: ...
+            def __init__(self, value: int) -> None: ...
+            def __int__(self) -> int: ...
+            def __ne__(self, other: object) -> bool: ...
+            def __repr__(self) -> str: ...
+            def __setstate__(self, state: int) -> None: ...
+            @property
+            def name(self) -> str:
+                """
+                :type: str
+                """
+            @property
+            def value(self) -> int:
+                """
+                :type: int
+                """
+            AUTO: am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm # value = <Algorithm.AUTO: 0>
+            H: am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm # value = <Algorithm.H: 2>
+            L: am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm # value = <Algorithm.L: 1>
+            __members__: dict # value = {'AUTO': <Algorithm.AUTO: 0>, 'L': <Algorithm.L: 1>, 'H': <Algorithm.H: 2>}
+            pass
+        def __repr__(self) -> str: ...
+        def to_dict(self) -> dict: ...
         @property
-        def cargo_config(self) -> CargoConfig:
+        def algorithm(self) -> Aircraft.CargoConfig.Algorithm:
             """
-            :type: CargoConfig
+            :type: Aircraft.CargoConfig.Algorithm
             """
         @property
-        def pax_config(self) -> PaxConfig:
+        def h(self) -> int:
             """
-            :type: PaxConfig
+            :type: int
+            """
+        @property
+        def l(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def valid(self) -> bool:
+            """
+            :type: bool
             """
         pass
     class ParseResult():
@@ -52,6 +96,81 @@ class Aircraft():
         def speed_mod(self) -> bool:
             """
             :type: bool
+            """
+        pass
+    class PaxConfig():
+        class Algorithm():
+            """
+            Members:
+
+              AUTO
+
+              FJY
+
+              FYJ
+
+              JFY
+
+              JYF
+
+              YJF
+
+              YFJ
+            """
+            def __eq__(self, other: object) -> bool: ...
+            def __getstate__(self) -> int: ...
+            def __hash__(self) -> int: ...
+            def __index__(self) -> int: ...
+            def __init__(self, value: int) -> None: ...
+            def __int__(self) -> int: ...
+            def __ne__(self, other: object) -> bool: ...
+            def __repr__(self) -> str: ...
+            def __setstate__(self, state: int) -> None: ...
+            @property
+            def name(self) -> str:
+                """
+                :type: str
+                """
+            @property
+            def value(self) -> int:
+                """
+                :type: int
+                """
+            AUTO: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.AUTO: 0>
+            FJY: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.FJY: 1>
+            FYJ: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.FYJ: 2>
+            JFY: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.JFY: 3>
+            JYF: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.JYF: 4>
+            YFJ: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.YFJ: 6>
+            YJF: am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm # value = <Algorithm.YJF: 5>
+            __members__: dict # value = {'AUTO': <Algorithm.AUTO: 0>, 'FJY': <Algorithm.FJY: 1>, 'FYJ': <Algorithm.FYJ: 2>, 'JFY': <Algorithm.JFY: 3>, 'JYF': <Algorithm.JYF: 4>, 'YJF': <Algorithm.YJF: 5>, 'YFJ': <Algorithm.YFJ: 6>}
+            pass
+        def __repr__(self) -> str: ...
+        def to_dict(self) -> dict: ...
+        @property
+        def algorithm(self) -> Aircraft.PaxConfig.Algorithm:
+            """
+            :type: Aircraft.PaxConfig.Algorithm
+            """
+        @property
+        def f(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def j(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def valid(self) -> bool:
+            """
+            :type: bool
+            """
+        @property
+        def y(self) -> int:
+            """
+            :type: int
             """
         pass
     class SearchResult():
@@ -299,139 +418,6 @@ class Aircraft():
         """
     @property
     def wingspan(self) -> int:
-        """
-        :type: int
-        """
-    pass
-class CargoConfig():
-    class Algorithm():
-        """
-        Members:
-
-          L
-
-          H
-
-          NONE
-        """
-        def __eq__(self, other: object) -> bool: ...
-        def __getstate__(self) -> int: ...
-        def __hash__(self) -> int: ...
-        def __index__(self) -> int: ...
-        def __init__(self, value: int) -> None: ...
-        def __int__(self) -> int: ...
-        def __ne__(self, other: object) -> bool: ...
-        def __repr__(self) -> str: ...
-        def __setstate__(self, state: int) -> None: ...
-        @property
-        def name(self) -> str:
-            """
-            :type: str
-            """
-        @property
-        def value(self) -> int:
-            """
-            :type: int
-            """
-        H: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.H: 1>
-        L: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.L: 0>
-        NONE: am4utils._core.aircraft.CargoConfig.Algorithm # value = <Algorithm.NONE: 2>
-        __members__: dict # value = {'L': <Algorithm.L: 0>, 'H': <Algorithm.H: 1>, 'NONE': <Algorithm.NONE: 2>}
-        pass
-    def __repr__(self) -> str: ...
-    def to_dict(self) -> dict: ...
-    @property
-    def algorithm(self) -> CargoConfig.Algorithm:
-        """
-        :type: CargoConfig.Algorithm
-        """
-    @property
-    def h(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def l(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def valid(self) -> bool:
-        """
-        :type: bool
-        """
-    pass
-class PaxConfig():
-    class Algorithm():
-        """
-        Members:
-
-          FJY
-
-          FYJ
-
-          JFY
-
-          JYF
-
-          YJF
-
-          YFJ
-
-          NONE
-        """
-        def __eq__(self, other: object) -> bool: ...
-        def __getstate__(self) -> int: ...
-        def __hash__(self) -> int: ...
-        def __index__(self) -> int: ...
-        def __init__(self, value: int) -> None: ...
-        def __int__(self) -> int: ...
-        def __ne__(self, other: object) -> bool: ...
-        def __repr__(self) -> str: ...
-        def __setstate__(self, state: int) -> None: ...
-        @property
-        def name(self) -> str:
-            """
-            :type: str
-            """
-        @property
-        def value(self) -> int:
-            """
-            :type: int
-            """
-        FJY: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.FJY: 0>
-        FYJ: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.FYJ: 1>
-        JFY: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.JFY: 2>
-        JYF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.JYF: 3>
-        NONE: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.NONE: 6>
-        YFJ: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YFJ: 5>
-        YJF: am4utils._core.aircraft.PaxConfig.Algorithm # value = <Algorithm.YJF: 4>
-        __members__: dict # value = {'FJY': <Algorithm.FJY: 0>, 'FYJ': <Algorithm.FYJ: 1>, 'JFY': <Algorithm.JFY: 2>, 'JYF': <Algorithm.JYF: 3>, 'YJF': <Algorithm.YJF: 4>, 'YFJ': <Algorithm.YFJ: 5>, 'NONE': <Algorithm.NONE: 6>}
-        pass
-    def __repr__(self) -> str: ...
-    def to_dict(self) -> dict: ...
-    @property
-    def algorithm(self) -> PaxConfig.Algorithm:
-        """
-        :type: PaxConfig.Algorithm
-        """
-    @property
-    def f(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def j(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def valid(self) -> bool:
-        """
-        :type: bool
-        """
-    @property
-    def y(self) -> int:
         """
         :type: int
         """

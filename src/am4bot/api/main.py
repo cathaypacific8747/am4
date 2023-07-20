@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, Query
-from fastapi.responses import JSONResponse, ORJSONResponse
+from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import am4utils
@@ -32,8 +32,8 @@ async def startup():
 
 
 
-def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> JSONResponse:
-    return JSONResponse(
+def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> ORJSONResponse:
+    return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",
@@ -59,8 +59,8 @@ async def ac_search(query: str = Query(description="Search query for aircraft. E
 
 
 
-def construct_apnf_response(param_name: str, ap_sugg: list[Airport.Suggestion]) -> JSONResponse:
-    return JSONResponse(
+def construct_apnf_response(param_name: str, ap_sugg: list[Airport.Suggestion]) -> ORJSONResponse:
+    return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",

@@ -1,5 +1,6 @@
 #pragma once
 #include "game.hpp"
+#include <variant>
 
 using std::string;
 using std::to_string;
@@ -30,16 +31,7 @@ struct VIPTicket {
     static const string repr(const VIPTicket& ticket);
 };
 
-union Ticket {
-    PaxTicket pax_ticket;
-    CargoTicket cargo_ticket;
-    VIPTicket vip_ticket;
-
-    Ticket() {}
-    Ticket(const PaxTicket& pax_ticket) : pax_ticket(pax_ticket) {}
-    Ticket(const CargoTicket& cargo_ticket) : cargo_ticket(cargo_ticket) {}
-    Ticket(const VIPTicket& vip_ticket) : vip_ticket(vip_ticket) {}
-};
+using Ticket = std::variant<PaxTicket, CargoTicket, VIPTicket>;
 
 #if BUILD_PYBIND == 1
 #include "binder.hpp"

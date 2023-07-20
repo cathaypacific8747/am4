@@ -17,7 +17,46 @@ __all__ = [
 
 class AircraftRoute():
     class Options():
-        def __init__(self, trips_per_day: int = 1, max_distance: float = float('inf'), max_flight_time: float = float('inf')) -> None: ...
+        class TPDMode():
+            """
+            Members:
+
+              AUTO
+
+              AUTO_MULTIPLE_OF
+
+              STRICT
+            """
+            def __eq__(self, other: object) -> bool: ...
+            def __getstate__(self) -> int: ...
+            def __hash__(self) -> int: ...
+            def __index__(self) -> int: ...
+            def __init__(self, value: int) -> None: ...
+            def __int__(self) -> int: ...
+            def __ne__(self, other: object) -> bool: ...
+            def __repr__(self) -> str: ...
+            def __setstate__(self, state: int) -> None: ...
+            @property
+            def name(self) -> str:
+                """
+                :type: str
+                """
+            @property
+            def value(self) -> int:
+                """
+                :type: int
+                """
+            AUTO: am4utils._core.route.AircraftRoute.Options.TPDMode # value = <TPDMode.AUTO: 0>
+            AUTO_MULTIPLE_OF: am4utils._core.route.AircraftRoute.Options.TPDMode # value = <TPDMode.AUTO_MULTIPLE_OF: 1>
+            STRICT: am4utils._core.route.AircraftRoute.Options.TPDMode # value = <TPDMode.STRICT: 2>
+            __members__: dict # value = {'AUTO': <TPDMode.AUTO: 0>, 'AUTO_MULTIPLE_OF': <TPDMode.AUTO_MULTIPLE_OF: 1>, 'STRICT': <TPDMode.STRICT: 2>}
+            pass
+        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = float('inf'), max_flight_time: float = float('inf'), config_algorithm: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm] = None) -> None: ...
+        @property
+        def config_algorithm(self) -> typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm]:
+            """
+            :type: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm]
+            """
         @property
         def max_distance(self) -> float:
             """
@@ -27,6 +66,11 @@ class AircraftRoute():
         def max_flight_time(self) -> float:
             """
             :type: float
+            """
+        @property
+        def tpd_mode(self) -> AircraftRoute.Options.TPDMode:
+            """
+            :type: AircraftRoute.Options.TPDMode
             """
         @property
         def trips_per_day(self) -> int:
@@ -103,7 +147,11 @@ class AircraftRoute():
         pass
     def __repr__(self) -> str: ...
     @staticmethod
-    def calc_co2(ac: am4utils._core.aircraft.Aircraft, cfg: am4utils._core.aircraft.Aircraft.Config, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User.Default(), ci: int = 200) -> float: ...
+    @typing.overload
+    def calc_co2(ac: am4utils._core.aircraft.Aircraft, cfg: am4utils._core.aircraft.Aircraft.PaxConfig, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User.Default(), ci: int = 200) -> float: ...
+    @staticmethod
+    @typing.overload
+    def calc_co2(ac: am4utils._core.aircraft.Aircraft, cfg: am4utils._core.aircraft.Aircraft.CargoConfig, distance: float, load: float, user: am4utils._core.game.User = am4utils._core.game.User.Default(), ci: int = 200) -> float: ...
     @staticmethod
     def calc_fuel(ac: am4utils._core.aircraft.Aircraft, distance: float, user: am4utils._core.game.User = am4utils._core.game.User.Default(), ci: int = 200) -> float: ...
     @staticmethod
@@ -122,9 +170,9 @@ class AircraftRoute():
         :type: float
         """
     @property
-    def config(self) -> am4utils._core.aircraft.Aircraft.Config:
+    def config(self) -> typing.Union[am4utils._core.aircraft.Aircraft.PaxConfig, am4utils._core.aircraft.Aircraft.CargoConfig]:
         """
-        :type: am4utils._core.aircraft.Aircraft.Config
+        :type: typing.Union[am4utils._core.aircraft.Aircraft.PaxConfig, am4utils._core.aircraft.Aircraft.CargoConfig]
         """
     @property
     def flight_time(self) -> float:
@@ -172,9 +220,9 @@ class AircraftRoute():
         :type: AircraftRoute.Stopover
         """
     @property
-    def ticket(self) -> am4utils._core.ticket.Ticket:
+    def ticket(self) -> typing.Union[am4utils._core.ticket.PaxTicket, am4utils._core.ticket.CargoTicket, am4utils._core.ticket.VIPTicket]:
         """
-        :type: am4utils._core.ticket.Ticket
+        :type: typing.Union[am4utils._core.ticket.PaxTicket, am4utils._core.ticket.CargoTicket, am4utils._core.ticket.VIPTicket]
         """
     @property
     def valid(self) -> bool:

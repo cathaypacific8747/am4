@@ -272,7 +272,6 @@ Airport Database::get_airport_by_id(uint16_t id) {
     return airports[Database::get_airport_idx_by_id(id)];
 }
 
-// TODO: use gperf
 Airport Database::get_airport_by_iata(const std::string& iata) {
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         return a.iata == iata;

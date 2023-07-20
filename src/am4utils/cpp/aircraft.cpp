@@ -59,7 +59,6 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
             } catch (const std::invalid_argument&) {
             } catch (const std::out_of_range&) {
             }
-            // TODO: handle eid:XXX
         }
     }
     if (s_lower.substr(0, 5) == "name:") {
@@ -199,8 +198,7 @@ const string Aircraft::repr(const Aircraft& ac) {
 }
 
 
-// PURCHASED AIRCRAFT
-PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
     config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
@@ -210,7 +208,7 @@ PaxConfig PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
     config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
@@ -220,7 +218,7 @@ PaxConfig PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
     config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
@@ -230,7 +228,7 @@ PaxConfig PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
     config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
@@ -240,7 +238,7 @@ PaxConfig PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.y = d_pf.y > capacity ? capacity : d_pf.y;
     config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
@@ -250,7 +248,7 @@ PaxConfig PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.y = d_pf.y > capacity ? capacity : d_pf.y;
     config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
@@ -260,7 +258,7 @@ PaxConfig PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     return config;
 };
 
-PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode) {
     if (game_mode == User::GameMode::EASY) {
         if (distance < 14425) {
             return calc_fjy_conf(d_pf, capacity);
@@ -284,33 +282,33 @@ PaxConfig PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, dou
     }
 }
 
-inline const string to_string(PaxConfig::Algorithm algorithm) {
+inline const string to_string(Aircraft::PaxConfig::Algorithm algorithm) {
     switch (algorithm) {
-        case PaxConfig::Algorithm::FJY:
+        case Aircraft::PaxConfig::Algorithm::AUTO:
+            return "AUTO";
+        case Aircraft::PaxConfig::Algorithm::FJY:
             return "FJY";
-        case PaxConfig::Algorithm::FYJ:
+        case Aircraft::PaxConfig::Algorithm::FYJ:
             return "FYJ";
-        case PaxConfig::Algorithm::JFY:
+        case Aircraft::PaxConfig::Algorithm::JFY:
             return "JFY";
-        case PaxConfig::Algorithm::JYF:
+        case Aircraft::PaxConfig::Algorithm::JYF:
             return "JYF";
-        case PaxConfig::Algorithm::YFJ:
+        case Aircraft::PaxConfig::Algorithm::YFJ:
             return "YFJ";
-        case PaxConfig::Algorithm::YJF:
+        case Aircraft::PaxConfig::Algorithm::YJF:
             return "YJF";
-        case PaxConfig::Algorithm::NONE:
-            return "NONE";
         default:
             return "UNKNOWN";
     }
 }
 
-const string PaxConfig::repr(const PaxConfig& config) {
+const string Aircraft::PaxConfig::repr(const Aircraft::PaxConfig& config) {
     return "<PaxConfig " + to_string(config.y) + "|" + to_string(config.j) + "|" + to_string(config.f) + ">";
 }
 
 
-CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
     double l_cap = capacity * 0.7;
 
     CargoConfig config;
@@ -328,7 +326,7 @@ CargoConfig CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity)
 }
 
 // virually useless, never profitable unless distance > ~23000 km
-CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
     CargoConfig config;
     if (d_pf.h > capacity) {
         config.h = 100;
@@ -343,27 +341,27 @@ CargoConfig CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity)
     return config;
 }
 
-CargoConfig CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training) {
     return calc_l_conf(
         d_pf,
         static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
     ); // low priority is always more profitable
 }
 
-inline const string to_string(CargoConfig::Algorithm algorithm) {
+inline const string to_string(Aircraft::CargoConfig::Algorithm algorithm) {
     switch (algorithm) {
-        case CargoConfig::Algorithm::L:
+        case Aircraft::CargoConfig::Algorithm::AUTO:
+            return "AUTO";
+        case Aircraft::CargoConfig::Algorithm::L:
             return "L";
-        case CargoConfig::Algorithm::H:
+        case Aircraft::CargoConfig::Algorithm::H:
             return "H";
-        case CargoConfig::Algorithm::NONE:
-            return "NONE";
         default:
             return "UNKNOWN";
     }
 }
 
-const string CargoConfig::repr(const CargoConfig& config) {
+const string Aircraft::CargoConfig::repr(const CargoConfig& config) {
     return "<CargoConfig " + to_string(config.l) + "|" + to_string(config.h) + ">";
 }
 
@@ -408,7 +406,7 @@ py::dict to_dict(const Aircraft& ac) {
     return d;
 }
 
-py::dict to_dict(const PaxConfig& pc) {
+py::dict to_dict(const Aircraft::PaxConfig& pc) {
     return py::dict(
         "y"_a=pc.y,
         "j"_a=pc.j,
@@ -417,7 +415,7 @@ py::dict to_dict(const PaxConfig& pc) {
     );
 }
 
-py::dict to_dict(const CargoConfig& cc) {
+py::dict to_dict(const Aircraft::CargoConfig& cc) {
     return py::dict(
         "l"_a=cc.l,
         "h"_a=cc.h,
@@ -429,13 +427,38 @@ void pybind_init_aircraft(py::module_& m) {
     py::module_ m_ac = m.def_submodule("aircraft");
     
     py::class_<Aircraft, shared_ptr<Aircraft>> ac_class(m_ac, "Aircraft");
+    
+    py::class_<Aircraft::PaxConfig> pc_class(ac_class, "PaxConfig");
+    py::enum_<Aircraft::PaxConfig::Algorithm>(pc_class, "Algorithm")
+        .value("AUTO", Aircraft::PaxConfig::Algorithm::AUTO)
+        .value("FJY", Aircraft::PaxConfig::Algorithm::FJY).value("FYJ", Aircraft::PaxConfig::Algorithm::FYJ)
+        .value("JFY", Aircraft::PaxConfig::Algorithm::JFY).value("JYF", Aircraft::PaxConfig::Algorithm::JYF)
+        .value("YJF", Aircraft::PaxConfig::Algorithm::YJF).value("YFJ", Aircraft::PaxConfig::Algorithm::YFJ);
+    pc_class
+        .def_readonly("y", &Aircraft::PaxConfig::y)
+        .def_readonly("j", &Aircraft::PaxConfig::j)
+        .def_readonly("f", &Aircraft::PaxConfig::f)
+        .def_readonly("valid", &Aircraft::PaxConfig::valid)
+        .def_readonly("algorithm", &Aircraft::PaxConfig::algorithm)
+        .def("__repr__", &Aircraft::PaxConfig::repr)
+        .def("to_dict", py::overload_cast<const Aircraft::PaxConfig&>(&to_dict));
+
+    py::class_<Aircraft::CargoConfig> cc_class(ac_class, "CargoConfig");
+    py::enum_<Aircraft::CargoConfig::Algorithm>(cc_class, "Algorithm")
+        .value("AUTO", Aircraft::CargoConfig::Algorithm::AUTO)
+        .value("L", Aircraft::CargoConfig::Algorithm::L).value("H", Aircraft::CargoConfig::Algorithm::H);
+    cc_class
+        .def_readonly("l", &Aircraft::CargoConfig::l)
+        .def_readonly("h", &Aircraft::CargoConfig::h)
+        .def_readonly("valid", &Aircraft::CargoConfig::valid)
+        .def_readonly("algorithm", &Aircraft::CargoConfig::algorithm)
+        .def("__repr__", &Aircraft::CargoConfig::repr)
+        .def("to_dict", py::overload_cast<const Aircraft::CargoConfig&>(&to_dict));
+
     py::enum_<Aircraft::Type>(ac_class, "Type")
         .value("PAX", Aircraft::Type::PAX)
         .value("CARGO", Aircraft::Type::CARGO)
         .value("VIP", Aircraft::Type::VIP);
-    py::class_<Aircraft::Config>(ac_class, "Config")
-        .def_readonly("pax_config", &Aircraft::Config::pax_config)
-        .def_readonly("cargo_config", &Aircraft::Config::cargo_config);
     ac_class
         .def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
@@ -492,33 +515,5 @@ void pybind_init_aircraft(py::module_& m) {
     ac_class
         .def_static("search", &Aircraft::search, "s"_a)
         .def_static("suggest", &Aircraft::suggest, "s"_a);
-    
-    // purchased aircraft
-    py::class_<PaxConfig> pc_class(m_ac, "PaxConfig");
-    py::enum_<PaxConfig::Algorithm>(pc_class, "Algorithm")
-        .value("FJY", PaxConfig::Algorithm::FJY).value("FYJ", PaxConfig::Algorithm::FYJ)
-        .value("JFY", PaxConfig::Algorithm::JFY).value("JYF", PaxConfig::Algorithm::JYF)
-        .value("YJF", PaxConfig::Algorithm::YJF).value("YFJ", PaxConfig::Algorithm::YFJ)
-        .value("NONE", PaxConfig::Algorithm::NONE);
-    pc_class
-        .def_readonly("y", &PaxConfig::y)
-        .def_readonly("j", &PaxConfig::j)
-        .def_readonly("f", &PaxConfig::f)
-        .def_readonly("valid", &PaxConfig::valid)
-        .def_readonly("algorithm", &PaxConfig::algorithm)
-        .def("__repr__", &PaxConfig::repr)
-        .def("to_dict", py::overload_cast<const PaxConfig&>(&to_dict));
-
-    py::class_<CargoConfig> cc_class(m_ac, "CargoConfig");
-    py::enum_<CargoConfig::Algorithm>(cc_class, "Algorithm")
-        .value("L", CargoConfig::Algorithm::L).value("H", CargoConfig::Algorithm::H)
-        .value("NONE", CargoConfig::Algorithm::NONE);
-    cc_class
-        .def_readonly("l", &CargoConfig::l)
-        .def_readonly("h", &CargoConfig::h)
-        .def_readonly("valid", &CargoConfig::valid)
-        .def_readonly("algorithm", &CargoConfig::algorithm)
-        .def("__repr__", &CargoConfig::repr)
-        .def("to_dict", py::overload_cast<const CargoConfig&>(&to_dict));
 }
 #endif

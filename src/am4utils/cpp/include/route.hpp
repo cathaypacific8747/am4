@@ -34,11 +34,20 @@ struct Route {
 
 struct AircraftRoute {
     struct Options {
+        enum class TPDMode {
+            AUTO = 0,
+            AUTO_MULTIPLE_OF = 1,
+            STRICT = 2
+        };
+        using ConfigAlgorithm = std::variant<std::monostate, Aircraft::PaxConfig::Algorithm, Aircraft::CargoConfig::Algorithm>;
+
+        TPDMode tpd_mode;
         uint16_t trips_per_day;
         double max_distance;
         double max_flight_time;
+        ConfigAlgorithm config_algorithm;
 
-        Options(uint16_t trips_per_day = 1, double max_distance = INF, double max_flight_time = INF);
+        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = INF, double max_flight_time = INF, ConfigAlgorithm config_algorithm = std::monostate());
     };
     Route route;
     Aircraft::Type _ac_type;
@@ -83,7 +92,8 @@ struct AircraftRoute {
     
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
     static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::Config& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
 

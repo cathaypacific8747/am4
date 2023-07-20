@@ -47,7 +47,7 @@ User User::Default(bool realism) {
     return user;
 }
 
-inline User to_user(duckdb::unique_ptr<QueryResult> result) {
+inline User to_user(duckdb::unique_ptr<duckdb::QueryResult> result) {
     CHECK_SUCCESS_REF(result);
     auto chunk = result->Fetch();
     return chunk && chunk->size() != 0 ? User(chunk, 0) : User();
@@ -87,7 +87,7 @@ User User::from_discord_id(uint64_t discord_id) {
 }
 
 
-inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<QueryResult> q) {
+inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<duckdb::QueryResult> q) {
     CHECK_SUCCESS_REF(q);
     auto result = q->Fetch();
     if (!result || result->size() != 1) throw DatabaseException("FATAL: cannot update user!");

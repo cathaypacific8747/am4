@@ -3,6 +3,7 @@
 #include <map>
 #include <cstdint>
 #include <iomanip>
+#include <variant>
 #include <duckdb.hpp>
 
 #include "game.hpp"
@@ -14,50 +15,50 @@ using std::to_string;
 using std::shared_ptr;
 using std::make_shared;
 
-struct PaxConfig {
-    enum class Algorithm {
-        FJY, FYJ,
-        JFY, JYF,
-        YJF, YFJ,
-        NONE
-    };
-
-    uint16_t y = 0;
-    uint16_t j = 0;
-    uint16_t f = 0;
-    bool valid = false;
-    Algorithm algorithm;
-
-    static inline PaxConfig calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity);
-    static inline PaxConfig calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity);
-    static inline PaxConfig calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity);
-    static inline PaxConfig calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity);
-    static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity);
-    static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity);
-
-    static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, User::GameMode game_mode = User::GameMode::EASY);
-    static const string repr(const PaxConfig& pax_config);
-};
-
-struct CargoConfig { // percent
-    enum class Algorithm {
-        L, H,
-        NONE
-    };
-
-    uint8_t l = 0;
-    uint8_t h = 0;
-    bool valid = false;
-    Algorithm algorithm;
-
-    static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity);
-    static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity);
-
-    static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0);
-    static const string repr(const CargoConfig& cargo_config);
-};
-
 struct Aircraft {
+    struct PaxConfig {
+        enum class Algorithm {
+            AUTO, // NOTE: this should only be used in AircraftRoute::Options::ConfigAlgorithm
+            FJY, FYJ,
+            JFY, JYF,
+            YJF, YFJ
+        };
+
+        uint16_t y = 0;
+        uint16_t j = 0;
+        uint16_t f = 0;
+        bool valid = false;
+        Algorithm algorithm;
+
+        static inline PaxConfig calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity);
+        static inline PaxConfig calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity);
+        static inline PaxConfig calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity);
+        static inline PaxConfig calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity);
+        static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity);
+        static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity);
+
+        static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance, User::GameMode game_mode = User::GameMode::EASY);
+        static const string repr(const PaxConfig& pax_config);
+    };
+
+    struct CargoConfig { // percent
+        enum class Algorithm {
+            AUTO, // NOTE: this should only be used in AircraftRoute::Options::ConfigAlgorithm
+            L, H
+        };
+
+        uint8_t l = 0;
+        uint8_t h = 0;
+        bool valid = false;
+        Algorithm algorithm;
+
+        static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity);
+        static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity);
+
+        static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0);
+        static const string repr(const CargoConfig& cargo_config);
+    };
+
     enum class Type {
         PAX = 0,
         CARGO = 1,
@@ -71,14 +72,7 @@ struct Aircraft {
         NAME = 3
     };
 
-    union Config {
-        PaxConfig pax_config;
-        CargoConfig cargo_config;
-
-        Config() {}
-        Config(const PaxConfig& pax_config) : pax_config(pax_config) {}
-        Config(const CargoConfig& cargo_config) : cargo_config(cargo_config) {}
-    };
+    using Config = std::variant<PaxConfig, CargoConfig>;
 
     uint16_t id;
     string shortname;
@@ -152,6 +146,6 @@ inline const string to_string(Aircraft::SearchType searchtype);
 #include "binder.hpp"
 
 py::dict to_dict(const Aircraft& ac);
-py::dict to_dict(const PaxConfig& pax_config);
-py::dict to_dict(const CargoConfig& cargo_config);
+py::dict to_dict(const Aircraft::PaxConfig& pax_config);
+py::dict to_dict(const Aircraft::CargoConfig& cargo_config);
 #endif

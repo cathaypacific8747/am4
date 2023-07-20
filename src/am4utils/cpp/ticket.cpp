@@ -87,10 +87,5 @@ void pybind_init_ticket(py::module_& m) {
         .def_static("from_optimal", &VIPTicket::from_optimal, "distance"_a)
         .def("__repr__", &VIPTicket::repr)
         .def("to_dict", py::overload_cast<const VIPTicket&>(&to_dict));
-    
-    py::class_<Ticket>(m_ticket, "Ticket")
-        .def_readonly("pax_ticket", &Ticket::pax_ticket)
-        .def_readonly("cargo_ticket", &Ticket::cargo_ticket)
-        .def_readonly("vip_ticket", &Ticket::vip_ticket);
 }
 #endif
