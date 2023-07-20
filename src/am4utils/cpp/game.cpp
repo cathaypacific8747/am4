@@ -2,6 +2,242 @@
 #include "include/game.hpp"
 #include "include/db.hpp"
 
+User::User() :
+    id("00000000-0000-0000-0000-000000000000"),
+    username(""), game_id(0), game_name(""), game_mode(GameMode::EASY),
+    discord_id(0),
+    wear_training(0), repair_training(0), l_training(0), h_training(0),
+    fuel_training(0), co2_training(0),
+    fuel_price(700), co2_price(120),
+    accumulated_count(0),
+    load(87),
+    role(User::Role::USER),
+    valid(false)
+{}
+
+User::User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
+    id(chunk->GetValue(0, row).GetValue<string>()),
+    username(chunk->GetValue(1, row).GetValue<string>()),
+    game_id(chunk->GetValue(2, row).GetValue<uint32_t>()),
+    game_name(chunk->GetValue(3, row).GetValue<string>()),
+    game_mode(static_cast<GameMode>(chunk->GetValue(4, row).GetValue<bool>())),
+    discord_id(chunk->GetValue(5, row).GetValue<uint64_t>()),
+    wear_training(chunk->GetValue(6, row).GetValue<uint8_t>()),
+    repair_training(chunk->GetValue(7, row).GetValue<uint8_t>()),
+    l_training(chunk->GetValue(8, row).GetValue<uint8_t>()),
+    h_training(chunk->GetValue(9, row).GetValue<uint8_t>()),
+    fuel_training(chunk->GetValue(10, row).GetValue<uint8_t>()),
+    co2_training(chunk->GetValue(11, row).GetValue<uint8_t>()),
+    fuel_price(chunk->GetValue(12, row).GetValue<uint16_t>()),
+    co2_price(chunk->GetValue(13, row).GetValue<uint8_t>()),
+    accumulated_count(chunk->GetValue(14, row).GetValue<uint16_t>()),
+    load(chunk->GetValue(15, row).GetValue<double>()),
+    role(static_cast<Role>(chunk->GetValue(16, row).GetValue<uint8_t>())),
+    valid(true)
+{}
+
+User User::Default(bool realism) {
+    User user;
+    user.role = User::Role::USER;
+    user.valid = true;
+    if (realism) {
+        user.id = "00000000-0000-0000-0000-000000000001";
+        user.game_mode = GameMode::REALISM;
+    }
+    return user;
+}
+
+inline User to_user(duckdb::unique_ptr<QueryResult> result) {
+    CHECK_SUCCESS_REF(result);
+    auto chunk = result->Fetch();
+    return chunk && chunk->size() != 0 ? User(chunk, 0) : User();
+}
+
+User User::create(const string& username, const string& password, uint32_t game_id, const string& game_name, User::GameMode game_mode, uint64_t discord_id) {
+    // https://github.com/duckdb/duckdb/issues/1631#issuecomment-821787604
+    // UNIQUE and UPDATE don't work well together, manually checking if user exists
+    auto result = Database::Client()->verify_user_by_username->Execute(username.c_str());
+    CHECK_SUCCESS_REF(result);
+    auto chunk = result->Fetch();
+    if (chunk && chunk->size() != 0) return User();
+    
+    // https://github.com/duckdb/duckdb/issues/8310
+    // return to_user(Database::Client()->insert_user->Execute(username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
+    return to_user(Database::Client()->connection->Query(INSERT_USER_STATEMENT, username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
+}
+
+User User::from_id(const string& id) {
+    return to_user(Database::Client()->get_user_by_id->Execute(id.c_str()));
+}
+
+User User::from_username(const string& username) {
+    return to_user(Database::Client()->get_user_by_username->Execute(username.c_str()));
+}
+
+User User::from_game_id(uint32_t game_id) {
+    return to_user(Database::Client()->get_user_by_game_id->Execute(game_id));
+}
+
+User User::from_game_name(const string& game_name) {
+    return to_user(Database::Client()->get_user_by_game_name->Execute(game_name.c_str()));
+}
+
+User User::from_discord_id(uint64_t discord_id) {
+    return to_user(Database::Client()->get_user_by_discord_id->Execute(discord_id));
+}
+
+
+inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<QueryResult> q) {
+    CHECK_SUCCESS_REF(q);
+    auto result = q->Fetch();
+    if (!result || result->size() != 1) throw DatabaseException("FATAL: cannot update user!");
+}
+
+bool User::set_username(const string& username) {
+    auto result = Database::Client()->verify_user_by_username->Execute(username.c_str());
+    CHECK_SUCCESS_REF(result);
+    auto chunk = result->Fetch();
+    if (chunk && chunk->size() != 0) return false;
+
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_username->Execute(username.c_str(), id.c_str()));
+    this->username = username;
+    return true;
+}
+
+bool User::set_password(const string& password) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_password->Execute(password.c_str(), id.c_str()));
+    return true;
+}
+
+bool User::set_game_id(uint32_t game_id) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_id->Execute(game_id, id.c_str()));
+    this->game_id = game_id;
+    return true;
+}
+
+bool User::set_game_name(const string& game_name) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_name->Execute(game_name.c_str(), id.c_str()));
+    this->game_name = game_name;
+    return true;
+}
+
+bool User::set_game_mode(User::GameMode game_mode) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_mode->Execute(static_cast<bool>(game_mode), id.c_str()));
+    this->game_mode = game_mode;
+    return true;
+}
+
+bool User::set_discord_id(uint64_t discord_id) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_discord_id->Execute(discord_id, id.c_str()));
+    this->discord_id = discord_id;
+    return true;
+}
+
+bool User::set_wear_training(uint8_t wear_training) {
+    if (wear_training > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_wear_training->Execute(wear_training, id));
+    this->wear_training = wear_training;
+    return true;
+}
+
+bool User::set_repair_training(uint8_t repair_training) {
+    if (repair_training > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_repair_training->Execute(repair_training, id));
+    this->repair_training = repair_training;
+    return true;
+}
+
+bool User::set_l_training(uint8_t l_training) {
+    if (l_training > 6) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_l_training->Execute(l_training, id));
+    this->l_training = l_training;
+    return true;
+}
+
+bool User::set_h_training(uint8_t h_training) {
+    if (h_training > 6) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_h_training->Execute(h_training, id));
+    this->h_training = h_training;
+    return true;
+}
+
+bool User::set_fuel_training(uint8_t fuel_training) {
+    if (fuel_training > 3) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_training->Execute(fuel_training, id));
+    this->fuel_training = fuel_training;
+    return true;
+}
+
+bool User::set_co2_training(uint8_t co2_training) {
+    if (co2_training > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_training->Execute(co2_training, id));
+    this->co2_training = co2_training;
+    return true;
+}
+
+bool User::set_fuel_price(uint16_t fuel_price) {
+    if (fuel_price > 3000) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_price->Execute(fuel_price, id));
+    this->fuel_price = fuel_price;
+    return true;
+}
+
+bool User::set_co2_price(uint8_t co2_price) {
+    if (co2_price > 200) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_price->Execute(co2_price, id));
+    this->co2_price = co2_price;
+    return true;
+}
+
+bool User::set_accumulated_count(uint16_t accumulated_count) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_accumulated_count->Execute(accumulated_count, id));
+    this->accumulated_count = accumulated_count;
+    return true;
+}
+
+bool User::set_load(double load) {
+    if (load < 0 || load > 100) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_load->Execute(load, id));
+    this->load = load;
+    return true;
+}
+
+bool User::set_role(const User::Role& role) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_role->Execute(static_cast<uint8_t>(role), id));
+    this->role = role;
+    return true;
+}
+
+inline const string to_string(User::GameMode game_mode) {
+    switch (game_mode) {
+        case User::GameMode::EASY:
+            return "EASY";
+        case User::GameMode::REALISM:
+            return "REALISM";
+        default:
+            return "[UNKNOWN]";
+    }
+}
+
+inline const string to_string(User::Role role) {
+    switch (role) {
+        case User::Role::USER:
+            return "USER";
+        case User::Role::TRUSTED_USER:
+            return "TRUSTED_USER";
+        case User::Role::ADMIN:
+            return "ADMIN";
+        default:
+            return "[UNKNOWN]";
+    }
+}
+
+const string User::repr(const User& user) {
+    if (!user.valid) return "<User.INVALID>";
+    return "<User id=" + user.id + " username=" + user.username + " discord_id=" + to_string(user.discord_id) + " game_id=" + to_string(user.game_id) + " game_name=" + user.game_name + " game_mode=" + to_string(user.game_mode) + ">";
+}
+
+
 Campaign::Campaign() :
     pax_activated(Airline::NONE),
     cargo_activated(Airline::NONE),
@@ -100,136 +336,42 @@ Campaign Campaign::parse(const string& s) {
     return campaign;
 }
 
-User::User() :
-    id("00000000-0000-0000-0000-000000000000"),
-    username(""), game_id(0), game_name(""), game_mode(GameMode::EASY),
-    discord_id(0),
-    wear_training(0), repair_training(0),
-    l_training(0), h_training(0),
-    fuel_training(0), co2_training(0),
-    fuel_price(700), co2_price(120),
-    accumulated_count(0),
-    load(87),
-    role("user"),
-    valid(false)
-{}
-
-User::User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
-    id(chunk->GetValue(0, row).GetValue<string>()),
-    username(chunk->GetValue(1, row).GetValue<string>()),
-    game_id(chunk->GetValue(2, row).GetValue<uint32_t>()),
-    game_name(chunk->GetValue(3, row).GetValue<string>()),
-    game_mode(static_cast<GameMode>(chunk->GetValue(4, row).GetValue<bool>())),
-    discord_id(chunk->GetValue(5, row).GetValue<uint64_t>()),
-    wear_training(chunk->GetValue(6, row).GetValue<uint8_t>()),
-    repair_training(chunk->GetValue(7, row).GetValue<uint8_t>()),
-    l_training(chunk->GetValue(8, row).GetValue<uint8_t>()),
-    h_training(chunk->GetValue(9, row).GetValue<uint8_t>()),
-    fuel_training(chunk->GetValue(10, row).GetValue<uint8_t>()),
-    co2_training(chunk->GetValue(11, row).GetValue<uint8_t>()),
-    fuel_price(chunk->GetValue(12, row).GetValue<uint16_t>()),
-    co2_price(chunk->GetValue(13, row).GetValue<uint8_t>()),
-    accumulated_count(chunk->GetValue(14, row).GetValue<uint16_t>()),
-    load(chunk->GetValue(15, row).GetValue<double>()),
-    role(chunk->GetValue(16, row).GetValue<string>()),
-    valid(true)
-{}
-
-User User::Default(bool realism) {
-    User user;
-    user.role = "user";
-    user.valid = true;
-    if (realism) {
-        user.id = "00000000-0000-0000-0000-000000000001";
-        user.game_mode = GameMode::REALISM;
-    }
-    return user;
-}
-
-inline User to_user(duckdb::unique_ptr<QueryResult> result) {
-    CHECK_SUCCESS(result);
-    auto chunk = result->Fetch();
-    return chunk && chunk->size() != 0 ? User(chunk, 0) : User();
-}
-
-User User::create(const string& username, const string& password, uint32_t game_id, const string& game_name, User::GameMode game_mode, uint64_t discord_id) {
-    // https://github.com/duckdb/duckdb/issues/8310
-    // return to_user(Database::Client()->insert_user->Execute(username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
-    return to_user(Database::Client()->connection->Query(INSERT_USER_STATEMENT, username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
-}
-
-User User::from_id(const string& id) {
-    return to_user(Database::Client()->get_user_by_id->Execute(id.c_str()));
-}
-
-User User::from_username(const string& username) {
-    return to_user(Database::Client()->get_user_by_username->Execute(username.c_str()));
-}
-
-User User::from_discord_id(uint64_t discord_id) {
-    return to_user(Database::Client()->get_user_by_discord_id->Execute(discord_id));
-}
-
-User User::from_game_id(uint32_t game_id) {
-    return to_user(Database::Client()->get_user_by_game_id->Execute(game_id));
-}
-
-User User::from_game_name(const string& game_name) {
-    return to_user(Database::Client()->get_user_by_ign->Execute(game_name.c_str()));
-}
-
-// #include <iostream>
-void User::set_game_mode(User::GameMode game_mode) {
-    auto result = Database::Client()->update_user_game_mode->Execute(static_cast<bool>(game_mode), id.c_str());
-    VERIFY_SUCCESS_AND_SIZE(result, 1);
-    this->game_mode = game_mode;
-}
-
-inline const string to_string(User::GameMode game_mode) {
-    switch (game_mode) {
-        case User::GameMode::EASY:
-            return "EASY";
-        case User::GameMode::REALISM:
-            return "REALISM";
-        default:
-            return "[UNKNOWN]";
-    }
-}
-
-const string User::repr(const User& user) {
-    if (!user.valid) return "<User.INVALID>";
-    return "<User id=" + user.id + " username=" + user.username + " discord_id=" + to_string(user.discord_id) + " game_id=" + to_string(user.game_id) + " game_name=" + user.game_name + " game_mode=" + to_string(user.game_mode) + ">";
-}
-
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
+py::dict to_dict(const User& user) {
+    return py::dict(
+        "id"_a = user.id,
+        "username"_a = user.username,
+        "discord_id"_a = user.discord_id,
+        "game_id"_a = user.game_id,
+        "game_name"_a = user.game_name,
+        "game_mode"_a = to_string(user.game_mode),
+        "wear_training"_a = user.wear_training,
+        "repair_training"_a = user.repair_training,
+        "l_training"_a = user.l_training,
+        "h_training"_a = user.h_training,
+        "fuel_training"_a = user.fuel_training,
+        "co2_training"_a = user.co2_training,
+        "fuel_price"_a = user.fuel_price,
+        "co2_price"_a = user.co2_price,
+        "accumulated_count"_a = user.accumulated_count,
+        "load"_a = user.load,
+        "role"_a = to_string(user.role)
+    );
+}
+
 void pybind_init_game(py::module_& m) {
     py::module_ m_game = m.def_submodule("game");
-
-    py::class_<Campaign> campaign_class(m_game, "Campaign");
-    py::enum_<Campaign::Airline>(campaign_class, "Airline")
-        .value("C4_4HR", Campaign::Airline::C4_4HR).value("C4_8HR", Campaign::Airline::C4_8HR).value("C4_12HR", Campaign::Airline::C4_12HR).value("C4_16HR", Campaign::Airline::C4_16HR).value("C4_20HR", Campaign::Airline::C4_20HR).value("C4_24HR", Campaign::Airline::C4_24HR)
-        .value("C3_4HR", Campaign::Airline::C3_4HR).value("C3_8HR", Campaign::Airline::C3_8HR).value("C3_12HR", Campaign::Airline::C3_12HR).value("C3_16HR", Campaign::Airline::C3_16HR).value("C3_20HR", Campaign::Airline::C3_20HR).value("C3_24HR", Campaign::Airline::C3_24HR)
-        .value("C2_4HR", Campaign::Airline::C2_4HR).value("C2_8HR", Campaign::Airline::C2_8HR).value("C2_12HR", Campaign::Airline::C2_12HR).value("C2_16HR", Campaign::Airline::C2_16HR).value("C2_20HR", Campaign::Airline::C2_20HR).value("C2_24HR", Campaign::Airline::C2_24HR)
-        .value("C1_4HR", Campaign::Airline::C1_4HR).value("C1_8HR", Campaign::Airline::C1_8HR).value("C1_12HR", Campaign::Airline::C1_12HR).value("C1_16HR", Campaign::Airline::C1_16HR).value("C1_20HR", Campaign::Airline::C1_20HR).value("C1_24HR", Campaign::Airline::C1_24HR)
-        .value("NONE", Campaign::Airline::NONE);
-    py::enum_<Campaign::Eco>(campaign_class, "Eco")
-        .value("C_4HR", Campaign::Eco::C_4HR).value("C_8HR", Campaign::Eco::C_8HR).value("C_12HR", Campaign::Eco::C_12HR).value("C_16HR", Campaign::Eco::C_16HR).value("C_20HR", Campaign::Eco::C_20HR).value("C_24HR", Campaign::Eco::C_24HR)
-        .value("NONE", Campaign::Eco::NONE);
-    campaign_class
-        .def_readonly("pax_activated", &Campaign::pax_activated)
-        .def_readonly("cargo_activated", &Campaign::cargo_activated)
-        .def_readonly("eco_activated", &Campaign::eco_activated)
-        .def_static("Default", &Campaign::Default)
-        .def_static("parse", &Campaign::parse, "s"_a)
-        .def("estimate_pax_reputation", &Campaign::estimate_pax_reputation, "base_reputation"_a = 45)
-        .def("estimate_cargo_reputation", &Campaign::estimate_cargo_reputation, "base_reputation"_a = 45);
 
     py::class_<User> user_class(m_game, "User");
     py::enum_<User::GameMode>(user_class, "GameMode")
         .value("EASY", User::GameMode::EASY)
         .value("REALISM", User::GameMode::REALISM);
+    py::enum_<User::Role>(user_class, "Role")
+        .value("USER", User::Role::USER)
+        .value("TRUSTED_USER", User::Role::TRUSTED_USER)
+        .value("ADMIN", User::Role::ADMIN);
     user_class
         .def_readonly("id", &User::id)
         .def_readonly("username", &User::username)
@@ -253,9 +395,47 @@ void pybind_init_game(py::module_& m) {
         .def_static("create", &User::create, "username"_a, "password"_a, "game_id"_a, "game_name"_a, "game_mode"_a = User::GameMode::EASY, "discord_id"_a = 0)
         .def_static("from_id", &User::from_id, "id"_a)
         .def_static("from_username", &User::from_username, "username"_a)
-        .def_static("from_discord_id", &User::from_discord_id, "discord_id"_a)
         .def_static("from_game_id", &User::from_game_id, "game_id"_a)
         .def_static("from_game_name", &User::from_game_name, "game_name"_a)
+        .def_static("from_discord_id", &User::from_discord_id, "discord_id"_a)
+        .def("set_username", &User::set_username, "username"_a)
+        .def("set_password", &User::set_password, "password"_a)
+        .def("set_game_id", &User::set_game_id, "game_id"_a)
+        .def("set_game_name", &User::set_game_name, "game_name"_a)
+        .def("set_game_mode", &User::set_game_mode, "game_mode"_a)
+        .def("set_discord_id", &User::set_discord_id, "discord_id"_a)
+        .def("set_wear_training", &User::set_wear_training, "wear_training"_a)
+        .def("set_repair_training", &User::set_repair_training, "repair_training"_a)
+        .def("set_l_training", &User::set_l_training, "l_training"_a)
+        .def("set_h_training", &User::set_h_training, "h_training"_a)
+        .def("set_fuel_training", &User::set_fuel_training, "fuel_training"_a)
+        .def("set_co2_training", &User::set_co2_training, "co2_training"_a)
+        .def("set_fuel_price", &User::set_fuel_price, "fuel_price"_a)
+        .def("set_co2_price", &User::set_co2_price, "co2_price"_a)
+        .def("set_accumulated_count", &User::set_accumulated_count, "accumulated_count"_a)
+        .def("set_load", &User::set_load, "load"_a)
+        .def("set_role", &User::set_role, "role"_a)
+        .def("to_dict", py::overload_cast<const User&>(&to_dict))
         .def("__repr__", &User::repr);
+
+    py::class_<Campaign> campaign_class(m_game, "Campaign");
+    py::enum_<Campaign::Airline>(campaign_class, "Airline")
+        .value("C4_4HR", Campaign::Airline::C4_4HR).value("C4_8HR", Campaign::Airline::C4_8HR).value("C4_12HR", Campaign::Airline::C4_12HR).value("C4_16HR", Campaign::Airline::C4_16HR).value("C4_20HR", Campaign::Airline::C4_20HR).value("C4_24HR", Campaign::Airline::C4_24HR)
+        .value("C3_4HR", Campaign::Airline::C3_4HR).value("C3_8HR", Campaign::Airline::C3_8HR).value("C3_12HR", Campaign::Airline::C3_12HR).value("C3_16HR", Campaign::Airline::C3_16HR).value("C3_20HR", Campaign::Airline::C3_20HR).value("C3_24HR", Campaign::Airline::C3_24HR)
+        .value("C2_4HR", Campaign::Airline::C2_4HR).value("C2_8HR", Campaign::Airline::C2_8HR).value("C2_12HR", Campaign::Airline::C2_12HR).value("C2_16HR", Campaign::Airline::C2_16HR).value("C2_20HR", Campaign::Airline::C2_20HR).value("C2_24HR", Campaign::Airline::C2_24HR)
+        .value("C1_4HR", Campaign::Airline::C1_4HR).value("C1_8HR", Campaign::Airline::C1_8HR).value("C1_12HR", Campaign::Airline::C1_12HR).value("C1_16HR", Campaign::Airline::C1_16HR).value("C1_20HR", Campaign::Airline::C1_20HR).value("C1_24HR", Campaign::Airline::C1_24HR)
+        .value("NONE", Campaign::Airline::NONE);
+    py::enum_<Campaign::Eco>(campaign_class, "Eco")
+        .value("C_4HR", Campaign::Eco::C_4HR).value("C_8HR", Campaign::Eco::C_8HR).value("C_12HR", Campaign::Eco::C_12HR).value("C_16HR", Campaign::Eco::C_16HR).value("C_20HR", Campaign::Eco::C_20HR).value("C_24HR", Campaign::Eco::C_24HR)
+        .value("NONE", Campaign::Eco::NONE);
+    campaign_class
+        .def_readonly("pax_activated", &Campaign::pax_activated)
+        .def_readonly("cargo_activated", &Campaign::cargo_activated)
+        .def_readonly("eco_activated", &Campaign::eco_activated)
+        .def_static("Default", &Campaign::Default)
+        .def_static("parse", &Campaign::parse, "s"_a)
+        .def("estimate_pax_reputation", &Campaign::estimate_pax_reputation, "base_reputation"_a = 45)
+        .def("estimate_cargo_reputation", &Campaign::estimate_cargo_reputation, "base_reputation"_a = 45);
+
 }
 #endif

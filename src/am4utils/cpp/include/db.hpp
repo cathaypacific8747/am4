@@ -31,13 +31,12 @@ public:
 };
 
 template <typename T>
-inline void CHECK_SUCCESS(duckdb::unique_ptr<T>& q) {
+inline void CHECK_SUCCESS(duckdb::unique_ptr<T> q) {
     if (q->HasError()) throw DatabaseException(q->GetError());
 }
-inline void VERIFY_SUCCESS_AND_SIZE(duckdb::unique_ptr<duckdb::QueryResult>& q, idx_t size) {
-    CHECK_SUCCESS(q);
-    auto result = q->Fetch();
-    if (!result || result->size() != size) throw DatabaseException("result size mismatch!");
+template <typename T>
+inline void CHECK_SUCCESS_REF(duckdb::unique_ptr<T>& q) {
+    if (q->HasError()) throw DatabaseException(q->GetError());
 }
 
 // multiple threads can use the same connection?
@@ -46,13 +45,31 @@ struct Database {
     duckdb::unique_ptr<DuckDB> database;
     duckdb::unique_ptr<Connection> connection;
     
-    duckdb::unique_ptr<PreparedStatement> insert_user;
+    duckdb::unique_ptr<PreparedStatement> verify_user_by_username;
+    // duckdb::unique_ptr<PreparedStatement> insert_user;
     duckdb::unique_ptr<PreparedStatement> get_user_by_id;
     duckdb::unique_ptr<PreparedStatement> get_user_by_username;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_discord_id;
     duckdb::unique_ptr<PreparedStatement> get_user_by_game_id;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_ign;
+    duckdb::unique_ptr<PreparedStatement> get_user_by_game_name;
+    duckdb::unique_ptr<PreparedStatement> get_user_by_discord_id;
+
+    duckdb::unique_ptr<PreparedStatement> update_user_username;
+    duckdb::unique_ptr<PreparedStatement> update_user_password;
+    duckdb::unique_ptr<PreparedStatement> update_user_game_id;
+    duckdb::unique_ptr<PreparedStatement> update_user_game_name;
     duckdb::unique_ptr<PreparedStatement> update_user_game_mode;
+    duckdb::unique_ptr<PreparedStatement> update_user_discord_id;
+    duckdb::unique_ptr<PreparedStatement> update_user_wear_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_repair_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_l_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_h_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_fuel_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_co2_training;
+    duckdb::unique_ptr<PreparedStatement> update_user_fuel_price;
+    duckdb::unique_ptr<PreparedStatement> update_user_co2_price;
+    duckdb::unique_ptr<PreparedStatement> update_user_accumulated_count;
+    duckdb::unique_ptr<PreparedStatement> update_user_load;
+    duckdb::unique_ptr<PreparedStatement> update_user_role;
 
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B
     static idx_t get_airport_idx_by_id(uint16_t id);

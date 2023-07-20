@@ -6,6 +6,77 @@
 using std::string;
 using std::to_string;
 
+struct User {
+    enum class GameMode {
+        EASY = 0,
+        REALISM = 1,
+    };
+
+    enum class Role : uint8_t {
+        USER = 0,
+        TRUSTED_USER = 1,
+        ADMIN = 64,
+    };
+
+    string id;
+    string username;
+    uint32_t game_id;
+    string game_name;
+    GameMode game_mode;
+    uint64_t discord_id;
+    uint8_t wear_training; // 0-5
+    uint8_t repair_training; // 0-5
+    uint8_t l_training; // 0-6
+    uint8_t h_training; // 0-6
+    uint8_t fuel_training; // 0-3
+    uint8_t co2_training; // 0-5
+    uint16_t fuel_price; // 0-3000
+    uint8_t co2_price; // 0-200
+    uint16_t accumulated_count; // for use in reputation price calculation
+    double load; // 0-100
+    Role role; // user
+    bool valid;
+
+    User();
+    User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
+    static User Default(bool realism = false);
+    
+    static User create(const string& username, const string& password, uint32_t game_id, const string& game_name, GameMode game_mode = GameMode::EASY, uint64_t discord_id = 0);
+    static User from_id(const string& id);
+    static User from_username(const string& username);
+    static User from_game_id(uint32_t game_id);
+    static User from_game_name(const string& game_name);
+    static User from_discord_id(uint64_t discord_id);
+
+    bool set_username(const string& username);
+    bool set_password(const string& password);
+    bool set_game_id(uint32_t game_id);
+    bool set_game_name(const string& game_name);
+    bool set_game_mode(GameMode game_mode);
+    bool set_discord_id(uint64_t discord_id);
+    bool set_wear_training(uint8_t wear_training);
+    bool set_repair_training(uint8_t repair_training);
+    bool set_l_training(uint8_t l_training);
+    bool set_h_training(uint8_t h_training);
+    bool set_fuel_training(uint8_t fuel_training);
+    bool set_co2_training(uint8_t co2_training);
+    bool set_fuel_price(uint16_t fuel_price);
+    bool set_co2_price(uint8_t co2_price);
+    bool set_accumulated_count(uint16_t accumulated_count);
+    bool set_load(double load);
+    bool set_role(const User::Role& role);
+
+    static const string repr(const User& r);
+};
+
+inline const string to_string(User::GameMode game_mode);
+
+struct Guild {
+    uint64_t id;
+    uint64_t easy_role_id;
+    uint64_t cargo_role_id;
+};
+
 struct Campaign {
     // type | duration
     enum class Airline : uint8_t {
@@ -35,53 +106,4 @@ struct Campaign {
     static double _estimate_airline_reputation(Airline airline);
     static double _estimate_eco_reputation(Eco eco);
     bool _set(const string& s);
-};
-
-struct User {
-    enum class GameMode {
-        EASY = 0,
-        REALISM = 1,
-    };
-
-    string id;
-    string username;
-    uint32_t game_id;
-    string game_name;
-    GameMode game_mode;
-    uint64_t discord_id;
-    uint8_t wear_training; // 0-5
-    uint8_t repair_training; // 0-5
-    uint8_t l_training; // 0-6
-    uint8_t h_training; // 0-6
-    uint8_t fuel_training; // 0-3
-    uint8_t co2_training; // 0-5
-    uint16_t fuel_price; // 0-3000
-    uint8_t co2_price; // 0-200
-    uint16_t accumulated_count; // for use in reputation price calculation
-    double load; // 0-100
-    string role; // user
-    bool valid;
-
-    User();
-    User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
-    static User Default(bool realism = false);
-    
-    static User create(const string& username, const string& password, uint32_t game_id, const string& game_name, GameMode game_mode = GameMode::EASY, uint64_t discord_id = 0);
-    static User from_id(const string& id);
-    static User from_username(const string& username);
-    static User from_discord_id(uint64_t discord_id);
-    static User from_game_id(uint32_t game_id);
-    static User from_game_name(const string& game_name);
-    void set_game_mode(GameMode game_mode);
-
-    static const string repr(const User& r);
-};
-
-inline const string to_string(User::GameMode game_mode);
-
-struct Guild {
-    uint64_t id;
-    string prefix;
-    uint64_t easy_role_id;
-    uint64_t cargo_role_id;
 };

@@ -16,8 +16,7 @@ shared_ptr<Database> Database::Client(const string& home_dir, const string& db_n
         default_client->database = make_uniq<DuckDB>(home_dir + "/data/" + db_name + ".db");
         default_client->connection = make_uniq<Connection>(*default_client->database);
 
-        auto result = default_client->connection->Query("SET home_directory = '" + home_dir + "';");
-        CHECK_SUCCESS(result);
+        CHECK_SUCCESS(default_client->connection->Query("SET home_directory = '" + home_dir + "';"));
     }
     return default_client;
 }
@@ -29,10 +28,10 @@ shared_ptr<Database> Database::Client() {
 }
 
 void Database::populate_database() {
-    auto result = connection->Query(
+    CHECK_SUCCESS(connection->Query(
         "CREATE TABLE IF NOT EXISTS users ("
-        "  id                UUID PRIMARY KEY NOT NULL DEFAULT uuid(),"
-        "  username          VARCHAR UNIQUE NOT NULL DEFAULT '',"
+        "  id                UUID NOT NULL DEFAULT uuid(),"
+        "  username          VARCHAR NOT NULL DEFAULT '',"
         "  password          VARCHAR NOT NULL DEFAULT '',"
         "  game_id           UBIGINT NOT NULL DEFAULT 0,"
         "  game_name         VARCHAR NOT NULL DEFAULT '',"
@@ -48,38 +47,88 @@ void Database::populate_database() {
         "  co2_price         UTINYINT NOT NULL DEFAULT 120,"
         "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
         "  load              DOUBLE NOT NULL DEFAULT 87,"
-        "  role              VARCHAR NOT NULL DEFAULT 'user',"
+        "  role              UTINYINT NOT NULL DEFAULT 0,"
         ");"
-    );
-    CHECK_SUCCESS(result);
-    result = connection->Query("CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, game_id, game_name, discord_id);");
-    CHECK_SUCCESS(result);
+    ));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, game_id, game_name, discord_id);"));
 
-    insert_user = connection->Prepare(INSERT_USER_STATEMENT);
-    CHECK_SUCCESS(insert_user);
+    verify_user_by_username = connection->Prepare("SELECT id FROM users WHERE username = $1 LIMIT 1;");
+    CHECK_SUCCESS_REF(verify_user_by_username);
+
+    // insert_user = connection->Prepare(INSERT_USER_STATEMENT);
+    // CHECK_SUCCESS_REF(insert_user);
 
     get_user_by_id = connection->Prepare(SELECT_USER_STATEMENT("id"));
-    CHECK_SUCCESS(get_user_by_id);
+    CHECK_SUCCESS_REF(get_user_by_id);
 
     get_user_by_username = connection->Prepare(SELECT_USER_STATEMENT("username"));
-    CHECK_SUCCESS(get_user_by_username);
-
-    get_user_by_discord_id = connection->Prepare(SELECT_USER_STATEMENT("discord_id"));
-    CHECK_SUCCESS(get_user_by_discord_id);
+    CHECK_SUCCESS_REF(get_user_by_username);
 
     get_user_by_game_id = connection->Prepare(SELECT_USER_STATEMENT("game_id"));
-    CHECK_SUCCESS(get_user_by_game_id);
+    CHECK_SUCCESS_REF(get_user_by_game_id);
 
-    get_user_by_ign = connection->Prepare(SELECT_USER_STATEMENT("game_name"));
-    CHECK_SUCCESS(get_user_by_ign);
+    get_user_by_game_name = connection->Prepare(SELECT_USER_STATEMENT("game_name"));
+    CHECK_SUCCESS_REF(get_user_by_game_name);
+    
+    get_user_by_discord_id = connection->Prepare(SELECT_USER_STATEMENT("discord_id"));
+    CHECK_SUCCESS_REF(get_user_by_discord_id);
+
+
+    update_user_username = connection->Prepare("UPDATE users SET username = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_username);
+
+    update_user_password = connection->Prepare("UPDATE users SET password = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_password);
+
+    update_user_game_id = connection->Prepare("UPDATE users SET game_id = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_game_id);
+
+    update_user_game_name = connection->Prepare("UPDATE users SET game_name = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_game_name);
 
     update_user_game_mode = connection->Prepare("UPDATE users SET game_mode = $1 WHERE id = $2;");
-    CHECK_SUCCESS(update_user_game_mode);
+    CHECK_SUCCESS_REF(update_user_game_mode);
+
+    update_user_discord_id = connection->Prepare("UPDATE users SET discord_id = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_discord_id);
+
+    update_user_wear_training = connection->Prepare("UPDATE users SET wear_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_wear_training);
+
+    update_user_repair_training = connection->Prepare("UPDATE users SET repair_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_repair_training);
+
+    update_user_l_training = connection->Prepare("UPDATE users SET l_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_l_training);
+
+    update_user_h_training = connection->Prepare("UPDATE users SET h_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_h_training);
+
+    update_user_fuel_training = connection->Prepare("UPDATE users SET fuel_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_fuel_training);
+
+    update_user_co2_training = connection->Prepare("UPDATE users SET co2_training = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_co2_training);
+
+    update_user_fuel_price = connection->Prepare("UPDATE users SET fuel_price = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_fuel_price);
+
+    update_user_co2_price = connection->Prepare("UPDATE users SET co2_price = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_co2_price);
+
+    update_user_accumulated_count = connection->Prepare("UPDATE users SET accumulated_count = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_accumulated_count);
+
+    update_user_load = connection->Prepare("UPDATE users SET load = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_load);
+
+    update_user_role = connection->Prepare("UPDATE users SET role = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_role);
 }
 
 void Database::populate_internal() {
     auto result = connection->Query("SELECT * FROM read_parquet('~/data/airports.parquet');");
-    CHECK_SUCCESS(result);
+    CHECK_SUCCESS_REF(result);
     idx_t i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
@@ -88,7 +137,7 @@ void Database::populate_internal() {
     }
 
     result = connection->Query("SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
-    CHECK_SUCCESS(result);
+    CHECK_SUCCESS_REF(result);
     i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
@@ -97,7 +146,7 @@ void Database::populate_internal() {
     }
 
     result = connection->Query("SELECT yd, jd, fd, d FROM read_parquet('~/data/routes.parquet');");
-    CHECK_SUCCESS(result);
+    CHECK_SUCCESS_REF(result);
     i = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
@@ -529,8 +578,7 @@ void init(string home_dir, string db_name) {
 
 void reset() {
     auto client = Database::Client();
-    auto result = client->connection->Query("DROP TABLE users;");
-    CHECK_SUCCESS(result);
+    CHECK_SUCCESS(client->connection->Query("DROP TABLE users;"));
     client->populate_database();
 }
 
