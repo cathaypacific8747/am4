@@ -3,7 +3,7 @@
 Tools and utilities for Airline Manager 4 bot.
 
 Supports Python 3.9 - 3.11 on the following platforms:
-- manylinux2_24 x86_64 (ubuntu 16.10+, debian 9+, fedora 25+)
+- manylinux2_28 x86_64 (ubuntu 18.04+, debian 10+, fedora 30+)
 - windows amd64
 - macos x86_64 / amd64
 
@@ -11,65 +11,25 @@ Supports Python 3.9 - 3.11 on the following platforms:
 download the [DuckDB command line binaries](https://duckdb.org/docs/installation/)
 
 ```sql
-CREATE TABLE airports (
-  id         USMALLINT PRIMARY KEY NOT NULL,
-  name       VARCHAR NOT NULL,
-  fullname   VARCHAR NOT NULL,
-  country    VARCHAR NOT NULL,
-  continent  VARCHAR NOT NULL,
-  iata       VARCHAR UNIQUE NOT NULL,
-  icao       VARCHAR UNIQUE NOT NULL,
-  lat        DOUBLE NOT NULL,
-  lng        DOUBLE NOT NULL,
-  rwy        USMALLINT NOT NULL,
-  market     UTINYINT NOT NULL,
-  hub_cost   UINTEGER NOT NULL,
-  rwy_codes  VARCHAR NOT NULL
+CREATE TABLE IF NOT EXISTS users (
+  id                UUID NOT NULL DEFAULT uuid(),
+  username          VARCHAR NOT NULL DEFAULT '',
+  password          VARCHAR NOT NULL DEFAULT '',
+  game_id           UBIGINT NOT NULL DEFAULT 0,
+  game_name         VARCHAR NOT NULL DEFAULT '',
+  game_mode         BOOLEAN NOT NULL DEFAULT FALSE,
+  discord_id        UBIGINT NOT NULL DEFAULT 0,
+  wear_training     UTINYINT NOT NULL DEFAULT 0,
+  repair_training   UTINYINT NOT NULL DEFAULT 0,
+  l_training        UTINYINT NOT NULL DEFAULT 0,
+  h_training        UTINYINT NOT NULL DEFAULT 0,
+  fuel_training     UTINYINT NOT NULL DEFAULT 0,
+  co2_training      UTINYINT NOT NULL DEFAULT 0,
+  fuel_price        USMALLINT NOT NULL DEFAULT 700,
+  co2_price         UTINYINT NOT NULL DEFAULT 120,
+  accumulated_count USMALLINT NOT NULL DEFAULT 0,
+  load              DOUBLE NOT NULL DEFAULT 87,
+  role              UTINYINT NOT NULL DEFAULT 0,
 );
-INSERT INTO airports SELECT * FROM read_parquet('./data/airports.parquet');
-CREATE INDEX airports_idx ON airports(name, fullname, country, continent, lat, lng, rwy, market);
-
-SELECT *, jaro_winkler_similarity(name, 'hostomel') AS score FROM airports ORDER BY score DESC LIMIT 5;
-
-CREATE TABLE aircrafts (
-  id           USMALLINT NOT NULL,
-  shortname    VARCHAR NOT NULL,
-  manufacturer VARCHAR NOT NULL,
-  name         VARCHAR NOT NULL,
-  type         UTINYINT NOT NULL,
-  priority     UTINYINT NOT NULL,
-  eid          USMALLINT NOT NULL,
-  ename        VARCHAR NOT NULL,
-  speed        FLOAT NOT NULL,
-  fuel         FLOAT NOT NULL,
-  co2          FLOAT NOT NULL,
-  cost         UINTEGER NOT NULL,
-  capacity     UINTEGER NOT NULL,
-  rwy          USMALLINT NOT NULL,
-  check_cost   UINTEGER NOT NULL,
-  range        USMALLINT NOT NULL,
-  ceil         USMALLINT NOT NULL,
-  maint        USMALLINT NOT NULL,
-  pilots       UTINYINT NOT NULL,
-  crew         UTINYINT NOT NULL,
-  engineers    UTINYINT NOT NULL,
-  technicians  UTINYINT NOT NULL,
-  img          VARCHAR NOT NULL,
-  wingspan     UTINYINT NOT NULL,
-  length       UTINYINT NOT NULL,
-);
-INSERT INTO aircrafts SELECT * FROM read_parquet('./data/aircrafts.parquet');
-CREATE INDEX aircrafts_idx ON aircrafts(id, shortname, manufacturer, name, type, priority, eid, ename, speed, fuel, co2, cost, capacity, rwy, check_cost, range, maint, img);
-
-
-CREATE TABLE routes (
-  oid USMALLINT NOT NULL,
-  did USMALLINT NOT NULL,
-  yd  USMALLINT NOT NULL,
-  jd  USMALLINT NOT NULL,
-  fd  USMALLINT NOT NULL,
-  d   FLOAT     NOT NULL,
-);
-INSERT INTO routes SELECT * FROM read_parquet('./data/routes.parquet');
-CREATE INDEX routes_idx ON routes(oid, did, yd, jd, fd, d);
+CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, game_id, game_name, discord_id);
 ```

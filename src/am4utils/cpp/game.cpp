@@ -196,7 +196,7 @@ bool User::set_accumulated_count(uint16_t accumulated_count) {
 }
 
 bool User::set_load(double load) {
-    if (load < 0 || load > 100) return false;
+    if (load <= 0 || load > 100) return false;
     VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_load->Execute(load, id));
     this->load = load;
     return true;

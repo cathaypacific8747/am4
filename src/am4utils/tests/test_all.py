@@ -2,10 +2,7 @@ import pytest
 
 from am4utils.db import init, reset
 from am4utils.demand import CargoDemand
-from am4utils.aircraft import (
-    Aircraft,
-    PaxConfig, CargoConfig
-)
+from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
 from am4utils.route import Route, AircraftRoute, find_routes
 from am4utils.game import Campaign, User
@@ -114,24 +111,25 @@ def test_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744').ac
-    r = AircraftRoute.create(ap0, ap1, ac)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
     assert int(r.route.direct_distance) == 9630
     assert r.route.pax_demand.y == 1093
     cfg = r.config
     assert cfg.y == 0
     assert cfg.j == 1
     assert cfg.f == 138
-    assert cfg.algorithm == PaxConfig.Algorithm.FJY
+    assert cfg.algorithm == Aircraft.PaxConfig.Algorithm.FJY
 
     ap2 = Airport.search('MTR').ap
-    r = AircraftRoute.create(ap0, ap2, ac)
+    r = AircraftRoute.create(ap0, ap2, ac, options)
     assert int(r.route.direct_distance) == 16394
     assert r.route.pax_demand.y == 303
     cfg = r.config
     assert cfg.y == 348
     assert cfg.j == 34
     assert cfg.f == 0
-    assert cfg.algorithm == PaxConfig.Algorithm.YJF
+    assert cfg.algorithm == Aircraft.PaxConfig.Algorithm.YJF
 
 def test_cargo_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
@@ -144,7 +142,7 @@ def test_cargo_route_with_aircraft():
     cfg = r.config
     assert cfg.l == 100
     assert cfg.h == 0
-    assert cfg.algorithm == CargoConfig.Algorithm.L
+    assert cfg.algorithm == Aircraft.CargoConfig.Algorithm.L
 
     ap1 = Airport.search('BPC').ap
     r = AircraftRoute.create(ap0, ap1, ac)
@@ -154,7 +152,7 @@ def test_cargo_route_with_aircraft():
     cfg = r.config
     assert cfg.l == 80
     assert cfg.h == 20
-    assert cfg.algorithm == CargoConfig.Algorithm.L
+    assert cfg.algorithm == Aircraft.CargoConfig.Algorithm.L
 
 def test_route_stopover():
     ap0 = Airport.search('VHHH').ap
@@ -228,7 +226,7 @@ def test_route_insufficient_demand():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744').ac
-    options = AircraftRoute.Options(trips_per_day=100)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=100)
     r = AircraftRoute.create(ap0, ap1, ac, options)
     assert AircraftRoute.Warning.ERR_INSUFFICIENT_DEMAND in r.warnings
 
@@ -395,5 +393,5 @@ def test_user_invalid_settings():
     success = u.set_load(101)
     assert not success
 
-    success = u.set_load(-1)
+    success = u.set_load(0)
     assert not success

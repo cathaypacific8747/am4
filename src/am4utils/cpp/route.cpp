@@ -14,14 +14,13 @@ Route::Route() : direct_distance(0.0), valid(false) {};
 Route Route::create(const Airport& ap1, const Airport& ap2) {
     if (ap1.id == ap2.id) throw std::invalid_argument("Cannot create route with same origin and destination");
 
-    Database::DBRoute db_route = Database::Client()->get_dbroute_by_ids(ap1.id, ap2.id);
+    const auto& db = Database::Client();
+    const uint16_t o_idx = db->airport_id_hashtable[ap1.id];
+    const uint16_t d_idx = db->airport_id_hashtable[ap2.id];
+    
     Route route;
-    route.pax_demand = PaxDemand(
-        db_route.yd,
-        db_route.jd,
-        db_route.fd
-    );
-    route.direct_distance = db_route.distance;
+    route.pax_demand = db->pax_demands[db->get_dbroute_idx(o_idx, d_idx)];
+    route.direct_distance = db->distances[o_idx][d_idx];
     route.valid = true;
     return route;
 }
@@ -34,6 +33,101 @@ double inline Route::calc_distance(double lat1, double lon1, double lat2, double
 
 double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
+}
+
+bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user, double load, AircraftRoute& acr) {
+    const Aircraft::PaxConfig::Algorithm config_algorithm = std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::PaxConfig::Algorithm::AUTO : get<Aircraft::PaxConfig::Algorithm>(options.config_algorithm);
+    bool insufficient_demand = false;
+    switch (options.tpd_mode) {
+        case AircraftRoute::Options::TPDMode::AUTO:
+        {
+            // tpd vs. max_income is mostly a skewed parabola when demand is limited,
+            // mostly a linear function when demand is abundant                       
+            // 
+            // here, we attempt to strike a balance between tpd and max_income:
+            // if we only target max_income, we might end up with a low tpd while the demand left is still high
+            // so we'll try to find a tpd that is within 90% of the max_income
+            // higher tpds are immediately invalidated once demand runs out
+            const PaxTicket ticket = PaxTicket::from_optimal(
+                acr.route.direct_distance,
+                user.game_mode
+            );
+            uint16_t tpd_candidate = 1;
+            double mi_candidate = 0;
+            double top_mi = 0;
+            // const uint16_t max_t = (acr.route.pax_demand.y + acr.route.pax_demand.j + acr.route.pax_demand.f) / load / ac_capacity;
+            const PaxDemand load_adj_pd = acr.route.pax_demand / load;
+            for (uint16_t t = 1; t <= 3000; t++) {
+                const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
+                    load_adj_pd / t,
+                    ac_capacity,
+                    acr.route.direct_distance,
+                    user.game_mode,
+                    config_algorithm
+                );
+                if (!cfg.valid) {
+                    if (t == 1) {
+                        acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
+                        insufficient_demand = true;
+                    }
+                    std::cout << t << ": INSUFFICIENT_DEMAND, breaking" << std::endl;
+                    break;
+                }
+                const double max_income = (
+                    cfg.y * ticket.y +
+                    cfg.j * ticket.j +
+                    cfg.f * ticket.f
+                );
+                if (max_income > top_mi) top_mi = max_income;
+                std::cout << t << ": top_mi=" << top_mi << " max_income=" << max_income;
+                if (max_income > top_mi * 0.9) {
+                    tpd_candidate = t;
+                    mi_candidate = max_income;
+                    std::cout << " (candidate)";
+                }
+                std::cout << std::endl;
+            }
+            acr.trips_per_day = tpd_candidate;
+            acr.max_income = mi_candidate;
+            acr.ticket = ticket;
+            break;
+        }
+        case AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF:
+        {
+            // to be implemented
+            throw std::runtime_error("AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF not implemented");
+            break;
+        }
+        case AircraftRoute::Options::TPDMode::STRICT:
+        {
+            const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
+                acr.route.pax_demand / options.trips_per_day / load,
+                ac_capacity,
+                acr.route.direct_distance,
+                user.game_mode,
+                config_algorithm
+            );
+            acr.trips_per_day = options.trips_per_day;
+            if (!cfg.valid) {
+                acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
+                insufficient_demand = true;
+                break;
+            }
+            const PaxTicket ticket = PaxTicket::from_optimal(
+                acr.route.direct_distance,
+                user.game_mode
+            );
+            acr.ticket = ticket;
+            acr.max_income = (
+                cfg.y * ticket.y +
+                cfg.j * ticket.j +
+                cfg.f * ticket.f
+            );
+            acr.config = cfg;
+            break;
+        }
+    }
+    return insufficient_demand;
 }
 
 AircraftRoute::AircraftRoute() : valid(false) {};
@@ -69,44 +163,29 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
     }
     
     const double load = user.load / 100.0;
-    const PaxDemand pd_pf = PaxDemand(
-        acr.route.pax_demand.y / options.trips_per_day / load,
-        acr.route.pax_demand.j / options.trips_per_day / load,
-        acr.route.pax_demand.f / options.trips_per_day / load
-    );
-
     switch (ac.type) {
         case Aircraft::Type::PAX:
         {
-            const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
-                pd_pf,
+            bool insufficient_demand = update_route_pax(
                 static_cast<uint16_t>(ac.capacity),
-                acr.route.direct_distance,
-                user.game_mode
+                options,
+                user,
+                load,
+                acr
             );
-            if (!cfg.valid) {
-                acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
-                return acr;
-            }
-            acr.config = cfg;
-            const PaxTicket ticket = PaxTicket::from_optimal(
-                acr.route.direct_distance,
-                user.game_mode
-            );
-            acr.ticket = ticket;
-            acr.max_income = (
-                cfg.y * ticket.y +
-                cfg.j * ticket.j +
-                cfg.f * ticket.f
-            );
+            if (insufficient_demand) return acr;
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, load, user);
             break;
         }
         case Aircraft::Type::CARGO:
         {
             const Aircraft::CargoConfig cfg = Aircraft::CargoConfig::calc_cargo_conf(
-                CargoDemand(pd_pf),
+                CargoDemand(
+                    acr.route.pax_demand / options.trips_per_day / load
+                ),
                 ac.capacity,
-                user.l_training
+                user.l_training,
+                std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::CargoConfig::Algorithm::AUTO : get<Aircraft::CargoConfig::Algorithm>(options.config_algorithm)
             );
             if (!cfg.valid) {
                 acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
@@ -122,36 +201,25 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
                 cfg.l * 0.7 * ticket.l +
                 cfg.h * ticket.h
             ) * ac.capacity / 100.0;
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::CargoConfig>(acr.config), full_distance, load, user);
             break;
         }
         case Aircraft::Type::VIP:
         {
-            const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
-                pd_pf,
+            bool insufficient_demand = update_route_pax(
                 static_cast<uint16_t>(ac.capacity),
-                acr.route.direct_distance,
-                user.game_mode
+                options,
+                user,
+                load,
+                acr
             );
-            if (!cfg.valid) {
-                acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
-                return acr;
-            }
-            acr.config = cfg;
-            const VIPTicket ticket = VIPTicket::from_optimal(
-                acr.route.direct_distance
-            );
-            acr.ticket = ticket;
-            acr.max_income = (
-                cfg.y * ticket.y +
-                cfg.j * ticket.j +
-                cfg.f * ticket.f
-            );
+            if (insufficient_demand) return acr;
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, load, user);
             break;
         }
     }
     acr.income = acr.max_income * load;
     acr.fuel = AircraftRoute::calc_fuel(ac, full_distance, user);
-    acr.co2 = ac.type == Aircraft::Type::CARGO ? AircraftRoute::calc_co2(ac, get<Aircraft::CargoConfig>(acr.config), full_distance, load, user) : AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, load, user);
     acr.acheck_cost = ac.check_cost * acr.flight_time / ac.maint;
     acr.repair_cost = ac.cost / 1000.0 * 0.0075; // each flight adds random [0, 1.5]% wear, training points decrease the top bound (?)
     acr.profit = acr.income - acr.fuel * user.fuel_price / 1000.0 - acr.co2 * user.co2_price / 1000.0 - acr.acheck_cost - acr.repair_cost;
@@ -164,24 +232,43 @@ AircraftRoute::Stopover::Stopover() : exists(false) {}
 AircraftRoute::Stopover::Stopover(const Airport& airport, double full_distance) : airport(airport), full_distance(full_distance), exists(true) {}
 AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode) {
     const auto& db = Database::Client();
+    const auto& airports = db->airports;
+    const auto& distances = db->distances;
     Airport candidate = Airport();
     double candidate_distance = 99999;
     
-    const uint16_t rwy_requirement = game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
-    const idx_t o_idx = Database::get_airport_idx_by_id(origin.id);
-    const idx_t d_idx = Database::get_airport_idx_by_id(destination.id);
-    for (const Airport& ap : db->airports) {
-        if (ap.rwy < rwy_requirement || ap.id == origin.id || ap.id == destination.id) continue;
-        const idx_t this_idx = Database::get_airport_idx_by_id(ap.id);
-        const double d_o = db->routes[Database::get_dbroute_idx(o_idx, this_idx)].distance;
-        if (d_o > aircraft.range || d_o < 100) continue;
-        const double d_d = db->routes[Database::get_dbroute_idx(this_idx, d_idx)].distance;
-        if (d_d > aircraft.range || d_d < 100) continue;
-        if (d_o + d_d < candidate_distance) {
-            candidate = ap;
-            candidate_distance = d_o + d_d;
+    const double ac_range = static_cast<double>(aircraft.range);
+    const uint16_t o_idx = db->airport_id_hashtable[origin.id];
+    const uint16_t d_idx = db->airport_id_hashtable[destination.id];
+    // d_o & d_d will catch cases where idx == o_idx || idx == d_idx
+    if (game_mode == User::GameMode::EASY) {
+        for (uint16_t idx = 0; idx < AIRPORT_COUNT; idx++) {
+            const Airport& ap = airports[idx];
+            const double d_o = distances[o_idx][idx];
+            if (d_o > ac_range || d_o < 100.0) continue;
+            const double d_d = distances[d_idx][idx];
+            if (d_d > ac_range || d_d < 100.0) continue;
+            if (d_o + d_d < candidate_distance) {
+                candidate = ap;
+                candidate_distance = d_o + d_d;
+            }
+        }
+    } else {
+        const uint16_t rwy_requirement = aircraft.rwy;
+        for (uint16_t idx = 0; idx < AIRPORT_COUNT; idx++) {
+            const Airport& ap = airports[idx];
+            if (ap.rwy < rwy_requirement) continue;
+            const double d_o = distances[o_idx][idx];
+            if (d_o > ac_range || d_o < 100.0) continue;
+            const double d_d = distances[d_idx][idx];
+            if (d_d > ac_range || d_d < 100.0) continue;
+            if (d_o + d_d < candidate_distance) {
+                candidate = ap;
+                candidate_distance = d_o + d_d;
+            }
         }
     }
+
     if (!candidate.valid) return Stopover();
     return Stopover(candidate, candidate_distance);
 }
@@ -325,7 +412,6 @@ std::vector<Destination> find_routes(const Airport& origin, const Aircraft& airc
     AircraftRoute::Options updated_options = options;
     updated_options.max_distance = std::min(static_cast<double>(aircraft.range * 2), options.max_distance);
     const uint16_t rwy_requirement = user.game_mode == User::GameMode::EASY ? 0 : aircraft.rwy;
-    // const idx_t o_idx = Database::get_airport_idx_by_id(origin.id);
     for (const Airport& ap : db->airports) {
         if (ap.rwy < rwy_requirement || ap.id == origin.id) continue;
         const AircraftRoute ar = AircraftRoute::create(origin, ap, aircraft, updated_options, user);

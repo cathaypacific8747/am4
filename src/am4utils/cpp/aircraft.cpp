@@ -10,9 +10,9 @@ Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), valid(
 // removes trailing spaces or spaces that suceed commas in-place
 void remove_spaces_custom(string& str) {
     bool space_found = false;
-    int len = str.length();
+    size_t len = str.length();
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         if (str[i] == ' ' && ((i == 0 || i == len - 1 || str[i-1] == ',') || space_found)) {
             space_found = true;
             str.erase(i, 1);
@@ -55,7 +55,7 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
                 if (token.find('c') != string::npos) co2_mod = true;
             }
             try {
-                if (priority == 0) priority = std::stoi(token);
+                if (priority == 0) priority = static_cast<uint8_t>(std::stoi(token));
             } catch (const std::invalid_argument&) {
             } catch (const std::out_of_range&) {
             }
@@ -92,17 +92,17 @@ Aircraft::SearchResult Aircraft::search(const string& s) {
             ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::ID:
-            ac = Database::Client()->get_aircraft_by_id(std::stoi(parse_result.search_str), parse_result.priority);
+            ac = Database::Client()->get_aircraft_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)), parse_result.priority);
             break;
     }
     ac.speed_mod = parse_result.speed_mod;
-    if (ac.speed_mod) ac.speed *= 1.1;
+    if (ac.speed_mod) ac.speed *= 1.1f;
 
     ac.fuel_mod = parse_result.fuel_mod;
-    if (ac.fuel_mod) ac.fuel *= 0.9;
+    if (ac.fuel_mod) ac.fuel *= 0.9f;
     
     ac.co2_mod = parse_result.co2_mod;
-    if (ac.co2_mod) ac.co2 *= 0.9;
+    if (ac.co2_mod) ac.co2 *= 0.9f;
     
     return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
 }
@@ -197,12 +197,12 @@ const string Aircraft::repr(const Aircraft& ac) {
     return result;
 }
 
-
+// test
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
-    config.j = d_pf.f * 3 + d_pf.j * 2 > capacity ? (capacity - config.f * 3) / 2 : d_pf.j;
-    config.y = capacity - config.f * 3 - config.j * 2;
+    config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
+    config.j = std::min(d_pf.j, static_cast<uint16_t>((capacity - config.f * 3) / 2));
+    config.y = static_cast<uint16_t>(capacity - config.f * 3 - config.j * 2);
     config.valid = config.y < d_pf.y;
     config.algorithm = PaxConfig::Algorithm::FJY;
     return config;
@@ -210,9 +210,9 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.f = d_pf.f * 3 > capacity ? capacity / 3 : d_pf.f;
-    config.y = d_pf.f * 3 + d_pf.y > capacity ? capacity - config.f * 3 : d_pf.y;
-    config.j = (capacity - config.f * 3 - config.y) / 2;
+    config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
+    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity - config.f * 3));
+    config.j = static_cast<uint16_t>((capacity - config.f * 3 - config.y) / 2);
     config.valid = config.j < d_pf.j;
     config.algorithm = PaxConfig::Algorithm::FYJ;
     return config;
@@ -220,9 +220,9 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
-    config.f = d_pf.j * 2 + d_pf.f * 3 > capacity ? (capacity - config.j * 2) / 3 : d_pf.f;
-    config.y = capacity - config.j * 2 - config.f * 3;
+    config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
+    config.f = std::min(d_pf.f, static_cast<uint16_t>((capacity - config.j * 2) / 3));
+    config.y = static_cast<uint16_t>(capacity - config.j * 2 - config.f * 3);
     config.valid = config.y < d_pf.y;
     config.algorithm = PaxConfig::Algorithm::JFY;
     return config;
@@ -230,9 +230,9 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.j = d_pf.j * 2 > capacity ? capacity / 2 : d_pf.j;
-    config.y = d_pf.j * 2 + d_pf.y > capacity ? capacity - config.j * 2 : d_pf.y;
-    config.f = capacity - config.y - config.j * 2;
+    config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
+    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity - config.j * 2));
+    config.f = static_cast<uint16_t>(capacity - config.y - config.j * 2);
     config.valid = config.f < d_pf.f;
     config.algorithm = PaxConfig::Algorithm::JYF;
     return config;
@@ -240,9 +240,9 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.y = d_pf.y > capacity ? capacity : d_pf.y;
-    config.f = d_pf.y + d_pf.f * 3 > capacity ? (capacity - config.y) / 3 : d_pf.f;
-    config.j = (capacity - config.y - config.f * 3) / 2;
+    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity));
+    config.f = std::min(d_pf.f, static_cast<uint16_t>((capacity - config.y) / 3));
+    config.j = static_cast<uint16_t>((capacity - config.y - config.f * 3) / 2);
     config.valid = config.j < d_pf.j;
     config.algorithm = PaxConfig::Algorithm::YFJ;
     return config;
@@ -250,35 +250,52 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.y = d_pf.y > capacity ? capacity : d_pf.y;
-    config.j = d_pf.y + d_pf.j * 2 > capacity ? (capacity - config.y) / 2 : d_pf.j;
-    config.f = capacity - config.y - config.j * 2;
+    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity));
+    config.j = std::min(d_pf.j, static_cast<uint16_t>((capacity - config.y) / 2));
+    config.f = static_cast<uint16_t>(capacity - config.y - config.j * 2);
     config.valid = config.f < d_pf.f;
     config.algorithm = PaxConfig::Algorithm::YJF;
     return config;
 };
 
-Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode) {
-    if (game_mode == User::GameMode::EASY) {
-        if (distance < 14425) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode, Aircraft::PaxConfig::Algorithm algorithm) {
+    switch (algorithm) {
+        case Aircraft::PaxConfig::Algorithm::AUTO:
+            if (game_mode == User::GameMode::EASY) {
+                if (distance < 14425) {
+                    return calc_fjy_conf(d_pf, capacity);
+                } else if (distance < 14812.5) {
+                    return calc_fyj_conf(d_pf, capacity);
+                } else if (distance < 15200) {
+                    return calc_yfj_conf(d_pf, capacity);
+                } else {
+                    return calc_yjf_conf(d_pf, capacity);
+                }
+            } else {
+                if (distance < 13888.8888) {
+                    return calc_fjy_conf(d_pf, capacity);
+                } else if (distance < 15694.4444) {
+                    return calc_jfy_conf(d_pf, capacity);
+                } else if (distance < 17500) {
+                    return calc_jyf_conf(d_pf, capacity);
+                } else {
+                    return calc_yjf_conf(d_pf, capacity);
+                }
+            }
+        case Aircraft::PaxConfig::Algorithm::FJY:
             return calc_fjy_conf(d_pf, capacity);
-        } else if (distance < 14812.5) {
+        case Aircraft::PaxConfig::Algorithm::FYJ:
             return calc_fyj_conf(d_pf, capacity);
-        } else if (distance < 15200) {
-            return calc_yfj_conf(d_pf, capacity);
-        } else {
-            return calc_yjf_conf(d_pf, capacity);
-        }
-    } else {
-        if (distance < 13888.8888) {
-            return calc_fjy_conf(d_pf, capacity);
-        } else if (distance < 15694.4444) {
+        case Aircraft::PaxConfig::Algorithm::JFY:
             return calc_jfy_conf(d_pf, capacity);
-        } else if (distance < 17500) {
+        case Aircraft::PaxConfig::Algorithm::JYF:
             return calc_jyf_conf(d_pf, capacity);
-        } else {
+        case Aircraft::PaxConfig::Algorithm::YFJ:
+            return calc_yfj_conf(d_pf, capacity);
+        case Aircraft::PaxConfig::Algorithm::YJF:
             return calc_yjf_conf(d_pf, capacity);
-        }
+        default:
+            return PaxConfig();
     }
 }
 
@@ -341,12 +358,24 @@ Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf
     return config;
 }
 
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training) {
-    return calc_l_conf(
-        d_pf,
-        static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
-    ); // low priority is always more profitable
-}
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, Aircraft::CargoConfig::Algorithm algorithm) {
+    // low priority is always more profitable
+    switch (algorithm) {
+        case Aircraft::CargoConfig::Algorithm::AUTO:
+        case Aircraft::CargoConfig::Algorithm::L:
+            return calc_l_conf(
+                d_pf,
+                static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
+            ); 
+        case Aircraft::CargoConfig::Algorithm::H:
+            return calc_h_conf(
+                d_pf,
+                static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
+            );
+        default:
+            return CargoConfig();
+    }
+}  
 
 inline const string to_string(Aircraft::CargoConfig::Algorithm algorithm) {
     switch (algorithm) {

@@ -135,6 +135,24 @@ void Database::populate_internal() {
             airports[i] = Airport(chunk, j);
         }
     }
+    const uint16_t apid_breakpoints[] = {
+        52, 178, 248, 318, 538, 542, 544, 552, 558, 562,
+        570, 572, 577, 597, 1110, 1130, 1162, 1200, 1249, 1265,
+        1306, 1309, 1311, 1313, 1326, 1328, 1356, 1358, 1378, 1381,
+        1388, 1391, 1468, 1481, 1513, 1528, 1532, 1537, 1540, 1541,
+        1543, 1571, 1592, 1598, 1625, 1683, 1696, 2382, 2400, 2533,
+        2557, 2559, 2566, 2573, 2577, 2591, 2597, 2610, 2627, 2630,
+        2646, 2648, 2656, 2660, 2662, 2664, 2665, 2667, 2673, 3053,
+        3194, 3506, 3508, 3550, 3899, 3982
+    };
+    uint16_t start_bp = 1, offset = 1;
+    for (uint16_t bp : apid_breakpoints) {
+        for (uint16_t i = start_bp; i <= bp; i++) {
+            airport_id_hashtable[i] = i - offset;
+        }
+        offset++;
+        start_bp = bp + 1;
+    }
 
     result = connection->Query("SELECT * FROM read_parquet('~/data/aircrafts.parquet');");
     CHECK_SUCCESS_REF(result);
@@ -148,128 +166,40 @@ void Database::populate_internal() {
     result = connection->Query("SELECT yd, jd, fd, d FROM read_parquet('~/data/routes.parquet');");
     CHECK_SUCCESS_REF(result);
     i = 0;
+    // idx_t oid = 0, did = 0;
+    idx_t x = 0, y = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
-            routes[i] = {
+            pax_demands[i] = PaxDemand(
                 chunk->GetValue(0, j).GetValue<uint16_t>(),
                 chunk->GetValue(1, j).GetValue<uint16_t>(),
-                chunk->GetValue(2, j).GetValue<uint16_t>(),
-                chunk->GetValue(3, j).GetValue<double>(),
-            };
+                chunk->GetValue(2, j).GetValue<uint16_t>()
+            );
+            const double distance = chunk->GetValue(3, j).GetValue<double>();
+            y++;
+            if (y == AIRPORT_COUNT) {
+                x++;
+                y = x + 1;
+            }
+            distances[x][y] = distance;
+            distances[y][x] = distance;
         }
     }
 }
 
-// assumes id actually exists!
-idx_t Database::get_airport_idx_by_id(uint16_t id) {
-    // if (id > 3982) return 3906;
-    // static const uint16_t breakpoints[] = {
-    //     52, 178, 248, 318, 538, 542, 544, 552, 558, 562,
-    //     570, 572, 577, 597, 1110, 1130, 1162, 1200, 1249, 1265,
-    //     1306, 1309, 1311, 1313, 1326, 1328, 1356, 1358, 1378, 1381,
-    //     1388, 1391, 1468, 1481, 1513, 1528, 1532, 1537, 1540, 1541,
-    //     1543, 1571, 1592, 1598, 1625, 1683, 1696, 2382, 2400, 2533,
-    //     2557, 2559, 2566, 2573, 2577, 2591, 2597, 2610, 2627, 2630,
-    //     2646, 2648, 2656, 2660, 2662, 2664, 2665, 2667, 2673, 3053,
-    //     3194, 3506, 3508, 3550, 3899, 3982
-    // };
-    
-    // auto it = std::lower_bound(std::begin(breakpoints), std::end(breakpoints), id);
-    // return id - (it - std::begin(breakpoints)) - 1;
-
-    // this is stupid but its much faster
-    if (id < 53) return id - 1;
-    if (id < 179) return id - 2;
-    if (id < 249) return id - 3;
-    if (id < 319) return id - 4;
-    if (id < 539) return id - 5;
-    if (id < 543) return id - 6;
-    if (id < 545) return id - 7;
-    if (id < 553) return id - 8;
-    if (id < 559) return id - 9;
-    if (id < 563) return id - 10;
-    if (id < 571) return id - 11;
-    if (id < 573) return id - 12;
-    if (id < 578) return id - 13;
-    if (id < 598) return id - 14;
-    if (id < 1111) return id - 15;
-    if (id < 1131) return id - 16;
-    if (id < 1163) return id - 17;
-    if (id < 1201) return id - 18;
-    if (id < 1250) return id - 19;
-    if (id < 1266) return id - 20;
-    if (id < 1307) return id - 21;
-    if (id < 1310) return id - 22;
-    if (id < 1312) return id - 23;
-    if (id < 1314) return id - 24;
-    if (id < 1327) return id - 25;
-    if (id < 1329) return id - 26;
-    if (id < 1357) return id - 27;
-    if (id < 1359) return id - 28;
-    if (id < 1379) return id - 29;
-    if (id < 1382) return id - 30;
-    if (id < 1389) return id - 31;
-    if (id < 1392) return id - 32;
-    if (id < 1469) return id - 33;
-    if (id < 1482) return id - 34;
-    if (id < 1514) return id - 35;
-    if (id < 1529) return id - 36;
-    if (id < 1533) return id - 37;
-    if (id < 1538) return id - 38;
-    if (id < 1541) return id - 39;
-    if (id < 1542) return id - 40;
-    if (id < 1544) return id - 41;
-    if (id < 1572) return id - 42;
-    if (id < 1593) return id - 43;
-    if (id < 1599) return id - 44;
-    if (id < 1626) return id - 45;
-    if (id < 1684) return id - 46;
-    if (id < 1697) return id - 47;
-    if (id < 2383) return id - 48;
-    if (id < 2401) return id - 49;
-    if (id < 2534) return id - 50;
-    if (id < 2558) return id - 51;
-    if (id < 2560) return id - 52;
-    if (id < 2567) return id - 53;
-    if (id < 2574) return id - 54;
-    if (id < 2578) return id - 55;
-    if (id < 2592) return id - 56;
-    if (id < 2598) return id - 57;
-    if (id < 2611) return id - 58;
-    if (id < 2628) return id - 59;
-    if (id < 2631) return id - 60;
-    if (id < 2647) return id - 61;
-    if (id < 2649) return id - 62;
-    if (id < 2657) return id - 63;
-    if (id < 2661) return id - 64;
-    if (id < 2663) return id - 65;
-    if (id < 2665) return id - 66;
-    if (id < 2666) return id - 67;
-    if (id < 2668) return id - 68;
-    if (id < 2674) return id - 69;
-    if (id < 3054) return id - 70;
-    if (id < 3195) return id - 71;
-    if (id < 3507) return id - 72;
-    if (id < 3509) return id - 73;
-    if (id < 3551) return id - 74;
-    if (id < 3900) return id - 75;
-    if (id < 3983) return id - 76;
-    return 3906;
-}
-
+const uint16_t missing_ids[] = {
+    52,178,248,318,538,542,544,552,558,562,
+    571,572,577,597,1110,1130,1162,1200,1249,1265,1306,
+    1310,1311,1313,1326,1328,1356,1358,1378,1381,1388,1391,
+    1468,1481,1513,1528,1532,1537,1540,1542,1543,1571,1592,
+    1598,1625,1683,1696,2382,2400,2533,2557,2559,2566,2573,
+    2577,2591,2597,2610,2627,2630,2647,2648,2656,2660,2662,
+    2664,2666,2667,2673,3053,3194,3507,3508,3550,3899
+};
 Airport Database::get_airport_by_id(uint16_t id) {
-    const uint16_t missing_ids[] = {
-        52,178,248,318,538,542,544,552,558,562,
-        571,572,577,597,1110,1130,1162,1200,1249,1265,1306,
-        1310,1311,1313,1326,1328,1356,1358,1378,1381,1388,1391,
-        1468,1481,1513,1528,1532,1537,1540,1542,1543,1571,1592,
-        1598,1625,1683,1696,2382,2400,2533,2557,2559,2566,2573,
-        2577,2591,2597,2610,2627,2630,2647,2648,2656,2660,2662,
-        2664,2666,2667,2673,3053,3194,3507,3508,3550,3899
-    };
     if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Airport();
     if (id > 3982) return Airport();
-    return airports[Database::get_airport_idx_by_id(id)];
+    return airports[airport_id_hashtable[id]];
 }
 
 Airport Database::get_airport_by_iata(const std::string& iata) {
@@ -297,7 +227,7 @@ Airport Database::get_airport_by_name(const std::string& name) {
 
 Airport Database::get_airport_by_all(const std::string& all) {
     try {
-        uint16_t id = std::stoi(all);
+        uint16_t id = static_cast<uint16_t>(std::stoi(all));
         Airport ap = get_airport_by_id(id);
         if (ap.valid) return ap;
     } catch (std::invalid_argument& e) {
@@ -472,7 +402,7 @@ Aircraft Database::get_aircraft_by_name(const string& name, uint8_t priority) {
 
 Aircraft Database::get_aircraft_by_all(const string& shortname, uint8_t priority) {
     try {
-        uint16_t id = std::stoi(shortname);
+        uint16_t id = static_cast<uint16_t>(std::stoi(shortname));
         Aircraft ac = get_aircraft_by_id(id, 0);
         if (ac.valid) return ac;
     } catch (std::invalid_argument& e) {
@@ -548,25 +478,6 @@ std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_all(const string
         pq.pop();
     }
     return suggestions;
-}
-
-
-
-idx_t Database::get_dbroute_idx(idx_t oidx, idx_t didx) {
-    if (oidx > didx) {
-        return didx * (AIRPORT_COUNT - 1) - (didx * (didx + 1)) / 2 + oidx - 1;
-    }
-    return oidx * (AIRPORT_COUNT - 1) - (oidx * (oidx + 1)) / 2 + didx - 1;
-}
-
-idx_t Database::get_dbroute_idx_by_ids(uint16_t oid, uint16_t did) {
-    uint16_t i = get_airport_idx_by_id(oid);
-    uint16_t j = get_airport_idx_by_id(did);
-    return get_dbroute_idx(i, j);
-}
-
-Database::DBRoute Database::get_dbroute_by_ids(uint16_t oid, uint16_t did) {
-    return routes[Database::get_dbroute_idx_by_ids(oid, did)];
 }
 
 void init(string home_dir, string db_name) {

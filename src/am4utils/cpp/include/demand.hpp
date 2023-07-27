@@ -12,6 +12,8 @@ struct PaxDemand {
     PaxDemand();
     PaxDemand(uint16_t y, uint16_t j, uint16_t f);
 
+    PaxDemand operator/(double load) const;
+
     static const string repr(const PaxDemand& demand);
 };
 

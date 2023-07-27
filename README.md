@@ -25,6 +25,7 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
 
 ## AM4Utils Development
 Requirements: python3.9+, C++17 compliant compiler
+Optional: install vtune for `_core_executable` profiling
 
 ```bash
 # windows

@@ -29,7 +29,8 @@ dependencies = [
 dev = [
     "rich", "loguru",
     "pytest", "ruff",
-    "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels"
+    "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels",
+    "PyQt6"
 ]
 
 [tool.pytest.ini_options]

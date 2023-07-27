@@ -1,6 +1,6 @@
 include(FetchContent)
 
-set(DUCKDB_VERSION "0.8.1")
+set(DUCKDB_VERSION "0.8.0") # 0.8.1 is results in linker errors on Windows
 
 string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
 if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR IS_ARM)

@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "*.spec": "python",
+        "*.spec": "python"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/src/am4utils",
     "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build-vscode",

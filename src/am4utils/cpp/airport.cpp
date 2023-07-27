@@ -48,7 +48,7 @@ Airport::SearchResult Airport::search(const string& s) {
             ap = Database::Client()->get_airport_by_name(parse_result.search_str);
             break;
         case Airport::SearchType::ID:
-            ap = Database::Client()->get_airport_by_id(std::stoi(parse_result.search_str));
+            ap = Database::Client()->get_airport_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)));
             break;
     }
     return Airport::SearchResult(make_shared<Airport>(ap), parse_result);

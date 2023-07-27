@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <chrono>
 
+#include <ittnotify.h>
+
 #include "include/db.hpp"
 #include "include/game.hpp"
 #include "include/ticket.hpp"
@@ -25,8 +27,6 @@ using std::endl;
     string version = "dev";
 #endif
 
-// string::size_type pos = string(result).find_last_of("\\/");
-// return string(result).substr(0, pos);
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -48,27 +48,50 @@ string get_executable_path() {
 #endif
 
 // benchmark time
-#define START_TIMER auto start = std::chrono::high_resolution_clock::now();
-#define END_TIMER auto finish = std::chrono::high_resolution_clock::now(); \
-    std::chrono::duration<double> elapsed = finish - start; \
-    cout << "elapsed: " << elapsed.count() * 1000 << " ms\n";
+class Timer {
+    std::chrono::high_resolution_clock::time_point start;
+
+public:
+    Timer() {
+        start = std::chrono::high_resolution_clock::now();
+    }
+
+    void stop() {
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        cout << "elapsed: " << elapsed.count() * 1000 << " ms\n";
+    }
+};
 
 int main() {
+    __itt_domain* domain = __itt_domain_create("main_domain");
+    __itt_string_handle* handle_main = __itt_string_handle_create("main_handle");
     string executable_path = get_executable_path();
     cout << "am4utils (v" << version << "), executable_path: " << executable_path << "\n_______" << std::setprecision(15) << endl;
 
     try {
     init(executable_path); // 1.3s
-    START_TIMER
-
     const auto& db = Database::Client();
-    reset();
-    auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);
-    cout << User::repr(inserted_user) << endl;
-    auto user = User::from_id(inserted_user.id);
+
+    Airport ap0 = *Airport::search("HKG").ap;
+    Airport ap1 = *Airport::search("TPE").ap;
+    Aircraft ac = *Aircraft::search("a322").ac;
+    auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
+
+    auto timer = Timer();
+    __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
+    for (int i = 0; i < 500; i++) {
+        std::ignore = find_routes(ap0, ac, options);
+    }
+    __itt_task_end(domain);
+    timer.stop();
+    
+    // reset();
+    // auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);
+    // cout << User::repr(inserted_user) << endl;
+    // auto user = User::from_id(inserted_user.id);
     // auto user = User::from_username("cathayexpress");
-    cout << User::repr(user) << endl;
-    END_TIMER
+    // cout << User::repr(user) << endl;
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;

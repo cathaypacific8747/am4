@@ -19,6 +19,7 @@ using duckdb::PreparedStatement;
 
 constexpr int AIRCRAFT_COUNT = 487;
 constexpr int AIRPORT_COUNT = 3907;
+constexpr int AIRPORT_ID_MAX = 3982;
 constexpr int ROUTE_COUNT = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
 class DatabaseException : public std::exception {
@@ -71,7 +72,7 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> update_user_role;
 
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B
-    static idx_t get_airport_idx_by_id(uint16_t id);
+    uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1]; // 63,728 B: airport id -> airports index
     Airport get_airport_by_id(uint16_t id);
     Airport get_airport_by_iata(const string& iata);
     Airport get_airport_by_icao(const string& icao);
@@ -92,16 +93,13 @@ struct Database {
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_name(const string& name);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_all(const string& all);
 
-    struct DBRoute {
-        uint16_t yd;
-        uint16_t jd;
-        uint16_t fd;
-        double distance;
+    PaxDemand pax_demands[ROUTE_COUNT];
+    double distances[AIRPORT_COUNT][AIRPORT_COUNT]; // 96,799,832 B
+    static inline uint32_t get_dbroute_idx(uint16_t oidx, uint16_t didx) {
+        if (oidx > didx)
+            return ((didx * (2*AIRPORT_COUNT - didx - 1)) >> 1) + oidx - didx - 1;
+        return ((oidx * (2*AIRPORT_COUNT - oidx - 1)) >> 1) + didx - oidx - 1;
     };
-    DBRoute routes[ROUTE_COUNT]; // 91,564,452 B
-    static idx_t get_dbroute_idx(idx_t oidx, idx_t didx);
-    idx_t get_dbroute_idx_by_ids(uint16_t oid, uint16_t did);
-    DBRoute get_dbroute_by_ids(uint16_t oid, uint16_t did);
     
     static shared_ptr<Database> default_client;
     static shared_ptr<Database> Client();

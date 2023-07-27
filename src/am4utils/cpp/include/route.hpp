@@ -52,6 +52,7 @@ struct AircraftRoute {
     Route route;
     Aircraft::Type _ac_type;
     Aircraft::Config config;
+    uint16_t trips_per_day;
     Ticket ticket;
     double max_income;
     double income;

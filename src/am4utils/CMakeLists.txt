@@ -15,6 +15,7 @@ endif()
 if (NOT DEFINED COPY_DATA)
     set(COPY_DATA 0)
 endif()
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(am4utils LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
@@ -23,7 +24,8 @@ include(libduckdb.cmake)
 if (MSVC)
     add_compile_options(/W4 /std:c++17)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -std=c++17)
+    string(REPLACE "-O2" "-O3" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 endif()
 
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
@@ -83,6 +85,12 @@ target_compile_features(_core_executable PRIVATE cxx_std_17)
 
 set_rpath(_core_executable)
 target_link_libraries(_core_executable PRIVATE duckdb)
+
+# link vtune
+set(VTUNE_INSTALL_DIR /opt/intel/oneapi/vtune/latest)
+target_include_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/include)
+target_link_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/lib64)
+target_link_libraries(_core_executable PRIVATE ittnotify dl pthread)
 
 add_custom_command(
     TARGET _core_executable POST_BUILD
