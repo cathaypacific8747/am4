@@ -55,8 +55,8 @@ void Database::populate_database() {
     verify_user_by_username = connection->Prepare("SELECT id FROM users WHERE username = $1 LIMIT 1;");
     CHECK_SUCCESS_REF(verify_user_by_username);
 
-    // insert_user = connection->Prepare(INSERT_USER_STATEMENT);
-    // CHECK_SUCCESS_REF(insert_user);
+    insert_user = connection->Prepare(INSERT_USER_STATEMENT);
+    CHECK_SUCCESS_REF(insert_user);
 
     get_user_by_id = connection->Prepare(SELECT_USER_STATEMENT("id"));
     CHECK_SUCCESS_REF(get_user_by_id);

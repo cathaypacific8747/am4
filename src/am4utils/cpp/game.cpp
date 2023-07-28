@@ -48,7 +48,7 @@ User User::Default(bool realism) {
 }
 
 inline User to_user(duckdb::unique_ptr<duckdb::QueryResult> result) {
-    CHECK_SUCCESS_REF(result);
+    if (result->HasError()) throw DatabaseException(result->GetError());
     auto chunk = result->Fetch();
     return chunk && chunk->size() != 0 ? User(chunk, 0) : User();
 }
@@ -61,9 +61,16 @@ User User::create(const string& username, const string& password, uint32_t game_
     auto chunk = result->Fetch();
     if (chunk && chunk->size() != 0) return User();
     
-    // https://github.com/duckdb/duckdb/issues/8310
-    // return to_user(Database::Client()->insert_user->Execute(username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
-    return to_user(Database::Client()->connection->Query(INSERT_USER_STATEMENT, username.c_str(), password.c_str(), game_id, game_name.c_str(), static_cast<bool>(game_mode), discord_id));
+    // workaround for https://github.com/duckdb/duckdb/issues/8310 & windows linking issues with QueryParamsRecursive
+    duckdb::vector<duckdb::Value> values{
+        duckdb::Value::CreateValue<string>(username),
+        duckdb::Value::CreateValue<string>(password),
+        duckdb::Value::CreateValue<uint32_t>(game_id),
+        duckdb::Value::CreateValue<string>(game_name),
+        duckdb::Value::CreateValue<bool>(static_cast<bool>(game_mode)),
+        duckdb::Value::CreateValue<uint64_t>(discord_id)
+    };
+    return to_user(Database::Client()->insert_user->Execute(values, false));
 }
 
 User User::from_id(const string& id) {
@@ -84,13 +91,6 @@ User User::from_game_name(const string& game_name) {
 
 User User::from_discord_id(uint64_t discord_id) {
     return to_user(Database::Client()->get_user_by_discord_id->Execute(discord_id));
-}
-
-
-inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<duckdb::QueryResult> q) {
-    CHECK_SUCCESS_REF(q);
-    auto result = q->Fetch();
-    if (!result || result->size() != 1) throw DatabaseException("FATAL: cannot update user!");
 }
 
 bool User::set_username(const string& username) {

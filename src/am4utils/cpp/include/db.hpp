@@ -8,7 +8,6 @@ using std::string;
 using std::shared_ptr;
 using duckdb::DuckDB;
 using duckdb::Connection;
-using duckdb::MaterializedQueryResult;
 using duckdb::PreparedStatement;
 
 #define STRINGIFY(x) #x
@@ -38,6 +37,12 @@ template <typename T>
 inline void CHECK_SUCCESS_REF(duckdb::unique_ptr<T>& q) {
     if (q->HasError()) throw DatabaseException(q->GetError());
 }
+template <typename T>
+inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<T> q) {
+    CHECK_SUCCESS_REF(q);
+    auto result = q->Fetch();
+    if (!result || result->size() != 1) throw DatabaseException("FATAL: cannot update user!");
+}
 
 // multiple threads can use the same connection?
 // https://github.com/duckdb/duckdb/blob/8c32403411d628a400cc32e5fe73df87eb5aad7d/test/api/test_api.cpp#L142
@@ -46,7 +51,7 @@ struct Database {
     duckdb::unique_ptr<Connection> connection;
     
     duckdb::unique_ptr<PreparedStatement> verify_user_by_username;
-    // duckdb::unique_ptr<PreparedStatement> insert_user;
+    duckdb::unique_ptr<PreparedStatement> insert_user;
     duckdb::unique_ptr<PreparedStatement> get_user_by_id;
     duckdb::unique_ptr<PreparedStatement> get_user_by_username;
     duckdb::unique_ptr<PreparedStatement> get_user_by_game_id;
