@@ -29,6 +29,10 @@ struct VIPTicket {
     
     static VIPTicket from_optimal(double distance);
     static const string repr(const VIPTicket& ticket);
+
+    operator PaxTicket() const {
+        return PaxTicket{y, j, f};
+    }
 };
 
 using Ticket = std::variant<PaxTicket, CargoTicket, VIPTicket>;

@@ -25,6 +25,8 @@ struct CargoDemand {
     CargoDemand(uint32_t l, uint32_t h);
     CargoDemand(const PaxDemand& pax_demand);
 
+    CargoDemand operator/(double load) const;
+
     static const string repr(const CargoDemand& demand);
 };
 

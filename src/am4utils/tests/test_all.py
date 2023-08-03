@@ -115,44 +115,146 @@ def test_route_with_aircraft():
     r = AircraftRoute.create(ap0, ap1, ac, options)
     assert int(r.route.direct_distance) == 9630
     assert r.route.pax_demand.y == 1093
-    cfg = r.config
-    assert cfg.y == 0
-    assert cfg.j == 1
-    assert cfg.f == 138
-    assert cfg.algorithm == Aircraft.PaxConfig.Algorithm.FJY
+    assert r.config.y == 0
+    assert r.config.j == 1
+    assert r.config.f == 138
+    assert r.config.algorithm == Aircraft.PaxConfig.Algorithm.FJY
 
     ap2 = Airport.search('MTR').ap
     r = AircraftRoute.create(ap0, ap2, ac, options)
     assert int(r.route.direct_distance) == 16394
     assert r.route.pax_demand.y == 303
-    cfg = r.config
-    assert cfg.y == 348
-    assert cfg.j == 34
-    assert cfg.f == 0
-    assert cfg.algorithm == Aircraft.PaxConfig.Algorithm.YJF
+    assert r.config.y == 348
+    assert r.config.j == 34
+    assert r.config.f == 0
+    assert r.config.algorithm == Aircraft.PaxConfig.Algorithm.YJF
+
+def test_route_with_aircraft_auto():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('TPE').ap
+    ac = Aircraft.search('mc214').ac
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
+    user = User.Default()
+
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 0
+    assert r.config.j == 1
+    assert r.config.f == 76
+    assert r.trips_per_day == 5
+
+    user.income_loss_tol = 0.08 # allow 8% income loss
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 10
+    assert r.config.j == 50
+    assert r.config.f == 40
+    assert r.trips_per_day == 11
+
+    user.income_loss_tol = 1 # allow 100% income loss
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 69
+    assert r.config.j == 37
+    assert r.config.f == 29
+    assert r.trips_per_day == 15
+
+def test_route_with_aircraft_auto_multiple_of():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('TPE').ap
+    ac = Aircraft.search('mc214').ac
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=2)
+    user = User.Default()
+
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 0
+    assert r.config.j == 1
+    assert r.config.f == 76
+    assert r.trips_per_day == 4
+
+    user.income_loss_tol = 1
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 59
+    assert r.config.j == 39
+    assert r.config.f == 31
+    assert r.trips_per_day == 14
+
+    options.trips_per_day = 3
+    user.income_loss_tol = 0
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 0
+    assert r.config.j == 1
+    assert r.config.f == 76
+    assert r.trips_per_day == 3
+
+    user.income_loss_tol = 1
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.y == 69
+    assert r.config.j == 37
+    assert r.config.f == 29
+    assert r.trips_per_day == 15
 
 def test_cargo_route_with_aircraft():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744f').ac
-    r = AircraftRoute.create(ap0, ap1, ac)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+
+    r = AircraftRoute.create(ap0, ap1, ac, options)
     cargo_demand = CargoDemand(r.route.pax_demand)
     assert cargo_demand.l == 547000
     assert cargo_demand.h == 681000
-    cfg = r.config
-    assert cfg.l == 100
-    assert cfg.h == 0
-    assert cfg.algorithm == Aircraft.CargoConfig.Algorithm.L
+    assert r.config.l == 100
+    assert r.config.h == 0
+    assert r.config.algorithm == Aircraft.CargoConfig.Algorithm.L
 
     ap1 = Airport.search('BPC').ap
-    r = AircraftRoute.create(ap0, ap1, ac)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
     cargo_demand = CargoDemand(r.route.pax_demand)
     assert cargo_demand.l == 148000
     assert cargo_demand.h == 220000
-    cfg = r.config
-    assert cfg.l == 80
-    assert cfg.h == 20
-    assert cfg.algorithm == Aircraft.CargoConfig.Algorithm.L
+    assert r.config.l == 81
+    assert r.config.h == 19
+    assert r.config.algorithm == Aircraft.CargoConfig.Algorithm.L
+
+def test_cargo_route_with_aircraft_auto():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('TPE').ap
+    ac = Aircraft.search('b722f').ac
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
+    user = User.Default()
+
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.l == 100
+    assert r.config.h == 0
+    assert r.trips_per_day == 22
+
+    user.income_loss_tol = 0.08 # allow 8% income loss
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.l == 71
+    assert r.config.h == 29
+    assert r.trips_per_day == 32
+
+    user.income_loss_tol = 1 # allow 100% income loss
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.l == 63
+    assert r.config.h == 37
+    assert r.trips_per_day == 36
+
+def test_cargo_route_with_aircraft_auto_multiple_of():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('TPE').ap
+    ac = Aircraft.search('b722f').ac
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=5)
+    user = User.Default()
+
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.l == 100
+    assert r.config.h == 0
+    assert r.trips_per_day == 20
+
+    user.income_loss_tol = 1
+    r = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r.config.l == 65
+    assert r.config.h == 35
+    assert r.trips_per_day == 35
 
 def test_route_stopover():
     ap0 = Airport.search('VHHH').ap
@@ -281,6 +383,8 @@ def test_default_user():
     assert u.fuel_price == 700
     assert u.co2_price == 120
     assert u.load == 0.87
+    assert u.accumulated_count == 0
+    assert u.income_loss_tol == 0.
     assert u.role == User.Role.USER
 
 def test_create_user():
@@ -357,6 +461,9 @@ def test_user_settings():
     success = u.set_load(0.13)
     assert success and u.load == 0.13
 
+    success = u.set_income_tolerance(0.13)
+    assert success and u.income_loss_tol == 0.13
+
     success = u.set_role(User.Role.TRUSTED_USER)
     assert success and u.role == User.Role.TRUSTED_USER
 
@@ -394,4 +501,7 @@ def test_user_invalid_settings():
     assert not success
 
     success = u.set_load(0)
+    assert not success
+
+    success = u.set_income_tolerance(1.1)
     assert not success

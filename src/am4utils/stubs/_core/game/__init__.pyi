@@ -238,10 +238,10 @@ class User():
             """
             :type: int
             """
-        ADMIN: am4utils._core.game.User.Role # value = <Role.ADMIN: 64>
+        ADMIN: am4utils._core.game.User.Role # value = <Role.ADMIN: 52>
         TRUSTED_USER: am4utils._core.game.User.Role # value = <Role.TRUSTED_USER: 1>
         USER: am4utils._core.game.User.Role # value = <Role.USER: 0>
-        __members__: dict # value = {'USER': <Role.USER: 0>, 'TRUSTED_USER': <Role.TRUSTED_USER: 1>, 'ADMIN': <Role.ADMIN: 64>}
+        __members__: dict # value = {'USER': <Role.USER: 0>, 'TRUSTED_USER': <Role.TRUSTED_USER: 1>, 'ADMIN': <Role.ADMIN: 52>}
         pass
     @staticmethod
     def Default(realism: bool = False) -> User: ...
@@ -268,6 +268,7 @@ class User():
     def set_game_mode(self, game_mode: User.GameMode) -> bool: ...
     def set_game_name(self, game_name: str) -> bool: ...
     def set_h_training(self, h_training: int) -> bool: ...
+    def set_income_tolerance(self, income_loss_tol: float) -> bool: ...
     def set_l_training(self, l_training: int) -> bool: ...
     def set_load(self, load: float) -> bool: ...
     def set_password(self, password: str) -> bool: ...
@@ -281,89 +282,148 @@ class User():
         """
         :type: int
         """
+    @accumulated_count.setter
+    def accumulated_count(self, arg0: int) -> None:
+        pass
     @property
     def co2_price(self) -> int:
         """
         :type: int
         """
+    @co2_price.setter
+    def co2_price(self, arg0: int) -> None:
+        pass
     @property
     def co2_training(self) -> int:
         """
         :type: int
         """
+    @co2_training.setter
+    def co2_training(self, arg0: int) -> None:
+        pass
     @property
     def discord_id(self) -> int:
         """
         :type: int
         """
+    @discord_id.setter
+    def discord_id(self, arg0: int) -> None:
+        pass
     @property
     def fuel_price(self) -> int:
         """
         :type: int
         """
+    @fuel_price.setter
+    def fuel_price(self, arg0: int) -> None:
+        pass
     @property
     def fuel_training(self) -> int:
         """
         :type: int
         """
+    @fuel_training.setter
+    def fuel_training(self, arg0: int) -> None:
+        pass
     @property
     def game_id(self) -> int:
         """
         :type: int
         """
+    @game_id.setter
+    def game_id(self, arg0: int) -> None:
+        pass
     @property
     def game_mode(self) -> User.GameMode:
         """
         :type: User.GameMode
         """
+    @game_mode.setter
+    def game_mode(self, arg0: User.GameMode) -> None:
+        pass
     @property
     def game_name(self) -> str:
         """
         :type: str
         """
+    @game_name.setter
+    def game_name(self, arg0: str) -> None:
+        pass
     @property
     def h_training(self) -> int:
         """
         :type: int
         """
+    @h_training.setter
+    def h_training(self, arg0: int) -> None:
+        pass
     @property
     def id(self) -> str:
         """
         :type: str
         """
     @property
+    def income_loss_tol(self) -> float:
+        """
+        :type: float
+        """
+    @income_loss_tol.setter
+    def income_loss_tol(self, arg0: float) -> None:
+        pass
+    @property
     def l_training(self) -> int:
         """
         :type: int
         """
+    @l_training.setter
+    def l_training(self, arg0: int) -> None:
+        pass
     @property
     def load(self) -> float:
         """
         :type: float
         """
+    @load.setter
+    def load(self, arg0: float) -> None:
+        pass
     @property
     def repair_training(self) -> int:
         """
         :type: int
         """
+    @repair_training.setter
+    def repair_training(self, arg0: int) -> None:
+        pass
     @property
     def role(self) -> User.Role:
         """
         :type: User.Role
         """
+    @role.setter
+    def role(self, arg0: User.Role) -> None:
+        pass
     @property
     def username(self) -> str:
         """
         :type: str
         """
+    @username.setter
+    def username(self, arg0: str) -> None:
+        pass
     @property
     def valid(self) -> bool:
         """
         :type: bool
         """
+    @valid.setter
+    def valid(self, arg0: bool) -> None:
+        pass
     @property
     def wear_training(self) -> int:
         """
         :type: int
         """
+    @wear_training.setter
+    def wear_training(self, arg0: int) -> None:
+        pass
     pass

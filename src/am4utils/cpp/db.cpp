@@ -47,6 +47,7 @@ void Database::populate_database() {
         "  co2_price         UTINYINT NOT NULL DEFAULT 120,"
         "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
         "  load              DOUBLE NOT NULL DEFAULT 0.87,"
+        "  income_loss_tol   DOUBLE NOT NULL DEFAULT 0.0,"
         "  role              UTINYINT NOT NULL DEFAULT 0,"
         ");"
     ));
@@ -121,6 +122,9 @@ void Database::populate_database() {
 
     update_user_load = connection->Prepare("UPDATE users SET load = $1 WHERE id = $2;");
     CHECK_SUCCESS_REF(update_user_load);
+
+    update_user_income_tolerance = connection->Prepare("UPDATE users SET income_loss_tol = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_income_tolerance);
 
     update_user_role = connection->Prepare("UPDATE users SET role = $1 WHERE id = $2;");
     CHECK_SUCCESS_REF(update_user_role);

@@ -53,8 +53,8 @@ struct AircraftRoute {
     Aircraft::Config config;
     uint16_t trips_per_day;
     Ticket ticket;
-    double max_income;
-    double income;
+    double max_income; // the highest possible load adjusted max income for all values of tpd: 0 means unknown.
+    double income; // the current load adjusted income based on the selected tpd
     double fuel;
     double co2;
     double acheck_cost;
@@ -90,6 +90,10 @@ struct AircraftRoute {
     AircraftRoute();
     static AircraftRoute create(const Airport& a0, const Airport& a1, const Aircraft& ac, const Options& options = Options(), const User& user = User::Default());
     
+    template <bool is_vip>
+    inline void update_pax_details(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user);
+    inline void update_cargo_details(uint32_t ac_capacity, const AircraftRoute::Options& options, const User& user);
+
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
     static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200);
     static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user = User::Default(), uint8_t ci = 200);

@@ -25,115 +25,182 @@ Route Route::create(const Airport& ap1, const Airport& ap2) {
     return route;
 }
 
-double inline Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
+inline double Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
     double dLat = (lat2 - lat1) * M_PI / 180.0;
     double dLon = (lon2 - lon1) * M_PI / 180.0;
     return 12742 * asin(sqrt(pow(sin(dLat / 2), 2) + cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * pow(sin(dLon / 2), 2)));
 }
 
-double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
+inline double Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
 }
 
-bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user, AircraftRoute& acr) {
-    const Aircraft::PaxConfig::Algorithm config_algorithm = std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::PaxConfig::Algorithm::AUTO : get<Aircraft::PaxConfig::Algorithm>(options.config_algorithm);
-    bool insufficient_demand = false;
-    switch (options.tpd_mode) {
-        case AircraftRoute::Options::TPDMode::AUTO:
-        {
-            // tpd vs. max_income is constant when demand is abundant (seats remaining)
-            // but linearly decreasing when limited.
-            // cutoff point is ~85% of max_income
-            // 
-            // here, we attempt to strike a balance between tpd and max_income:
-            // if we only target max_income, we might end up with a low tpd while the demand left is still high
-            // so we'll try to find a tpd that is within the 90% of the max_income
-            // higher tpds are immediately invalidated once demand runs out
-            // TODO: allow user to specify the %
+// TODO: use one template function for both pax and cargo
+template <bool is_vip>
+inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user) {
+    const Aircraft::PaxConfig::Algorithm config_algorithm = std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::PaxConfig::Algorithm::AUTO : get<Aircraft::PaxConfig::Algorithm>(options.config_algorithm);    
+    const PaxDemand load_adj_pd = this->route.pax_demand / user.load;
+    uint16_t tpd = 1;
+    if (options.tpd_mode == AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF || options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT)
+        tpd = options.trips_per_day;
 
-            const PaxTicket ticket = PaxTicket::from_optimal(
-                acr.route.direct_distance,
+    Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
+        load_adj_pd / tpd,
+        ac_capacity,
+        this->route.direct_distance,
+        user.game_mode,
+        config_algorithm
+    );
+    if (!cfg.valid) {
+        this->warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
+        this->valid = false;
+        return;
+    }
+    const PaxTicket ticket = [&]() {
+        if constexpr(is_vip)
+            return static_cast<PaxTicket>(
+                VIPTicket::from_optimal(this->route.direct_distance)
+            );
+        else
+            return PaxTicket::from_optimal(
+                this->route.direct_distance,
                 user.game_mode
             );
-            const PaxDemand load_adj_pd = acr.route.pax_demand / user.load;
-            uint16_t tpd_candidate = 1;
-            double mi_candidate = 0;
-            double top_mi = 0;
-            // const uint16_t max_t = static_cast<uint16_t>((acr.route.pax_demand.y + 2*acr.route.pax_demand.j + 3*acr.route.pax_demand.f) / user.load) / ac_capacity;
-            for (uint16_t t = 1; t <= 1200; t++) { // max y+2j+3f = 3610
-                const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
-                    load_adj_pd / t,
-                    ac_capacity,
-                    acr.route.direct_distance,
-                    user.game_mode,
-                    config_algorithm
-                );
-                if (!cfg.valid) {
-                    if (t == 1) {
-                        acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
-                        insufficient_demand = true;
-                    }
-                    break;
-                }
-                const double max_income = (
-                    cfg.y * ticket.y +
-                    cfg.j * ticket.j +
-                    cfg.f * ticket.f
-                );
-                if (max_income > top_mi) top_mi = max_income;
-                std::cout << t << ": top_mi=" << top_mi << " max_income=" << max_income;
-                if (max_income > top_mi * 0.9) {
-                    tpd_candidate = t;
-                    mi_candidate = max_income;
-                    std::cout << " (candidate)";
-                }
-                std::cout << std::endl;
-            }
-            acr.trips_per_day = tpd_candidate;
-            acr.max_income = mi_candidate;
-            acr.ticket = ticket;
-            break;
-        }
-        case AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF:
-        {
-            // to be implemented
-            throw std::runtime_error("AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF not implemented");
-            break;
-        }
-        case AircraftRoute::Options::TPDMode::STRICT:
-        {
-            const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
-                acr.route.pax_demand / options.trips_per_day / user.load,
+    }();
+    uint32_t max_rawincome = (
+        cfg.y * ticket.y +
+        cfg.j * ticket.j +
+        cfg.f * ticket.f
+    );
+    if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
+        this->ticket = ticket;
+        this->config = cfg;
+        this->max_income = 0; // we don't know whether higher tpds will yield higher income - this part is handled by AircraftRoute::update_max_income()
+        this->income = max_rawincome * user.load;
+        this->trips_per_day = options.trips_per_day;
+    } else {
+        // start searching for alternative candidates
+        // note: the configuration formula always fills up a specific class before moving on, and if the tpd is:
+        //   - low, we can almost guarantee that the optimum class is filled up first but we will end up wasting seats;
+        //   - high, the max_income is less optimal because seats are distributed, but this will allow a greater *total* income.
+        //     for top-level gameplay, we often value route availability over profitability.
+        // so, here we will return the highest tpd that is within X% of the max_income. (X is user-defined.)
+        uint16_t c_tpd = tpd;
+        double c_max_rawincome = max_rawincome;
+        Aircraft::PaxConfig c_cfg = cfg;
+        
+        double max_rawincome_bound = max_rawincome * (1 - user.income_loss_tol);
+        uint16_t incr = 1;
+        if (options.tpd_mode == AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF)
+            incr = options.trips_per_day;
+        for (tpd += incr; tpd < 1500 * incr; tpd += incr) {
+            cfg = Aircraft::PaxConfig::calc_pax_conf(
+                load_adj_pd / tpd,
                 ac_capacity,
-                acr.route.direct_distance,
+                this->route.direct_distance,
                 user.game_mode,
                 config_algorithm
             );
-            acr.trips_per_day = options.trips_per_day;
-            if (!cfg.valid) {
-                acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
-                insufficient_demand = true;
+            if (!cfg.valid) // demand exhausted
                 break;
-            }
-            const PaxTicket ticket = PaxTicket::from_optimal(
-                acr.route.direct_distance,
-                user.game_mode
-            );
-            acr.ticket = ticket;
-            acr.max_income = (
+            const uint32_t this_max_rawincome = (
                 cfg.y * ticket.y +
                 cfg.j * ticket.j +
                 cfg.f * ticket.f
             );
-            acr.config = cfg;
-            break;
+            if (this_max_rawincome < max_rawincome_bound)
+                break;
+            c_tpd = tpd;
+            c_max_rawincome = this_max_rawincome;
+            c_cfg = cfg;
+            if (this_max_rawincome > max_rawincome) // unlikely since first tpd is likely already max
+                max_rawincome = this_max_rawincome;
         }
+        this->max_income = max_rawincome * user.load;
+        this->ticket = ticket;
+        this->config = c_cfg;
+        this->income = c_max_rawincome * user.load;
+        this->trips_per_day = c_tpd;
     }
-    return insufficient_demand;
+    this->valid = true;
+}
+
+inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const AircraftRoute::Options& options, const User& user) {
+    const Aircraft::CargoConfig::Algorithm config_algorithm = std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::CargoConfig::Algorithm::AUTO : get<Aircraft::CargoConfig::Algorithm>(options.config_algorithm);
+    const CargoDemand load_adj_cd = CargoDemand(this->route.pax_demand) / user.load;
+    uint16_t tpd = 1;
+    if (options.tpd_mode == AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF || options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT)
+        tpd = options.trips_per_day;
+
+    Aircraft::CargoConfig cfg = Aircraft::CargoConfig::calc_cargo_conf(
+        load_adj_cd / tpd,
+        ac_capacity,
+        user.l_training,
+        config_algorithm
+    );
+    if (!cfg.valid) {
+        this->warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
+        this->valid = false;
+        return;
+    }
+    const CargoTicket ticket = CargoTicket::from_optimal(
+        this->route.direct_distance,
+        user.game_mode
+    );
+    double max_rawincome = (
+        cfg.l * 0.7 * ticket.l +
+        cfg.h * ticket.h
+    ) * ac_capacity / 100.0;
+    if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
+        this->ticket = ticket;
+        this->config = cfg;
+        this->max_income = 0;
+        this->income = max_rawincome * user.load;
+        this->trips_per_day = options.trips_per_day;
+    } else {
+        uint16_t c_tpd = tpd;
+        double c_max_rawincome = max_rawincome;
+        Aircraft::CargoConfig c_cfg = cfg;
+        
+        double max_rawincome_bound = max_rawincome * (1 - user.income_loss_tol);
+        uint16_t incr = 1;
+        if (options.tpd_mode == AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF)
+            incr = options.trips_per_day;
+        for (tpd += incr; tpd < 1500 * incr; tpd += incr) {
+            cfg = Aircraft::CargoConfig::calc_cargo_conf(
+                load_adj_cd / tpd,
+                ac_capacity,
+                user.l_training,
+                config_algorithm
+            );
+            if (!cfg.valid)
+                break;
+            const double this_max_rawincome = (
+                cfg.l * 0.7 * ticket.l +
+                cfg.h * ticket.h
+            ) * ac_capacity / 100.0;
+            if (this_max_rawincome < max_rawincome_bound)
+                break;
+            c_tpd = tpd;
+            c_max_rawincome = this_max_rawincome;
+            c_cfg = cfg;
+            if (this_max_rawincome > max_rawincome)
+                max_rawincome = this_max_rawincome;
+        }
+        this->max_income = max_rawincome * user.load;
+        this->ticket = ticket;
+        this->config = c_cfg;
+        this->income = c_max_rawincome * user.load;
+        this->trips_per_day = c_tpd;
+    }
+    this->valid = true;
 }
 
 AircraftRoute::AircraftRoute() : valid(false) {};
-AircraftRoute::Options::Options(TPDMode tpd_mode, uint16_t trips_per_day, double max_distance, double max_flight_time, ConfigAlgorithm config_algorithm) : tpd_mode(tpd_mode), trips_per_day(trips_per_day), max_distance(max_distance), max_flight_time(max_flight_time), config_algorithm(config_algorithm) {};
+AircraftRoute::Options::Options(TPDMode tpd_mode, uint16_t trips_per_day, double max_distance, double max_flight_time, ConfigAlgorithm config_algorithm) : tpd_mode(tpd_mode), trips_per_day(trips_per_day), max_distance(max_distance), max_flight_time(max_flight_time), config_algorithm(config_algorithm) {
+    if (tpd_mode == AircraftRoute::Options::TPDMode::AUTO && trips_per_day != 1)
+        std::cerr << "WARN: trips_per_day is ignored when tpd_mode is AUTO" << std::endl;
+};
 AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const Aircraft& ac, const AircraftRoute::Options& options, const User& user) {
     AircraftRoute acr; // temporarily put here just for repr
     acr.route = Route::create(a0, a1);
@@ -167,57 +234,38 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
     switch (ac.type) {
         case Aircraft::Type::PAX:
         {
-            bool insufficient_demand = update_route_pax(
+            acr.update_pax_details<false>(
                 static_cast<uint16_t>(ac.capacity),
                 options,
-                user,
-                acr
+                user
             );
-            if (insufficient_demand) return acr;
+            if (!acr.valid) return acr;
             acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, user);
             break;
         }
         case Aircraft::Type::CARGO:
         {
-            const Aircraft::CargoConfig cfg = Aircraft::CargoConfig::calc_cargo_conf(
-                CargoDemand(
-                    acr.route.pax_demand / options.trips_per_day / user.load
-                ),
-                ac.capacity,
-                user.l_training,
-                std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::CargoConfig::Algorithm::AUTO : get<Aircraft::CargoConfig::Algorithm>(options.config_algorithm)
+            acr.update_cargo_details(
+                static_cast<uint32_t>(ac.capacity),
+                options,
+                user
             );
-            if (!cfg.valid) {
-                acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
-                return acr;
-            }
-            acr.config = cfg;
-            const CargoTicket ticket = CargoTicket::from_optimal(
-                acr.route.direct_distance,
-                user.game_mode
-            );
-            acr.ticket = ticket;
-            acr.max_income = (
-                cfg.l * 0.7 * ticket.l +
-                cfg.h * ticket.h
-            ) * ac.capacity / 100.0;
+            if (!acr.valid) return acr;
             acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::CargoConfig>(acr.config), full_distance, user);
             break;
         }
         case Aircraft::Type::VIP:
         {
-            bool insufficient_demand = update_route_pax(
+            acr.update_pax_details<true>(
                 static_cast<uint16_t>(ac.capacity),
                 options,
-                user,
-                acr
+                user
             );
-            if (insufficient_demand) return acr;
+            if (!acr.valid) return acr;
             acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, user);
             break;
         }
     }
-    acr.income = acr.max_income * user.load;
     acr.fuel = AircraftRoute::calc_fuel(ac, full_distance, user);
     acr.acheck_cost = ac.check_cost * acr.flight_time / ac.maint;
     acr.repair_cost = ac.cost / 1000.0 * 0.0075; // each flight adds random [0, 1.5]% wear, training points decrease the top bound (?)
@@ -277,7 +325,7 @@ const string AircraftRoute::Stopover::repr(const Stopover& stopover) {
     return "<Stopover airport=" + Airport::repr(stopover.airport) + " full_distance=" + to_string(stopover.full_distance) + ">";
 }
 
-double inline AircraftRoute::estimate_load(double reputation, double autoprice_ratio, bool has_stopover) {
+inline double AircraftRoute::estimate_load(double reputation, double autoprice_ratio, bool has_stopover) {
     if (autoprice_ratio > 1) { // normal (sorta triangular?) distribution, [Z+(0: .00019, 1: .0068, 2: .0092), max: .001] * reputation
         if (has_stopover) {
             return 0.0085855 * reputation;
@@ -295,7 +343,7 @@ double inline AircraftRoute::estimate_load(double reputation, double autoprice_r
     }
 }
 
-double inline AircraftRoute::calc_fuel(const Aircraft& ac, double distance, const User& user, uint8_t ci) {
+inline double AircraftRoute::calc_fuel(const Aircraft& ac, double distance, const User& user, uint8_t ci) {
     return (
         (1 - user.fuel_training / 100.0) *
         ceil(distance * 100.0) / 100.0 *
@@ -305,7 +353,7 @@ double inline AircraftRoute::calc_fuel(const Aircraft& ac, double distance, cons
     );
 }
 
-double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user, uint8_t ci) {
+inline double AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user, uint8_t ci) {
     return (
         (1 - user.co2_training / 100.0) * (
             ceil(distance * 100.0) / 100.0 *
@@ -319,7 +367,7 @@ double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxCon
     );
 }
 
-double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user, uint8_t ci) {
+inline double AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user, uint8_t ci) {
     return (
         (1 - user.co2_training / 100.0) * (
             ceil(distance * 100.0) / 100.0 *
@@ -479,6 +527,7 @@ py::dict to_dict(const AircraftRoute& ar) {
             w == AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND;
     })) return d;
 
+    d["trips_per_day"] = ar.trips_per_day;
 
     switch (ar._ac_type) {
         case Aircraft::Type::PAX:
@@ -538,11 +587,11 @@ void pybind_init_route(py::module_& m) {
             "max_flight_time"_a = 24,
             "config_algorithm"_a = std::monostate()
         )
-        .def_readonly("tpd_mode", &AircraftRoute::Options::tpd_mode)
-        .def_readonly("trips_per_day", &AircraftRoute::Options::trips_per_day)
-        .def_readonly("max_distance", &AircraftRoute::Options::max_distance)
-        .def_readonly("max_flight_time", &AircraftRoute::Options::max_flight_time)
-        .def_readonly("config_algorithm", &AircraftRoute::Options::config_algorithm);
+        .def_readwrite("tpd_mode", &AircraftRoute::Options::tpd_mode)
+        .def_readwrite("trips_per_day", &AircraftRoute::Options::trips_per_day)
+        .def_readwrite("max_distance", &AircraftRoute::Options::max_distance)
+        .def_readwrite("max_flight_time", &AircraftRoute::Options::max_flight_time)
+        .def_readwrite("config_algorithm", &AircraftRoute::Options::config_algorithm);
 
     py::class_<AircraftRoute::Stopover>(acr_class, "Stopover")
         .def_readonly("airport", &AircraftRoute::Stopover::airport)
@@ -565,6 +614,7 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("route", &AircraftRoute::route)
         .def_readonly("config", &AircraftRoute::config)
         .def_readonly("ticket", &AircraftRoute::ticket)
+        .def_readonly("trips_per_day", &AircraftRoute::trips_per_day)
         .def_readonly("max_income", &AircraftRoute::max_income)
         .def_readonly("income", &AircraftRoute::income)
         .def_readonly("fuel", &AircraftRoute::fuel)

@@ -11,6 +11,7 @@ User::User() :
     fuel_price(700), co2_price(120),
     accumulated_count(0),
     load(0.87),
+    income_loss_tol(0.0),
     role(User::Role::USER),
     valid(false)
 {}
@@ -32,7 +33,8 @@ User::User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
     co2_price(chunk->GetValue(13, row).GetValue<uint8_t>()),
     accumulated_count(chunk->GetValue(14, row).GetValue<uint16_t>()),
     load(chunk->GetValue(15, row).GetValue<double>()),
-    role(static_cast<Role>(chunk->GetValue(16, row).GetValue<uint8_t>())),
+    income_loss_tol(chunk->GetValue(16, row).GetValue<double>()),
+    role(static_cast<Role>(chunk->GetValue(17, row).GetValue<uint8_t>())),
     valid(true)
 {}
 
@@ -202,6 +204,13 @@ bool User::set_load(double load) {
     return true;
 }
 
+bool User::set_income_tolerance(double income_loss_tol) {
+    if (income_loss_tol < 0 || income_loss_tol > 1) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_income_tolerance->Execute(income_loss_tol, id));
+    this->income_loss_tol = income_loss_tol;
+    return true;
+}
+
 bool User::set_role(const User::Role& role) {
     VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_role->Execute(static_cast<uint8_t>(role), id));
     this->role = role;
@@ -357,6 +366,7 @@ py::dict to_dict(const User& user) {
         "co2_price"_a = user.co2_price,
         "accumulated_count"_a = user.accumulated_count,
         "load"_a = user.load,
+        "income_loss_tol"_a = user.income_loss_tol,
         "role"_a = to_string(user.role)
     );
 }
@@ -374,23 +384,24 @@ void pybind_init_game(py::module_& m) {
         .value("ADMIN", User::Role::ADMIN);
     user_class
         .def_readonly("id", &User::id)
-        .def_readonly("username", &User::username)
-        .def_readonly("discord_id", &User::discord_id)
-        .def_readonly("game_id", &User::game_id)
-        .def_readonly("game_name", &User::game_name)
-        .def_readonly("game_mode", &User::game_mode)
-        .def_readonly("wear_training", &User::wear_training)
-        .def_readonly("repair_training", &User::repair_training)
-        .def_readonly("l_training", &User::l_training)
-        .def_readonly("h_training", &User::h_training)
-        .def_readonly("fuel_training", &User::fuel_training)
-        .def_readonly("co2_training", &User::co2_training)
-        .def_readonly("fuel_price", &User::fuel_price)
-        .def_readonly("co2_price", &User::co2_price)
-        .def_readonly("accumulated_count", &User::accumulated_count)
-        .def_readonly("load", &User::load)
-        .def_readonly("valid", &User::valid)
-        .def_readonly("role", &User::role)
+        .def_readwrite("username", &User::username)
+        .def_readwrite("discord_id", &User::discord_id)
+        .def_readwrite("game_id", &User::game_id)
+        .def_readwrite("game_name", &User::game_name)
+        .def_readwrite("game_mode", &User::game_mode)
+        .def_readwrite("wear_training", &User::wear_training)
+        .def_readwrite("repair_training", &User::repair_training)
+        .def_readwrite("l_training", &User::l_training)
+        .def_readwrite("h_training", &User::h_training)
+        .def_readwrite("fuel_training", &User::fuel_training)
+        .def_readwrite("co2_training", &User::co2_training)
+        .def_readwrite("fuel_price", &User::fuel_price)
+        .def_readwrite("co2_price", &User::co2_price)
+        .def_readwrite("accumulated_count", &User::accumulated_count)
+        .def_readwrite("load", &User::load)
+        .def_readwrite("income_loss_tol", &User::income_loss_tol)
+        .def_readwrite("valid", &User::valid)
+        .def_readwrite("role", &User::role)
         .def_static("Default", &User::Default, "realism"_a = false)
         .def_static("create", &User::create, "username"_a, "password"_a, "game_id"_a, "game_name"_a, "game_mode"_a = User::GameMode::EASY, "discord_id"_a = 0)
         .def_static("from_id", &User::from_id, "id"_a)
@@ -414,6 +425,7 @@ void pybind_init_game(py::module_& m) {
         .def("set_co2_price", &User::set_co2_price, "co2_price"_a)
         .def("set_accumulated_count", &User::set_accumulated_count, "accumulated_count"_a)
         .def("set_load", &User::set_load, "load"_a)
+        .def("set_income_tolerance", &User::set_income_tolerance, "income_loss_tol"_a)
         .def("set_role", &User::set_role, "role"_a)
         .def("to_dict", py::overload_cast<const User&>(&to_dict))
         .def("__repr__", &User::repr);

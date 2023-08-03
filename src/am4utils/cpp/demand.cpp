@@ -19,6 +19,12 @@ CargoDemand::CargoDemand(const PaxDemand& pax_demand) :
     h(pax_demand.j * 1000)
 {}
 
+CargoDemand CargoDemand::operator/(double load) const {
+    return CargoDemand(
+        static_cast<uint32_t>(floor(static_cast<double>(l) / load)),
+        static_cast<uint32_t>(floor(static_cast<double>(h) / load))
+    );
+}
 
 const string PaxDemand::repr(const PaxDemand& demand) {
     return "<PaxDemand " + to_string(demand.y) + "|" + to_string(demand.j) + "|" + to_string(demand.f) + ">";

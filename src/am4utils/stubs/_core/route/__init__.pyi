@@ -57,26 +57,41 @@ class AircraftRoute():
             """
             :type: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm]
             """
+        @config_algorithm.setter
+        def config_algorithm(self, arg0: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm]) -> None:
+            pass
         @property
         def max_distance(self) -> float:
             """
             :type: float
             """
+        @max_distance.setter
+        def max_distance(self, arg0: float) -> None:
+            pass
         @property
         def max_flight_time(self) -> float:
             """
             :type: float
             """
+        @max_flight_time.setter
+        def max_flight_time(self, arg0: float) -> None:
+            pass
         @property
         def tpd_mode(self) -> AircraftRoute.Options.TPDMode:
             """
             :type: AircraftRoute.Options.TPDMode
             """
+        @tpd_mode.setter
+        def tpd_mode(self, arg0: AircraftRoute.Options.TPDMode) -> None:
+            pass
         @property
         def trips_per_day(self) -> int:
             """
             :type: int
             """
+        @trips_per_day.setter
+        def trips_per_day(self, arg0: int) -> None:
+            pass
         pass
     class Stopover():
         def __repr__(self) -> str: ...
@@ -223,6 +238,11 @@ class AircraftRoute():
     def ticket(self) -> typing.Union[am4utils._core.ticket.PaxTicket, am4utils._core.ticket.CargoTicket, am4utils._core.ticket.VIPTicket]:
         """
         :type: typing.Union[am4utils._core.ticket.PaxTicket, am4utils._core.ticket.CargoTicket, am4utils._core.ticket.VIPTicket]
+        """
+    @property
+    def trips_per_day(self) -> int:
+        """
+        :type: int
         """
     @property
     def valid(self) -> bool:

@@ -15,7 +15,13 @@ struct User {
     enum class Role : uint8_t {
         USER = 0,
         TRUSTED_USER = 1,
-        ADMIN = 64,
+        TRUSTED_USER_2 = 2,
+        TOP_ALLIANCE_MEMBER = 10,
+        TOP_ALLIANCE_ADMIN = 11,
+        HELPER = 50,
+        MODERATOR = 51,
+        ADMIN = 52,
+        GLOBAL_ADMIN = 64,
     };
 
     string id;
@@ -33,7 +39,8 @@ struct User {
     uint16_t fuel_price; // 0-3000
     uint8_t co2_price; // 0-200
     uint16_t accumulated_count; // for use in reputation price calculation
-    double load; // 0-100
+    double load; // 0-1
+    double income_loss_tol; // 0-1, .1 = 90% of income allowed for AUTO / AUTO_MULTIPLE_OF config searches
     Role role; // user
     bool valid;
 
@@ -64,6 +71,7 @@ struct User {
     bool set_co2_price(uint8_t co2_price);
     bool set_accumulated_count(uint16_t accumulated_count);
     bool set_load(double load);
+    bool set_income_tolerance(double income_loss_tol);
     bool set_role(const User::Role& role);
 
     static const string repr(const User& r);
