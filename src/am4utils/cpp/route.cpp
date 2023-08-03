@@ -26,38 +26,41 @@ Route Route::create(const Airport& ap1, const Airport& ap2) {
 }
 
 double inline Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
-    double dLat = (lat2 - lat1) * PI / 180.0;
-    double dLon = (lon2 - lon1) * PI / 180.0;
-    return 12742 * asin(sqrt(pow(sin(dLat / 2), 2) + cos(lat1 * PI / 180.0) * cos(lat2 * PI / 180.0) * pow(sin(dLon / 2), 2)));
+    double dLat = (lat2 - lat1) * M_PI / 180.0;
+    double dLon = (lon2 - lon1) * M_PI / 180.0;
+    return 12742 * asin(sqrt(pow(sin(dLat / 2), 2) + cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * pow(sin(dLon / 2), 2)));
 }
 
 double inline Route::calc_distance(const Airport& ap1, const Airport& ap2) {
     return calc_distance(ap1.lat, ap1.lng, ap2.lat, ap2.lng);
 }
 
-bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user, double load, AircraftRoute& acr) {
+bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user, AircraftRoute& acr) {
     const Aircraft::PaxConfig::Algorithm config_algorithm = std::holds_alternative<std::monostate>(options.config_algorithm) ? Aircraft::PaxConfig::Algorithm::AUTO : get<Aircraft::PaxConfig::Algorithm>(options.config_algorithm);
     bool insufficient_demand = false;
     switch (options.tpd_mode) {
         case AircraftRoute::Options::TPDMode::AUTO:
         {
-            // tpd vs. max_income is mostly a skewed parabola when demand is limited,
-            // mostly a linear function when demand is abundant                       
+            // tpd vs. max_income is constant when demand is abundant (seats remaining)
+            // but linearly decreasing when limited.
+            // cutoff point is ~85% of max_income
             // 
             // here, we attempt to strike a balance between tpd and max_income:
             // if we only target max_income, we might end up with a low tpd while the demand left is still high
-            // so we'll try to find a tpd that is within 90% of the max_income
+            // so we'll try to find a tpd that is within the 90% of the max_income
             // higher tpds are immediately invalidated once demand runs out
+            // TODO: allow user to specify the %
+
             const PaxTicket ticket = PaxTicket::from_optimal(
                 acr.route.direct_distance,
                 user.game_mode
             );
+            const PaxDemand load_adj_pd = acr.route.pax_demand / user.load;
             uint16_t tpd_candidate = 1;
             double mi_candidate = 0;
             double top_mi = 0;
-            // const uint16_t max_t = (acr.route.pax_demand.y + acr.route.pax_demand.j + acr.route.pax_demand.f) / load / ac_capacity;
-            const PaxDemand load_adj_pd = acr.route.pax_demand / load;
-            for (uint16_t t = 1; t <= 3000; t++) {
+            // const uint16_t max_t = static_cast<uint16_t>((acr.route.pax_demand.y + 2*acr.route.pax_demand.j + 3*acr.route.pax_demand.f) / user.load) / ac_capacity;
+            for (uint16_t t = 1; t <= 1200; t++) { // max y+2j+3f = 3610
                 const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
                     load_adj_pd / t,
                     ac_capacity,
@@ -70,7 +73,6 @@ bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options&
                         acr.warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
                         insufficient_demand = true;
                     }
-                    std::cout << t << ": INSUFFICIENT_DEMAND, breaking" << std::endl;
                     break;
                 }
                 const double max_income = (
@@ -101,7 +103,7 @@ bool inline update_route_pax(uint16_t ac_capacity, const AircraftRoute::Options&
         case AircraftRoute::Options::TPDMode::STRICT:
         {
             const Aircraft::PaxConfig cfg = Aircraft::PaxConfig::calc_pax_conf(
-                acr.route.pax_demand / options.trips_per_day / load,
+                acr.route.pax_demand / options.trips_per_day / user.load,
                 ac_capacity,
                 acr.route.direct_distance,
                 user.game_mode,
@@ -162,7 +164,6 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
         return acr;
     }
     
-    const double load = user.load / 100.0;
     switch (ac.type) {
         case Aircraft::Type::PAX:
         {
@@ -170,18 +171,17 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
                 static_cast<uint16_t>(ac.capacity),
                 options,
                 user,
-                load,
                 acr
             );
             if (insufficient_demand) return acr;
-            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, load, user);
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, user);
             break;
         }
         case Aircraft::Type::CARGO:
         {
             const Aircraft::CargoConfig cfg = Aircraft::CargoConfig::calc_cargo_conf(
                 CargoDemand(
-                    acr.route.pax_demand / options.trips_per_day / load
+                    acr.route.pax_demand / options.trips_per_day / user.load
                 ),
                 ac.capacity,
                 user.l_training,
@@ -201,7 +201,7 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
                 cfg.l * 0.7 * ticket.l +
                 cfg.h * ticket.h
             ) * ac.capacity / 100.0;
-            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::CargoConfig>(acr.config), full_distance, load, user);
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::CargoConfig>(acr.config), full_distance, user);
             break;
         }
         case Aircraft::Type::VIP:
@@ -210,15 +210,14 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
                 static_cast<uint16_t>(ac.capacity),
                 options,
                 user,
-                load,
                 acr
             );
             if (insufficient_demand) return acr;
-            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, load, user);
+            acr.co2 = AircraftRoute::calc_co2(ac, get<Aircraft::PaxConfig>(acr.config), full_distance, user);
             break;
         }
     }
-    acr.income = acr.max_income * load;
+    acr.income = acr.max_income * user.load;
     acr.fuel = AircraftRoute::calc_fuel(ac, full_distance, user);
     acr.acheck_cost = ac.check_cost * acr.flight_time / ac.maint;
     acr.repair_cost = ac.cost / 1000.0 * 0.0075; // each flight adds random [0, 1.5]% wear, training points decrease the top bound (?)
@@ -306,13 +305,13 @@ double inline AircraftRoute::calc_fuel(const Aircraft& ac, double distance, cons
     );
 }
 
-double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, double load, const User& user, uint8_t ci) {
+double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user, uint8_t ci) {
     return (
         (1 - user.co2_training / 100.0) * (
             ceil(distance * 100.0) / 100.0 *
             (ac.co2_mod ? 0.9 : 1) *
             ac.co2 * (
-                (cfg.y + cfg.j * 2 + cfg.f * 3) * load
+                (cfg.y + cfg.j * 2 + cfg.f * 3) * user.load
             ) + (
                 cfg.y + cfg.j + cfg.f
             )
@@ -320,13 +319,13 @@ double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxCon
     );
 }
 
-double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, double load, const User& user, uint8_t ci) {
+double inline AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user, uint8_t ci) {
     return (
         (1 - user.co2_training / 100.0) * (
             ceil(distance * 100.0) / 100.0 *
             (ac.co2_mod ? 0.9 : 1) *
             ac.co2 * (
-                (cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * load * ac.capacity
+                (cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity
             ) + (
                 (cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity
             )
@@ -535,8 +534,8 @@ void pybind_init_route(py::module_& m) {
         .def(py::init<AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm>(),
             "tpd_mode"_a = AircraftRoute::Options::TPDMode::AUTO,
             "trips_per_day"_a = 1,
-            py::arg_v("max_distance", INF, "float('inf')"),
-            py::arg_v("max_flight_time", INF, "float('inf')"),
+            "max_distance"_a = 6371 * M_PI,
+            "max_flight_time"_a = 24,
             "config_algorithm"_a = std::monostate()
         )
         .def_readonly("tpd_mode", &AircraftRoute::Options::tpd_mode)
@@ -596,23 +595,21 @@ void pybind_init_route(py::module_& m) {
             py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
             "ci"_a = 200
         )
-        .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::PaxConfig&, double, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
+        .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::PaxConfig&, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
             "ac"_a,
             "cfg"_a,
             "distance"_a,
-            "load"_a,
             py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
             "ci"_a = 200
         )
-        .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::CargoConfig&, double, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
+        .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::CargoConfig&, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
             "ac"_a,
             "cfg"_a,
             "distance"_a,
-            "load"_a,
             py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
             "ci"_a = 200
         )
-        .def("__repr__", &Route::repr)
+        .def("__repr__", &AircraftRoute::repr)
         .def("to_dict", py::overload_cast<const AircraftRoute&>(&to_dict));
     
     py::class_<Destination>(m_route, "Destination")

@@ -1,5 +1,5 @@
 /*
- * Obtained from: https://github.com/TriviaMarketing/Jaro-Winkler/tree/master
+ * adapted from: https://github.com/TriviaMarketing/Jaro-Winkler/tree/master
  * License: MIT
  */
 
@@ -18,44 +18,36 @@ const double JARO_WINKLER_BOOST_THRESHOLD = 0.7;
 #include <vector>
 
 double jaro_distance(const std::string &a, const std::string &b) {
-    // Register strings length.
-    int aLength(a.size());
-    int bLength(b.size());
+    size_t aLength = a.size();
+    size_t bLength = b.size();
 
-    // If one string has null length, we return 0.
-    if (aLength == 0 || bLength == 0) {
-        return 0.0;
-    }
+    if (aLength == 0 || bLength == 0) return 0.0;
 
-    // Calculate max length range.
-    int maxRange(std::max(0, std::max(aLength, bLength) / 2 - 1));
+    size_t maxRange = std::max(0UL, std::max(aLength, bLength) / 2 - 1);
 
-    // Creates 2 vectors of integers.
     std::vector<bool> aMatch(aLength, false);
     std::vector<bool> bMatch(bLength, false);
 
     // Calculate matching characters.
-    int matchingCharacters(0);
-    for (int aIndex(0); aIndex < aLength; ++aIndex) {
-        // Calculate window test limits (limit inferior to 0 and superior to
-        // bLength).
-        int minIndex(std::max(aIndex - maxRange, 0));
-        int maxIndex(std::min(aIndex + maxRange + 1, bLength));
+    size_t matchingCharacters = 0;
+    for (size_t aIndex = 0; aIndex < aLength; ++aIndex) {
+        // Calculate window test limits (limit inferior to 0 and superior to bLength).
+        // size_t minIndex = std::max(aIndex - maxRange, 0UL);
+        size_t minIndex = aIndex > maxRange ? aIndex - maxRange : 0;
+        size_t maxIndex = std::min(aIndex + maxRange + 1, bLength);
 
-        if (minIndex >= maxIndex) {
         // No more common character because we don't have characters in b to test
         // with characters in a.
-        break;
-        }
-
-        for (int bIndex(minIndex); bIndex < maxIndex; ++bIndex) {
-        if (!bMatch.at(bIndex) && a.at(aIndex) == b.at(bIndex)) {
-            // Found some new match.
-            aMatch[aIndex] = true;
-            bMatch[bIndex] = true;
-            ++matchingCharacters;
-            break;
-        }
+        if (minIndex >= maxIndex) break;
+        
+        for (size_t bIndex = minIndex; bIndex < maxIndex; ++bIndex) {
+            if (!bMatch.at(bIndex) && a.at(aIndex) == b.at(bIndex)) {
+                // Found some new match.
+                aMatch[aIndex] = true;
+                bMatch[bIndex] = true;
+                ++matchingCharacters;
+                break;
+            }
         }
     }
 
@@ -65,17 +57,17 @@ double jaro_distance(const std::string &a, const std::string &b) {
     }
 
     // Calculate character transpositions.
-    std::vector<int> aPosition(matchingCharacters, 0);
-    std::vector<int> bPosition(matchingCharacters, 0);
+    std::vector<size_t> aPosition(matchingCharacters, 0);
+    std::vector<size_t> bPosition(matchingCharacters, 0);
 
-    for (int aIndex(0), positionIndex(0); aIndex < aLength; ++aIndex) {
+    for (size_t aIndex = 0, positionIndex = 0; aIndex < aLength; ++aIndex) {
         if (aMatch.at(aIndex)) {
             aPosition[positionIndex] = aIndex;
             ++positionIndex;
         }
     }
 
-    for (int bIndex(0), positionIndex(0); bIndex < bLength; ++bIndex) {
+    for (size_t bIndex = 0, positionIndex = 0; bIndex < bLength; ++bIndex) {
         if (bMatch.at(bIndex)) {
             bPosition[positionIndex] = bIndex;
             ++positionIndex;
@@ -83,36 +75,35 @@ double jaro_distance(const std::string &a, const std::string &b) {
     }
 
     // Counting half-transpositions.
-    int transpositions(0);
-    for (int index(0); index < matchingCharacters; ++index) {
-        if (a.at(aPosition.at(index)) != b.at(bPosition.at(index))) {
-        ++transpositions;
+    size_t transpositions = 0;
+    for (size_t i = 0; i < matchingCharacters; ++i) {
+        if (a.at(aPosition.at(i)) != b.at(bPosition.at(i))) {
+            ++transpositions;
         }
     }
 
     // Calculate Jaro distance.
-    return (JARO_WEIGHT_STRING_A * matchingCharacters / aLength +
-            JARO_WEIGHT_STRING_B * matchingCharacters / bLength +
-            JARO_WEIGHT_TRANSPOSITIONS * (matchingCharacters - transpositions / 2) / matchingCharacters);
+    return (
+        JARO_WEIGHT_STRING_A * static_cast<double>(matchingCharacters) / static_cast<double>(aLength) +
+        JARO_WEIGHT_STRING_B * static_cast<double>(matchingCharacters) / static_cast<double>(bLength) +
+        JARO_WEIGHT_TRANSPOSITIONS * (static_cast<double>(matchingCharacters) - static_cast<double>(transpositions) / 2) / static_cast<double>(matchingCharacters)
+    );
 }
 
 double jaro_winkler_distance(const std::string &a, const std::string &b) {
-    // Calculate Jaro distance.
-    double distance(jaro_distance(a, b));
+    double distance = jaro_distance(a, b);
 
     if (distance > JARO_WINKLER_BOOST_THRESHOLD) {
         // Calculate common string prefix.
-        int commonPrefix(0);
-        for (int index(0), indexEnd(std::min(std::min(a.size(), b.size()), JARO_WINKLER_PREFIX_SIZE));
-            index < indexEnd; ++index) {
-        if (a.at(index) == b.at(index)) {
-            ++commonPrefix;
-        } else {
-            break;
-        }
+        int commonPrefix = 0;
+        for (size_t i = 0, indexEnd = std::min(std::min(a.size(), b.size()), JARO_WINKLER_PREFIX_SIZE); i < indexEnd; ++i) {
+            if (a.at(i) == b.at(i)) {
+                ++commonPrefix;
+            } else {
+                break;
+            }
         }
 
-        // Calculate Jaro-Winkler distance.
         distance += JARO_WINKLER_SCALING_FACTOR * commonPrefix * (1.0 - distance);
     }
 

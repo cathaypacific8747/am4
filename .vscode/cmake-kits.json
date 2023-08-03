@@ -5,5 +5,12 @@
             "CXX": "/usr/bin/g++"
         },
         "environmentSetupScript": "${workspaceFolder}/.venv/bin/activate"
+    },
+    {
+        "name": "Clang in virtualenv",
+        "compilers": {
+            "CXX": "/usr/bin/clang++"
+        },
+        "environmentSetupScript": "${workspaceFolder}/.venv/bin/activate"
     }
 ]

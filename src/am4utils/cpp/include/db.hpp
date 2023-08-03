@@ -89,7 +89,7 @@ struct Database {
     std::vector<Airport::Suggestion> suggest_airport_by_all(const string& all);
 
     Aircraft aircrafts[AIRCRAFT_COUNT];
-    static idx_t get_aircraft_idx_by_id(uint16_t id, uint8_t priority = 0);
+    static uint16_t get_aircraft_idx_by_id(uint16_t id, uint8_t priority = 0);
     Aircraft get_aircraft_by_id(uint16_t id, uint8_t priority);
     Aircraft get_aircraft_by_shortname(const string& shortname, uint8_t priority);
     Aircraft get_aircraft_by_name(const string& name, uint8_t priority);

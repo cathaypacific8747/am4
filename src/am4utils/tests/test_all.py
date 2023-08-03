@@ -280,7 +280,7 @@ def test_default_user():
     assert ur.game_mode == User.GameMode.REALISM
     assert u.fuel_price == 700
     assert u.co2_price == 120
-    assert u.load == 87
+    assert u.load == 0.87
     assert u.role == User.Role.USER
 
 def test_create_user():
@@ -354,8 +354,8 @@ def test_user_settings():
     success = u.set_accumulated_count(13)
     assert success and u.accumulated_count == 13
 
-    success = u.set_load(13)
-    assert success and u.load == 13
+    success = u.set_load(0.13)
+    assert success and u.load == 0.13
 
     success = u.set_role(User.Role.TRUSTED_USER)
     assert success and u.role == User.Role.TRUSTED_USER

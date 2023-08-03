@@ -74,14 +74,14 @@ int main() {
     const auto& db = Database::Client();
 
     Airport ap0 = *Airport::search("HKG").ap;
-    Airport ap1 = *Airport::search("TPE").ap;
-    Aircraft ac = *Aircraft::search("a322").ac;
+    // Airport ap1 = *Airport::search("TPE").ap;
+    Aircraft ac = *Aircraft::search("mc214").ac;
     auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
 
     auto timer = Timer();
     __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-    for (int i = 0; i < 500; i++) {
-        std::ignore = find_routes(ap0, ac, options);
+    for (int i = 0; i < 100; i++) {
+        std::ignore = find_routes(ap0, ac, options, User::Default());
     }
     __itt_task_end(domain);
     timer.stop();

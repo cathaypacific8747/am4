@@ -46,7 +46,7 @@ void Database::populate_database() {
         "  fuel_price        USMALLINT NOT NULL DEFAULT 700,"
         "  co2_price         UTINYINT NOT NULL DEFAULT 120,"
         "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
-        "  load              DOUBLE NOT NULL DEFAULT 87,"
+        "  load              DOUBLE NOT NULL DEFAULT 0.87,"
         "  role              UTINYINT NOT NULL DEFAULT 0,"
         ");"
     ));
@@ -158,7 +158,7 @@ void Database::populate_internal() {
     CHECK_SUCCESS_REF(result);
     i = 0;
     while (auto chunk = result->Fetch()) {
-        for (idx_t j = 0; j < chunk->size(); j++, i++) {
+        for (uint16_t j = 0; j < chunk->size(); j++, i++) {
             aircrafts[i] = Aircraft(chunk, j);
         }
     }
@@ -166,8 +166,7 @@ void Database::populate_internal() {
     result = connection->Query("SELECT yd, jd, fd, d FROM read_parquet('~/data/routes.parquet');");
     CHECK_SUCCESS_REF(result);
     i = 0;
-    // idx_t oid = 0, did = 0;
-    idx_t x = 0, y = 0;
+    uint16_t x = 0, y = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
             pax_demands[i] = PaxDemand(
@@ -175,12 +174,12 @@ void Database::populate_internal() {
                 chunk->GetValue(1, j).GetValue<uint16_t>(),
                 chunk->GetValue(2, j).GetValue<uint16_t>()
             );
-            const double distance = chunk->GetValue(3, j).GetValue<double>();
             y++;
             if (y == AIRPORT_COUNT) {
                 x++;
                 y = x + 1;
             }
+            const double distance = chunk->GetValue(3, j).GetValue<double>();
             distances[x][y] = distance;
             distances[y][x] = distance;
         }
@@ -324,8 +323,8 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const std::str
 }
 
 
-idx_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
-    const std::map<uint16_t, idx_t> idx_id_map{
+uint16_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
+    const std::map<uint16_t, uint16_t> idx_id_map{
         {1,0},{2,4},{3,7},{4,8},{5,10},{6,12},{7,14},{8,17},{9,21},{10,22},
         {11,23},{12,24},{13,25},{14,29},{15,30},{16,32},{17,34},{18,36},{19,37},{20,38},
         {21,39},{22,41},{23,42},{24,43},{25,46},{26,47},{27,48},{28,49},{29,50},{30,51},

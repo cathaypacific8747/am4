@@ -30,7 +30,7 @@
             "dependsOn": [
                 "py: uninstall",
                 "py: install",
-                "py: generate stubs",
+                "py: generate stubs"
             ],
             "problemMatcher": []
         },
@@ -38,6 +38,12 @@
             "label": "py: test",
             "type": "shell",
             "command": "${command:python.interpreterPath} -m pytest"
+        },
+        {
+            "label": "upload",
+            "type": "shell",
+            "command": "rsync -avz src/am4utils/build-vscode/{data,libduckdb.so,_core_executable} am4tools:/home/thiago/am4bot/build-vscode/",
+            "problemMatcher": []
         }
     ]
 }

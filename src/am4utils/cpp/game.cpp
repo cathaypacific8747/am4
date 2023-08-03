@@ -10,7 +10,7 @@ User::User() :
     fuel_training(0), co2_training(0),
     fuel_price(700), co2_price(120),
     accumulated_count(0),
-    load(87),
+    load(0.87),
     role(User::Role::USER),
     valid(false)
 {}
@@ -196,7 +196,7 @@ bool User::set_accumulated_count(uint16_t accumulated_count) {
 }
 
 bool User::set_load(double load) {
-    if (load <= 0 || load > 100) return false;
+    if (load <= 0 || load > 1) return false;
     VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_load->Execute(load, id));
     this->load = load;
     return true;

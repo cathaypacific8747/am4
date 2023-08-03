@@ -1,21 +1,20 @@
 #pragma once
 #include <duckdb.hpp>
 #include <limits>
+#include <math.h>
 
 #include "game.hpp"
 #include "ticket.hpp"
 #include "demand.hpp"
 #include "airport.hpp"
 #include "aircraft.hpp"
-#define INF std::numeric_limits<double>::infinity()
 
 using std::string;
 using std::to_string;
 using std::vector;
 // using std::shared_ptr;
 
-constexpr double PI = 3.14159265358979323846;
-constexpr double MAX_DISTANCE = 6371 * PI;
+constexpr double MAX_DISTANCE = 6371 * M_PI;
 
 struct AircraftRoute;
 
@@ -47,7 +46,7 @@ struct AircraftRoute {
         double max_flight_time;
         ConfigAlgorithm config_algorithm;
 
-        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = INF, double max_flight_time = INF, ConfigAlgorithm config_algorithm = std::monostate());
+        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = 6371 * M_PI, double max_flight_time = 24, ConfigAlgorithm config_algorithm = std::monostate());
     };
     Route route;
     Aircraft::Type _ac_type;
@@ -93,8 +92,8 @@ struct AircraftRoute {
     
     static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06, bool has_stopover = false); // 1.06 just to trigger the autoprice branch
     static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, double load, const User& user = User::Default(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user = User::Default(), uint8_t ci = 200);
+    static inline double calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user = User::Default(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
 
