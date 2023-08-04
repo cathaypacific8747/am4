@@ -5,7 +5,7 @@
 #include "include/db.hpp"
 #include "include/aircraft.hpp"
 
-Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), valid(false) {}
+Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), fourx_mod(false), valid(false) {}
 
 // removes trailing spaces or spaces that suceed commas in-place
 void remove_spaces_custom(string& str) {
@@ -78,7 +78,7 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
     return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower, priority, speed_mod, fuel_mod, co2_mod);
 }
 
-Aircraft::SearchResult Aircraft::search(const string& s) {
+Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
     auto parse_result = Aircraft::parse(s);
     Aircraft ac;
     switch (parse_result.search_type) {
@@ -103,6 +103,9 @@ Aircraft::SearchResult Aircraft::search(const string& s) {
     
     ac.co2_mod = parse_result.co2_mod;
     if (ac.co2_mod) ac.co2 *= 0.9f;
+
+    ac.fourx_mod = user.fourx;
+    if (ac.fourx_mod) ac.speed *= 4.0f;
     
     return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
 }
@@ -154,6 +157,7 @@ Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row
     speed_mod(false),
     fuel_mod(false),
     co2_mod(false),
+    fourx_mod(false),
     valid(true)
 {};
 
@@ -325,8 +329,8 @@ const string Aircraft::PaxConfig::repr(const Aircraft::PaxConfig& config) {
 }
 
 
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity) {
-    double l_cap = capacity * 0.7;
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training) {
+    double l_cap = capacity * 0.7 * (1 + l_training / 100.0);
 
     CargoConfig config;
     if (d_pf.l > l_cap) {
@@ -336,41 +340,47 @@ Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf
     } else {
         config.l = static_cast<uint8_t>(d_pf.l / l_cap * 100);
         config.h = 100 - config.l;
-        config.valid = d_pf.h >= (l_cap - d_pf.l) / 0.7;
+        config.valid = d_pf.h >= capacity * (config.h / 100.0) * (1 + h_training / 100.0);
     }
     config.algorithm = CargoConfig::Algorithm::L;
     return config;
 }
 
 // virually useless, never profitable unless distance > ~23000 km
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training) {
+    double h_cap = capacity * (1 + h_training / 100.0);
+    
     CargoConfig config;
-    if (d_pf.h > capacity) {
+    if (d_pf.h > h_cap) {
         config.h = 100;
         config.l = 0;
         config.valid = true;
     } else {
-        config.h = static_cast<uint8_t>(d_pf.h / capacity * 100);
+        config.h = static_cast<uint8_t>(d_pf.h / h_cap * 100);
         config.l = 100 - config.h;
-        config.valid = d_pf.l >= capacity - d_pf.h;
+        config.valid = d_pf.l >= capacity * (config.l / 100.0) * 0.7 * (1 + l_training / 100.0);
     }
     config.algorithm = CargoConfig::Algorithm::H;
     return config;
 }
 
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, Aircraft::CargoConfig::Algorithm algorithm) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training, Aircraft::CargoConfig::Algorithm algorithm) {
     // low priority is always more profitable
     switch (algorithm) {
         case Aircraft::CargoConfig::Algorithm::AUTO:
         case Aircraft::CargoConfig::Algorithm::L:
             return calc_l_conf(
                 d_pf,
-                static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
+                capacity,
+                l_training,
+                h_training
             ); 
         case Aircraft::CargoConfig::Algorithm::H:
             return calc_h_conf(
                 d_pf,
-                static_cast<uint32_t>(capacity * (1 + l_training / 100.0))
+                capacity,
+                l_training,
+                h_training
             );
         default:
             return CargoConfig();
@@ -517,6 +527,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("speed_mod", &Aircraft::speed_mod)
         .def_readonly("fuel_mod", &Aircraft::fuel_mod)
         .def_readonly("co2_mod", &Aircraft::co2_mod)
+        .def_readonly("fourx_mod", &Aircraft::fourx_mod)
         .def_readonly("valid", &Aircraft::valid)
         .def("__repr__", &Aircraft::repr)
         .def("to_dict", py::overload_cast<const Aircraft&>(&to_dict));
@@ -542,7 +553,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("ac", &Aircraft::Suggestion::ac)
         .def_readonly("score", &Aircraft::Suggestion::score);
     ac_class
-        .def_static("search", &Aircraft::search, "s"_a)
+        .def_static("search", &Aircraft::search, "s"_a, py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"))
         .def_static("suggest", &Aircraft::suggest, "s"_a);
 }
 #endif

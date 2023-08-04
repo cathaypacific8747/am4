@@ -41,6 +41,7 @@ struct User {
     uint16_t accumulated_count; // for use in reputation price calculation
     double load; // 0-1
     double income_loss_tol; // 0-1, .1 = 90% of income allowed for AUTO / AUTO_MULTIPLE_OF config searches
+    bool fourx;
     Role role; // user
     bool valid;
 
@@ -72,6 +73,7 @@ struct User {
     bool set_accumulated_count(uint16_t accumulated_count);
     bool set_load(double load);
     bool set_income_tolerance(double income_loss_tol);
+    bool set_fourx(bool fourx);
     bool set_role(const User::Role& role);
 
     static const string repr(const User& r);

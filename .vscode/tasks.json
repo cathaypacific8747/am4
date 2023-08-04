@@ -44,6 +44,12 @@
             "type": "shell",
             "command": "rsync -avz src/am4utils/build-vscode/{data,libduckdb.so,_core_executable} am4tools:/home/thiago/am4bot/build-vscode/",
             "problemMatcher": []
+        },
+        {
+            "label": "delete database",
+            "type": "shell",
+            "command": "rm .venv/lib/python3.11/site-packages/am4utils/data/main_test.db .venv/lib/python3.11/site-packages/am4utils/data/main.db",
+            "problemMatcher": []
         }
     ]
 }

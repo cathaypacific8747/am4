@@ -1,7 +1,8 @@
 #pragma once
 #include <duckdb.hpp>
-#include <limits>
 #include <math.h>
+#include <limits>
+#include <cmath>
 
 #include "game.hpp"
 #include "ticket.hpp"
@@ -43,10 +44,10 @@ struct AircraftRoute {
         TPDMode tpd_mode;
         uint16_t trips_per_day;
         double max_distance;
-        double max_flight_time;
+        float max_flight_time;
         ConfigAlgorithm config_algorithm;
 
-        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = 6371 * M_PI, double max_flight_time = 24, ConfigAlgorithm config_algorithm = std::monostate());
+        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = 6371 * M_PI, float max_flight_time = 24, ConfigAlgorithm config_algorithm = std::monostate());
     };
     Route route;
     Aircraft::Type _ac_type;
@@ -60,7 +61,9 @@ struct AircraftRoute {
     double acheck_cost;
     double repair_cost;
     double profit;
-    double flight_time;
+    float flight_time;
+    uint8_t ci;
+    float contribution;
     bool needs_stopover;
     struct Stopover {
         Airport airport;
@@ -76,6 +79,7 @@ struct AircraftRoute {
 
     Stopover stopover;
     enum class Warning {
+        ERR_RWY_TOO_SHORT,
         ERR_DISTANCE_ABOVE_SPECIFIED,
         ERR_DISTANCE_TOO_LONG,
         ERR_DISTANCE_TOO_SHORT,
@@ -98,6 +102,7 @@ struct AircraftRoute {
     static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200);
     static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user = User::Default(), uint8_t ci = 200);
     static inline double calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user = User::Default(), uint8_t ci = 200);
+    static inline float calc_contribution(double distance, const User& user = User::Default(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
 

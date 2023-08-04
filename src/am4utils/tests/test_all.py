@@ -67,6 +67,13 @@ def test_aircraft_engine_modifier():
     assert a1sfc.ac.fuel / a1.ac.fuel == pytest.approx(0.9)
     assert a1sfc.ac.co2 / a1.ac.co2 == pytest.approx(0.9)
 
+def test_aircraft_fourx():
+    a0 = Aircraft.search('b744').ac
+    user = User.Default()
+    user.fourx = True
+    a1 = Aircraft.search('b744', user=user).ac
+    assert a1.speed / a0.speed == pytest.approx(4.)
+    
 ## airport tests
 @pytest.mark.parametrize("inp", [
     'id:3500',
@@ -112,22 +119,64 @@ def test_route_with_aircraft():
     ap1 = Airport.search('LHR').ap
     ac = Aircraft.search('b744').ac
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
-    r = AircraftRoute.create(ap0, ap1, ac, options)
-    assert int(r.route.direct_distance) == 9630
-    assert r.route.pax_demand.y == 1093
-    assert r.config.y == 0
-    assert r.config.j == 1
-    assert r.config.f == 138
-    assert r.config.algorithm == Aircraft.PaxConfig.Algorithm.FJY
+    r0 = AircraftRoute.create(ap0, ap1, ac, options)
+    assert r0.ticket.y == 4422
+    assert r0.ticket.j == 8923
+    assert r0.ticket.f == 13520
+    assert r0.flight_time == pytest.approx(6.53623)
+    assert r0.contribution == pytest.approx(30.818565)
+
+    user = User.Default(realism=True)
+    r1 = AircraftRoute.create(ap0, ap1, ac, options, user=user)
+    assert r1.ticket.y == 3341
+    assert r1.ticket.j == 6778
+    assert r1.ticket.f == 10245
+    assert int(r0.route.direct_distance) == int(r1.route.direct_distance) == 9630
+    assert r0.route.pax_demand.y == r1.route.pax_demand.y == 1093
+    assert r0.config.y == r1.config.y == 0
+    assert r0.config.j == r1.config.j == 1
+    assert r0.config.f == r1.config.f == 138
+    assert r0.config.algorithm == r1.config.algorithm == Aircraft.PaxConfig.Algorithm.FJY
+    assert r1.flight_time / r0.flight_time == pytest.approx(1.5)
+    assert r1.contribution / r0.contribution == pytest.approx(1.5)
+    assert r0.ci == r1.ci == 200
 
     ap2 = Airport.search('MTR').ap
-    r = AircraftRoute.create(ap0, ap2, ac, options)
-    assert int(r.route.direct_distance) == 16394
-    assert r.route.pax_demand.y == 303
-    assert r.config.y == 348
-    assert r.config.j == 34
-    assert r.config.f == 0
-    assert r.config.algorithm == Aircraft.PaxConfig.Algorithm.YJF
+    r2 = AircraftRoute.create(ap0, ap2, ac, options)
+    assert int(r2.route.direct_distance) == 16394
+    assert r2.route.pax_demand.y == 303
+    assert r2.config.y == 348
+    assert r2.config.j == 34
+    assert r2.config.f == 0
+    assert r2.config.algorithm == Aircraft.PaxConfig.Algorithm.YJF
+
+def test_route_with_vip_aircraft():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('a32vip').ac
+
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    r = AircraftRoute.create(ap0, ap1, ac, options)
+    assert r.ticket.y == 8580
+    assert r.ticket.j == 17342
+    assert r.ticket.f == 26101
+
+def test_route_with_cargo_aircraft():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('LHR').ap
+    ac = Aircraft.search('b744f').ac
+
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    r0 = AircraftRoute.create(ap0, ap1, ac, options)
+    assert r0.ticket.l == pytest.approx(10.98)
+    assert r0.ticket.h == pytest.approx(7.47)
+
+    user = User.Default(realism=True)
+    r1 = AircraftRoute.create(ap0, ap1, ac, options, user)
+    assert r1.ticket.l == pytest.approx(9.15)
+    assert r1.ticket.h == pytest.approx(5.65)
+    assert r0.config.l == r1.config.l == 100
+    assert r0.config.h == r1.config.h == 0
 
 def test_route_with_aircraft_auto():
     ap0 = Airport.search('VHHH').ap
@@ -276,6 +325,15 @@ def test_route_stopover():
     assert r.stopover.airport.iata == "GAN"
     assert r.stopover.full_distance - r.route.direct_distance == pytest.approx(7.550770485)
 
+def test_route_realism_rwy_too_short():
+    ap0 = Airport.search('VHHH').ap
+    ap1 = Airport.search('RCLY').ap
+    ac = Aircraft.search('b744').ac
+    user = User.Default(realism=True)
+
+    r = AircraftRoute.create(ap0, ap1, ac, user=user)
+    assert r.valid is False
+
 def test_route_above_specified():
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('LHR').ap
@@ -385,6 +443,7 @@ def test_default_user():
     assert u.load == 0.87
     assert u.accumulated_count == 0
     assert u.income_loss_tol == 0.
+    assert u.fourx == False
     assert u.role == User.Role.USER
 
 def test_create_user():
@@ -463,6 +522,9 @@ def test_user_settings():
 
     success = u.set_income_tolerance(0.13)
     assert success and u.income_loss_tol == 0.13
+
+    success = u.set_fourx(True)
+    assert success and u.fourx == True
 
     success = u.set_role(User.Role.TRUSTED_USER)
     assert success and u.role == User.Role.TRUSTED_USER

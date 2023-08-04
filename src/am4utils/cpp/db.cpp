@@ -48,6 +48,7 @@ void Database::populate_database() {
         "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
         "  load              DOUBLE NOT NULL DEFAULT 0.87,"
         "  income_loss_tol   DOUBLE NOT NULL DEFAULT 0.0,"
+        "  fourx             BOOLEAN NOT NULL DEFAULT FALSE,"
         "  role              UTINYINT NOT NULL DEFAULT 0,"
         ");"
     ));
@@ -125,6 +126,9 @@ void Database::populate_database() {
 
     update_user_income_tolerance = connection->Prepare("UPDATE users SET income_loss_tol = $1 WHERE id = $2;");
     CHECK_SUCCESS_REF(update_user_income_tolerance);
+
+    update_user_fourx = connection->Prepare("UPDATE users SET fourx = $1 WHERE id = $2;");
+    CHECK_SUCCESS_REF(update_user_fourx);
 
     update_user_role = connection->Prepare("UPDATE users SET role = $1 WHERE id = $2;");
     CHECK_SUCCESS_REF(update_user_role);

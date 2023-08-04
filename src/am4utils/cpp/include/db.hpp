@@ -12,7 +12,7 @@ using duckdb::PreparedStatement;
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
-#define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, role"
+#define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, fourx, role"
 #define SELECT_USER_STATEMENT(field) "SELECT " USER_COLUMNS " FROM users WHERE " #field " = $1 LIMIT 1;"
 #define INSERT_USER_STATEMENT "INSERT INTO users (username, password, game_id, game_name, game_mode, discord_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING " USER_COLUMNS ";"
 
@@ -75,6 +75,7 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> update_user_accumulated_count;
     duckdb::unique_ptr<PreparedStatement> update_user_load;
     duckdb::unique_ptr<PreparedStatement> update_user_income_tolerance;
+    duckdb::unique_ptr<PreparedStatement> update_user_fourx;
     duckdb::unique_ptr<PreparedStatement> update_user_role;
 
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B

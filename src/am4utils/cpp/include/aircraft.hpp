@@ -52,10 +52,10 @@ struct Aircraft {
         bool valid = false;
         Algorithm algorithm;
 
-        static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity);
-        static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity);
+        static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0);
+        static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0);
 
-        static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0, Aircraft::CargoConfig::Algorithm algorithm = Aircraft::CargoConfig::Algorithm::AUTO);
+        static CargoConfig calc_cargo_conf(const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0, Aircraft::CargoConfig::Algorithm algorithm = Aircraft::CargoConfig::Algorithm::AUTO);
         static const string repr(const CargoConfig& cargo_config);
     };
 
@@ -102,6 +102,7 @@ struct Aircraft {
     bool speed_mod;
     bool fuel_mod;
     bool co2_mod;
+    bool fourx_mod;
     bool valid;
 
     struct ParseResult {
@@ -132,7 +133,7 @@ struct Aircraft {
 
     Aircraft();
     static ParseResult parse(const string& s);
-    static SearchResult search(const string& s);
+    static SearchResult search(const string& s, const User& user = User::Default());
     static std::vector<Aircraft::Suggestion> suggest(const ParseResult& parse_result);
 
     Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);

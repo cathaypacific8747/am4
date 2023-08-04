@@ -118,6 +118,8 @@ class AircraftRoute():
         """
         Members:
 
+          ERR_RWY_TOO_SHORT
+
           ERR_DISTANCE_ABOVE_SPECIFIED
 
           ERR_DISTANCE_TOO_LONG
@@ -151,14 +153,15 @@ class AircraftRoute():
             """
             :type: int
             """
-        ERR_DISTANCE_ABOVE_SPECIFIED: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 0>
-        ERR_DISTANCE_TOO_LONG: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_TOO_LONG: 1>
-        ERR_DISTANCE_TOO_SHORT: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_TOO_SHORT: 2>
-        ERR_FLIGHT_TIME_ABOVE_SPECIFIED: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 5>
-        ERR_INSUFFICIENT_DEMAND: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_INSUFFICIENT_DEMAND: 6>
-        ERR_NO_STOPOVER: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_NO_STOPOVER: 4>
-        REDUCED_CONTRIBUTION: am4utils._core.route.AircraftRoute.Warning # value = <Warning.REDUCED_CONTRIBUTION: 3>
-        __members__: dict # value = {'ERR_DISTANCE_ABOVE_SPECIFIED': <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 0>, 'ERR_DISTANCE_TOO_LONG': <Warning.ERR_DISTANCE_TOO_LONG: 1>, 'ERR_DISTANCE_TOO_SHORT': <Warning.ERR_DISTANCE_TOO_SHORT: 2>, 'REDUCED_CONTRIBUTION': <Warning.REDUCED_CONTRIBUTION: 3>, 'ERR_NO_STOPOVER': <Warning.ERR_NO_STOPOVER: 4>, 'ERR_FLIGHT_TIME_ABOVE_SPECIFIED': <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 5>, 'ERR_INSUFFICIENT_DEMAND': <Warning.ERR_INSUFFICIENT_DEMAND: 6>}
+        ERR_DISTANCE_ABOVE_SPECIFIED: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 1>
+        ERR_DISTANCE_TOO_LONG: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_TOO_LONG: 2>
+        ERR_DISTANCE_TOO_SHORT: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_DISTANCE_TOO_SHORT: 3>
+        ERR_FLIGHT_TIME_ABOVE_SPECIFIED: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 6>
+        ERR_INSUFFICIENT_DEMAND: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_INSUFFICIENT_DEMAND: 7>
+        ERR_NO_STOPOVER: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_NO_STOPOVER: 5>
+        ERR_RWY_TOO_SHORT: am4utils._core.route.AircraftRoute.Warning # value = <Warning.ERR_RWY_TOO_SHORT: 0>
+        REDUCED_CONTRIBUTION: am4utils._core.route.AircraftRoute.Warning # value = <Warning.REDUCED_CONTRIBUTION: 4>
+        __members__: dict # value = {'ERR_RWY_TOO_SHORT': <Warning.ERR_RWY_TOO_SHORT: 0>, 'ERR_DISTANCE_ABOVE_SPECIFIED': <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 1>, 'ERR_DISTANCE_TOO_LONG': <Warning.ERR_DISTANCE_TOO_LONG: 2>, 'ERR_DISTANCE_TOO_SHORT': <Warning.ERR_DISTANCE_TOO_SHORT: 3>, 'REDUCED_CONTRIBUTION': <Warning.REDUCED_CONTRIBUTION: 4>, 'ERR_NO_STOPOVER': <Warning.ERR_NO_STOPOVER: 5>, 'ERR_FLIGHT_TIME_ABOVE_SPECIFIED': <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 6>, 'ERR_INSUFFICIENT_DEMAND': <Warning.ERR_INSUFFICIENT_DEMAND: 7>}
         pass
     def __repr__(self) -> str: ...
     @staticmethod
@@ -180,6 +183,11 @@ class AircraftRoute():
         :type: float
         """
     @property
+    def ci(self) -> int:
+        """
+        :type: int
+        """
+    @property
     def co2(self) -> float:
         """
         :type: float
@@ -188,6 +196,11 @@ class AircraftRoute():
     def config(self) -> typing.Union[am4utils._core.aircraft.Aircraft.PaxConfig, am4utils._core.aircraft.Aircraft.CargoConfig]:
         """
         :type: typing.Union[am4utils._core.aircraft.Aircraft.PaxConfig, am4utils._core.aircraft.Aircraft.CargoConfig]
+        """
+    @property
+    def contribution(self) -> float:
+        """
+        :type: float
         """
     @property
     def flight_time(self) -> float:

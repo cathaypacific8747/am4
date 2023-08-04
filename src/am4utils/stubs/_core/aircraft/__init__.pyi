@@ -1,6 +1,7 @@
 from __future__ import annotations
 import am4utils._core.aircraft
 import typing
+import am4utils._core.game
 
 __all__ = [
     "Aircraft"
@@ -272,7 +273,7 @@ class Aircraft():
         pass
     def __repr__(self) -> str: ...
     @staticmethod
-    def search(s: str) -> Aircraft.SearchResult: ...
+    def search(s: str, user: am4utils._core.game.User = am4utils._core.game.User.Default()) -> Aircraft.SearchResult: ...
     @staticmethod
     def suggest(s: Aircraft.ParseResult) -> typing.List[Aircraft.Suggestion]: ...
     def to_dict(self) -> dict: ...
@@ -325,6 +326,11 @@ class Aircraft():
     def engineers(self) -> int:
         """
         :type: int
+        """
+    @property
+    def fourx_mod(self) -> bool:
+        """
+        :type: bool
         """
     @property
     def fuel(self) -> float:

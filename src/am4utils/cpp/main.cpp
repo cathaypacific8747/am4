@@ -73,23 +73,26 @@ int main() {
     init(executable_path); // 1.3s
     const auto& db = Database::Client();
 
-    Airport ap0 = *Airport::search("HKG").ap;
-    Airport ap1 = *Airport::search("LHR").ap;
-    Aircraft ac = *Aircraft::search("mc214").ac;
+    Airport ap0 = *Airport::search("VHHH").ap;
+    Airport ap1 = *Airport::search("TPE").ap;
+    Aircraft ac = *Aircraft::search("b722f").ac;
     // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-    auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 2);
+    auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
+    User user = User::Default();
 
     auto timer = Timer();
     __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-    for (int i = 0; i < 100; i++) {
-        std::ignore = find_routes(ap0, ac, options, User::Default());
-        // std::cout << routes.size() << std::endl;
-    }
+    // for (int i = 0; i < 100; i++) {
+    //     std::ignore = find_routes(ap0, ac, options, User::Default());
+    // }
+    auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
     // auto r = AircraftRoute::create(ap0, ap1, ac);
     // auto r = AircraftRoute::create(ap0, ap1, ac, options);
-    // std::cout << AircraftRoute::repr(r) << std::endl;
+    std::cout << r.trips_per_day << std::endl;
+    std::cout << AircraftRoute::repr(r) << std::endl;
     __itt_task_end(domain);
     timer.stop();
+    getchar();
     
     // reset();
     // auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);

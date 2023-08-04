@@ -25,7 +25,7 @@ include(libduckdb.cmake)
 if (MSVC)
     add_compile_options(/W4 /O2 /std:c++17)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -Ofast -std=c++17)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3 -std=c++17)
 endif()
 
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)

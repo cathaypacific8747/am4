@@ -14,14 +14,14 @@ if __name__ == '__main__':
     ap0 = Airport.search('VHHH').ap
     ap1 = Airport.search('TPE').ap
     ac = Aircraft.search('mc214').ac
-    # options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=2)
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=2)
+    # options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
     user = User.Default()
     user.income_loss_tol = 1
     
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     # print(r.to_dict())
-    print(r.income / r.max_income, r.config, r.trips_per_day)
+    print(r.income, r.config, r.trips_per_day)
     # X, Y = [], []
     # for tpd in range(1, 3000):
     #     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=tpd)

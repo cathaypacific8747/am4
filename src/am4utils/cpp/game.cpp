@@ -12,6 +12,7 @@ User::User() :
     accumulated_count(0),
     load(0.87),
     income_loss_tol(0.0),
+    fourx(false),
     role(User::Role::USER),
     valid(false)
 {}
@@ -34,13 +35,13 @@ User::User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
     accumulated_count(chunk->GetValue(14, row).GetValue<uint16_t>()),
     load(chunk->GetValue(15, row).GetValue<double>()),
     income_loss_tol(chunk->GetValue(16, row).GetValue<double>()),
-    role(static_cast<Role>(chunk->GetValue(17, row).GetValue<uint8_t>())),
+    fourx(chunk->GetValue(17, row).GetValue<bool>()),
+    role(static_cast<Role>(chunk->GetValue(18, row).GetValue<uint8_t>())),
     valid(true)
 {}
 
 User User::Default(bool realism) {
     User user;
-    user.role = User::Role::USER;
     user.valid = true;
     if (realism) {
         user.id = "00000000-0000-0000-0000-000000000001";
@@ -211,6 +212,12 @@ bool User::set_income_tolerance(double income_loss_tol) {
     return true;
 }
 
+bool User::set_fourx(bool fourx) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fourx->Execute(fourx, id));
+    this->fourx = fourx;
+    return true;
+}
+
 bool User::set_role(const User::Role& role) {
     VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_role->Execute(static_cast<uint8_t>(role), id));
     this->role = role;
@@ -367,6 +374,7 @@ py::dict to_dict(const User& user) {
         "accumulated_count"_a = user.accumulated_count,
         "load"_a = user.load,
         "income_loss_tol"_a = user.income_loss_tol,
+        "fourx"_a = user.fourx,
         "role"_a = to_string(user.role)
     );
 }
@@ -401,6 +409,7 @@ void pybind_init_game(py::module_& m) {
         .def_readwrite("load", &User::load)
         .def_readwrite("income_loss_tol", &User::income_loss_tol)
         .def_readwrite("valid", &User::valid)
+        .def_readwrite("fourx", &User::fourx)
         .def_readwrite("role", &User::role)
         .def_static("Default", &User::Default, "realism"_a = false)
         .def_static("create", &User::create, "username"_a, "password"_a, "game_id"_a, "game_name"_a, "game_mode"_a = User::GameMode::EASY, "discord_id"_a = 0)
@@ -426,6 +435,7 @@ void pybind_init_game(py::module_& m) {
         .def("set_accumulated_count", &User::set_accumulated_count, "accumulated_count"_a)
         .def("set_load", &User::set_load, "load"_a)
         .def("set_income_tolerance", &User::set_income_tolerance, "income_loss_tol"_a)
+        .def("set_fourx", &User::set_fourx, "fourx"_a)
         .def("set_role", &User::set_role, "role"_a)
         .def("to_dict", py::overload_cast<const User&>(&to_dict))
         .def("__repr__", &User::repr);
