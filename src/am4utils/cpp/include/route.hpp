@@ -1,8 +1,8 @@
 #pragma once
 #include <duckdb.hpp>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <limits>
-#include <cmath>
 
 #include "game.hpp"
 #include "ticket.hpp"
@@ -47,7 +47,7 @@ struct AircraftRoute {
         float max_flight_time;
         ConfigAlgorithm config_algorithm;
 
-        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = 6371 * M_PI, float max_flight_time = 24, ConfigAlgorithm config_algorithm = std::monostate());
+        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = MAX_DISTANCE, float max_flight_time = 24.0f, ConfigAlgorithm config_algorithm = std::monostate());
     };
     Route route;
     Aircraft::Type _ac_type;

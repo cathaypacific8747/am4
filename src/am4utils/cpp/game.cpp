@@ -254,6 +254,71 @@ const string User::repr(const User& user) {
 }
 
 
+AllianceCache::AllianceCache() :
+    req_id("00000000-0000-0000-0000-000000000000"),
+    req_time(TimePoint(std::chrono::seconds(0))),
+    id(0), name(""), rank(0), member_count(0), max_members(0), value(0.0), ipo(false), min_sv(0.0),
+    members()
+{}
+
+AllianceCache::AllianceCache(const string& req_id, const TimePoint& req_time, uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv) :
+    req_id(req_id),
+    req_time(req_time),
+    id(id),
+    name(name),
+    rank(rank),
+    member_count(member_count),
+    max_members(max_members),
+    value(value),
+    ipo(ipo),
+    min_sv(min_sv),
+    members()
+{}
+
+TimePoint to_timepoint(const duckdb::timestamp_t& timestamp) {
+    using namespace std::chrono;
+    return time_point<system_clock>(duration_cast<system_clock::duration>(microseconds(int64_t(timestamp))));
+}
+
+AllianceCache::AllianceCache(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
+    req_id(chunk->GetValue(0, row).GetValue<string>()),
+    req_time(to_timepoint(chunk->GetValue(1, row).GetValue<duckdb::timestamp_t>())),
+    id(chunk->GetValue(2, row).GetValue<uint32_t>()),
+    name(chunk->GetValue(3, row).GetValue<string>()),
+    rank(chunk->GetValue(4, row).GetValue<uint32_t>()),
+    member_count(chunk->GetValue(5, row).GetValue<uint8_t>()),
+    max_members(chunk->GetValue(6, row).GetValue<uint8_t>()),
+    value(chunk->GetValue(7, row).GetValue<double>()),
+    ipo(chunk->GetValue(8, row).GetValue<bool>()),
+    min_sv(chunk->GetValue(9, row).GetValue<float>()),
+    members()
+{}
+
+inline AllianceCache to_alliance_cache(duckdb::unique_ptr<duckdb::QueryResult> result) {
+    if (result->HasError()) throw DatabaseException(result->GetError());
+    result->Print();
+    std::cout << "..." << std::endl;
+    auto chunk = result->Fetch();
+    std::cout << chunk->ToString() << std::endl;
+    std::cout << "....." << std::endl;
+    return chunk && chunk->size() != 0 ? AllianceCache(chunk, 0) : AllianceCache();
+}
+
+AllianceCache AllianceCache::create(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv) {
+    const duckdb::Value uuid = duckdb::Value::UUID(duckdb::UUID::GenerateRandomUUID());
+    const duckdb::timestamp_t ts = duckdb::Timestamp::GetCurrentTimestamp(); // microseconds
+    const auto& connection = Database::Client()->connection;
+    duckdb::Appender appender(*connection, "alliance_cache");
+    connection->BeginTransaction();
+    appender.AppendRow(uuid, ts, id, name.c_str(), rank, member_count, max_members, value, ipo, min_sv);
+    connection->Commit();
+    return AllianceCache(uuid.ToString(), to_timepoint(ts), id, name, rank, member_count, max_members, value, ipo, min_sv);
+}
+
+AllianceCache AllianceCache::from_req_id(const string& req_id) {
+    return to_alliance_cache(Database::Client()->get_alliance_cache_by_req_id->Execute(req_id.c_str()));
+}
+
 Campaign::Campaign() :
     pax_activated(Airline::NONE),
     cargo_activated(Airline::NONE),
@@ -439,6 +504,33 @@ void pybind_init_game(py::module_& m) {
         .def("set_role", &User::set_role, "role"_a)
         .def("to_dict", py::overload_cast<const User&>(&to_dict))
         .def("__repr__", &User::repr);
+
+    py::class_<AllianceCache> alliance_cache_class(m_game, "AllianceCache");
+    py::class_<AllianceCache::Member>(alliance_cache_class, "Member")
+        .def_readonly("id", &AllianceCache::Member::id)
+        .def_readonly("username", &AllianceCache::Member::username)
+        .def_readonly("joined", &AllianceCache::Member::joined)
+        .def_readonly("flights", &AllianceCache::Member::flights)
+        .def_readonly("contributed", &AllianceCache::Member::contributed)
+        .def_readonly("daily_contribution", &AllianceCache::Member::daily_contribution)
+        .def_readonly("online", &AllianceCache::Member::online)
+        .def_readonly("sv", &AllianceCache::Member::sv)
+        .def_readonly("season", &AllianceCache::Member::season);
+
+    alliance_cache_class
+        .def_readonly("req_id", &AllianceCache::req_id)
+        .def_readonly("req_time", &AllianceCache::req_time)
+        .def_readonly("id", &AllianceCache::id)
+        .def_readonly("name", &AllianceCache::name)
+        .def_readonly("rank", &AllianceCache::rank)
+        .def_readonly("member_count", &AllianceCache::member_count)
+        .def_readonly("max_members", &AllianceCache::max_members)
+        .def_readonly("value", &AllianceCache::value)
+        .def_readonly("ipo", &AllianceCache::ipo)
+        .def_readonly("min_sv", &AllianceCache::min_sv)
+        .def_readonly("members", &AllianceCache::members)
+        .def_static("create", &AllianceCache::create, "id"_a, "name"_a, "rank"_a, "member_count"_a, "max_members"_a, "value"_a, "ipo"_a, "min_sv"_a)
+        .def_static("from_req_id", &AllianceCache::from_req_id, "req_id"_a);
 
     py::class_<Campaign> campaign_class(m_game, "Campaign");
     py::enum_<Campaign::Airline>(campaign_class, "Airline")

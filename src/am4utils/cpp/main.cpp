@@ -63,6 +63,11 @@ public:
     }
 };
 
+int64_t to_int64(const TimePoint& time_point) {
+    using namespace std::chrono;
+    return duration_cast<microseconds>(time_point.time_since_epoch()).count();
+}
+
 int main() {
     __itt_domain* domain = __itt_domain_create("main_domain");
     __itt_string_handle* handle_main = __itt_string_handle_create("main_handle");
@@ -77,7 +82,7 @@ int main() {
     Airport ap1 = *Airport::search("TPE").ap;
     Aircraft ac = *Aircraft::search("b722f").ac;
     // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-    auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
+    // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
     User user = User::Default();
 
     auto timer = Timer();
@@ -85,14 +90,14 @@ int main() {
     // for (int i = 0; i < 100; i++) {
     //     std::ignore = find_routes(ap0, ac, options, User::Default());
     // }
-    auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
-    // auto r = AircraftRoute::create(ap0, ap1, ac);
-    // auto r = AircraftRoute::create(ap0, ap1, ac, options);
-    std::cout << r.trips_per_day << std::endl;
-    std::cout << AircraftRoute::repr(r) << std::endl;
+    AllianceCache cache = AllianceCache::create(0, "name1", 1, 60, 60, 1, true, 1000);
+    AllianceCache cache2 = AllianceCache::from_req_id(cache.req_id);
+    std::cout << cache.req_id << " / " << cache2.req_id << std::endl;
+    std::cout << to_int64(cache.req_time) << " / " << to_int64(cache2.req_time) << std::endl;
+
     __itt_task_end(domain);
     timer.stop();
-    getchar();
+    // getchar();
     
     // reset();
     // auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);

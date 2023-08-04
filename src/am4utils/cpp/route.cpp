@@ -53,7 +53,7 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
             config_algorithm
         );
     };
-    auto calc_max_rawincome = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& ticket) {
+    auto calc_max_rawincome = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& ticket) -> uint32_t {
         return (
             cfg.y * ticket.y +
             cfg.j * ticket.j +
@@ -137,7 +137,7 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
             config_algorithm
         );
     };
-    auto calc_rawincome = [&](const Aircraft::CargoConfig& cfg, const CargoTicket& ticket) {
+    auto calc_rawincome = [&](const Aircraft::CargoConfig& cfg, const CargoTicket& ticket) -> double {
         return (
             (1 + user.l_training / 100.0) * cfg.l * 0.7 * ticket.l +
             (1 + user.h_training / 100.0) * cfg.h * ticket.h
@@ -609,8 +609,8 @@ void pybind_init_route(py::module_& m) {
         .def(py::init<AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm>(),
             "tpd_mode"_a = AircraftRoute::Options::TPDMode::AUTO,
             "trips_per_day"_a = 1,
-            "max_distance"_a = 6371 * M_PI,
-            "max_flight_time"_a = 24,
+            "max_distance"_a = MAX_DISTANCE,
+            "max_flight_time"_a = 24.0f,
             "config_algorithm"_a = std::monostate()
         )
         .def_readwrite("tpd_mode", &AircraftRoute::Options::tpd_mode)

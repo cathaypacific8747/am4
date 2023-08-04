@@ -17,7 +17,8 @@
             "options": {
                 "cwd": "src/am4utils"
             },
-            "command": "${command:python.interpreterPath} generate-stubs.py"
+            "command": "${command:python.interpreterPath} generate-stubs.py",
+            "problemMatcher": []
         },
         {
             "label": "py: install",
@@ -48,7 +49,7 @@
         {
             "label": "delete database",
             "type": "shell",
-            "command": "rm .venv/lib/python3.11/site-packages/am4utils/data/main_test.db .venv/lib/python3.11/site-packages/am4utils/data/main.db",
+            "command": "rm .venv/lib/python3.11/site-packages/am4utils/data/main_test.db .venv/lib/python3.11/site-packages/am4utils/data/main.db src/am4utils/build-vscode/data/main.db",
             "problemMatcher": []
         }
     ]

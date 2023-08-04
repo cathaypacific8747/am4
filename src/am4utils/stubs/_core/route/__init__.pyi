@@ -51,7 +51,7 @@ class AircraftRoute():
             STRICT: am4utils._core.route.AircraftRoute.Options.TPDMode # value = <TPDMode.STRICT: 2>
             __members__: dict # value = {'AUTO': <TPDMode.AUTO: 0>, 'AUTO_MULTIPLE_OF': <TPDMode.AUTO_MULTIPLE_OF: 1>, 'STRICT': <TPDMode.STRICT: 2>}
             pass
-        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24, config_algorithm: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm] = None) -> None: ...
+        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24.0, config_algorithm: typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm] = None) -> None: ...
         @property
         def config_algorithm(self) -> typing.Union[None, am4utils._core.aircraft.Aircraft.PaxConfig.Algorithm, am4utils._core.aircraft.Aircraft.CargoConfig.Algorithm]:
             """

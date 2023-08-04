@@ -2,9 +2,11 @@
 #include <duckdb.hpp>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 using std::string;
 using std::to_string;
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 struct User {
     enum class GameMode {
@@ -77,6 +79,51 @@ struct User {
     bool set_role(const User::Role& role);
 
     static const string repr(const User& r);
+};
+
+struct AllianceCache {
+    struct Member {
+        uint32_t id;
+        string username; 
+        TimePoint joined;
+        uint32_t flights;
+        uint64_t contributed;
+        uint32_t daily_contribution;
+        TimePoint online;
+        float sv;
+        uint32_t season;
+
+        // Member();
+        // Member(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
+    };
+
+    string req_id;
+    TimePoint req_time;
+    uint32_t id;
+    string name;
+    uint32_t rank;
+    uint8_t member_count;
+    uint8_t max_members;
+    double value;
+    bool ipo;
+    float min_sv;
+    std::vector<Member> members;
+
+    AllianceCache();
+    AllianceCache(const string& req_id, const TimePoint& timestamp, uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv);
+    AllianceCache(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
+
+    static AllianceCache create(
+        uint32_t id,
+        const string& name,
+        uint32_t rank,
+        uint8_t member_count,
+        uint8_t max_members,
+        double value,
+        bool ipo,
+        float min_sv
+    );
+    static AllianceCache from_req_id(const string& req_id);
 };
 
 inline const string to_string(User::GameMode game_mode);

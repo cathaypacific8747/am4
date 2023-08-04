@@ -132,6 +132,43 @@ void Database::populate_database() {
 
     update_user_role = connection->Prepare("UPDATE users SET role = $1 WHERE id = $2;");
     CHECK_SUCCESS_REF(update_user_role);
+
+    CHECK_SUCCESS(connection->Query(
+        "CREATE TABLE IF NOT EXISTS alliance_cache ("
+        "  req_id              UUID NOT NULL DEFAULT uuid(),"
+        "  req_time            TIMESTAMP NOT NULL,"
+        "  id                  UINTEGER NOT NULL," // 0 = unknown
+        "  name                VARCHAR NOT NULL,"
+        "  rank                UINTEGER NOT NULL,"
+        "  member_count        UTINYINT NOT NULL,"
+        "  max_members         UTINYINT NOT NULL,"
+        "  value               DOUBLE NOT NULL,"
+        "  ipo                 BOOLEAN NOT NULL,"
+        "  min_sv              FLOAT NOT NULL"
+        ");"
+    ));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_cache_idx ON alliance_cache(req_id, id, name);"));
+
+    get_alliance_cache_by_req_id = connection->Prepare(SELECT_ALLIANCE_CACHE_STATEMENT("req_id"));
+    CHECK_SUCCESS_REF(get_alliance_cache_by_req_id);
+
+    // CHECK_SUCCESS(connection->Query(
+    //     "CREATE TABLE IF NOT EXISTS alliance_members_cache ("
+    //     "  req_id              UUID NOT NULL,"
+    //     "  id                  UINTEGER NOT NULL," // 0 = unknown
+    //     "  username            VARCHAR NOT NULL,"
+    //     "  joined              TIMESTAMP NOT NULL,"
+    //     "  flights             UINTEGER NOT NULL,"
+    //     "  contributed         UBIGINT NOT NULL,"
+    //     "  daily_contribution  UINTEGER NOT NULL,"
+    //     "  online              TIMESTAMP NOT NULL,"
+    //     "  sv                  FLOAT NOT NULL,"
+    //     "  season              UINTEGER NOT NULL"
+    //     ");"
+    // ));
+    // CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_members_cache_idx ON alliance_members_cache(req_id, id, username, contributed, daily_contribution);"));
+
+    // to be implemented
 }
 
 void Database::populate_internal() {

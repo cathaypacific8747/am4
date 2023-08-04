@@ -2,7 +2,6 @@ from src.am4bot.config import Config
 # from src.am4bot.bot import bot
 import uvicorn
 import asyncio
-import argparse
 import os
 
 if __name__ == '__main__':

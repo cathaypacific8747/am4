@@ -1,13 +1,123 @@
 from __future__ import annotations
 import am4utils._core.game
+import datetime
 import typing
 
 __all__ = [
+    "AllianceCache",
     "Campaign",
     "User"
 ]
 
 
+class AllianceCache():
+    class Member():
+        @property
+        def contributed(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def daily_contribution(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def flights(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def id(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def joined(self) -> datetime.datetime:
+            """
+            :type: datetime.datetime
+            """
+        @property
+        def online(self) -> datetime.datetime:
+            """
+            :type: datetime.datetime
+            """
+        @property
+        def season(self) -> int:
+            """
+            :type: int
+            """
+        @property
+        def sv(self) -> float:
+            """
+            :type: float
+            """
+        @property
+        def username(self) -> str:
+            """
+            :type: str
+            """
+        pass
+    @staticmethod
+    def create(id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float) -> AllianceCache: ...
+    @staticmethod
+    def from_req_id(req_id: str) -> AllianceCache: ...
+    @property
+    def id(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def ipo(self) -> bool:
+        """
+        :type: bool
+        """
+    @property
+    def max_members(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def member_count(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def members(self) -> typing.List[AllianceCache.Member]:
+        """
+        :type: typing.List[AllianceCache.Member]
+        """
+    @property
+    def min_sv(self) -> float:
+        """
+        :type: float
+        """
+    @property
+    def name(self) -> str:
+        """
+        :type: str
+        """
+    @property
+    def rank(self) -> int:
+        """
+        :type: int
+        """
+    @property
+    def req_id(self) -> str:
+        """
+        :type: str
+        """
+    @property
+    def req_time(self) -> datetime.datetime:
+        """
+        :type: datetime.datetime
+        """
+    @property
+    def value(self) -> float:
+        """
+        :type: float
+        """
+    pass
 class Campaign():
     class Airline():
         """
