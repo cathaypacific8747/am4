@@ -1,17 +1,17 @@
 from typing import List, Optional, Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from .core import Status
 
 class User(BaseModel):
-    company: str
+    username: str = Field(alias="company")
     level: int 
     online: bool
     share: float
     shares_available: int
     shares_sold: int
     ipo: int
-    fleet: int
+    fleet_count: int = Field(alias="fleet")
     routes: int
     alliance: str
     achievements: int
@@ -22,7 +22,7 @@ class User(BaseModel):
     founded: datetime
     logo: str
 
-class ShareDevelopment(BaseModel):
+class Share(BaseModel):
     date: datetime
     share: float
     
@@ -44,7 +44,7 @@ class Route(BaseModel):
 class UserResponse(BaseModel):
     status: Status 
     user: User
-    share_development: List[ShareDevelopment]
+    share_development: List[Share]
     awards: List[Award]
     fleet: List[Aircraft]
     routes: List[Route]

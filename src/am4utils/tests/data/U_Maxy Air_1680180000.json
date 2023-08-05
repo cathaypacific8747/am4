@@ -1,0 +1,5666 @@
+{
+    "status": {
+        "request": "success",
+        "requests_remaining": 767
+    },
+    "user": {
+        "company": "Maxy Air",
+        "level": 614,
+        "online": 0,
+        "share": 39663.69,
+        "shares_available": 0,
+        "shares_sold": 300000,
+        "ipo": 1,
+        "fleet": 787,
+        "routes": 787,
+        "alliance": "Synergos ",
+        "achievements": 52,
+        "game_mode": "Easy",
+        "rank": 9,
+        "reputation": 54,
+        "cargo_reputation": 49,
+        "founded": 1610854504,
+        "logo": "http:\/\/i.ibb.co\/7Y4GkG7\/Eyes-cat-on-black-background-vector-and-illustration.jpg"
+    },
+    "share_development": [
+        {
+            "date": 1680175784,
+            "share": 39663.69
+        },
+        {
+            "date": 1680170251,
+            "share": 39646.08
+        },
+        {
+            "date": 1680165998,
+            "share": 39641.22
+        },
+        {
+            "date": 1680165916,
+            "share": 39148.29
+        },
+        {
+            "date": 1680165904,
+            "share": 39123.29
+        },
+        {
+            "date": 1680165876,
+            "share": 39098.29
+        },
+        {
+            "date": 1680160157,
+            "share": 39084.24
+        },
+        {
+            "date": 1680156332,
+            "share": 39066.63
+        },
+        {
+            "date": 1680151488,
+            "share": 39052.46
+        },
+        {
+            "date": 1680150024,
+            "share": 39048.31
+        },
+        {
+            "date": 1680135989,
+            "share": 39016.49
+        },
+        {
+            "date": 1680130354,
+            "share": 39013.66
+        },
+        {
+            "date": 1680128982,
+            "share": 39006.25
+        },
+        {
+            "date": 1680128933,
+            "share": 38999.61
+        },
+        {
+            "date": 1680124715,
+            "share": 38987.84
+        },
+        {
+            "date": 1680117853,
+            "share": 38987.27
+        },
+        {
+            "date": 1680116729,
+            "share": 38971.63
+        },
+        {
+            "date": 1680110408,
+            "share": 38955.41
+        },
+        {
+            "date": 1680088744,
+            "share": 38924.1
+        },
+        {
+            "date": 1680085140,
+            "share": 39084.97
+        }
+    ],
+    "awards": [
+        {
+            "award": "Alliance Contributor",
+            "awarded": 1613559542
+        },
+        {
+            "award": "Pax Airline",
+            "awarded": 1614164341
+        },
+        {
+            "award": "Most Profitable",
+            "awarded": 1614769141
+        },
+        {
+            "award": "Cargo Airline",
+            "awarded": 1625047141
+        },
+        {
+            "award": "Best A\/C service",
+            "awarded": 1664359141
+        },
+        {
+            "award": "Best CEO",
+            "awarded": 1665568741
+        }
+    ],
+    "fleet": [
+        {
+            "aircraft": "B747-8F",
+            "amount": 60
+        },
+        {
+            "aircraft": "A380-800",
+            "amount": 713
+        },
+        {
+            "aircraft": "A340-300",
+            "amount": 5
+        },
+        {
+            "aircraft": "A350-900ULR",
+            "amount": 4
+        },
+        {
+            "aircraft": "A340-200",
+            "amount": 5
+        }
+    ],
+    "routes": [
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Dubai, United Arab Emirates",
+            "distance": 5900,
+            "arrived": 1680181318
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Oslo, Norway",
+            "distance": 5991,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Dublin, Ireland",
+            "distance": 5919,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Reykjav\u00edk - Keflavik, Iceland",
+            "distance": 5917,
+            "arrived": 1680181228
+        },
+        {
+            "dep": "Tarawa, Kiribati",
+            "stop": null,
+            "arrival": "Manila, Philippines",
+            "distance": 5907,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Washington Dulles, United States",
+            "distance": 5902,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Saint Martin, Sint Maarten",
+            "stop": null,
+            "arrival": "Reykjav\u00edk - Keflavik, Iceland",
+            "distance": 5945,
+            "arrived": 1680181316
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Stockholm intl, Sweden",
+            "distance": 5976,
+            "arrived": 1680181243
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 5949,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 5871,
+            "arrived": 1680181229
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Chi\u015fin\u0103u, Moldova",
+            "distance": 5983,
+            "arrived": 1680181306
+        },
+        {
+            "dep": "Nuuk, Greenland",
+            "stop": null,
+            "arrival": "Saint George's, Grenada",
+            "distance": 5857,
+            "arrived": 1680181212
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Addis Ababa, Ethiopia",
+            "distance": 5920,
+            "arrived": 1680181232
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Bujumbura, Burundi",
+            "distance": 5925,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Jakarta Soekarno, Indonesia",
+            "distance": 5991,
+            "arrived": 1680181207
+        },
+        {
+            "dep": "Rabat, Morocco",
+            "stop": null,
+            "arrival": "Abu Dhabi Int, United Arab Emirates",
+            "distance": 5966,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Frankfurt intl, Germany",
+            "distance": 5985,
+            "arrived": 1680181308
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Barcelona, Spain",
+            "distance": 5879,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 5976,
+            "arrived": 1680181298
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Khartoum, Sudan",
+            "distance": 5979,
+            "arrived": 1680181301
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 5944,
+            "arrived": 1680181317
+        },
+        {
+            "dep": "Saint Martin, Sint Maarten",
+            "stop": null,
+            "arrival": "Buenos Aires Int, Argentina",
+            "distance": 5898,
+            "arrived": 1680181263
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": null,
+            "arrival": "Las Vegas,NV Int, United States",
+            "distance": 5954,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Belgrade, Serbia",
+            "distance": 5967,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Chi\u015fin\u0103u, Moldova",
+            "distance": 5858,
+            "arrived": 1680181270
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Kiev Boryspil, Ukraine",
+            "distance": 5934,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Malabo, Equatorial Guinea",
+            "distance": 5853,
+            "arrived": 1680181264
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Warsaw intl, Poland",
+            "distance": 5894,
+            "arrived": 1680181258
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Mahe Island, Seychelles",
+            "distance": 5751,
+            "arrived": 1680181310
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Luanda, Angola",
+            "distance": 5729,
+            "arrived": 1680181227
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Nuku'alofa, Tonga",
+            "distance": 5834,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Manila, Philippines",
+            "stop": null,
+            "arrival": "Astana, Kazakhstan",
+            "distance": 5989,
+            "arrived": 1680181315
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 5837,
+            "arrived": 1680181245
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 5921,
+            "arrived": 1680181290
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Lom\u00e9, Togo",
+            "distance": 5803,
+            "arrived": 1680181316
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Bangui, Central African Republic",
+            "distance": 5909,
+            "arrived": 1680181221
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Oslo, Norway",
+            "distance": 5991,
+            "arrived": 1680181263
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Lom\u00e9, Togo",
+            "distance": 5803,
+            "arrived": 1680181260
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Dzaoudzi, Mayotte",
+            "distance": 5871,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Riga, Latvia",
+            "distance": 5861,
+            "arrived": 1680181275
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Bras\u00edlia, Brazil",
+            "distance": 5778,
+            "arrived": 1680181288
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Muscat, Oman",
+            "distance": 5643,
+            "arrived": 1680181237
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Hong Kong, Hong Kong",
+            "distance": 5920,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Lagos, Nigeria",
+            "distance": 5896,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Gustavia, Saint Barth\u00e9lemy",
+            "distance": 5766,
+            "arrived": 1680181218
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Kinshasa, Congo (Kinshasa)",
+            "distance": 5858,
+            "arrived": 1680181272
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": null,
+            "arrival": "Las Vegas,NV Int, United States",
+            "distance": 5954,
+            "arrived": 1680181222
+        },
+        {
+            "dep": "Abu Dhabi Int, United Arab Emirates",
+            "stop": null,
+            "arrival": "Rabat, Morocco",
+            "distance": 5966,
+            "arrived": 1680181290
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "St Denis, R\u00e9union",
+            "distance": 5823,
+            "arrived": 1680181342
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Luanda, Angola",
+            "distance": 5729,
+            "arrived": 1680181229
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Los Angeles, United States",
+            "distance": 5818,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Dubai, United Arab Emirates",
+            "distance": 5828,
+            "arrived": 1680181237
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Juba, South Sudan",
+            "distance": 5968,
+            "arrived": 1680181292
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Bucharest Henri Coanda, Romania",
+            "distance": 5854,
+            "arrived": 1680181268
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 5973,
+            "arrived": 1680181244
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Lilongwe, Malawi",
+            "distance": 5843,
+            "arrived": 1680181254
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 5921,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Khartoum, Sudan",
+            "distance": 5995,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Moscow Sheremetyevo, Russia",
+            "distance": 5976,
+            "arrived": 1680181248
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Lilongwe, Malawi",
+            "distance": 5843,
+            "arrived": 1680181255
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Bissau, Guinea-Bissau",
+            "distance": 5941,
+            "arrived": 1680181319
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 5856,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Conakry, Guinea",
+            "distance": 5838,
+            "arrived": 1680181308
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Los Angeles, United States",
+            "distance": 5818,
+            "arrived": 1680181284
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Tallinn, Estonia",
+            "distance": 5987,
+            "arrived": 1680181319
+        },
+        {
+            "dep": "Abu Dhabi Int, United Arab Emirates",
+            "stop": null,
+            "arrival": "Malabo, Equatorial Guinea",
+            "distance": 5426,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Fort-de-France, Martinique",
+            "distance": 5501,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Grand Case, Saint Martin",
+            "distance": 5734,
+            "arrived": 1680181295
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Karachi, Pakistan",
+            "distance": 4741,
+            "arrived": 1680181292
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Doha, Qatar",
+            "distance": 5577,
+            "arrived": 1680181216
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Washington Dulles, United States",
+            "distance": 5552,
+            "arrived": 1680181257
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Libreville, Gabon",
+            "distance": 5648,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Mumbai, India",
+            "distance": 5003,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Harare, Zimbabwe",
+            "distance": 4914,
+            "arrived": 1680181273
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Sana'a, Yemen",
+            "distance": 4940,
+            "arrived": 1680181244
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Antananarivo, Madagascar",
+            "distance": 4972,
+            "arrived": 1680181224
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Kingston, Jamaica",
+            "distance": 13417,
+            "arrived": 1680181278
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 13178,
+            "arrived": 1680181250
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Phoenix Int, United States",
+            "distance": 13333,
+            "arrived": 1680181235
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Dzaoudzi, Mayotte",
+            "distance": 13413,
+            "arrived": 1680181276
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 12751,
+            "arrived": 1680181279
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Freetown, Sierra Leone",
+            "distance": 13321,
+            "arrived": 1680181230
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Bras\u00edlia, Brazil",
+            "distance": 13465,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Kingston, Jamaica",
+            "distance": 12954,
+            "arrived": 1680181257
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Guangzhou, China",
+            "distance": 13179,
+            "arrived": 1680181229
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 12742,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "Abidjan, C\u00f4te dIvoire",
+            "stop": null,
+            "arrival": "Guangzhou, China",
+            "distance": 12503,
+            "arrived": 1680181219
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Orlando Int, United States",
+            "distance": 12460,
+            "arrived": 1680181246
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Praia, Cape Verde",
+            "distance": 11011,
+            "arrived": 1680181273
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Manzini Mswati, Swaziland",
+            "distance": 13373,
+            "arrived": 1680181259
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Aqaba, Jordan",
+            "distance": 12417,
+            "arrived": 1680181249
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 12579,
+            "arrived": 1680181236
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 12904,
+            "arrived": 1680181231
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Luqa, Malta",
+            "distance": 12446,
+            "arrived": 1680181239
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Seattle Tacoma, United States",
+            "distance": 12980,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Nuku'alofa, Tonga",
+            "distance": 11979,
+            "arrived": 1680181210
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Charlotte, United States",
+            "distance": 12917,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Barcelona, Spain",
+            "distance": 11906,
+            "arrived": 1680181275
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 11493,
+            "arrived": 1680181257
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 12943,
+            "arrived": 1680181327
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 11974,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Dushanbe, Tajikistan",
+            "distance": 11921,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Mahe Island, Seychelles",
+            "distance": 12967,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Atlanta Int, United States",
+            "distance": 13467,
+            "arrived": 1680181309
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Christmas Island, Christmas Island",
+            "distance": 12267,
+            "arrived": 1680181297
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Tegucigalpa, Honduras",
+            "distance": 13292,
+            "arrived": 1680181218
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Newark, United States",
+            "distance": 13403,
+            "arrived": 1680181276
+        },
+        {
+            "dep": "Manama, Bahrain",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 12400,
+            "arrived": 1680181241
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Dhaka, Bangladesh",
+            "distance": 13229,
+            "arrived": 1680181258
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Papeete, French Polynesia",
+            "distance": 11401,
+            "arrived": 1680181231
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Christmas Island, Christmas Island",
+            "distance": 12032,
+            "arrived": 1680181216
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 13128,
+            "arrived": 1680181278
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Basseterre, Saint Kitts and Nevis",
+            "distance": 12311,
+            "arrived": 1680181243
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 13343,
+            "arrived": 1680181245
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 13412,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 12446,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Jakarta Soekarno, Indonesia",
+            "distance": 13432,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 13377,
+            "arrived": 1680181263
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Gustavia, Saint Barth\u00e9lemy",
+            "distance": 12332,
+            "arrived": 1680181203
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Apia, Samoa",
+            "distance": 13496,
+            "arrived": 1680181324
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Ankara, Turkey",
+            "distance": 13394,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Buenos Aires Int, Argentina",
+            "distance": 12856,
+            "arrived": 1680181260
+        },
+        {
+            "dep": "Ashgabat, Turkmenistan",
+            "stop": null,
+            "arrival": "Bras\u00edlia, Brazil",
+            "distance": 12497,
+            "arrived": 1680181299
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Christmas Island, Christmas Island",
+            "distance": 13379,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Pretoria, South Africa",
+            "distance": 13450,
+            "arrived": 1680181304
+        },
+        {
+            "dep": "Manila, Philippines",
+            "stop": null,
+            "arrival": "Rabat, Morocco",
+            "distance": 12293,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Grand Case, Saint Martin",
+            "distance": 12356,
+            "arrived": 1680181298
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Sydney intl, Australia",
+            "distance": 13368,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Astana, Kazakhstan",
+            "distance": 13414,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 12958,
+            "arrived": 1680181215
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "St. John's, Antigua and Barbuda",
+            "distance": 13452,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 13496,
+            "arrived": 1680181327
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Kingstown, Saint Vincent and the Grenadines",
+            "distance": 13266,
+            "arrived": 1680181208
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Ottawa intl, Canada",
+            "distance": 12398,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 11223,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Zandery, Suriname",
+            "distance": 12372,
+            "arrived": 1680181294
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Georgetown, Guyana",
+            "distance": 12730,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Burnt Pine, Norfolk Island",
+            "distance": 12303,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 11318,
+            "arrived": 1680181297
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 11354,
+            "arrived": 1680181290
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Hong Kong, Hong Kong",
+            "distance": 11995,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Fort-de-France, Martinique",
+            "distance": 11476,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Bangkok Int, Thailand",
+            "distance": 12472,
+            "arrived": 1680181313
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Nuku'alofa, Tonga",
+            "distance": 12301,
+            "arrived": 1680181217
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Dakar L.S. Senghor, Senegal",
+            "distance": 13277,
+            "arrived": 1680181216
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Ouagadougou, Burkina Faso",
+            "distance": 11384,
+            "arrived": 1680181254
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 11477,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Saint Peter Port, Guernsey",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 12192,
+            "arrived": 1680181260
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 13065,
+            "arrived": 1680181250
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Bissau, Guinea-Bissau",
+            "distance": 13252,
+            "arrived": 1680181203
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 12362,
+            "arrived": 1680181330
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 13413,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Apia, Samoa",
+            "distance": 13040,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 12434,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Canberra, Australia",
+            "distance": 13278,
+            "arrived": 1680181216
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Luxembourg, Luxembourg",
+            "distance": 10453,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Tehran Khomeini, Iran",
+            "distance": 12149,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 12975,
+            "arrived": 1680181226
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Helsinki intl, Finland",
+            "distance": 13489,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Niamey, Niger",
+            "distance": 11249,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Manzini Mswati, Swaziland",
+            "distance": 11389,
+            "arrived": 1680181231
+        },
+        {
+            "dep": "Frankfurt intl, Germany",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 12102,
+            "arrived": 1680181264
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Baghdad, Iraq",
+            "distance": 11471,
+            "arrived": 1680181339
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Helsinki intl, Finland",
+            "distance": 12982,
+            "arrived": 1680181283
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 10182,
+            "arrived": 1680181234
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "San Salvador (San Luis Talpa), El Salvador",
+            "distance": 10915,
+            "arrived": 1680181253
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 11720,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 10938,
+            "arrived": 1680181268
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 11830,
+            "arrived": 1680181240
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Lilongwe, Malawi",
+            "distance": 10472,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 12811,
+            "arrived": 1680181322
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Phoenix Int, United States",
+            "distance": 10908,
+            "arrived": 1680181278
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Los Angeles, United States",
+            "distance": 10923,
+            "arrived": 1680181258
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Copenhagen, Denmark",
+            "distance": 13466,
+            "arrived": 1680181317
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Alofi, Niue",
+            "distance": 13366,
+            "arrived": 1680181313
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Baku, Azerbaijan",
+            "distance": 11425,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Georgetown, Guyana",
+            "distance": 11630,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Lagos, Nigeria",
+            "distance": 12363,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Hamilton, Bermuda",
+            "distance": 12920,
+            "arrived": 1680181249
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Papeete, French Polynesia",
+            "distance": 10921,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 12742,
+            "arrived": 1680181255
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Podgorica, Montenegro",
+            "distance": 12431,
+            "arrived": 1680181269
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Baku, Azerbaijan",
+            "distance": 12201,
+            "arrived": 1680181296
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Yangon, Burma",
+            "distance": 11906,
+            "arrived": 1680181260
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Moroni, Comoros",
+            "distance": 11444,
+            "arrived": 1680181324
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Belize City, Belize",
+            "distance": 12899,
+            "arrived": 1680181341
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "El Aai\u00fan, Western Sahara",
+            "distance": 11981,
+            "arrived": 1680181276
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Lusaka, Zambia",
+            "distance": 12310,
+            "arrived": 1680181279
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Ottawa intl, Canada",
+            "distance": 10952,
+            "arrived": 1680181279
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Tehran Khomeini, Iran",
+            "distance": 11830,
+            "arrived": 1680181324
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Freetown, Sierra Leone",
+            "distance": 13213,
+            "arrived": 1680181577
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Pretoria, South Africa",
+            "distance": 11420,
+            "arrived": 1680181225
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Dakar L.S. Senghor, Senegal",
+            "distance": 10856,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Prishtina, Kosovo",
+            "distance": 10360,
+            "arrived": 1680181255
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "New York JFK, United States",
+            "distance": 12858,
+            "arrived": 1680181269
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Baghdad, Iraq",
+            "distance": 11399,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Astana, Kazakhstan",
+            "distance": 11949,
+            "arrived": 1680181259
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Maputo, Mozambique",
+            "distance": 12343,
+            "arrived": 1680181220
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 12381,
+            "arrived": 1680181294
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Atlanta Int, United States",
+            "distance": 13402,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Saint Peter Port, Guernsey",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 11397,
+            "arrived": 1680181268
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Lisbon, Portugal",
+            "distance": 10871,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Kigali, Rwanda",
+            "distance": 11255,
+            "arrived": 1680181240
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Georgetown, Guyana",
+            "distance": 12865,
+            "arrived": 1680181300
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Christmas Island, Christmas Island",
+            "distance": 12103,
+            "arrived": 1680181243
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 10450,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 10944,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Kampala, Uganda",
+            "distance": 12420,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 12924,
+            "arrived": 1680181232
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 11119,
+            "arrived": 1680181299
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Bissau, Guinea-Bissau",
+            "distance": 10453,
+            "arrived": 1680181258
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Nuku'alofa, Tonga",
+            "distance": 12934,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Rabat, Morocco",
+            "distance": 10949,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Freetown, Sierra Leone",
+            "distance": 10394,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Lilongwe, Malawi",
+            "distance": 10393,
+            "arrived": 1680181220
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Manila, Philippines",
+            "distance": 10768,
+            "arrived": 1680181254
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Pretoria, South Africa",
+            "distance": 11915,
+            "arrived": 1680181215
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Kampala, Uganda",
+            "distance": 11409,
+            "arrived": 1680181307
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Madrid Adolfo Suarez, Spain",
+            "distance": 10719,
+            "arrived": 1680181252
+        },
+        {
+            "dep": "Saint Peter Port, Guernsey",
+            "stop": null,
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 12324,
+            "arrived": 1680181252
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 11879,
+            "arrived": 1680181248
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 11119,
+            "arrived": 1680181251
+        },
+        {
+            "dep": "Macau, Macau",
+            "stop": null,
+            "arrival": "Los Angeles, United States",
+            "distance": 11701,
+            "arrived": 1680181330
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Moscow Sheremetyevo, Russia",
+            "distance": 11783,
+            "arrived": 1680181275
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Charlotte, United States",
+            "distance": 11660,
+            "arrived": 1680181203
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Amman Queen Alia, Jordan",
+            "distance": 10690,
+            "arrived": 1680181258
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Denver Int, United States",
+            "distance": 10800,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Quito, Ecuador",
+            "distance": 12757,
+            "arrived": 1680181269
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Oranjestad, Aruba",
+            "distance": 12762,
+            "arrived": 1680181272
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 11733,
+            "arrived": 1680181273
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Asmara, Eritrea",
+            "distance": 11607,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 11223,
+            "arrived": 1680181230
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Sana'a, Yemen",
+            "distance": 10754,
+            "arrived": 1680181564
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Nuuk, Greenland",
+            "distance": 12460,
+            "arrived": 1680181330
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Reykjav\u00edk - Keflavik, Iceland",
+            "distance": 11526,
+            "arrived": 1680181337
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Nassau, Bahamas",
+            "distance": 12629,
+            "arrived": 1680181320
+        },
+        {
+            "dep": "Abu Dhabi Int, United Arab Emirates",
+            "stop": null,
+            "arrival": "Oranjestad, Aruba",
+            "distance": 12742,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Reykjav\u00edk - Keflavik, Iceland",
+            "distance": 11554,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Niamey, Niger",
+            "distance": 11721,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Dubai, United Arab Emirates",
+            "distance": 10994,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Maseru, Lesotho",
+            "distance": 11411,
+            "arrived": 1680181225
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 11568,
+            "arrived": 1680181230
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Amsterdam, Netherlands",
+            "distance": 11758,
+            "arrived": 1680181339
+        },
+        {
+            "dep": "Nuku'alofa, Tonga",
+            "stop": null,
+            "arrival": "Zandery, Suriname",
+            "distance": 13328,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Nuuk, Greenland",
+            "distance": 11624,
+            "arrived": 1680181294
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Belize City, Belize",
+            "distance": 12899,
+            "arrived": 1680181324
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Apia, Samoa",
+            "distance": 12438,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Dhaka, Bangladesh",
+            "distance": 11081,
+            "arrived": 1680181310
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Kiev Boryspil, Ukraine",
+            "distance": 10422,
+            "arrived": 1680181274
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 11848,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Sana'a, Yemen",
+            "distance": 11860,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 11607,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 12299,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Shanghai Hongqiao, China",
+            "distance": 12235,
+            "arrived": 1680181298
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Ashgabat, Turkmenistan",
+            "distance": 11365,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Muscat, Oman",
+            "distance": 12250,
+            "arrived": 1680181333
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 13421,
+            "arrived": 1680181304
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Sana'a, Yemen",
+            "distance": 11354,
+            "arrived": 1680181250
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 12952,
+            "arrived": 1680181302
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 13338,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 13271,
+            "arrived": 1680181226
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "N'Djamena, Chad",
+            "distance": 10228,
+            "arrived": 1680181245
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Bangui, Central African Republic",
+            "distance": 10929,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 11231,
+            "arrived": 1680181234
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 11422,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Asmara, Eritrea",
+            "distance": 12345,
+            "arrived": 1680181337
+        },
+        {
+            "dep": "Funafuti, Tuvalu",
+            "stop": null,
+            "arrival": "Dushanbe, Tajikistan",
+            "distance": 12365,
+            "arrived": 1680181218
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 4628,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 5486,
+            "arrived": 1680181259
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Ashgabat, Turkmenistan",
+            "distance": 11651,
+            "arrived": 1680181313
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 11719,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Cairo, Egypt",
+            "distance": 10381,
+            "arrived": 1680181281
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Aqaba, Jordan",
+            "distance": 10731,
+            "arrived": 1680181268
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Alofi, Niue",
+            "distance": 11484,
+            "arrived": 1680181213
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Manzini Mswati, Swaziland",
+            "distance": 12272,
+            "arrived": 1680181296
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Amman Queen Alia, Jordan",
+            "distance": 10270,
+            "arrived": 1680181245
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Madrid Adolfo Suarez, Spain",
+            "distance": 12384,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 11771,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 10856,
+            "arrived": 1680181318
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Moscow Sheremetyevo, Russia",
+            "distance": 10402,
+            "arrived": 1680181295
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Maseru, Lesotho",
+            "distance": 13361,
+            "arrived": 1680181276
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 11822,
+            "arrived": 1680181223
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Vilnius, Lithuania",
+            "distance": 10564,
+            "arrived": 1680181304
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Denver Int, United States",
+            "distance": 11370,
+            "arrived": 1680181350
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Libreville, Gabon",
+            "distance": 10811,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Muscat, Oman",
+            "distance": 12323,
+            "arrived": 1680181300
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Lom\u00e9, Togo",
+            "distance": 11399,
+            "arrived": 1680181310
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Astana, Kazakhstan",
+            "distance": 10436,
+            "arrived": 1680181320
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "El Aai\u00fan, Western Sahara",
+            "distance": 11689,
+            "arrived": 1680181255
+        },
+        {
+            "dep": "El Aai\u00fan, Western Sahara",
+            "stop": null,
+            "arrival": "Manila, Philippines",
+            "distance": 13246,
+            "arrived": 1680181219
+        },
+        {
+            "dep": "El Aai\u00fan, Western Sahara",
+            "stop": null,
+            "arrival": "Riga, Latvia",
+            "distance": 4416,
+            "arrived": 1680181250
+        },
+        {
+            "dep": "El Aai\u00fan, Western Sahara",
+            "stop": null,
+            "arrival": "Jakarta Soekarno, Indonesia",
+            "distance": 13266,
+            "arrived": 1680181229
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 11862,
+            "arrived": 1680181248
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Wallis Island, Wallis and Futuna",
+            "distance": 11869,
+            "arrived": 1680181306
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Kigali, Rwanda",
+            "distance": 11394,
+            "arrived": 1680181336
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Windhoek Int, Namibia",
+            "distance": 11999,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 13417,
+            "arrived": 1680181307
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "La Paz \/ El Alto, Bolivia",
+            "distance": 11444,
+            "arrived": 1680181338
+        },
+        {
+            "dep": "Saipan Island, Northern Mariana Islands",
+            "stop": null,
+            "arrival": "London Gatwick, United Kingdom",
+            "distance": 11939,
+            "arrived": 1680181239
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Moroni, Comoros",
+            "distance": 12270,
+            "arrived": 1680181323
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 12957,
+            "arrived": 1680181260
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Vieux Fort, Saint Lucia",
+            "distance": 13264,
+            "arrived": 1680181252
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Kingston, Jamaica",
+            "distance": 13244,
+            "arrived": 1680181220
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Quito, Ecuador",
+            "distance": 11321,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Sydney intl, Australia",
+            "distance": 11341,
+            "arrived": 1680181222
+        },
+        {
+            "dep": "El Aai\u00fan, Western Sahara",
+            "stop": null,
+            "arrival": "Kuwait City, Kuwait",
+            "distance": 5932,
+            "arrived": 1680181341
+        },
+        {
+            "dep": "Dushanbe, Tajikistan",
+            "stop": null,
+            "arrival": "Dallas-Fort Worth, United States",
+            "distance": 11939,
+            "arrived": 1680181269
+        },
+        {
+            "dep": "Dushanbe, Tajikistan",
+            "stop": null,
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 12500,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Dushanbe, Tajikistan",
+            "stop": null,
+            "arrival": "Kingstown, Saint Vincent and the Grenadines",
+            "distance": 12269,
+            "arrived": 1680181273
+        },
+        {
+            "dep": "Dushanbe, Tajikistan",
+            "stop": null,
+            "arrival": "Saint George's, Grenada",
+            "distance": 12412,
+            "arrived": 1680181301
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 11985,
+            "arrived": 1680181323
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Newark, United States",
+            "distance": 10846,
+            "arrived": 1680181228
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Chicago O'Hare, United States",
+            "distance": 12458,
+            "arrived": 1680181275
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Fort-de-France, Martinique",
+            "distance": 10378,
+            "arrived": 1680181284
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "San Salvador (San Luis Talpa), El Salvador",
+            "distance": 13403,
+            "arrived": 1680181303
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Newark, United States",
+            "distance": 11397,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "San Juan F.L. Ribas, Puerto Rico",
+            "distance": 10907,
+            "arrived": 1680181296
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Houston Int, United States",
+            "distance": 13339,
+            "arrived": 1680181270
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Maputo, Mozambique",
+            "distance": 11469,
+            "arrived": 1680181328
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Chi\u015fin\u0103u, Moldova",
+            "distance": 10449,
+            "arrived": 1680181270
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Sofia, Bulgaria",
+            "distance": 11967,
+            "arrived": 1680181259
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "El Aai\u00fan, Western Sahara",
+            "distance": 11492,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Pretoria, South Africa",
+            "distance": 12394,
+            "arrived": 1680181294
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Newark, United States",
+            "distance": 12778,
+            "arrived": 1680181245
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Pohnpei Island, Micronesia",
+            "distance": 13134,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "El Aai\u00fan, Western Sahara",
+            "distance": 12429,
+            "arrived": 1680181340
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Amman Queen Alia, Jordan",
+            "distance": 10372,
+            "arrived": 1680181322
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Kunming, China",
+            "distance": 12199,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Xi'an, China",
+            "distance": 12180,
+            "arrived": 1680181304
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Ashgabat, Turkmenistan",
+            "distance": 12249,
+            "arrived": 1680181344
+        },
+        {
+            "dep": "Oranjestad, Aruba",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 12455,
+            "arrived": 1680181354
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "N'Djamena, Chad",
+            "distance": 10979,
+            "arrived": 1680181316
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Yerevan, Armenia",
+            "distance": 11949,
+            "arrived": 1680181332
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Hong Kong, Hong Kong",
+            "distance": 13328,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Hamilton, Bermuda",
+            "distance": 12827,
+            "arrived": 1680181328
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Denver Int, United States",
+            "distance": 12395,
+            "arrived": 1680181243
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "N'Djamena, Chad",
+            "distance": 10321,
+            "arrived": 1680181288
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Prague, Czechia",
+            "distance": 10999,
+            "arrived": 1680181358
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Asmara, Eritrea",
+            "distance": 10286,
+            "arrived": 1680181264
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 12389,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Maseru, Lesotho",
+            "distance": 11895,
+            "arrived": 1680181300
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "San Francisco, United States",
+            "distance": 11726,
+            "arrived": 1680181283
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Ottawa intl, Canada",
+            "distance": 10441,
+            "arrived": 1680181561
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Bogota, Colombia",
+            "distance": 10376,
+            "arrived": 1680181327
+        },
+        {
+            "dep": "Saipan Island, Northern Mariana Islands",
+            "stop": null,
+            "arrival": "Prishtina, Kosovo",
+            "distance": 11475,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Saipan Island, Northern Mariana Islands",
+            "stop": null,
+            "arrival": "Kigali, Rwanda",
+            "distance": 12809,
+            "arrived": 1680181597
+        },
+        {
+            "dep": "Saipan Island, Northern Mariana Islands",
+            "stop": null,
+            "arrival": "Atlanta Int, United States",
+            "distance": 12426,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Riyadh, Saudi Arabia",
+            "distance": 12366,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 5225,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Dushanbe, Tajikistan",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 13446,
+            "arrived": 1680181330
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Basseterre, Saint Kitts and Nevis",
+            "distance": 12899,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Georgetown, Cayman Islands",
+            "distance": 10988,
+            "arrived": 1680181323
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Newark, United States",
+            "distance": 11970,
+            "arrived": 1680181581
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "St. John's, Antigua and Barbuda",
+            "distance": 12995,
+            "arrived": 1680181289
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Saint George's, Grenada",
+            "distance": 12919,
+            "arrived": 1680181323
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Charlotte, United States",
+            "distance": 10900,
+            "arrived": 1680181267
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Chicago O'Hare, United States",
+            "distance": 10489,
+            "arrived": 1680181594
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Georgetown, Cayman Islands",
+            "distance": 10464,
+            "arrived": 1680181224
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Oranjestad, Aruba",
+            "distance": 11481,
+            "arrived": 1680181256
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 11371,
+            "arrived": 1680181359
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Quito, Ecuador",
+            "distance": 10428,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Kingston, Jamaica",
+            "distance": 10394,
+            "arrived": 1680181300
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Chicago O'Hare, United States",
+            "distance": 11436,
+            "arrived": 1680181341
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Hamilton, Bermuda",
+            "distance": 12344,
+            "arrived": 1680181347
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Gustavia, Saint Barth\u00e9lemy",
+            "distance": 12347,
+            "arrived": 1680181322
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Tehran Khomeini, Iran",
+            "distance": 11117,
+            "arrived": 1680181346
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 10256,
+            "arrived": 1680181311
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 11374,
+            "arrived": 1680181335
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Stockholm intl, Sweden",
+            "distance": 12920,
+            "arrived": 1680181352
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Mumbai, India",
+            "distance": 10454,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Libreville, Gabon",
+            "distance": 11463,
+            "arrived": 1680181332
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Luanda, Angola",
+            "distance": 11465,
+            "arrived": 1680181215
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Manzini Mswati, Swaziland",
+            "distance": 10372,
+            "arrived": 1680181359
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "New York JFK, United States",
+            "distance": 12936,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 5677,
+            "arrived": 1680181322
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 10640,
+            "arrived": 1680181342
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Bangui, Central African Republic",
+            "distance": 4917,
+            "arrived": 1680181317
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Niamey, Niger",
+            "distance": 5031,
+            "arrived": 1680181219
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Yaound\u00e9 Nsimalen, Cameroon",
+            "distance": 5517,
+            "arrived": 1680181311
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Khartoum, Sudan",
+            "distance": 10846,
+            "arrived": 1680181355
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Ulan Bator, Mongolia",
+            "distance": 13327,
+            "arrived": 1680181272
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Manama, Bahrain",
+            "distance": 12214,
+            "arrived": 1680181302
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Windhoek Int, Namibia",
+            "distance": 10164,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 10948,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 12762,
+            "arrived": 1680181297
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 10715,
+            "arrived": 1680181331
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Tehran Khomeini, Iran",
+            "distance": 11798,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 11331,
+            "arrived": 1680181254
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 13066,
+            "arrived": 1680181307
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Christmas Island, Christmas Island",
+            "distance": 11268,
+            "arrived": 1680181243
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Dushanbe, Tajikistan",
+            "distance": 12873,
+            "arrived": 1680181303
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Ouagadougou, Burkina Faso",
+            "distance": 5420,
+            "arrived": 1680181308
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Praia, Cape Verde",
+            "distance": 4917,
+            "arrived": 1680181254
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Manama, Bahrain",
+            "distance": 11613,
+            "arrived": 1680181278
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Noum\u00e9a Int, New Caledonia",
+            "distance": 13415,
+            "arrived": 1680181319
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Saint Martin, Sint Maarten",
+            "distance": 11466,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Shenzhen, China",
+            "distance": 13263,
+            "arrived": 1680181240
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Xi'an, China",
+            "distance": 12226,
+            "arrived": 1680181311
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Kuala Lumpur, Malaysia",
+            "distance": 12723,
+            "arrived": 1680181197
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Yangon, Burma",
+            "distance": 11752,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Phnom Penh, Cambodia",
+            "distance": 12819,
+            "arrived": 1680181299
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Kathmandu, Nepal",
+            "distance": 10383,
+            "arrived": 1680181336
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Vientiane, Laos",
+            "distance": 12370,
+            "arrived": 1680181210
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 12264,
+            "arrived": 1680181228
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Ouagadougou, Burkina Faso",
+            "distance": 11891,
+            "arrived": 1680181198
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Tokyo Haneda, Japan",
+            "distance": 13313,
+            "arrived": 1680181266
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Pyongyang, North Korea",
+            "distance": 12097,
+            "arrived": 1680181347
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Phoenix Int, United States",
+            "distance": 10370,
+            "arrived": 1680181292
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Kampala, Uganda",
+            "distance": 11411,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 13313,
+            "arrived": 1680181269
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Manama, Bahrain",
+            "distance": 5096,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Dubai, United Arab Emirates",
+            "distance": 5424,
+            "arrived": 1680181257
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Kingstown, Saint Vincent and the Grenadines",
+            "distance": 12438,
+            "arrived": 1680181226
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Grand Case, Saint Martin",
+            "distance": 12329,
+            "arrived": 1680181293
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 10420,
+            "arrived": 1680181580
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Fort-de-France, Martinique",
+            "distance": 12481,
+            "arrived": 1680181327
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 13466,
+            "arrived": 1680181349
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Bratislava, Slovakia",
+            "distance": 11433,
+            "arrived": 1680181319
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Denver Int, United States",
+            "distance": 12421,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Yangon, Burma",
+            "distance": 12506,
+            "arrived": 1680181238
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 10865,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "San Jose Int, Costa Rica",
+            "distance": 12922,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Aqaba, Jordan",
+            "distance": 4319,
+            "arrived": 1680181276
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Luqa, Malta",
+            "distance": 4476,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "Pohnpei Island, Micronesia",
+            "distance": 12008,
+            "arrived": 1680181295
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": null,
+            "arrival": "New York JFK, United States",
+            "distance": 5918,
+            "arrived": 1680181337
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Marigot, Dominica",
+            "distance": 13355,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Yaound\u00e9 Nsimalen, Cameroon",
+            "distance": 11909,
+            "arrived": 1680181268
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 12463,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Vilnius, Lithuania",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 11491,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Shanghai Pudong, China",
+            "distance": 13373,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Vilnius, Lithuania",
+            "distance": 10346,
+            "arrived": 1680181280
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Riga, Latvia",
+            "distance": 10484,
+            "arrived": 1680181310
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Kuwait City, Kuwait",
+            "distance": 11399,
+            "arrived": 1680181302
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Nouakchott, Mauritania",
+            "distance": 11876,
+            "arrived": 1680181303
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Hong Kong, Hong Kong",
+            "distance": 13289,
+            "arrived": 1680181261
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 12435,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 13336,
+            "arrived": 1680181285
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": " Bangkok Suvarnabhumi, Thailand",
+            "distance": 10973,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Phnom Penh, Cambodia",
+            "distance": 11465,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 10431,
+            "arrived": 1680181305
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Phoenix Int, United States",
+            "distance": 12883,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Yaound\u00e9 Nsimalen, Cameroon",
+            "distance": 10925,
+            "arrived": 1680181355
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Atlanta Int, United States",
+            "distance": 10925,
+            "arrived": 1680181295
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Skopje, Macedonia",
+            "distance": 10264,
+            "arrived": 1680181294
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Addis Ababa, Ethiopia",
+            "arrival": "Washington Dulles, United States",
+            "distance": 18825,
+            "arrived": 1680186787
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Manzini Mswati, Swaziland",
+            "arrival": "Reykjav\u00edk - Keflavik, Iceland",
+            "distance": 19413,
+            "arrived": 1680186798
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": "Cairo, Egypt",
+            "arrival": "Denver Int, United States",
+            "distance": 19337,
+            "arrived": 1680186795
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": "Shenzhen, China",
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 18416,
+            "arrived": 1680186797
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Maputo, Mozambique",
+            "arrival": "Caracas, Venezuela",
+            "distance": 19694,
+            "arrived": 1680186825
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": "St Denis, R\u00e9union",
+            "arrival": "Taipei, Taiwan",
+            "distance": 20466,
+            "arrived": 1680186782
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": "Vienna, Austria",
+            "arrival": "Kuala Lumpur, Malaysia",
+            "distance": 18962,
+            "arrived": 1680186824
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": "Manama, Bahrain",
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 18820,
+            "arrived": 1680186825
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": "Lisbon, Portugal",
+            "arrival": "Washington Dulles, United States",
+            "distance": 13702,
+            "arrived": 1680186874
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": "Bras\u00edlia, Brazil",
+            "arrival": "Conakry, Guinea",
+            "distance": 13502,
+            "arrived": 1680181528
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Kampala, Uganda",
+            "arrival": "Chicago O'Hare, United States",
+            "distance": 20415,
+            "arrived": 1680186756
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Copenhagen, Denmark",
+            "distance": 4965,
+            "arrived": 1680181263
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Kabul, Afghanistan",
+            "distance": 5161,
+            "arrived": 1680181279
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": "San Francisco, United States",
+            "arrival": "Nouakchott, Mauritania",
+            "distance": 19591,
+            "arrived": 1680186731
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": "Banjul, Gambia",
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 18431,
+            "arrived": 1680186806
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Willemstad, Cura\u00e7ao",
+            "distance": 4656,
+            "arrived": 1680181286
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": "Abu Dhabi Int, United Arab Emirates",
+            "arrival": "Helsinki intl, Finland",
+            "distance": 11245,
+            "arrived": 1680181324
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": "Dar es Salaam, Tanzania",
+            "arrival": "Sofia, Bulgaria",
+            "distance": 17096,
+            "arrived": 1680186782
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": "St Denis, R\u00e9union",
+            "arrival": "Shanghai Pudong, China",
+            "distance": 16458,
+            "arrived": 1680186782
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": "Shanghai Pudong, China",
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 11620,
+            "arrived": 1680181236
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Buenos Aires Int, Argentina",
+            "distance": 13335,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": "Bogota, Colombia",
+            "arrival": "Las Vegas,NV Int, United States",
+            "distance": 19746,
+            "arrived": 1680186701
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": "Barcelona, Spain",
+            "arrival": "Shenzhen, China",
+            "distance": 18198,
+            "arrived": 1680186836
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": "Ottawa intl, Canada",
+            "arrival": "Dubai, United Arab Emirates",
+            "distance": 19814,
+            "arrived": 1680186813
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": "Warsaw intl, Poland",
+            "arrival": "Shenzhen, China",
+            "distance": 17096,
+            "arrived": 1680186826
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": "Rabat, Morocco",
+            "arrival": "Bangkok Int, Thailand",
+            "distance": 18013,
+            "arrived": 1680186769
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": "Los Angeles, United States",
+            "arrival": "Helsinki intl, Finland",
+            "distance": 17064,
+            "arrived": 1680186851
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": "Singapore, Singapore",
+            "arrival": "Copenhagen, Denmark",
+            "distance": 18908,
+            "arrived": 1680186796
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": "Beijing Capital, China",
+            "arrival": "Rabat, Morocco",
+            "distance": 19038,
+            "arrived": 1680186710
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": "Los Angeles, United States",
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 19307,
+            "arrived": 1680186781
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": "Copenhagen, Denmark",
+            "arrival": "Taipei, Taiwan",
+            "distance": 17178,
+            "arrived": 1680186835
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": "Minsk, Belarus",
+            "arrival": "Maseru, Lesotho",
+            "distance": 18635,
+            "arrived": 1680186843
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": "Montevideo, Uruguay",
+            "arrival": "Seattle Tacoma, United States",
+            "distance": 19317,
+            "arrived": 1680186826
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Xi'an, China",
+            "distance": 11655,
+            "arrived": 1680181312
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Windhoek Int, Namibia",
+            "distance": 11745,
+            "arrived": 1680181283
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Pretoria, South Africa",
+            "distance": 12833,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 11868,
+            "arrived": 1680181301
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": "Bras\u00edlia, Brazil",
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 20345,
+            "arrived": 1680186870
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": "Stockholm intl, Sweden",
+            "arrival": "Montevideo, Uruguay",
+            "distance": 18788,
+            "arrived": 1680186768
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": "Santiago, Chile",
+            "arrival": "Port Louis, Mauritius",
+            "distance": 20159,
+            "arrived": 1680186810
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Saint Martin, Sint Maarten",
+            "distance": 5412,
+            "arrived": 1680181307
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Stockholm intl, Sweden",
+            "distance": 5499,
+            "arrived": 1680181242
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 4475,
+            "arrived": 1680181291
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Asmara, Eritrea",
+            "distance": 5365,
+            "arrived": 1680181306
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Kathmandu, Nepal",
+            "distance": 5439,
+            "arrived": 1680181282
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "N'Djamena, Chad",
+            "distance": 4782,
+            "arrived": 1680181335
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Sana'a, Yemen",
+            "distance": 4497,
+            "arrived": 1680181326
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Sydney intl, Australia",
+            "distance": 4403,
+            "arrived": 1680181251
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Warsaw intl, Poland",
+            "distance": 5895,
+            "arrived": 1680181262
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Kampala, Uganda",
+            "arrival": "Kingston, Jamaica",
+            "distance": 19994,
+            "arrived": 1680186835
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Ashgabat, Turkmenistan",
+            "distance": 4984,
+            "arrived": 1680181228
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 5997,
+            "arrived": 1680181273
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Kingston, Jamaica",
+            "distance": 4912,
+            "arrived": 1680181321
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": "Frankfurt intl, Germany",
+            "arrival": "Singapore, Singapore",
+            "distance": 18364,
+            "arrived": 1680186810
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": "Mumbai, India",
+            "arrival": "Hamilton, Bermuda",
+            "distance": 19528,
+            "arrived": 1680186903
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": "Kathmandu, Nepal",
+            "arrival": "Canberra, Australia",
+            "distance": 17971,
+            "arrived": 1680186788
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": "Singapore, Singapore",
+            "arrival": "Harare, Zimbabwe",
+            "distance": 18288,
+            "arrived": 1680186849
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": "Guangzhou, China",
+            "arrival": "Barcelona, Spain",
+            "distance": 19190,
+            "arrived": 1680186795
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": "San Francisco, United States",
+            "arrival": "Aqaba, Jordan",
+            "distance": 19846,
+            "arrived": 1680186833
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Copenhagen, Denmark",
+            "distance": 5473,
+            "arrived": 1680181212
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Saint Peter Port, Guernsey",
+            "distance": 5389,
+            "arrived": 1680181340
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Sydney intl, Australia",
+            "distance": 5318,
+            "arrived": 1680181308
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Lisbon, Portugal",
+            "distance": 5385,
+            "arrived": 1680181275
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Kampala, Uganda",
+            "distance": 5415,
+            "arrived": 1680181255
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": "Windhoek Int, Namibia",
+            "arrival": "Guangzhou, China",
+            "distance": 20043,
+            "arrived": 1680186824
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": "Luanda, Angola",
+            "arrival": "Hong Kong, Hong Kong",
+            "distance": 20388,
+            "arrived": 1680186781
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": "Lisbon, Portugal",
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 18332,
+            "arrived": 1680186791
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": "Rabat, Morocco",
+            "arrival": "Bandar Seri Begawan, Brunei",
+            "distance": 20176,
+            "arrived": 1680186819
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": "Dar es Salaam, Tanzania",
+            "arrival": "Kunming, China",
+            "distance": 17014,
+            "arrived": 1680186779
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": "Bujumbura, Burundi",
+            "arrival": "Taipei, Taiwan",
+            "distance": 19958,
+            "arrived": 1680186743
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": "Kampala, Uganda",
+            "arrival": "Shanghai Pudong, China",
+            "distance": 20045,
+            "arrived": 1680186789
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": "Khartoum, Sudan",
+            "arrival": "Washington Dulles, United States",
+            "distance": 20065,
+            "arrived": 1680186725
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": "Kampala, Uganda",
+            "arrival": "Tokyo Haneda, Japan",
+            "distance": 20544,
+            "arrived": 1680186827
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": "Dar es Salaam, Tanzania",
+            "arrival": "Beijing Capital, China",
+            "distance": 18935,
+            "arrived": 1680186773
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": "Chicago O'Hare, United States",
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 20037,
+            "arrived": 1680186747
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": "Windhoek Int, Namibia",
+            "arrival": " Bangkok Suvarnabhumi, Thailand",
+            "distance": 19126,
+            "arrived": 1680186840
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": "Libreville, Gabon",
+            "arrival": "Shenzhen, China",
+            "distance": 20591,
+            "arrived": 1680186851
+        },
+        {
+            "dep": "Oslo, Norway",
+            "stop": "Pointe-\u00e0-Pitre, Guadeloupe",
+            "arrival": "Antananarivo, Madagascar",
+            "distance": 20022,
+            "arrived": 1680186739
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Ankara, Turkey",
+            "distance": 4458,
+            "arrived": 1680181197
+        },
+        {
+            "dep": "Havana Int, Cuba",
+            "stop": null,
+            "arrival": "Seattle Tacoma, United States",
+            "distance": 4456,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 4168,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Bras\u00edlia, Brazil",
+            "distance": 4720,
+            "arrived": 1680181247
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Saint Martin, Sint Maarten",
+            "distance": 4122,
+            "arrived": 1680181265
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 4861,
+            "arrived": 1680181252
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Road Town, British Virgin Islands",
+            "distance": 5957,
+            "arrived": 1680181283
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 4383,
+            "arrived": 1680181295
+        },
+        {
+            "dep": "St Denis, R\u00e9union",
+            "stop": null,
+            "arrival": "Asmara, Eritrea",
+            "distance": 4413,
+            "arrived": 1680181270
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 5822,
+            "arrived": 1680181287
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Kigali, Rwanda",
+            "distance": 4483,
+            "arrived": 1680181532
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Vienna, Austria",
+            "arrival": "Bogota, Colombia",
+            "distance": 19377,
+            "arrived": 1680186822
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": "Chicago O'Hare, United States",
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 17227,
+            "arrived": 1680186868
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": "Munich, Germany",
+            "arrival": "Gaborone, Botswana",
+            "distance": 17117,
+            "arrived": 1680186888
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": "Aqaba, Jordan",
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 20245,
+            "arrived": 1680186819
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": "Minsk, Belarus",
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 19836,
+            "arrived": 1680186906
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": "Kathmandu, Nepal",
+            "arrival": "Bissau, Guinea-Bissau",
+            "distance": 19659,
+            "arrived": 1680186772
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": "Nairobi Int, Kenya",
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 19768,
+            "arrived": 1680186831
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": "Freetown, Sierra Leone",
+            "arrival": "Gaborone, Botswana",
+            "distance": 18942,
+            "arrived": 1680186817
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Dakar L.S. Senghor, Senegal",
+            "arrival": "Amman Queen Alia, Jordan",
+            "distance": 19057,
+            "arrived": 1680186802
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Monrovia Int, Liberia",
+            "arrival": "Moscow Sheremetyevo, Russia",
+            "distance": 19616,
+            "arrived": 1680186711
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Bissau, Guinea-Bissau",
+            "arrival": "Tehran Khomeini, Iran",
+            "distance": 20342,
+            "arrived": 1680186725
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Dakar L.S. Senghor, Senegal",
+            "arrival": "Baku, Azerbaijan",
+            "distance": 20397,
+            "arrived": 1680186828
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": "Dushanbe, Tajikistan",
+            "arrival": "Jakarta Soekarno, Indonesia",
+            "distance": 20068,
+            "arrived": 1680186842
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": "Havana Int, Cuba",
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 20554,
+            "arrived": 1680186835
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": "Christiansted, U.S. Virgin Islands",
+            "arrival": "Abidjan, C\u00f4te dIvoire",
+            "distance": 20517,
+            "arrived": 1680186816
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": "San Jose Int, Costa Rica",
+            "arrival": "Montevideo, Uruguay",
+            "distance": 19648,
+            "arrived": 1680186731
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": "Banjul, Gambia",
+            "arrival": "Buenos Aires Int, Argentina",
+            "distance": 20119,
+            "arrived": 1680186831
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": "Nouakchott, Mauritania",
+            "arrival": "Nassau, Bahamas",
+            "distance": 19449,
+            "arrived": 1680186944
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": "Chicago O'Hare, United States",
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 20527,
+            "arrived": 1680186821
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": "Guangzhou, China",
+            "arrival": "Muscat, Oman",
+            "distance": 19248,
+            "arrived": 1680186793
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 16411,
+            "arrived": 1680186702
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Lisbon, Portugal",
+            "distance": 16751,
+            "arrived": 1680186921
+        },
+        {
+            "dep": "Kampala, Uganda",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 16214,
+            "arrived": 1680186874
+        },
+        {
+            "dep": "Wallis Island, Wallis and Futuna",
+            "stop": null,
+            "arrival": "Manama, Bahrain",
+            "distance": 14935,
+            "arrived": 1680186880
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 14447,
+            "arrived": 1680186837
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 14390,
+            "arrived": 1680186795
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 14031,
+            "arrived": 1680186859
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 14472,
+            "arrived": 1680186803
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 14108,
+            "arrived": 1680186796
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Bern, Switzerland",
+            "distance": 14486,
+            "arrived": 1680186866
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Marigot, Dominica",
+            "distance": 14470,
+            "arrived": 1680186808
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Jakarta Soekarno, Indonesia",
+            "distance": 14491,
+            "arrived": 1680186824
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 14455,
+            "arrived": 1680186745
+        },
+        {
+            "dep": "Pago Pago, American Samoa",
+            "stop": null,
+            "arrival": "Antananarivo, Madagascar",
+            "distance": 14442,
+            "arrived": 1680186788
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Kingstown, Saint Vincent and the Grenadines",
+            "distance": 14148,
+            "arrived": 1680186780
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Willemstad, Cura\u00e7ao",
+            "distance": 14264,
+            "arrived": 1680186814
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Oranjestad, Aruba",
+            "distance": 14199,
+            "arrived": 1680186872
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": "Athens, Greece",
+            "arrival": "Quito, Ecuador",
+            "distance": 20522,
+            "arrived": 1680186826
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "New Delhi, India",
+            "distance": 14198,
+            "arrived": 1680186764
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Beijing Capital, China",
+            "distance": 14368,
+            "arrived": 1680186891
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 14012,
+            "arrived": 1680186798
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Havana Int, Cuba",
+            "distance": 14344,
+            "arrived": 1680186768
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Papeete, French Polynesia",
+            "distance": 14274,
+            "arrived": 1680186821
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Sydney intl, Australia",
+            "distance": 14134,
+            "arrived": 1680186823
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 14297,
+            "arrived": 1680186838
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Phoenix Int, United States",
+            "distance": 14290,
+            "arrived": 1680186780
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 14235,
+            "arrived": 1680186792
+        },
+        {
+            "dep": "Manila, Philippines",
+            "stop": null,
+            "arrival": "Freetown, Sierra Leone",
+            "distance": 14350,
+            "arrived": 1680186878
+        },
+        {
+            "dep": "Manila, Philippines",
+            "stop": null,
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 14180,
+            "arrived": 1680186804
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": null,
+            "arrival": "Pago Pago, American Samoa",
+            "distance": 13975,
+            "arrived": 1680186769
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 13898,
+            "arrived": 1680186768
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": null,
+            "arrival": "Pyongyang, North Korea",
+            "distance": 14267,
+            "arrived": 1680186766
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 14357,
+            "arrived": 1680186886
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Bandar Seri Begawan, Brunei",
+            "distance": 14297,
+            "arrived": 1680186736
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Hamilton, Bermuda",
+            "distance": 13897,
+            "arrived": 1680186821
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Santo Domingo, Dominican Republic",
+            "distance": 14373,
+            "arrived": 1680186898
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "San Salvador (San Luis Talpa), El Salvador",
+            "distance": 14086,
+            "arrived": 1680186789
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Chengdu, China",
+            "distance": 14427,
+            "arrived": 1680186780
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 14448,
+            "arrived": 1680186743
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Marigot, Dominica",
+            "distance": 14065,
+            "arrived": 1680186841
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 13612,
+            "arrived": 1680186821
+        },
+        {
+            "dep": "Ouagadougou, Burkina Faso",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 14311,
+            "arrived": 1680186746
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 13820,
+            "arrived": 1680186762
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Praia, Cape Verde",
+            "distance": 14492,
+            "arrived": 1680186827
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Funafuti, Tuvalu",
+            "distance": 14354,
+            "arrived": 1680186884
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Noum\u00e9a Int, New Caledonia",
+            "distance": 14226,
+            "arrived": 1680186735
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Saint Peter Port, Guernsey",
+            "distance": 14488,
+            "arrived": 1680186772
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Havana Int, Cuba",
+            "distance": 14094,
+            "arrived": 1680186863
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 14472,
+            "arrived": 1680186787
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 14179,
+            "arrived": 1680186727
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Asunci\u00f3n, Paraguay",
+            "distance": 14447,
+            "arrived": 1680186770
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Saipan Island, Northern Mariana Islands",
+            "distance": 14297,
+            "arrived": 1680186764
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 14235,
+            "arrived": 1680186823
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 14239,
+            "arrived": 1680186880
+        },
+        {
+            "dep": "Chi\u015fin\u0103u, Moldova",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 13710,
+            "arrived": 1680186734
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Manama, Bahrain",
+            "distance": 14382,
+            "arrived": 1680186801
+        },
+        {
+            "dep": "Banjul, Gambia",
+            "stop": null,
+            "arrival": "Bandar Seri Begawan, Brunei",
+            "distance": 14297,
+            "arrived": 1680186764
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "San Salvador (San Luis Talpa), El Salvador",
+            "distance": 14086,
+            "arrived": 1680186765
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 14496,
+            "arrived": 1680186729
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Manila, Philippines",
+            "distance": 14342,
+            "arrived": 1680186850
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 14308,
+            "arrived": 1680186878
+        },
+        {
+            "dep": "Newark, United States",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 14390,
+            "arrived": 1680186833
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Yerevan, Armenia",
+            "distance": 14321,
+            "arrived": 1680186756
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 14451,
+            "arrived": 1680186696
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 14458,
+            "arrived": 1680186804
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 14394,
+            "arrived": 1680186810
+        },
+        {
+            "dep": "Juba, South Sudan",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 14311,
+            "arrived": 1680186801
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Yangon, Burma",
+            "distance": 14168,
+            "arrived": 1680186800
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 14491,
+            "arrived": 1680186881
+        },
+        {
+            "dep": "Reykjav\u00edk - Keflavik, Iceland",
+            "stop": null,
+            "arrival": "Alofi, Niue",
+            "distance": 14455,
+            "arrived": 1680186802
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": null,
+            "arrival": "Seoul Incheon, South Korea",
+            "distance": 14448,
+            "arrived": 1680186748
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Papeete, French Polynesia",
+            "distance": 14308,
+            "arrived": 1680186801
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 13975,
+            "arrived": 1680186886
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Praia, Cape Verde",
+            "distance": 13964,
+            "arrived": 1680186878
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "San Salvador (San Luis Talpa), El Salvador",
+            "distance": 13501,
+            "arrived": 1680186739
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Lisbon, Portugal",
+            "distance": 13604,
+            "arrived": 1680186875
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "San Francisco, United States",
+            "distance": 13582,
+            "arrived": 1680186747
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 13956,
+            "arrived": 1680186871
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "New Delhi, India",
+            "distance": 14398,
+            "arrived": 1680186816
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Brussels intl, Belgium",
+            "distance": 14177,
+            "arrived": 1680186863
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Bratislava, Slovakia",
+            "distance": 13973,
+            "arrived": 1680186884
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Bucharest Henri Coanda, Romania",
+            "distance": 13787,
+            "arrived": 1680186851
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Damascus, Syria",
+            "distance": 13690,
+            "arrived": 1680186832
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Shanghai Hongqiao, China",
+            "distance": 13739,
+            "arrived": 1680186815
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "San Francisco, United States",
+            "distance": 13841,
+            "arrived": 1680186839
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 13905,
+            "arrived": 1680186888
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Freetown, Sierra Leone",
+            "distance": 13821,
+            "arrived": 1680186823
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Macau, Macau",
+            "distance": 13782,
+            "arrived": 1680186904
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Shenzhen, China",
+            "distance": 13767,
+            "arrived": 1680186892
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Kuala Lumpur, Malaysia",
+            "distance": 13673,
+            "arrived": 1680186819
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Shanghai Pudong, China",
+            "distance": 13693,
+            "arrived": 1680186835
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 13999,
+            "arrived": 1680186798
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Bogota, Colombia",
+            "distance": 13977,
+            "arrived": 1680186835
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 13689,
+            "arrived": 1680186888
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Pohnpei Island, Micronesia",
+            "distance": 13775,
+            "arrived": 1680186844
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 13845,
+            "arrived": 1680186734
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 13884,
+            "arrived": 1680186873
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Alofi, Niue",
+            "distance": 13987,
+            "arrived": 1680186843
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "San Juan F.L. Ribas, Puerto Rico",
+            "distance": 13501,
+            "arrived": 1680186796
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Buenos Aires Int, Argentina",
+            "distance": 13856,
+            "arrived": 1680186851
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Macau, Macau",
+            "distance": 13951,
+            "arrived": 1680186815
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Hanoi, Vietnam",
+            "distance": 13972,
+            "arrived": 1680186886
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 14192,
+            "arrived": 1680186823
+        },
+        {
+            "dep": "Doha, Qatar",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 13974,
+            "arrived": 1680186833
+        },
+        {
+            "dep": "Kathmandu, Nepal",
+            "stop": null,
+            "arrival": "Pointe-\u00e0-Pitre, Guadeloupe",
+            "distance": 13964,
+            "arrived": 1680186771
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Kuwait City, Kuwait",
+            "distance": 14262,
+            "arrived": 1680186875
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 14179,
+            "arrived": 1680186813
+        },
+        {
+            "dep": "Los Angeles, United States",
+            "stop": null,
+            "arrival": "Luanda, Angola",
+            "distance": 14355,
+            "arrived": 1680186892
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Tegucigalpa, Honduras",
+            "distance": 14132,
+            "arrived": 1680186831
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 14099,
+            "arrived": 1680186806
+        },
+        {
+            "dep": "Road Town, British Virgin Islands",
+            "stop": null,
+            "arrival": "Paro, Bhutan",
+            "distance": 14197,
+            "arrived": 1680186830
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "San Francisco, United States",
+            "distance": 14366,
+            "arrived": 1680186903
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Moscow Sheremetyevo, Russia",
+            "distance": 14124,
+            "arrived": 1680186828
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Guangzhou, China",
+            "distance": 13812,
+            "arrived": 1680186875
+        },
+        {
+            "dep": "Saint George's, Grenada",
+            "stop": null,
+            "arrival": "Mumbai, India",
+            "distance": 13963,
+            "arrived": 1680186827
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Banjul, Gambia",
+            "distance": 13764,
+            "arrived": 1680186838
+        },
+        {
+            "dep": "Athens, Greece",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 13550,
+            "arrived": 1680186894
+        },
+        {
+            "dep": "Castletown, Isle of Man",
+            "stop": "Bras\u00edlia, Brazil",
+            "arrival": "Baku, Azerbaijan",
+            "distance": 20604,
+            "arrived": 1680186881
+        },
+        {
+            "dep": "Buenos Aires Int, Argentina",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 13638,
+            "arrived": 1680186893
+        },
+        {
+            "dep": "Pyongyang, North Korea",
+            "stop": null,
+            "arrival": "Bridgetown, Barbados",
+            "distance": 14176,
+            "arrived": 1680186867
+        },
+        {
+            "dep": "Kinshasa, Congo (Kinshasa)",
+            "stop": null,
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 14372,
+            "arrived": 1680186854
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 14165,
+            "arrived": 1680186859
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 14015,
+            "arrived": 1680186867
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 14239,
+            "arrived": 1680186861
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Budapest, Hungary",
+            "distance": 13939,
+            "arrived": 1680186863
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "San Francisco, United States",
+            "distance": 14361,
+            "arrived": 1680186846
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Vieux Fort, Saint Lucia",
+            "distance": 14436,
+            "arrived": 1680186849
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Bridgetown, Barbados",
+            "distance": 14404,
+            "arrived": 1680186878
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Brazzaville, Congo (Brazzaville)",
+            "distance": 14389,
+            "arrived": 1680186867
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Atlanta Int, United States",
+            "distance": 14445,
+            "arrived": 1680186855
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Port Moresby, Papua New Guinea",
+            "distance": 14496,
+            "arrived": 1680186896
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Cocos (Keeling) Islands, Cocos (Keeling) Islands",
+            "distance": 14393,
+            "arrived": 1680186873
+        },
+        {
+            "dep": "Zandery, Suriname",
+            "stop": null,
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 14220,
+            "arrived": 1680186744
+        },
+        {
+            "dep": "Hamilton, Bermuda",
+            "stop": null,
+            "arrival": "Pohnpei Island, Micronesia",
+            "distance": 13712,
+            "arrived": 1680186801
+        },
+        {
+            "dep": "Shenzhen, China",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 14420,
+            "arrived": 1680186840
+        },
+        {
+            "dep": "Podgorica, Montenegro",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 14492,
+            "arrived": 1680186946
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 14373,
+            "arrived": 1680186911
+        },
+        {
+            "dep": "Shanghai Hongqiao, China",
+            "stop": null,
+            "arrival": "San Juan F.L. Ribas, Puerto Rico",
+            "distance": 14437,
+            "arrived": 1680186905
+        },
+        {
+            "dep": "Willemstad, Cura\u00e7ao",
+            "stop": null,
+            "arrival": "Port Louis, Mauritius",
+            "distance": 14272,
+            "arrived": 1680186836
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "San Jose Int, Costa Rica",
+            "distance": 14487,
+            "arrived": 1680186837
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Chicago O'Hare, United States",
+            "distance": 14469,
+            "arrived": 1680186824
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Tokyo Haneda, Japan",
+            "distance": 14273,
+            "arrived": 1680186836
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Manila, Philippines",
+            "distance": 14342,
+            "arrived": 1680186888
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Kabul, Afghanistan",
+            "distance": 13753,
+            "arrived": 1680186888
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Muscat, Oman",
+            "distance": 14178,
+            "arrived": 1680186872
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Mogadishu, Somalia",
+            "distance": 14489,
+            "arrived": 1680186891
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Monrovia Int, Liberia",
+            "distance": 13731,
+            "arrived": 1680186871
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Orlando Int, United States",
+            "distance": 13596,
+            "arrived": 1680186934
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 13782,
+            "arrived": 1680186855
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Antananarivo, Madagascar",
+            "distance": 13641,
+            "arrived": 1680186856
+        },
+        {
+            "dep": "Cockburn Town, Turks and Caicos Islands",
+            "stop": null,
+            "arrival": "Burnt Pine, Norfolk Island",
+            "distance": 14073,
+            "arrived": 1680186862
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Los Angeles, United States",
+            "distance": 14102,
+            "arrived": 1680186884
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Dakar L.S. Senghor, Senegal",
+            "distance": 13336,
+            "arrived": 1680186900
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Ulan Bator, Mongolia",
+            "distance": 13488,
+            "arrived": 1680186850
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Tarawa, Kiribati",
+            "distance": 13233,
+            "arrived": 1680186932
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Majuro Atoll, Marshall Islands",
+            "distance": 13274,
+            "arrived": 1680186907
+        },
+        {
+            "dep": "Caracas, Venezuela",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 14020,
+            "arrived": 1680186931
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Port Vila, Vanuatu",
+            "distance": 14083,
+            "arrived": 1680186869
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Chi\u015fin\u0103u, Moldova",
+            "distance": 13450,
+            "arrived": 1680186876
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Djibouti City, Djibouti",
+            "distance": 13690,
+            "arrived": 1680186841
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Bucharest Baneasa, Romania",
+            "distance": 13791,
+            "arrived": 1680186864
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Islamabad, Pakistan",
+            "distance": 14060,
+            "arrived": 1680186906
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Paris Charles de Gaulle, France",
+            "distance": 14423,
+            "arrived": 1680186897
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 14099,
+            "arrived": 1680371047
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "S\u00e3o Paulo Guarulhos, Brazil",
+            "distance": 13742,
+            "arrived": 1680186826
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 14146,
+            "arrived": 1680186796
+        },
+        {
+            "dep": "Kabul, Afghanistan",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 13649,
+            "arrived": 1680186809
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Mahe Island, Seychelles",
+            "distance": 13488,
+            "arrived": 1680186794
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Maputo, Mozambique",
+            "distance": 13409,
+            "arrived": 1680186844
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 14128,
+            "arrived": 1680186783
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 13757,
+            "arrived": 1680186838
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Wallis Island, Wallis and Futuna",
+            "distance": 14187,
+            "arrived": 1680186834
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 13884,
+            "arrived": 1680186833
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Yaren District, Nauru",
+            "distance": 14231,
+            "arrived": 1680186814
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Pohnpei Island, Micronesia",
+            "distance": 13204,
+            "arrived": 1680186858
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Tegucigalpa, Honduras",
+            "distance": 13512,
+            "arrived": 1680186876
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "San Jose Int, Costa Rica",
+            "distance": 14050,
+            "arrived": 1680186851
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Kingstown, Saint Vincent and the Grenadines",
+            "distance": 14091,
+            "arrived": 1680186883
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "St. John's, Antigua and Barbuda",
+            "distance": 13651,
+            "arrived": 1680186818
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Managua, Nicaragua",
+            "distance": 13752,
+            "arrived": 1680186841
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Nuku'alofa, Tonga",
+            "distance": 14200,
+            "arrived": 1680186844
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Toronto intl, Canada",
+            "distance": 13769,
+            "arrived": 1680186910
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Nadi, Fiji",
+            "distance": 13762,
+            "arrived": 1680186849
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Gustavia, Saint Barth\u00e9lemy",
+            "distance": 14158,
+            "arrived": 1680186812
+        },
+        {
+            "dep": "Guangzhou, China",
+            "stop": null,
+            "arrival": "Bissau, Guinea-Bissau",
+            "distance": 13218,
+            "arrived": 1680277288
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Banjul, Gambia",
+            "distance": 13274,
+            "arrived": 1680179792
+        },
+        {
+            "dep": "Singapore, Singapore",
+            "stop": null,
+            "arrival": "Rabat, Morocco",
+            "distance": 11817,
+            "arrived": 1680242209
+        },
+        {
+            "dep": "Santiago, Chile",
+            "stop": null,
+            "arrival": "Kiev Boryspil, Ukraine",
+            "distance": 13579,
+            "arrived": 1680352528
+        },
+        {
+            "dep": "Hag\u00e5t\u00f1a, Guam",
+            "stop": null,
+            "arrival": "Toronto intl, Canada",
+            "distance": 12227,
+            "arrived": 1680337431
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Colombo Int, Sri Lanka",
+            "distance": 14262,
+            "arrived": 1680260000
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Houston Int, United States",
+            "distance": 13426,
+            "arrived": 1680186921
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "La Paz \/ El Alto, Bolivia",
+            "distance": 14400,
+            "arrived": 1680186887
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Mal\u00e9, Maldives",
+            "distance": 13721,
+            "arrived": 1680186928
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Wellington, New Zealand",
+            "distance": 14483,
+            "arrived": 1680186895
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Bandar Seri Begawan, Brunei",
+            "distance": 14328,
+            "arrived": 1680186886
+        },
+        {
+            "dep": "Ottawa intl, Canada",
+            "stop": null,
+            "arrival": "Antananarivo, Madagascar",
+            "distance": 14053,
+            "arrived": 1680186908
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "San Jose Int, Costa Rica",
+            "distance": 14140,
+            "arrived": 1680186920
+        },
+        {
+            "dep": "Dubai, United Arab Emirates",
+            "stop": null,
+            "arrival": "Burnt Pine, Norfolk Island",
+            "distance": 13422,
+            "arrived": 1680186868
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Tegucigalpa, Honduras",
+            "distance": 14395,
+            "arrived": 1680186890
+        },
+        {
+            "dep": "Muscat, Oman",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 13823,
+            "arrived": 1680186959
+        },
+        {
+            "dep": "London Heathrow intl, United Kingdom",
+            "stop": null,
+            "arrival": "Baucau, Timor-Leste",
+            "distance": 13235,
+            "arrived": 1680186948
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Guatemala City, Guatemala",
+            "distance": 13322,
+            "arrived": 1680186960
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Christiansted, U.S. Virgin Islands",
+            "distance": 13589,
+            "arrived": 1680186887
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Santo Domingo, Dominican Republic",
+            "distance": 13477,
+            "arrived": 1680186969
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Bridgetown, Barbados",
+            "distance": 14091,
+            "arrived": 1680186890
+        },
+        {
+            "dep": "Beijing Capital, China",
+            "stop": null,
+            "arrival": "Port of Spain, Trinidad and Tobago",
+            "distance": 14377,
+            "arrived": 1680186930
+        },
+        {
+            "dep": "Dzaoudzi, Mayotte",
+            "stop": null,
+            "arrival": "Miami Int, United States",
+            "distance": 14165,
+            "arrived": 1680186946
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Canberra, Australia",
+            "distance": 13908,
+            "arrived": 1680186969
+        },
+        {
+            "dep": "Bangui, Central African Republic",
+            "stop": null,
+            "arrival": "Hag\u00e5t\u00f1a, Guam",
+            "distance": 13763,
+            "arrived": 1680186968
+        },
+        {
+            "dep": "Belize City, Belize",
+            "stop": null,
+            "arrival": "Nairobi Int, Kenya",
+            "distance": 13771,
+            "arrived": 1680186974
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Saint-Pierre, Saint Pierre and Miquelon",
+            "distance": 13397,
+            "arrived": 1680186905
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Warsaw intl, Poland",
+            "distance": 13460,
+            "arrived": 1680186898
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Beirut, Lebanon",
+            "distance": 13757,
+            "arrived": 1680186907
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Berlin Tegel, Germany",
+            "distance": 13735,
+            "arrived": 1680186946
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Addis Ababa, Ethiopia",
+            "distance": 14198,
+            "arrived": 1680186903
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Willemstad, Cura\u00e7ao",
+            "distance": 13721,
+            "arrived": 1680186935
+        },
+        {
+            "dep": "Yaren District, Nauru",
+            "stop": null,
+            "arrival": "Dar es Salaam, Tanzania",
+            "distance": 14157,
+            "arrived": 1680186940
+        },
+        {
+            "dep": "Christmas Island, Christmas Island",
+            "stop": null,
+            "arrival": "Seattle Tacoma, United States",
+            "distance": 13939,
+            "arrived": 1680186939
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Pyongyang, North Korea",
+            "distance": 13153,
+            "arrived": 1680186941
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Santiago, Chile",
+            "distance": 13492,
+            "arrived": 1680186983
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Stanley, Falkland Islands",
+            "distance": 14165,
+            "arrived": 1680186948
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Cockburn Town, Turks and Caicos Islands",
+            "distance": 14196,
+            "arrived": 1680186971
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "St. John's, Antigua and Barbuda",
+            "distance": 14171,
+            "arrived": 1680186952
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Singapore, Singapore",
+            "distance": 13002,
+            "arrived": 1680186876
+        },
+        {
+            "dep": "Conakry, Guinea",
+            "stop": null,
+            "arrival": "Shanghai Pudong, China",
+            "distance": 13455,
+            "arrived": 1680186953
+        },
+        {
+            "dep": "Minsk, Belarus",
+            "stop": null,
+            "arrival": "Honiara, Solomon Islands",
+            "distance": 13504,
+            "arrived": 1680186935
+        },
+        {
+            "dep": "Paro, Bhutan",
+            "stop": null,
+            "arrival": "Houston Int, United States",
+            "distance": 13614,
+            "arrived": 1680186966
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Guangzhou, China",
+            "distance": 13674,
+            "arrived": 1680186956
+        },
+        {
+            "dep": "Praia, Cape Verde",
+            "stop": null,
+            "arrival": "Taipei, Taiwan",
+            "distance": 14150,
+            "arrived": 1680186950
+        },
+        {
+            "dep": "Taipei, Taiwan",
+            "stop": null,
+            "arrival": "Mexico City, Mexico",
+            "distance": 13420,
+            "arrived": 1680186925
+        },
+        {
+            "dep": "Bras\u00edlia, Brazil",
+            "stop": null,
+            "arrival": "Bishkek, Kyrgyzstan",
+            "distance": 13820,
+            "arrived": 1680237800
+        },
+        {
+            "dep": "Seoul Incheon, South Korea",
+            "stop": null,
+            "arrival": "Windhoek Int, Namibia",
+            "distance": 13133,
+            "arrived": 1680245743
+        },
+        {
+            "dep": "S\u00e3o Paulo Guarulhos, Brazil",
+            "stop": null,
+            "arrival": "Noum\u00e9a Int, New Caledonia",
+            "distance": 13848,
+            "arrived": 1680316597
+        }
+    ]
+}

@@ -14,15 +14,12 @@ using duckdb::Appender;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
+// TODO: use appender instead.
 #define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, fourx, role"
 #define SELECT_USER_STATEMENT(field) "SELECT " USER_COLUMNS " FROM users WHERE " #field " = $1 LIMIT 1;"
 #define INSERT_USER_STATEMENT "INSERT INTO users (username, password, game_id, game_name, game_mode, discord_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING " USER_COLUMNS ";"
 
-#define SELECT_ALLIANCE_CACHE_STATEMENT(field) "SELECT * FROM alliance_cache WHERE " #field " = $1 LIMIT 1;" 
-
-#define ALLIANCE_MEMBERS_CACHE_COLUMNS "req_id, id, username, joined, flights, contributed, daily_contribution, online, sv, season"
-#define SELECT_ALLIANCE_MEMBERS_CACHE_STATEMENT(field) "SELECT " ALLIANCE_MEMBERS_CACHE_COLUMNS " FROM alliance_members_cache WHERE " #field " = $1 LIMIT 1;"
-// #define INSERT_ALLIANCE_MEMBERS_CACHE_STATEMENT "INSERT INTO alliance_members_cache (" ALLIANCE_MEMBERS_CACHE_COLUMNS ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING " ALLIANCE_MEMBERS_CACHE_COLUMNS ";"
+#define SELECT_ALLIANCE_LOG_STATEMENT(field) "SELECT * FROM alliance_log WHERE " #field " = $1 LIMIT 1;" 
 
 constexpr int AIRCRAFT_COUNT = 487;
 constexpr int AIRPORT_COUNT = 3907;
@@ -86,7 +83,7 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> update_user_fourx;
     duckdb::unique_ptr<PreparedStatement> update_user_role;
 
-    duckdb::unique_ptr<PreparedStatement> get_alliance_cache_by_req_id;
+    duckdb::unique_ptr<PreparedStatement> get_alliance_log_by_log_id;
 
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B
     uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1]; // 63,728 B: airport id -> airports index

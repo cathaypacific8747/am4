@@ -8,7 +8,6 @@ research/analytics/*.json
 research/analytics/*.parquet
 config.json
 config.production.json
-src/am4utils/py/game/api/data
 
 # Python.gitignore, C++.gitignore, CMake.gitignore
 # Prerequisites

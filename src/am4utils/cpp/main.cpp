@@ -90,11 +90,6 @@ int main() {
     // for (int i = 0; i < 100; i++) {
     //     std::ignore = find_routes(ap0, ac, options, User::Default());
     // }
-    AllianceCache cache = AllianceCache::create(0, "name1", 1, 60, 60, 1, true, 1000);
-    AllianceCache cache2 = AllianceCache::from_req_id(cache.req_id);
-    std::cout << cache.req_id << " / " << cache2.req_id << std::endl;
-    std::cout << to_int64(cache.req_time) << " / " << to_int64(cache2.req_time) << std::endl;
-
     __itt_task_end(domain);
     timer.stop();
     // getchar();

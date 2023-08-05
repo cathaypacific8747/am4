@@ -1,6 +1,7 @@
 import pytest
 
-from am4utils.game import Campaign, User, AllianceCache
+from am4utils.game import Campaign, User, AllianceLog
+from am4utils.game.api import fetch_alliance
 
 def test_campaign():
     c = Campaign.parse("c1, e")
@@ -168,10 +169,12 @@ def test_user_invalid_settings():
     success = u.set_income_tolerance(1.1)
     assert not success
 
-def test_alliance_cache():
-    cache = AllianceCache.create(
-        id=0, name="name1", rank=1, member_count=60, max_members=60, value=1, ipo=True, min_sv=1000
-    )
-    cache2 = AllianceCache.from_req_id(cache.req_id)
-    assert cache2.req_id == cache.req_id
-    assert cache2.req_time == cache.req_time
+@pytest.mark.asyncio
+async def test_alliance_log():
+    status, log0 = await fetch_alliance(None, "src/am4utils/tests/data/A_Valiant Air_1691065293.json")
+    log1 = AllianceLog.from_log_id(log0.log_id)
+    assert status.success is True
+    assert log1.log_id == log0.log_id
+    assert len(log1.members) == len(log0.members)
+    for m0, m1 in zip(log0.members, log1.members):
+        assert m0.username == m1.username

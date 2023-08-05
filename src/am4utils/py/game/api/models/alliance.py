@@ -23,7 +23,7 @@ class Member(BaseModel):
     daily_contribution: int = Field(alias="dailyContribution")
     online: datetime
     sv: float = Field(alias="shareValue")
-    season: Optional[int] # none if alliance not participating in season
+    season: Optional[int] = 0 # none if alliance not participating in season
 
 class AllianceResponse(BaseModel):
     status: Status

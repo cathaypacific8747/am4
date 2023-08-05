@@ -254,16 +254,32 @@ const string User::repr(const User& user) {
 }
 
 
-AllianceCache::AllianceCache() :
-    req_id("00000000-0000-0000-0000-000000000000"),
-    req_time(TimePoint(std::chrono::seconds(0))),
-    id(0), name(""), rank(0), member_count(0), max_members(0), value(0.0), ipo(false), min_sv(0.0),
-    members()
+// aircraft log - class should first be constructed via pydantic model dumping then (optionally) inserted to the db.
+TimePoint to_timepoint(const duckdb::timestamp_t& timestamp) {
+    using namespace std::chrono;
+    return time_point<system_clock>(duration_cast<system_clock::duration>(microseconds(int64_t(timestamp))));
+}
+
+duckdb::timestamp_t to_ddb_timestamp(const TimePoint& timepoint) {
+    using namespace std::chrono;
+    return duckdb::Timestamp::FromEpochMicroSeconds(duration_cast<microseconds>(timepoint.time_since_epoch()).count());
+}
+
+AllianceLog::Member::Member(uint32_t id, const string& username, const TimePoint& joined, uint32_t flights, uint32_t contributed, uint32_t daily_contribution, const TimePoint& online, float sv, uint32_t season) :
+    id(id),
+    username(username),
+    joined(joined),
+    flights(flights),
+    contributed(contributed),
+    daily_contribution(daily_contribution),
+    online(online),
+    sv(sv),
+    season(season)
 {}
 
-AllianceCache::AllianceCache(const string& req_id, const TimePoint& req_time, uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv) :
-    req_id(req_id),
-    req_time(req_time),
+AllianceLog::AllianceLog(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv, std::vector<AllianceLog::Member> members) :
+    log_id("00000000-0000-0000-0000-000000000000"),
+    log_time(TimePoint(std::chrono::seconds(0))),
     id(id),
     name(name),
     rank(rank),
@@ -272,17 +288,73 @@ AllianceCache::AllianceCache(const string& req_id, const TimePoint& req_time, ui
     value(value),
     ipo(ipo),
     min_sv(min_sv),
+    members(members)
+{}
+
+const duckdb::LogicalType m_struct_types = duckdb::LogicalType::STRUCT(duckdb::child_list_t<duckdb::LogicalType>({
+    {"id", duckdb::LogicalType::INTEGER},
+    {"username", duckdb::LogicalType::VARCHAR},
+    {"joined", duckdb::LogicalType::TIMESTAMP},
+    {"flights", duckdb::LogicalType::INTEGER},
+    {"contributed", duckdb::LogicalType::INTEGER},
+    {"daily_contribution", duckdb::LogicalType::INTEGER},
+    {"online", duckdb::LogicalType::TIMESTAMP},
+    {"sv", duckdb::LogicalType::FLOAT},
+    {"season", duckdb::LogicalType::INTEGER}
+}));
+
+AllianceLog& AllianceLog::insert_to_db() {
+    duckdb::Value log_id = duckdb::Value::UUID(duckdb::UUID::GenerateRandomUUID());
+    duckdb::timestamp_t log_time = duckdb::Timestamp::GetCurrentTimestamp(); // microseconds
+    const auto& connection = Database::Client()->connection;
+
+    duckdb::Value m_value;
+    if (this->members.empty())
+        m_value = duckdb::Value::EMPTYLIST(m_struct_types);
+    else {
+        duckdb::vector<duckdb::Value> members;
+        members.reserve(this->members.size());
+        for (const auto& m : this->members) {
+            members.push_back(duckdb::Value::STRUCT(duckdb::child_list_t<duckdb::Value>({
+                {"id", duckdb::Value::INTEGER(m.id)},
+                {"username", duckdb::Value(m.username)},
+                {"joined", duckdb::Value::TIMESTAMP(to_ddb_timestamp(m.joined))},
+                {"flights", duckdb::Value::INTEGER(m.flights)},
+                {"contributed", duckdb::Value::INTEGER(m.contributed)},
+                {"daily_contribution", duckdb::Value::INTEGER(m.daily_contribution)},
+                {"online", duckdb::Value::TIMESTAMP(to_ddb_timestamp(m.online))},
+                {"sv", duckdb::Value::FLOAT(m.sv)},
+                {"season", duckdb::Value::INTEGER(m.season)}
+            })));
+        }
+        m_value = duckdb::Value::LIST(m_struct_types, members);
+    }
+
+    connection->BeginTransaction();
+    duckdb::Appender main_appender(*connection, "alliance_log");
+    main_appender.AppendRow(
+        log_id, log_time,
+        this->id, this->name.c_str(),
+        this->rank, this->member_count, this->max_members,
+        this->value, this->ipo, this->min_sv,
+        m_value
+    );
+    main_appender.Close();
+    connection->Commit();
+    this->log_id = log_id.ToString();
+    this->log_time = to_timepoint(log_time);
+    return *this;
+}
+AllianceLog::AllianceLog() :
+    log_id("00000000-0000-0000-0000-000000000000"),
+    log_time(TimePoint(std::chrono::seconds(0))),
+    id(0), name(""), rank(0), member_count(0), max_members(0), value(0.0), ipo(false), min_sv(0.0),
     members()
 {}
 
-TimePoint to_timepoint(const duckdb::timestamp_t& timestamp) {
-    using namespace std::chrono;
-    return time_point<system_clock>(duration_cast<system_clock::duration>(microseconds(int64_t(timestamp))));
-}
-
-AllianceCache::AllianceCache(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
-    req_id(chunk->GetValue(0, row).GetValue<string>()),
-    req_time(to_timepoint(chunk->GetValue(1, row).GetValue<duckdb::timestamp_t>())),
+AllianceLog::AllianceLog(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
+    log_id(chunk->GetValue(0, row).GetValue<string>()),
+    log_time(to_timepoint(chunk->GetValue(1, row).GetValue<duckdb::timestamp_t>())),
     id(chunk->GetValue(2, row).GetValue<uint32_t>()),
     name(chunk->GetValue(3, row).GetValue<string>()),
     rank(chunk->GetValue(4, row).GetValue<uint32_t>()),
@@ -292,31 +364,29 @@ AllianceCache::AllianceCache(const duckdb::unique_ptr<duckdb::DataChunk>& chunk,
     ipo(chunk->GetValue(8, row).GetValue<bool>()),
     min_sv(chunk->GetValue(9, row).GetValue<float>()),
     members()
-{}
+{
+    auto memlist = chunk->GetValue(10, 0);
+    for (auto &mem : duckdb::ListValue::GetChildren(memlist)) {
+        auto &vals = duckdb::StructValue::GetChildren(mem);
+        this->members.emplace_back(
+            vals[0].GetValue<uint32_t>(),
+            vals[1].GetValue<string>(),
+            to_timepoint(vals[2].GetValue<duckdb::timestamp_t>()),
+            vals[3].GetValue<uint32_t>(),
+            vals[4].GetValue<uint32_t>(),
+            vals[5].GetValue<uint32_t>(),
+            to_timepoint(vals[6].GetValue<duckdb::timestamp_t>()),
+            vals[7].GetValue<float>(),
+            vals[8].GetValue<uint32_t>()
+        );
+    }
+}
 
-inline AllianceCache to_alliance_cache(duckdb::unique_ptr<duckdb::QueryResult> result) {
+AllianceLog AllianceLog::from_log_id(const string& log_id) {
+    auto result = Database::Client()->get_alliance_log_by_log_id->Execute(log_id.c_str());
     if (result->HasError()) throw DatabaseException(result->GetError());
-    result->Print();
-    std::cout << "..." << std::endl;
     auto chunk = result->Fetch();
-    std::cout << chunk->ToString() << std::endl;
-    std::cout << "....." << std::endl;
-    return chunk && chunk->size() != 0 ? AllianceCache(chunk, 0) : AllianceCache();
-}
-
-AllianceCache AllianceCache::create(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv) {
-    const duckdb::Value uuid = duckdb::Value::UUID(duckdb::UUID::GenerateRandomUUID());
-    const duckdb::timestamp_t ts = duckdb::Timestamp::GetCurrentTimestamp(); // microseconds
-    const auto& connection = Database::Client()->connection;
-    duckdb::Appender appender(*connection, "alliance_cache");
-    connection->BeginTransaction();
-    appender.AppendRow(uuid, ts, id, name.c_str(), rank, member_count, max_members, value, ipo, min_sv);
-    connection->Commit();
-    return AllianceCache(uuid.ToString(), to_timepoint(ts), id, name, rank, member_count, max_members, value, ipo, min_sv);
-}
-
-AllianceCache AllianceCache::from_req_id(const string& req_id) {
-    return to_alliance_cache(Database::Client()->get_alliance_cache_by_req_id->Execute(req_id.c_str()));
+    return (chunk && chunk->size() > 0) ? AllianceLog(chunk, 0) : AllianceLog();
 }
 
 Campaign::Campaign() :
@@ -505,32 +575,40 @@ void pybind_init_game(py::module_& m) {
         .def("to_dict", py::overload_cast<const User&>(&to_dict))
         .def("__repr__", &User::repr);
 
-    py::class_<AllianceCache> alliance_cache_class(m_game, "AllianceCache");
-    py::class_<AllianceCache::Member>(alliance_cache_class, "Member")
-        .def_readonly("id", &AllianceCache::Member::id)
-        .def_readonly("username", &AllianceCache::Member::username)
-        .def_readonly("joined", &AllianceCache::Member::joined)
-        .def_readonly("flights", &AllianceCache::Member::flights)
-        .def_readonly("contributed", &AllianceCache::Member::contributed)
-        .def_readonly("daily_contribution", &AllianceCache::Member::daily_contribution)
-        .def_readonly("online", &AllianceCache::Member::online)
-        .def_readonly("sv", &AllianceCache::Member::sv)
-        .def_readonly("season", &AllianceCache::Member::season);
+    py::class_<AllianceLog> alliance_log_class(m_game, "AllianceLog");
+    py::class_<AllianceLog::Member>(alliance_log_class, "Member")
+        .def(
+            py::init<uint32_t, const string&, const TimePoint&, uint32_t, uint64_t, uint32_t, const TimePoint&, float, uint32_t>(),
+            "id"_a, "username"_a, "joined"_a, "flights"_a, "contributed"_a, "daily_contribution"_a, "online"_a, "sv"_a, "season"_a
+        )
+        .def_readonly("id", &AllianceLog::Member::id)
+        .def_readonly("username", &AllianceLog::Member::username)
+        .def_readonly("joined", &AllianceLog::Member::joined)
+        .def_readonly("flights", &AllianceLog::Member::flights)
+        .def_readonly("contributed", &AllianceLog::Member::contributed)
+        .def_readonly("daily_contribution", &AllianceLog::Member::daily_contribution)
+        .def_readonly("online", &AllianceLog::Member::online)
+        .def_readonly("sv", &AllianceLog::Member::sv)
+        .def_readonly("season", &AllianceLog::Member::season);
 
-    alliance_cache_class
-        .def_readonly("req_id", &AllianceCache::req_id)
-        .def_readonly("req_time", &AllianceCache::req_time)
-        .def_readonly("id", &AllianceCache::id)
-        .def_readonly("name", &AllianceCache::name)
-        .def_readonly("rank", &AllianceCache::rank)
-        .def_readonly("member_count", &AllianceCache::member_count)
-        .def_readonly("max_members", &AllianceCache::max_members)
-        .def_readonly("value", &AllianceCache::value)
-        .def_readonly("ipo", &AllianceCache::ipo)
-        .def_readonly("min_sv", &AllianceCache::min_sv)
-        .def_readonly("members", &AllianceCache::members)
-        .def_static("create", &AllianceCache::create, "id"_a, "name"_a, "rank"_a, "member_count"_a, "max_members"_a, "value"_a, "ipo"_a, "min_sv"_a)
-        .def_static("from_req_id", &AllianceCache::from_req_id, "req_id"_a);
+    alliance_log_class
+        .def(
+            py::init<uint32_t, const string&, uint32_t, uint8_t, uint8_t, double, bool, float, std::vector<AllianceLog::Member>>(),
+            "id"_a, "name"_a, "rank"_a, "member_count"_a, "max_members"_a, "value"_a, "ipo"_a, "min_sv"_a, "members"_a
+        )
+        .def_readonly("log_id", &AllianceLog::log_id)
+        .def_readonly("log_time", &AllianceLog::log_time)
+        .def_readonly("id", &AllianceLog::id)
+        .def_readonly("name", &AllianceLog::name)
+        .def_readonly("rank", &AllianceLog::rank)
+        .def_readonly("member_count", &AllianceLog::member_count)
+        .def_readonly("max_members", &AllianceLog::max_members)
+        .def_readonly("value", &AllianceLog::value)
+        .def_readonly("ipo", &AllianceLog::ipo)
+        .def_readonly("min_sv", &AllianceLog::min_sv)
+        .def_readonly("members", &AllianceLog::members)
+        .def("insert_to_db", &AllianceLog::insert_to_db)
+        .def_static("from_log_id", &AllianceLog::from_log_id, "log_id"_a);
 
     py::class_<Campaign> campaign_class(m_game, "Campaign");
     py::enum_<Campaign::Airline>(campaign_class, "Airline")

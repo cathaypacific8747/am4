@@ -134,41 +134,34 @@ void Database::populate_database() {
     CHECK_SUCCESS_REF(update_user_role);
 
     CHECK_SUCCESS(connection->Query(
-        "CREATE TABLE IF NOT EXISTS alliance_cache ("
-        "  req_id              UUID NOT NULL DEFAULT uuid(),"
-        "  req_time            TIMESTAMP NOT NULL,"
-        "  id                  UINTEGER NOT NULL," // 0 = unknown
-        "  name                VARCHAR NOT NULL,"
-        "  rank                UINTEGER NOT NULL,"
-        "  member_count        UTINYINT NOT NULL,"
-        "  max_members         UTINYINT NOT NULL,"
-        "  value               DOUBLE NOT NULL,"
-        "  ipo                 BOOLEAN NOT NULL,"
-        "  min_sv              FLOAT NOT NULL"
+        "CREATE TABLE IF NOT EXISTS alliance_log ("
+        "  log_id        UUID NOT NULL DEFAULT uuid(),"
+        "  log_time      TIMESTAMP NOT NULL,"
+        "  id            UINTEGER NOT NULL," // 0 = unknown
+        "  name          VARCHAR NOT NULL,"
+        "  rank          UINTEGER NOT NULL,"
+        "  member_count  UTINYINT NOT NULL,"
+        "  max_members   UTINYINT NOT NULL,"
+        "  value         DOUBLE NOT NULL,"
+        "  ipo           BOOLEAN NOT NULL,"
+        "  min_sv        FLOAT NOT NULL,"
+        "  members       STRUCT("
+        "                  id                  UINTEGER," // 0 = unknown
+        "                  username            VARCHAR,"
+        "                  joined              TIMESTAMP,"
+        "                  flights             UINTEGER,"
+        "                  contributed         UINTEGER,"
+        "                  daily_contribution  UINTEGER,"
+        "                  online              TIMESTAMP,"
+        "                  sv                  FLOAT,"
+        "                  season              UINTEGER"
+        "                )[]"
         ");"
     ));
-    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_cache_idx ON alliance_cache(req_id, id, name);"));
+    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_log_idx ON alliance_log(log_id, id, name);"));
 
-    get_alliance_cache_by_req_id = connection->Prepare(SELECT_ALLIANCE_CACHE_STATEMENT("req_id"));
-    CHECK_SUCCESS_REF(get_alliance_cache_by_req_id);
-
-    // CHECK_SUCCESS(connection->Query(
-    //     "CREATE TABLE IF NOT EXISTS alliance_members_cache ("
-    //     "  req_id              UUID NOT NULL,"
-    //     "  id                  UINTEGER NOT NULL," // 0 = unknown
-    //     "  username            VARCHAR NOT NULL,"
-    //     "  joined              TIMESTAMP NOT NULL,"
-    //     "  flights             UINTEGER NOT NULL,"
-    //     "  contributed         UBIGINT NOT NULL,"
-    //     "  daily_contribution  UINTEGER NOT NULL,"
-    //     "  online              TIMESTAMP NOT NULL,"
-    //     "  sv                  FLOAT NOT NULL,"
-    //     "  season              UINTEGER NOT NULL"
-    //     ");"
-    // ));
-    // CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_members_cache_idx ON alliance_members_cache(req_id, id, username, contributed, daily_contribution);"));
-
-    // to be implemented
+    get_alliance_log_by_log_id = connection->Prepare(SELECT_ALLIANCE_LOG_STATEMENT("log_id"));
+    CHECK_SUCCESS_REF(get_alliance_log_by_log_id);
 }
 
 void Database::populate_internal() {

@@ -4,14 +4,15 @@ import datetime
 import typing
 
 __all__ = [
-    "AllianceCache",
+    "AllianceLog",
     "Campaign",
     "User"
 ]
 
 
-class AllianceCache():
+class AllianceLog():
     class Member():
+        def __init__(self, id: int, username: str, joined: datetime.datetime, flights: int, contributed: int, daily_contribution: int, online: datetime.datetime, sv: float, season: int) -> None: ...
         @property
         def contributed(self) -> int:
             """
@@ -58,10 +59,10 @@ class AllianceCache():
             :type: str
             """
         pass
+    def __init__(self, id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float, members: typing.List[AllianceLog.Member]) -> None: ...
     @staticmethod
-    def create(id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float) -> AllianceCache: ...
-    @staticmethod
-    def from_req_id(req_id: str) -> AllianceCache: ...
+    def from_log_id(log_id: str) -> AllianceLog: ...
+    def insert_to_db(self) -> AllianceLog: ...
     @property
     def id(self) -> int:
         """
@@ -71,6 +72,16 @@ class AllianceCache():
     def ipo(self) -> bool:
         """
         :type: bool
+        """
+    @property
+    def log_id(self) -> str:
+        """
+        :type: str
+        """
+    @property
+    def log_time(self) -> datetime.datetime:
+        """
+        :type: datetime.datetime
         """
     @property
     def max_members(self) -> int:
@@ -83,9 +94,9 @@ class AllianceCache():
         :type: int
         """
     @property
-    def members(self) -> typing.List[AllianceCache.Member]:
+    def members(self) -> typing.List[AllianceLog.Member]:
         """
-        :type: typing.List[AllianceCache.Member]
+        :type: typing.List[AllianceLog.Member]
         """
     @property
     def min_sv(self) -> float:
@@ -101,16 +112,6 @@ class AllianceCache():
     def rank(self) -> int:
         """
         :type: int
-        """
-    @property
-    def req_id(self) -> str:
-        """
-        :type: str
-        """
-    @property
-    def req_time(self) -> datetime.datetime:
-        """
-        :type: datetime.datetime
         """
     @property
     def value(self) -> float:
