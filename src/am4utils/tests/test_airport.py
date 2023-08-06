@@ -7,7 +7,9 @@ from am4utils.airport import Airport
     'iata:Hkg',
     'icao:vhhh',
     'name:hong kong',
-    'hong kong'
+    'fullname:hong kong, hong kong',
+    'hong kong',
+    'hong kong, hong kong',
 ])
 def test_airport_search(inp):
     a0 = Airport.search(inp)
@@ -15,6 +17,7 @@ def test_airport_search(inp):
     assert a0.ap.iata == "HKG"
 
 @pytest.mark.parametrize("inp", [
+    ""
     "VHHX  ",
     "iata:hkgA",
     "icao:VHHx",

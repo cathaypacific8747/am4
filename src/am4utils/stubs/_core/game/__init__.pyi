@@ -1,124 +1,13 @@
 from __future__ import annotations
 import am4utils._core.game
-import datetime
 import typing
 
 __all__ = [
-    "AllianceLog",
     "Campaign",
     "User"
 ]
 
 
-class AllianceLog():
-    class Member():
-        def __init__(self, id: int, username: str, joined: datetime.datetime, flights: int, contributed: int, daily_contribution: int, online: datetime.datetime, sv: float, season: int) -> None: ...
-        @property
-        def contributed(self) -> int:
-            """
-            :type: int
-            """
-        @property
-        def daily_contribution(self) -> int:
-            """
-            :type: int
-            """
-        @property
-        def flights(self) -> int:
-            """
-            :type: int
-            """
-        @property
-        def id(self) -> int:
-            """
-            :type: int
-            """
-        @property
-        def joined(self) -> datetime.datetime:
-            """
-            :type: datetime.datetime
-            """
-        @property
-        def online(self) -> datetime.datetime:
-            """
-            :type: datetime.datetime
-            """
-        @property
-        def season(self) -> int:
-            """
-            :type: int
-            """
-        @property
-        def sv(self) -> float:
-            """
-            :type: float
-            """
-        @property
-        def username(self) -> str:
-            """
-            :type: str
-            """
-        pass
-    def __init__(self, id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float, members: typing.List[AllianceLog.Member]) -> None: ...
-    @staticmethod
-    def from_log_id(log_id: str) -> AllianceLog: ...
-    def insert_to_db(self) -> AllianceLog: ...
-    @property
-    def id(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def ipo(self) -> bool:
-        """
-        :type: bool
-        """
-    @property
-    def log_id(self) -> str:
-        """
-        :type: str
-        """
-    @property
-    def log_time(self) -> datetime.datetime:
-        """
-        :type: datetime.datetime
-        """
-    @property
-    def max_members(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def member_count(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def members(self) -> typing.List[AllianceLog.Member]:
-        """
-        :type: typing.List[AllianceLog.Member]
-        """
-    @property
-    def min_sv(self) -> float:
-        """
-        :type: float
-        """
-    @property
-    def name(self) -> str:
-        """
-        :type: str
-        """
-    @property
-    def rank(self) -> int:
-        """
-        :type: int
-        """
-    @property
-    def value(self) -> float:
-        """
-        :type: float
-        """
-    pass
 class Campaign():
     class Airline():
         """

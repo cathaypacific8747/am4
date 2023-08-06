@@ -15,6 +15,7 @@ struct Airport {
         IATA,
         ICAO,
         NAME,
+        FULLNAME,
         ID,
     };
 

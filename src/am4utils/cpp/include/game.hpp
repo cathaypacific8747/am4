@@ -2,11 +2,9 @@
 #include <duckdb.hpp>
 #include <string>
 #include <algorithm>
-#include <chrono>
 
 using std::string;
 using std::to_string;
-using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 struct User {
     enum class GameMode {
@@ -81,49 +79,13 @@ struct User {
     static const string repr(const User& r);
 };
 
-struct AllianceLog {
-    struct Member {
-        uint32_t id;
-        string username; 
-        TimePoint joined;
-        uint32_t flights;
-        uint32_t contributed;
-        uint32_t daily_contribution;
-        TimePoint online;
-        float sv;
-        uint32_t season;
-
-        Member(uint32_t id, const string& username, const TimePoint& joined, uint32_t flights, uint32_t contributed, uint32_t daily_contribution, const TimePoint& online, float sv, uint32_t season);
-    };
-
-    string log_id;
-    TimePoint log_time;
-    uint32_t id;
-    string name;
-    uint32_t rank;
-    uint8_t member_count;
-    uint8_t max_members;
-    double value;
-    bool ipo;
-    float min_sv;
-    std::vector<Member> members;
-
-    AllianceLog(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv, std::vector<Member> members);
-    
-    AllianceLog();
-    AllianceLog(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
-    AllianceLog& insert_to_db();
-
-    static AllianceLog from_log_id(const string& log_id);
-};
-
 inline const string to_string(User::GameMode game_mode);
 
-struct Guild {
-    uint64_t id;
-    uint64_t easy_role_id;
-    uint64_t cargo_role_id;
-};
+// struct Guild {
+//     uint64_t id;
+//     uint64_t easy_role_id;
+//     uint64_t cargo_role_id;
+// };
 
 struct Campaign {
     // type | duration

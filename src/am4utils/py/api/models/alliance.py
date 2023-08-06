@@ -10,7 +10,7 @@ class Alliance(BaseModel):
     rank: int
     member_count: int = Field(alias="members")
     max_members: int = Field(alias="maxMembers")
-    value: int
+    value: int # broken!
     ipo: bool
     min_sv: float = Field(alias="minSV")
 
@@ -27,5 +27,5 @@ class Member(BaseModel):
 
 class AllianceResponse(BaseModel):
     status: Status
-    alliance: Optional[List[Alliance]]
-    members: Optional[List[Member]]
+    alliance: List[Alliance]
+    members: List[Member]

@@ -38,9 +38,6 @@ if __name__ == '__main__':
     replace('stubs/_core/ticket/__init__.pyi', {
         'import am4utils._core.ticket': 'import am4utils._core.ticket\nimport am4utils._core.game',
     })
-    replace('stubs/_core/game/__init__.pyi', {
-        'import am4utils._core.game': 'import am4utils._core.game\nimport datetime', # chrono
-    })
 
     try:
         import am4utils

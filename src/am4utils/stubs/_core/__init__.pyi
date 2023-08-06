@@ -8,6 +8,7 @@ __all__ = [
     "db",
     "demand",
     "game",
+    "log",
     "route",
     "ticket"
 ]

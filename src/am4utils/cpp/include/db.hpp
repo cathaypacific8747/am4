@@ -14,13 +14,6 @@ using duckdb::Appender;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-// TODO: use appender instead.
-#define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, fourx, role"
-#define SELECT_USER_STATEMENT(field) "SELECT " USER_COLUMNS " FROM users WHERE " #field " = $1 LIMIT 1;"
-#define INSERT_USER_STATEMENT "INSERT INTO users (username, password, game_id, game_name, game_mode, discord_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING " USER_COLUMNS ";"
-
-#define SELECT_ALLIANCE_LOG_STATEMENT(field) "SELECT * FROM alliance_log WHERE " #field " = $1 LIMIT 1;" 
-
 constexpr int AIRCRAFT_COUNT = 487;
 constexpr int AIRPORT_COUNT = 3907;
 constexpr int AIRPORT_ID_MAX = 3982;
@@ -79,7 +72,7 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> update_user_co2_price;
     duckdb::unique_ptr<PreparedStatement> update_user_accumulated_count;
     duckdb::unique_ptr<PreparedStatement> update_user_load;
-    duckdb::unique_ptr<PreparedStatement> update_user_income_tolerance;
+    duckdb::unique_ptr<PreparedStatement> update_user_income_loss_tol;
     duckdb::unique_ptr<PreparedStatement> update_user_fourx;
     duckdb::unique_ptr<PreparedStatement> update_user_role;
 
@@ -88,21 +81,31 @@ struct Database {
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B
     uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1]; // 63,728 B: airport id -> airports index
     Airport get_airport_by_id(uint16_t id);
+    // note: input string are assumed to be already uppercased
     Airport get_airport_by_iata(const string& iata);
     Airport get_airport_by_icao(const string& icao);
     Airport get_airport_by_name(const string& name);
+    Airport get_airport_by_fullname(const string& name);
     Airport get_airport_by_all(const string& all);
+    
+    template<typename ScoreFn>
+    std::vector<Airport::Suggestion> suggest_airport(const string& input, ScoreFn score_fn);
     std::vector<Airport::Suggestion> suggest_airport_by_iata(const string& iata);
     std::vector<Airport::Suggestion> suggest_airport_by_icao(const string& icao);
     std::vector<Airport::Suggestion> suggest_airport_by_name(const string& name);
+    std::vector<Airport::Suggestion> suggest_airport_by_fullname(const string& name);
     std::vector<Airport::Suggestion> suggest_airport_by_all(const string& all);
 
     Aircraft aircrafts[AIRCRAFT_COUNT];
     static uint16_t get_aircraft_idx_by_id(uint16_t id, uint8_t priority = 0);
+    // note: input string are assumed to be already lowercased
     Aircraft get_aircraft_by_id(uint16_t id, uint8_t priority);
     Aircraft get_aircraft_by_shortname(const string& shortname, uint8_t priority);
     Aircraft get_aircraft_by_name(const string& name, uint8_t priority);
     Aircraft get_aircraft_by_all(const string& all, uint8_t priority);
+    
+    template<typename ScoreFn>
+    std::vector<Aircraft::Suggestion> suggest_aircraft(const string& input, ScoreFn score_fn);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_shortname(const string& shortname);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_name(const string& name);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_all(const string& all);

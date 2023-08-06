@@ -16,6 +16,8 @@
 #include "include/aircraft.hpp"
 #include "include/route.hpp"
 
+#include "include/log.hpp"
+
 using std::string;
 using std::cout;
 using std::cerr;
@@ -87,9 +89,12 @@ int main() {
 
     auto timer = Timer();
     __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-    // for (int i = 0; i < 100; i++) {
-    //     std::ignore = find_routes(ap0, ac, options, User::Default());
-    // }
+    // auto apsr = Airport::search("VHHH");
+    for (int i = 0; i < 1000; i++) {
+        std::ignore = Airport::search("icao:VHHH");
+        // std::ignore = Airport::suggest(apsr.parse_result);
+        // find_routes(ap0, ac, options, User::Default());
+    }
     __itt_task_end(domain);
     timer.stop();
     // getchar();

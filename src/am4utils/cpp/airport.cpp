@@ -18,6 +18,8 @@ Airport::ParseResult Airport::parse(const string& s) {
         return Airport::ParseResult(Airport::SearchType::ICAO, s_upper.substr(5));
     } else if (s_upper.substr(0, 5) == "NAME:") {
         return Airport::ParseResult(Airport::SearchType::NAME, s_upper.substr(5));
+    } else if (s_upper.substr(0, 9) == "FULLNAME:") {
+        return Airport::ParseResult(Airport::SearchType::FULLNAME, s_upper.substr(9));
     } else if (s_upper.substr(0, 3) == "ID:") {
         try {
             std::ignore = std::stoi(s.substr(3));
@@ -47,6 +49,9 @@ Airport::SearchResult Airport::search(const string& s) {
         case Airport::SearchType::NAME:
             ap = Database::Client()->get_airport_by_name(parse_result.search_str);
             break;
+        case Airport::SearchType::FULLNAME:
+            ap = Database::Client()->get_airport_by_fullname(parse_result.search_str);
+            break;
         case Airport::SearchType::ID:
             ap = Database::Client()->get_airport_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)));
             break;
@@ -69,6 +74,9 @@ std::vector<Airport::Suggestion> Airport::suggest(const Airport::ParseResult& pa
             break;
         case Airport::SearchType::NAME:
             suggestions = Database::Client()->suggest_airport_by_name(parse_result.search_str);
+            break;
+        case Airport::SearchType::FULLNAME:
+            suggestions = Database::Client()->suggest_airport_by_fullname(parse_result.search_str);
             break;
         default:
             return suggestions;
@@ -103,6 +111,8 @@ inline const string to_string(Airport::SearchType st) {
             return "ICAO";
         case Airport::SearchType::NAME:
             return "NAME";
+        case Airport::SearchType::FULLNAME:
+            return "FULLNAME";
         case Airport::SearchType::ID:
             return "ID";
         default:
@@ -165,6 +175,7 @@ void pybind_init_airport(py::module_& m) {
         .value("IATA", Airport::SearchType::IATA)
         .value("ICAO", Airport::SearchType::ICAO)
         .value("NAME", Airport::SearchType::NAME)
+        .value("FULLNAME", Airport::SearchType::FULLNAME)
         .value("ID", Airport::SearchType::ID);
     
     py::class_<Airport::ParseResult>(ap_class, "ParseResult")

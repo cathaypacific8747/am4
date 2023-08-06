@@ -15,7 +15,7 @@
             ],
             "windowsSdkVersion": "10.0.22000.0",
             "compilerPath": "cl.exe",
-            "cppStandard": "c++11",
+            "cppStandard": "c++17",
             "intelliSenseMode": "windows-msvc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         },
@@ -26,9 +26,9 @@
                 "${workspaceFolder}/src/am4utils/build/_deps/duckdb_folder-src"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
-            "cppStandard": "gnu++11",
-            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/clang++",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],

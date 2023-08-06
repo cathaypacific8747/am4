@@ -7,6 +7,13 @@
 #include "include/db.hpp"
 #include "include/ext/jaro.hpp"
 
+#define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, fourx, role"
+#define SELECT_USER_STATEMENT(field) "SELECT " USER_COLUMNS " FROM users WHERE " #field " = $1 LIMIT 1;"
+#define INSERT_USER_STATEMENT "INSERT INTO users (username, password, game_id, game_name, game_mode, discord_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING " USER_COLUMNS ";"
+#define UPDATE_USER_STATEMENT(field) "UPDATE users SET " #field " = $1 WHERE id = $2;"
+
+#define SELECT_ALLIANCE_LOG_STATEMENT(field) "SELECT * FROM alliance_log WHERE " #field " = $1 LIMIT 1;" 
+
 using namespace duckdb;
 
 shared_ptr<Database> Database::default_client = nullptr;
@@ -57,6 +64,7 @@ void Database::populate_database() {
     verify_user_by_username = connection->Prepare("SELECT id FROM users WHERE username = $1 LIMIT 1;");
     CHECK_SUCCESS_REF(verify_user_by_username);
 
+    // TODO: use appender instead.
     insert_user = connection->Prepare(INSERT_USER_STATEMENT);
     CHECK_SUCCESS_REF(insert_user);
 
@@ -76,61 +84,61 @@ void Database::populate_database() {
     CHECK_SUCCESS_REF(get_user_by_discord_id);
 
 
-    update_user_username = connection->Prepare("UPDATE users SET username = $1 WHERE id = $2;");
+    update_user_username = connection->Prepare(UPDATE_USER_STATEMENT("username"));
     CHECK_SUCCESS_REF(update_user_username);
 
-    update_user_password = connection->Prepare("UPDATE users SET password = $1 WHERE id = $2;");
+    update_user_password = connection->Prepare(UPDATE_USER_STATEMENT("password"));
     CHECK_SUCCESS_REF(update_user_password);
 
-    update_user_game_id = connection->Prepare("UPDATE users SET game_id = $1 WHERE id = $2;");
+    update_user_game_id = connection->Prepare(UPDATE_USER_STATEMENT("game_id"));
     CHECK_SUCCESS_REF(update_user_game_id);
 
-    update_user_game_name = connection->Prepare("UPDATE users SET game_name = $1 WHERE id = $2;");
+    update_user_game_name = connection->Prepare(UPDATE_USER_STATEMENT("game_name"));
     CHECK_SUCCESS_REF(update_user_game_name);
 
-    update_user_game_mode = connection->Prepare("UPDATE users SET game_mode = $1 WHERE id = $2;");
+    update_user_game_mode = connection->Prepare(UPDATE_USER_STATEMENT("game_mode"));
     CHECK_SUCCESS_REF(update_user_game_mode);
 
-    update_user_discord_id = connection->Prepare("UPDATE users SET discord_id = $1 WHERE id = $2;");
+    update_user_discord_id = connection->Prepare(UPDATE_USER_STATEMENT("discord_id"));
     CHECK_SUCCESS_REF(update_user_discord_id);
 
-    update_user_wear_training = connection->Prepare("UPDATE users SET wear_training = $1 WHERE id = $2;");
+    update_user_wear_training = connection->Prepare(UPDATE_USER_STATEMENT("wear_training"));
     CHECK_SUCCESS_REF(update_user_wear_training);
 
-    update_user_repair_training = connection->Prepare("UPDATE users SET repair_training = $1 WHERE id = $2;");
+    update_user_repair_training = connection->Prepare(UPDATE_USER_STATEMENT("repair_training"));
     CHECK_SUCCESS_REF(update_user_repair_training);
 
-    update_user_l_training = connection->Prepare("UPDATE users SET l_training = $1 WHERE id = $2;");
+    update_user_l_training = connection->Prepare(UPDATE_USER_STATEMENT("l_training"));
     CHECK_SUCCESS_REF(update_user_l_training);
 
-    update_user_h_training = connection->Prepare("UPDATE users SET h_training = $1 WHERE id = $2;");
+    update_user_h_training = connection->Prepare(UPDATE_USER_STATEMENT("h_training"));
     CHECK_SUCCESS_REF(update_user_h_training);
 
-    update_user_fuel_training = connection->Prepare("UPDATE users SET fuel_training = $1 WHERE id = $2;");
+    update_user_fuel_training = connection->Prepare(UPDATE_USER_STATEMENT("fuel_training"));
     CHECK_SUCCESS_REF(update_user_fuel_training);
 
-    update_user_co2_training = connection->Prepare("UPDATE users SET co2_training = $1 WHERE id = $2;");
+    update_user_co2_training = connection->Prepare(UPDATE_USER_STATEMENT("co2_training"));
     CHECK_SUCCESS_REF(update_user_co2_training);
 
-    update_user_fuel_price = connection->Prepare("UPDATE users SET fuel_price = $1 WHERE id = $2;");
+    update_user_fuel_price = connection->Prepare(UPDATE_USER_STATEMENT("fuel_price"));
     CHECK_SUCCESS_REF(update_user_fuel_price);
 
-    update_user_co2_price = connection->Prepare("UPDATE users SET co2_price = $1 WHERE id = $2;");
+    update_user_co2_price = connection->Prepare(UPDATE_USER_STATEMENT("co2_price"));
     CHECK_SUCCESS_REF(update_user_co2_price);
 
-    update_user_accumulated_count = connection->Prepare("UPDATE users SET accumulated_count = $1 WHERE id = $2;");
+    update_user_accumulated_count = connection->Prepare(UPDATE_USER_STATEMENT("accumulated_count"));
     CHECK_SUCCESS_REF(update_user_accumulated_count);
 
-    update_user_load = connection->Prepare("UPDATE users SET load = $1 WHERE id = $2;");
+    update_user_load = connection->Prepare(UPDATE_USER_STATEMENT("load"));
     CHECK_SUCCESS_REF(update_user_load);
 
-    update_user_income_tolerance = connection->Prepare("UPDATE users SET income_loss_tol = $1 WHERE id = $2;");
-    CHECK_SUCCESS_REF(update_user_income_tolerance);
+    update_user_income_loss_tol = connection->Prepare(UPDATE_USER_STATEMENT("income_loss_tol"));
+    CHECK_SUCCESS_REF(update_user_income_loss_tol);
 
-    update_user_fourx = connection->Prepare("UPDATE users SET fourx = $1 WHERE id = $2;");
+    update_user_fourx = connection->Prepare(UPDATE_USER_STATEMENT("fourx"));
     CHECK_SUCCESS_REF(update_user_fourx);
 
-    update_user_role = connection->Prepare("UPDATE users SET role = $1 WHERE id = $2;");
+    update_user_role = connection->Prepare(UPDATE_USER_STATEMENT("role"));
     CHECK_SUCCESS_REF(update_user_role);
 
     CHECK_SUCCESS(connection->Query(
@@ -239,21 +247,22 @@ Airport Database::get_airport_by_id(uint16_t id) {
     return airports[airport_id_hashtable[id]];
 }
 
-Airport Database::get_airport_by_iata(const std::string& iata) {
+// TODO: use unordered_map or gperf instead of linear search
+Airport Database::get_airport_by_iata(const string& iata) {
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         return a.iata == iata;
     });
     return it == std::end(airports) ? Airport() : *it;
 }
 
-Airport Database::get_airport_by_icao(const std::string& icao) {
+Airport Database::get_airport_by_icao(const string& icao) {
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         return a.icao == icao;
     });
     return it == std::end(airports) ? Airport() : *it;
 }
 
-Airport Database::get_airport_by_name(const std::string& name) {
+Airport Database::get_airport_by_name(const string& name) {
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
@@ -262,7 +271,16 @@ Airport Database::get_airport_by_name(const std::string& name) {
     return it == std::end(airports) ? Airport() : *it;
 }
 
-Airport Database::get_airport_by_all(const std::string& all) {
+Airport Database::get_airport_by_fullname(const string& name) {
+    auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
+        string db_fullname = a.name + ", " + a.country;
+        std::transform(db_fullname.begin(), db_fullname.end(), db_fullname.begin(), ::toupper);
+        return db_fullname == name;
+    });
+    return it == std::end(airports) ? Airport() : *it;
+}
+
+Airport Database::get_airport_by_all(const string& all) {
     try {
         uint16_t id = static_cast<uint16_t>(std::stoi(all));
         Airport ap = get_airport_by_id(id);
@@ -272,15 +290,18 @@ Airport Database::get_airport_by_all(const std::string& all) {
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
         std::transform(db_name.begin(), db_name.end(), db_name.begin(), ::toupper);
-        return a.iata == all || a.icao == all || db_name == all;
+        string db_fullname = db_name + ", " + a.country;
+        std::transform(db_fullname.begin(), db_fullname.end(), db_fullname.begin(), ::toupper);
+        return a.iata == all || a.icao == all || db_name == all || db_fullname == all;
     });
     return it == std::end(airports) ? Airport() : *it;
 }
 
-std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const std::string& iata) {
+template<typename ScoreFn>
+std::vector<Airport::Suggestion> Database::suggest_airport(const string& input, ScoreFn score_fn) {
     std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
     for (const Airport& ap : airports) {
-        double score = jaro_winkler_distance(iata, ap.iata);
+        double score = score_fn(input, ap);
         if (pq.size() < 5) {
             pq.emplace(std::make_shared<Airport>(ap), score);
         } else if (score > pq.top().score) {
@@ -296,68 +317,45 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const std::st
     return suggestions;
 }
 
-std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const std::string& icao) {
-    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airports) {
-        double score = jaro_winkler_distance(icao, ap.icao);
-        if (pq.size() < 5) {
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        } else if (score > pq.top().score) {
-            pq.pop();
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        }
-    }
-    std::vector<Airport::Suggestion> suggestions;
-    while (!pq.empty()) {
-        suggestions.insert(suggestions.begin(), pq.top());
-        pq.pop();
-    }
-    return suggestions;
+std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const string& iata) {
+    return suggest_airport(iata, [](const string& input, const Airport& ap) {
+        return jaro_winkler_distance(input, ap.iata);
+    });
 }
 
-std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const std::string& name) {
-    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airports) {
+std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const string& icao) {
+    return suggest_airport(icao, [](const string& input, const Airport& ap) {
+        return jaro_winkler_distance(input, ap.icao);
+    });
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const string& name) {
+    return suggest_airport(name, [](const string& input, const Airport& ap) {
         string ap_name = ap.name;
         std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
-        double score = jaro_winkler_distance(name, ap_name);
-        if (pq.size() < 5) {
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        } else if (score > pq.top().score) {
-            pq.pop();
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        }
-    }
-    std::vector<Airport::Suggestion> suggestions;
-    while (!pq.empty()) {
-        suggestions.insert(suggestions.begin(), pq.top());
-        pq.pop();
-    }
-    return suggestions;
+        return jaro_winkler_distance(input, ap_name);
+    });
 }
 
-std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const std::string& all) {
-    std::priority_queue<Airport::Suggestion, std::vector<Airport::Suggestion>, CompareSuggestion> pq;
-    for (const Airport& ap : airports) {
+std::vector<Airport::Suggestion> Database::suggest_airport_by_fullname(const string& name) {
+    return suggest_airport(name, [](const string& input, const Airport& ap) {
+        string ap_fullname = ap.name + ", " + ap.country;
+        std::transform(ap_fullname.begin(), ap_fullname.end(), ap_fullname.begin(), ::toupper);
+        return jaro_winkler_distance(input, ap_fullname);
+    });
+}
+
+std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const string& name) {
+    return suggest_airport(name, [](const string& input, const Airport& ap) {
         string ap_name = ap.name;
         std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
-        double score = std::max(
-            std::max(jaro_winkler_distance(all, ap.iata), jaro_winkler_distance(all, ap.icao)),
-            jaro_winkler_distance(all, ap_name)
+        string ap_fullname = ap_name + ", " + ap.country;
+        std::transform(ap_fullname.begin(), ap_fullname.end(), ap_fullname.begin(), ::toupper);
+        return std::max(
+            std::max(jaro_winkler_distance(input, ap.iata), jaro_winkler_distance(input, ap.icao)),
+            std::max(jaro_winkler_distance(input, ap_name), jaro_winkler_distance(input, ap_fullname))
         );
-        if (pq.size() < 5) {
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        } else if (score > pq.top().score) {
-            pq.pop();
-            pq.emplace(std::make_shared<Airport>(ap), score);
-        }
-    }
-    std::vector<Airport::Suggestion> suggestions;
-    while (!pq.empty()) {
-        suggestions.insert(suggestions.begin(), pq.top());
-        pq.pop();
-    }
-    return suggestions;
+    });
 }
 
 
@@ -452,11 +450,12 @@ Aircraft Database::get_aircraft_by_all(const string& shortname, uint8_t priority
     return it == std::end(aircrafts) ? Aircraft() : *it;
 }
 
-std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_shortname(const string& name) {
+template<typename ScoreFn>
+std::vector<Aircraft::Suggestion> Database::suggest_aircraft(const string& input, ScoreFn score_fn) {
     std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
     for (const Aircraft& ac : aircrafts) {
         if (ac.priority != 0) continue;
-        double score = jaro_winkler_distance(name, ac.shortname);
+        double score = score_fn(input, ac);
         if (pq.size() < 5) {
             pq.emplace(std::make_shared<Aircraft>(ac), score);
         } else if (score > pq.top().score) {
@@ -470,52 +469,30 @@ std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_shortname(const 
         pq.pop();
     }
     return suggestions;
+}
+
+std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_shortname(const string& name) {
+    return suggest_aircraft(name, [](const string& input, const Aircraft& ac) {
+        return jaro_winkler_distance(input, ac.shortname);
+    });
 }
 
 std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_name(const string& name) {
-    std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
-    for (const Aircraft& ac : aircrafts) {
-        if (ac.priority != 0) continue;
+    return suggest_aircraft(name, [](const string& input, const Aircraft& ac) {
         string ac_name = ac.name;
         std::transform(ac_name.begin(), ac_name.end(), ac_name.begin(), ::tolower);
-        double score = jaro_winkler_distance(name, ac_name);
-        if (pq.size() < 5) {
-            pq.emplace(std::make_shared<Aircraft>(ac), score);
-        } else if (score > pq.top().score) {
-            pq.pop();
-            pq.emplace(std::make_shared<Aircraft>(ac), score);
-        }
-    }
-    std::vector<Aircraft::Suggestion> suggestions;
-    while (!pq.empty()) {
-        suggestions.insert(suggestions.begin(), pq.top());
-        pq.pop();
-    }
-    return suggestions;
+        return jaro_winkler_distance(input, ac_name);
+    });
 }
 
 std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_all(const string& all) {
-    std::priority_queue<Aircraft::Suggestion, std::vector<Aircraft::Suggestion>, CompareSuggestion> pq;
-    for (const Aircraft& ac : aircrafts) {
-        if (ac.priority != 0) continue;
+    return suggest_aircraft(all, [](const string& input, const Aircraft& ac) {
         string ac_name = ac.name;
         std::transform(ac_name.begin(), ac_name.end(), ac_name.begin(), ::tolower);
-        double score = std::max(jaro_winkler_distance(all, ac.shortname), jaro_winkler_distance(all, ac_name));
-        if (pq.size() < 5) {
-            pq.emplace(std::make_shared<Aircraft>(ac), score);
-        } else if (score > pq.top().score) {
-            pq.pop();
-            pq.emplace(std::make_shared<Aircraft>(ac), score);
-        }
-    }
-
-    std::vector<Aircraft::Suggestion> suggestions;
-    while (!pq.empty()) {
-        suggestions.insert(suggestions.begin(), pq.top());
-        pq.pop();
-    }
-    return suggestions;
+        return std::max(jaro_winkler_distance(input, ac.shortname), jaro_winkler_distance(input, ac_name));
+    });
 }
+
 
 void init(string home_dir, string db_name) {
     auto client = Database::Client(home_dir, db_name);
@@ -558,7 +535,7 @@ void pybind_init_db(py::module_& m) {
                     std::cout << "WARN: data directory not found, creating..." << std::endl;
                     std::filesystem::create_directory(hdir + "/data");
                 }
-                for (const std::string fn : {"airports.parquet", "aircrafts.parquet", "routes.parquet"}) {
+                for (const string fn : {"airports.parquet", "aircrafts.parquet", "routes.parquet"}) {
                     if (!std::filesystem::exists(hdir + "/data/" + fn)) {
                         std::cout << "WARN: " << fn << " not found, downloading from GitHub..." << std::endl;
                         urlretrieve(

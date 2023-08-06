@@ -46,6 +46,8 @@ class Airport():
 
           NAME
 
+          FULLNAME
+
           ID
         """
         def __eq__(self, other: object) -> bool: ...
@@ -68,11 +70,12 @@ class Airport():
             :type: int
             """
         ALL: am4utils._core.airport.Airport.SearchType # value = <SearchType.ALL: 0>
+        FULLNAME: am4utils._core.airport.Airport.SearchType # value = <SearchType.FULLNAME: 4>
         IATA: am4utils._core.airport.Airport.SearchType # value = <SearchType.IATA: 1>
         ICAO: am4utils._core.airport.Airport.SearchType # value = <SearchType.ICAO: 2>
-        ID: am4utils._core.airport.Airport.SearchType # value = <SearchType.ID: 4>
+        ID: am4utils._core.airport.Airport.SearchType # value = <SearchType.ID: 5>
         NAME: am4utils._core.airport.Airport.SearchType # value = <SearchType.NAME: 3>
-        __members__: dict # value = {'ALL': <SearchType.ALL: 0>, 'IATA': <SearchType.IATA: 1>, 'ICAO': <SearchType.ICAO: 2>, 'NAME': <SearchType.NAME: 3>, 'ID': <SearchType.ID: 4>}
+        __members__: dict # value = {'ALL': <SearchType.ALL: 0>, 'IATA': <SearchType.IATA: 1>, 'ICAO': <SearchType.ICAO: 2>, 'NAME': <SearchType.NAME: 3>, 'FULLNAME': <SearchType.FULLNAME: 4>, 'ID': <SearchType.ID: 5>}
         pass
     class Suggestion():
         def __init__(self, arg0: Airport, arg1: float) -> None: ...
