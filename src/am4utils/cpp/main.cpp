@@ -82,29 +82,19 @@ int main() {
 
     Airport ap0 = *Airport::search("VHHH").ap;
     Airport ap1 = *Airport::search("TPE").ap;
-    Aircraft ac = *Aircraft::search("b722f").ac;
+    Aircraft ac = *Aircraft::search("mc214").ac;
     // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-    // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
+    auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
     User user = User::Default();
 
     auto timer = Timer();
     __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-    // auto apsr = Airport::search("VHHH");
     for (int i = 0; i < 1000; i++) {
-        std::ignore = Airport::search("icao:VHHH");
-        // std::ignore = Airport::suggest(apsr.parse_result);
-        // find_routes(ap0, ac, options, User::Default());
+        std::ignore = find_routes(ap0, ac, options, User::Default());
     }
     __itt_task_end(domain);
     timer.stop();
     // getchar();
-    
-    // reset();
-    // auto inserted_user = User::create("cathayexpress", "", 54557, "Cathay Express", User::GameMode::EASY, 668261593502580787);
-    // cout << User::repr(inserted_user) << endl;
-    // auto user = User::from_id(inserted_user.id);
-    // auto user = User::from_username("cathayexpress");
-    // cout << User::repr(user) << endl;
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;

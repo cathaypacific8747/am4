@@ -22,4 +22,4 @@ __all__ = [
 ]
 
 
-__all__ = ['aircraft', 'airport', 'db', 'demand', 'game', 'route', 'ticket', 'log']
+__all__ = ['db', 'game', 'demand', 'ticket', 'airport', 'aircraft', 'route', 'log']

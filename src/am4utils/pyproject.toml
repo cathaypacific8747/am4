@@ -20,7 +20,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pybind11", "pybind11-stubgen", "pytest", "pytest-asyncio"]
+dev = [
+    "pybind11", "pybind11-stubgen",
+    "pytest", "pytest-asyncio"
+]
 
 [build-system]
 requires = ["scikit-build-core>=0.3.3", "pybind11"]
@@ -28,7 +31,7 @@ build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 build-dir = "build"
-cmake.args = ["-DSKBUILD_WHEEL_INSTALL_DIR=am4utils", "-DBUILD_PYBIND=1", "-DEXCLUDE_EXECUTABLES=1"]
+cmake.args = ["-DEXCLUDE_EXECUTABLES=1"]
 cmake.build-type = "Release"
 cmake.verbose = true
 logging.level = "DEBUG"

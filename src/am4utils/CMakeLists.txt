@@ -1,44 +1,12 @@
 cmake_minimum_required(VERSION 3.15...3.26)
-
-if (NOT DEFINED SKBUILD_PROJECT_VERSION)
-    set(SKBUILD_PROJECT_VERSION "0.0.0-dev")
-endif()
-
-if (NOT DEFINED SKBUILD_WHEEL_INSTALL_DIR)
-    set(SKBUILD_WHEEL_INSTALL_DIR "am4utils")
-endif()
-
-if (NOT DEFINED BUILD_PYBIND)
-    set(BUILD_PYBIND 1)
-endif()
-
-if (NOT DEFINED COPY_DATA)
-    set(COPY_DATA 0)
-endif()
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 project(am4utils LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-include(libduckdb.cmake)
-
-if (MSVC)
-    add_compile_options(/W4 /O2 /std:c++17)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3 -std=c++17)
+if (NOT SKBUILD_PROJECT_VERSION)
+    file(STRINGS pyproject.toml PROJECT_TOML_CONTENTS REGEX "^version =")
+    string(REGEX MATCH "\"([0-9]+\\.[0-9]+\\.[0-9]+)\"" _ ${PROJECT_TOML_CONTENTS})
+    set(SKBUILD_PROJECT_VERSION ${CMAKE_MATCH_1})
 endif()
 
-find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
-file(TO_CMAKE_PATH "${Python_SITELIB}/${SKBUILD_WHEEL_INSTALL_DIR}" PYTHON_LIB_DIR)
-message("[DEBUG]\n\
-   cmake binary dir ${CMAKE_BINARY_DIR}\n\
-   py executable    ${Python_EXECUTABLE}\n\
-   pybind11 dir     ${pybind11_DIR}\n\
-   duckdb src       ${duckdb_folder_SOURCE_DIR}\n\
-   py site-packages ${PYTHON_LIB_DIR}\n")
-
-pybind11_add_module(_core
+set(AM4UTILS_SOURCES
     cpp/db.cpp
     cpp/game.cpp
     cpp/demand.cpp
@@ -46,51 +14,82 @@ pybind11_add_module(_core
     cpp/airport.cpp
     cpp/aircraft.cpp
     cpp/route.cpp
+    cpp/log.cpp
+)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+if (MSVC)
+    add_compile_options(/W4 /O2 /std:c++17)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3 -std=c++17)
+endif()
+add_subdirectory(cpp/include/ext/libduckdb)
+
+
+
+### python bindings
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
+file(TO_CMAKE_PATH "${Python_SITELIB}/am4utils" PYTHON_LIB_DIR)
+
+message("[DEBUG]\n\
+    project version  ${SKBUILD_PROJECT_VERSION}\n\
+    cmake binary dir ${CMAKE_BINARY_DIR}\n\
+    cmake source dir ${CMAKE_SOURCE_DIR}\n\
+    py executable    ${Python_EXECUTABLE}\n\
+    pybind11 dir     ${pybind11_DIR}\n\
+    duckdb src       ${duckdb_folder_SOURCE_DIR}\n\
+    py target libdir ${PYTHON_LIB_DIR}\n")
+
+pybind11_add_module(_core
+    ${AM4UTILS_SOURCES}
     cpp/binder.cpp
 )
-target_include_directories(_core PRIVATE ${duckdb_folder_SOURCE_DIR})
+target_include_directories(_core PUBLIC ${CMAKE_SOURCE_DIR}/cpp/include)
 target_compile_definitions(_core
-    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=${BUILD_PYBIND}
+    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=1
 )
-# target_compile_features(_core PRIVATE cxx_std_17)
 
-set_rpath(_core)
+duckdb_set_rpath(_core)
 target_link_libraries(_core PRIVATE duckdb)
 
 install(TARGETS _core DESTINATION .)
 install(FILES $<TARGET_FILE:duckdb> DESTINATION .)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/stubs/ DESTINATION . OPTIONAL) # / is important!
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/py/ DESTINATION .)
-if (COPY_DATA)
+if (DEFINED COPY_DATA AND COPY_DATA)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 endif()
 
-# debug executable
+
+
+### static library
+add_library(_core_static STATIC
+    ${AM4UTILS_SOURCES}
+)
+target_compile_definitions(_core_static
+    PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=0
+)
+target_link_libraries(_core_static PRIVATE duckdb)
+set_target_properties(_core_static PROPERTIES OUTPUT_NAME "am4tools_static")
+
+
+
+### debug testing executable for static library
 add_executable(_core_executable
-    cpp/db.cpp
-    cpp/game.cpp
-    cpp/demand.cpp
-    cpp/ticket.cpp
-    cpp/airport.cpp
-    cpp/aircraft.cpp
-    cpp/route.cpp
     cpp/main.cpp
 )
-
-target_include_directories(_core_executable PRIVATE ${duckdb_folder_SOURCE_DIR})
 target_compile_definitions(_core_executable
     PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=0
 )
-# target_compile_features(_core_executable PRIVATE cxx_std_17)
-
-set_rpath(_core_executable)
+duckdb_set_rpath(_core_executable)
 target_link_libraries(_core_executable PRIVATE duckdb)
 
-# link vtune
 set(VTUNE_INSTALL_DIR /opt/intel/oneapi/vtune/latest)
 target_include_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/include)
 target_link_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/lib64)
 target_link_libraries(_core_executable PRIVATE ittnotify dl pthread)
+target_link_libraries(_core_executable PRIVATE _core_static)
 
 add_custom_command(
     TARGET _core_executable POST_BUILD
@@ -103,5 +102,8 @@ add_custom_command(
 )
 
 if (EXCLUDE_EXECUTABLES)
+    set_target_properties(_core_static PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
     set_target_properties(_core_executable PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 endif()
+
+include(docs/CMakeLists.txt)

@@ -5,7 +5,8 @@
     "cmake.sourceDirectory": "${workspaceFolder}/src/am4utils",
     "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build-vscode",
     "cmake.configureArgs": [
-        "-DCOPY_DATA=1"
+        "-DCOPY_DATA=1",
+        "-DCMAKE_VERBOSE_MAKEFILE=1"
     ],
     "C_Cpp.autoAddFileAssociations": false
 }

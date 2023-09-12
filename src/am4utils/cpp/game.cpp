@@ -96,131 +96,131 @@ User User::from_discord_id(uint64_t discord_id) {
     return to_user(Database::Client()->get_user_by_discord_id->Execute(discord_id));
 }
 
-bool User::set_username(const string& username) {
-    auto result = Database::Client()->verify_user_by_username->Execute(username.c_str());
+bool User::set_username(const string& new_uname) {
+    auto result = Database::Client()->verify_user_by_username->Execute(new_uname.c_str());
     CHECK_SUCCESS_REF(result);
     auto chunk = result->Fetch();
     if (chunk && chunk->size() != 0) return false;
 
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_username->Execute(username.c_str(), id.c_str()));
-    this->username = username;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_username->Execute(new_uname.c_str(), this->id.c_str()));
+    this->username = new_uname;
     return true;
 }
 
-bool User::set_password(const string& password) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_password->Execute(password.c_str(), id.c_str()));
+bool User::set_password(const string& new_pw) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_password->Execute(new_pw.c_str(), this->id.c_str()));
     return true;
 }
 
-bool User::set_game_id(uint32_t game_id) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_id->Execute(game_id, id.c_str()));
-    this->game_id = game_id;
+bool User::set_game_id(uint32_t new_gid) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_id->Execute(new_gid, this->id.c_str()));
+    this->game_id = new_gid;
     return true;
 }
 
-bool User::set_game_name(const string& game_name) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_name->Execute(game_name.c_str(), id.c_str()));
-    this->game_name = game_name;
+bool User::set_game_name(const string& new_gn) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_name->Execute(new_gn.c_str(), this->id.c_str()));
+    this->game_name = new_gn;
     return true;
 }
 
-bool User::set_game_mode(User::GameMode game_mode) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_mode->Execute(static_cast<bool>(game_mode), id.c_str()));
-    this->game_mode = game_mode;
+bool User::set_game_mode(User::GameMode new_gm) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_game_mode->Execute(static_cast<bool>(new_gm), this->id.c_str()));
+    this->game_mode = new_gm;
     return true;
 }
 
-bool User::set_discord_id(uint64_t discord_id) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_discord_id->Execute(discord_id, id.c_str()));
-    this->discord_id = discord_id;
+bool User::set_discord_id(uint64_t new_did) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_discord_id->Execute(new_did, this->id.c_str()));
+    this->discord_id = new_did;
     return true;
 }
 
-bool User::set_wear_training(uint8_t wear_training) {
-    if (wear_training > 5) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_wear_training->Execute(wear_training, id));
-    this->wear_training = wear_training;
+bool User::set_wear_training(uint8_t new_wt) {
+    if (new_wt > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_wear_training->Execute(new_wt, this->id.c_str()));
+    this->wear_training = new_wt;
     return true;
 }
 
-bool User::set_repair_training(uint8_t repair_training) {
-    if (repair_training > 5) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_repair_training->Execute(repair_training, id));
-    this->repair_training = repair_training;
+bool User::set_repair_training(uint8_t new_rt) {
+    if (new_rt > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_repair_training->Execute(new_rt, this->id.c_str()));
+    this->repair_training = new_rt;
     return true;
 }
 
-bool User::set_l_training(uint8_t l_training) {
-    if (l_training > 6) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_l_training->Execute(l_training, id));
-    this->l_training = l_training;
+bool User::set_l_training(uint8_t new_lt) {
+    if (new_lt > 6) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_l_training->Execute(new_lt, this->id.c_str()));
+    this->l_training = new_lt;
     return true;
 }
 
-bool User::set_h_training(uint8_t h_training) {
-    if (h_training > 6) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_h_training->Execute(h_training, id));
-    this->h_training = h_training;
+bool User::set_h_training(uint8_t new_ht) {
+    if (new_ht > 6) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_h_training->Execute(new_ht, this->id.c_str()));
+    this->h_training = new_ht;
     return true;
 }
 
-bool User::set_fuel_training(uint8_t fuel_training) {
-    if (fuel_training > 3) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_training->Execute(fuel_training, id));
-    this->fuel_training = fuel_training;
+bool User::set_fuel_training(uint8_t new_ft) {
+    if (new_ft > 3) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_training->Execute(new_ft, this->id.c_str()));
+    this->fuel_training = new_ft;
     return true;
 }
 
-bool User::set_co2_training(uint8_t co2_training) {
-    if (co2_training > 5) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_training->Execute(co2_training, id));
-    this->co2_training = co2_training;
+bool User::set_co2_training(uint8_t new_ct) {
+    if (new_ct > 5) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_training->Execute(new_ct, this->id.c_str()));
+    this->co2_training = new_ct;
     return true;
 }
 
-bool User::set_fuel_price(uint16_t fuel_price) {
-    if (fuel_price > 3000) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_price->Execute(fuel_price, id));
-    this->fuel_price = fuel_price;
+bool User::set_fuel_price(uint16_t new_fp) {
+    if (new_fp > 3000) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fuel_price->Execute(new_fp, this->id.c_str()));
+    this->fuel_price = new_fp;
     return true;
 }
 
-bool User::set_co2_price(uint8_t co2_price) {
-    if (co2_price > 200) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_price->Execute(co2_price, id));
-    this->co2_price = co2_price;
+bool User::set_co2_price(uint8_t new_cp) {
+    if (new_cp > 200) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_co2_price->Execute(new_cp, this->id.c_str()));
+    this->co2_price = new_cp;
     return true;
 }
 
-bool User::set_accumulated_count(uint16_t accumulated_count) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_accumulated_count->Execute(accumulated_count, id));
-    this->accumulated_count = accumulated_count;
+bool User::set_accumulated_count(uint16_t new_acc) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_accumulated_count->Execute(new_acc, this->id.c_str()));
+    this->accumulated_count = new_acc;
     return true;
 }
 
-bool User::set_load(double load) {
-    if (load <= 0 || load > 1) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_load->Execute(load, id));
-    this->load = load;
+bool User::set_load(double new_l) {
+    if (new_l <= 0 || new_l > 1) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_load->Execute(new_l, this->id.c_str()));
+    this->load = new_l;
     return true;
 }
 
-bool User::set_income_tolerance(double income_loss_tol) {
-    if (income_loss_tol < 0 || income_loss_tol > 1) return false;
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_income_loss_tol->Execute(income_loss_tol, id));
-    this->income_loss_tol = income_loss_tol;
+bool User::set_income_tolerance(double new_ilt) {
+    if (new_ilt < 0 || new_ilt > 1) return false;
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_income_loss_tol->Execute(new_ilt, this->id.c_str()));
+    this->income_loss_tol = new_ilt;
     return true;
 }
 
-bool User::set_fourx(bool fourx) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fourx->Execute(fourx, id));
-    this->fourx = fourx;
+bool User::set_fourx(bool new_fx) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_fourx->Execute(new_fx, this->id.c_str()));
+    this->fourx = new_fx;
     return true;
 }
 
-bool User::set_role(const User::Role& role) {
-    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_role->Execute(static_cast<uint8_t>(role), id));
-    this->role = role;
+bool User::set_role(const User::Role& new_role) {
+    VERIFY_UPDATE_SUCCESS(Database::Client()->update_user_role->Execute(static_cast<uint8_t>(new_role), this->id.c_str()));
+    this->role = new_role;
     return true;
 }
 

@@ -53,11 +53,11 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
             config_algorithm
         );
     };
-    auto calc_max_rawincome = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& ticket) -> uint32_t {
+    auto calc_max_rawincome = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& tkt) -> uint32_t {
         return (
-            cfg.y * ticket.y +
-            cfg.j * ticket.j +
-            cfg.f * ticket.f
+            cfg.y * tkt.y +
+            cfg.j * tkt.j +
+            cfg.f * tkt.f
         );
     };
     Aircraft::PaxConfig cfg = calc_cfg(tpd);
@@ -66,7 +66,7 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
         this->valid = false;
         return;
     }
-    const PaxTicket ticket = [&]() {
+    const PaxTicket tkt = [&]() {
         if constexpr(is_vip)
             return static_cast<PaxTicket>(
                 VIPTicket::from_optimal(this->route.direct_distance)
@@ -77,9 +77,9 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
                 user.game_mode
             );
     }();
-    uint32_t max_rawincome = calc_max_rawincome(cfg, ticket);
+    uint32_t max_rawincome = calc_max_rawincome(cfg, tkt);
     if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
-        this->ticket = ticket;
+        this->ticket = tkt;
         this->config = cfg;
         this->max_income = 0; // we don't know whether higher tpds will yield higher income - this part is handled by AircraftRoute::update_max_income()
         this->income = max_rawincome * user.load;
@@ -103,7 +103,7 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
             cfg = calc_cfg(tpd);
             if (!cfg.valid) // demand exhausted
                 break;
-            const uint32_t this_max_rawincome = calc_max_rawincome(cfg, ticket);
+            const uint32_t this_max_rawincome = calc_max_rawincome(cfg, tkt);
             if (this_max_rawincome < max_rawincome_bound)
                 break;
             c_tpd = tpd;
@@ -113,7 +113,7 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
                 max_rawincome = this_max_rawincome;
         }
         this->max_income = max_rawincome * user.load;
-        this->ticket = ticket;
+        this->ticket = tkt;
         this->config = c_cfg;
         this->income = c_max_rawincome * user.load;
         this->trips_per_day = c_tpd;
@@ -137,10 +137,10 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
             config_algorithm
         );
     };
-    auto calc_rawincome = [&](const Aircraft::CargoConfig& cfg, const CargoTicket& ticket) -> double {
+    auto calc_rawincome = [&](const Aircraft::CargoConfig& cfg, const CargoTicket& tkt) -> double {
         return (
-            (1 + user.l_training / 100.0) * cfg.l * 0.7 * ticket.l +
-            (1 + user.h_training / 100.0) * cfg.h * ticket.h
+            (1 + user.l_training / 100.0) * cfg.l * 0.7 * tkt.l +
+            (1 + user.h_training / 100.0) * cfg.h * tkt.h
         ) * ac_capacity / 100.0;
     };
 
@@ -150,13 +150,13 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
         this->valid = false;
         return;
     }
-    const CargoTicket ticket = CargoTicket::from_optimal(
+    const CargoTicket tkt = CargoTicket::from_optimal(
         this->route.direct_distance,
         user.game_mode
     );
-    double max_rawincome = calc_rawincome(cfg, ticket);
+    double max_rawincome = calc_rawincome(cfg, tkt);
     if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
-        this->ticket = ticket;
+        this->ticket = tkt;
         this->config = cfg;
         this->max_income = 0;
         this->income = max_rawincome * user.load;
@@ -174,7 +174,7 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
             cfg = calc_conf(tpd);
             if (!cfg.valid)
                 break;
-            const double this_max_rawincome = calc_rawincome(cfg, ticket);
+            const double this_max_rawincome = calc_rawincome(cfg, tkt);
             if (this_max_rawincome < max_rawincome_bound)
                 break;
             c_tpd = tpd;
@@ -184,7 +184,7 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
                 max_rawincome = this_max_rawincome;
         }
         this->max_income = max_rawincome * user.load;
-        this->ticket = ticket;
+        this->ticket = tkt;
         this->config = c_cfg;
         this->income = c_max_rawincome * user.load;
         this->trips_per_day = c_tpd;

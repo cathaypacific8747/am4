@@ -193,8 +193,8 @@ void Database::populate_internal() {
     };
     uint16_t start_bp = 1, offset = 1;
     for (uint16_t bp : apid_breakpoints) {
-        for (uint16_t i = start_bp; i <= bp; i++) {
-            airport_id_hashtable[i] = i - offset;
+        for (uint16_t j = start_bp; j <= bp; j++) {
+            airport_id_hashtable[j] = j - offset;
         }
         offset++;
         start_bp = bp + 1;
@@ -232,7 +232,7 @@ void Database::populate_internal() {
     }
 }
 
-const uint16_t missing_ids[] = {
+const uint16_t missing_apids[] = {
     52,178,248,318,538,542,544,552,558,562,
     571,572,577,597,1110,1130,1162,1200,1249,1265,1306,
     1310,1311,1313,1326,1328,1356,1358,1378,1381,1388,1391,
@@ -242,7 +242,7 @@ const uint16_t missing_ids[] = {
     2664,2666,2667,2673,3053,3194,3507,3508,3550,3899
 };
 Airport Database::get_airport_by_id(uint16_t id) {
-    if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Airport();
+    if (std::find(std::begin(missing_apids), std::end(missing_apids), id) != std::end(missing_apids)) return Airport();
     if (id > 3982) return Airport();
     return airports[airport_id_hashtable[id]];
 }
@@ -285,7 +285,7 @@ Airport Database::get_airport_by_all(const string& all) {
         uint16_t id = static_cast<uint16_t>(std::stoi(all));
         Airport ap = get_airport_by_id(id);
         if (ap.valid) return ap;
-    } catch (std::invalid_argument& e) {
+    } catch (std::invalid_argument&) {
     }
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
@@ -406,15 +406,15 @@ uint16_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
     return 0;
 }
 
+const uint16_t missing_acids[] = {
+    54,57,65,70,77,78,79,80,81,82,
+    83,84,88,98,121,122,123,125,174,175,
+    176,188,217,223,224,225,235,236,237,
+    238,239,240,261,262,263,264,265,278,
+    279,280,286,296,297,301,319,354
+};
 Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
-    const uint16_t missing_ids[] = {
-        54,57,65,70,77,78,79,80,81,82,
-        83,84,88,98,121,122,123,125,174,175,
-        176,188,217,223,224,225,235,236,237,
-        238,239,240,261,262,263,264,265,278,
-        279,280,286,296,297,301,319,354
-    };
-    if (std::find(std::begin(missing_ids), std::end(missing_ids), id) != std::end(missing_ids)) return Aircraft();
+    if (std::find(std::begin(missing_acids), std::end(missing_acids), id) != std::end(missing_acids)) return Aircraft();
     if (id > 373) return Aircraft();
     return aircrafts[Database::get_aircraft_idx_by_id(id, priority)];
 }
@@ -440,7 +440,7 @@ Aircraft Database::get_aircraft_by_all(const string& shortname, uint8_t priority
         uint16_t id = static_cast<uint16_t>(std::stoi(shortname));
         Aircraft ac = get_aircraft_by_id(id, 0);
         if (ac.valid) return ac;
-    } catch (std::invalid_argument& e) {
+    } catch (std::invalid_argument&) {
     }
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
         string db_name = a.name;
