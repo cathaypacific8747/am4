@@ -15,7 +15,7 @@
             "label": "py: generate stubs",
             "type": "shell",
             "options": {
-                "cwd": "src/am4utils"
+                "cwd": "${workspaceFolder}/src/am4utils"
             },
             "command": "${command:python.interpreterPath} generate-stubs.py",
             "problemMatcher": []
@@ -41,9 +41,16 @@
             "command": "${command:python.interpreterPath} -m pytest"
         },
         {
-            "label": "upload",
+            "label": "upload: corelib",
             "type": "shell",
-            "command": "rsync -avz src/am4utils/build-vscode/{data,libduckdb.so,_core_executable} am4tools:/home/thiago/am4bot/build-vscode/",
+            "command": "rsync -avz --mkpath .venv/lib/python3.11/site-packages/am4utils am4tools:/home/thiago/am4bot-api/.venv/lib/python3.11/site-packages/",
+            // "command": "rsync -avz src/am4utils/build-vscode/{data,libduckdb.so,_core_executable} am4tools:/home/thiago/am4bot/build-vscode/",
+            "problemMatcher": []
+        },
+        {
+            "label": "upload: source",
+            "type": "shell",
+            "command": "rsync -avz --mkpath src config.production.json main.py pyproject.toml am4tools:/home/thiago/am4bot-api/",
             "problemMatcher": []
         },
         {

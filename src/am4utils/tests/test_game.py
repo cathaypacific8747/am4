@@ -43,6 +43,7 @@ def test_default_user():
     assert u.income_loss_tol == 0.
     assert u.fourx == False
     assert u.role == User.Role.USER
+    assert u.get_password() == ''
 
 def test_create_user():
     u = User.create("cathayexpress", "<TODO:hashed_password>", 54557, "Cathay Express")
@@ -51,6 +52,7 @@ def test_create_user():
     assert u.game_name == "Cathay Express"
     assert u.game_mode == User.GameMode.EASY
     assert u.discord_id == 0
+    assert u.get_password() == "<TODO:hashed_password>"
 
     u_duplicate = User.create("cathayexpress", "<TODO:hashed_password13>", 13, "Cathay Express13")
     assert u_duplicate.valid == False

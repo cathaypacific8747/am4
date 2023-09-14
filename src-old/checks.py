@@ -20,8 +20,8 @@ def guideDevsOnly():
 def modsOnly():
     async def predicate(ctx):
         try:
-            modRole = get(ctx.author.roles, id=config.moderator_roleId)
-            helperRole = get(ctx.author.roles, id=config.helper_roleId)
+            modRole = get(ctx.author.roles, id=config.MODERATOR_ROLEID)
+            helperRole = get(ctx.author.roles, id=config.HELPER_ROLEID)
             print(modRole, helperRole)
             if modRole is None and helperRole is None:
                 await ctx.send("You do not have the required roles to use this command.")
@@ -34,7 +34,7 @@ def modsOnly():
 def modsOrStars():
     async def predicate(ctx):
         try:
-            modRole = get(ctx.author.roles, id=config.moderator_roleId)
+            modRole = get(ctx.author.roles, id=config.MODERATOR_ROLEID)
             starRole = get(ctx.author.roles, id=701410528853098497)
             if modRole is None and starRole is None:
                 await ctx.send("You do not have the required roles to use this command.")

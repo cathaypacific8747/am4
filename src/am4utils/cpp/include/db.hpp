@@ -55,6 +55,8 @@ struct Database {
     duckdb::unique_ptr<PreparedStatement> get_user_by_game_id;
     duckdb::unique_ptr<PreparedStatement> get_user_by_game_name;
     duckdb::unique_ptr<PreparedStatement> get_user_by_discord_id;
+    
+    duckdb::unique_ptr<PreparedStatement> get_user_password;
 
     duckdb::unique_ptr<PreparedStatement> update_user_username;
     duckdb::unique_ptr<PreparedStatement> update_user_password;

@@ -10,8 +10,6 @@ class Config:
     HELPER_ROLEID: int = 0
     KEY_FILE: str = ''
     CERT_FILE: str = ''
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    SECRET_KEY: str = ''
     
     def __init__(self, cfg: dict):
         self.__dict__.update(cfg)
@@ -21,3 +19,5 @@ class Config:
         import json
         with open(fn) as f:
             return cls(json.load(f))
+        
+config = Config.from_json("../config.production.json")

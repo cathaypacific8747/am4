@@ -83,6 +83,9 @@ void Database::populate_database() {
     get_user_by_discord_id = connection->Prepare(SELECT_USER_STATEMENT("discord_id"));
     CHECK_SUCCESS_REF(get_user_by_discord_id);
 
+    get_user_password = connection->Prepare("SELECT password FROM users WHERE id = $1 LIMIT 1;");
+    CHECK_SUCCESS_REF(get_user_password);
+
 
     update_user_username = connection->Prepare(UPDATE_USER_STATEMENT("username"));
     CHECK_SUCCESS_REF(update_user_username);

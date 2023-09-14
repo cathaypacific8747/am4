@@ -29,6 +29,7 @@ class StopoverNonExistentDict(BaseModel):
 class ACRouteDict(BaseModel):
     route: RouteDict
     config: Optional[PaxConfigDict | CargoConfigDict]
+    trips_per_day: Optional[int]
     ticket: Optional[PaxTicketDict | CargoTicketDict | VIPTicketDict]
     max_income: Optional[float]
     income: Optional[float]
@@ -39,6 +40,9 @@ class ACRouteDict(BaseModel):
     profit: Optional[float]
     flight_time: Optional[float]
     needs_stopover: Optional[bool]
+    profit: Optional[float]
+    contribution: Optional[float]
+    ci: Optional[int]
     stopover: Optional[StopoverDict | StopoverNonExistentDict]
     warnings: list[Literal["ERR_DISTANCE_ABOVE_SPECIFIED", "ERR_DISTANCE_TOO_LONG", "ERR_DISTANCE_TOO_SHORT", "REDUCED_CONTRIBUTION", "ERR_NO_STOPOVER", "ERR_FLIGHT_TIME_ABOVE_SPECIFIED", "ERR_INSUFFICIENT_DEMAND"]]
 

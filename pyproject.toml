@@ -22,7 +22,9 @@ dependencies = [
     "discord.py>=2.2.3",
     "adjustText>=0.8",
     "fastapi[all]",
-    "httpx>=0.24.1"
+    "httpx>=0.24.1",
+    "passlib",
+    "python-jose"
 ]
 
 [project.optional-dependencies]

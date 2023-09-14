@@ -72,7 +72,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CheckFailure):
         pass
     else:
-        console = bot.get_channel(config.debug_channelId)
+        console = bot.get_channel(config.DEBUG_CHANNELID)
         full_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
         await console.send(f'Encountered an error:\nFrom message: {ctx.message.author.display_name}: `{ctx.message.content}`\nLink to message: {ctx.message.jump_url}\n```py\n{full_error}```')
 
@@ -262,10 +262,10 @@ async def parsePrice(costs, furtherErrorInfo, ctx):
 @bot.command(help='Reports the current price, pinging PriceNotify.', usage='$price f<fuel price> c<co2 price>')
 @notDM()
 async def price(ctx, *costs):
-    if ctx.message.channel.id == config.priceAlert_channelId:
-        furtherErrorInfo = f'See `$help price` for proper command usage in <#{config.botSpam_channelId}>.'
+    if ctx.message.channel.id == config.PRICEALERT_CHANNELID:
+        furtherErrorInfo = f'See `$help price` for proper command usage in <#{config.BOTSPAM_CHANNELID}>.'
         try:
-            async for m in bot.get_channel(config.priceAlert_channelId).history():
+            async for m in bot.get_channel(config.PRICEALERT_CHANNELID).history():
                 if m.author.id == bot.user.id and "Price sent by" in m.content:
                     now = datetime.now(timezone.utc)
                     intervalStart = now.replace(minute=(0 if now.minute < 30 else 30), second=0, microsecond=0)
@@ -280,7 +280,7 @@ async def price(ctx, *costs):
             try:
                 fuel, co2 = await parsePrice(costs, furtherErrorInfo, ctx)
                 if fuel and co2:
-                    priceNotify, output = discord.utils.get(ctx.guild.roles, id=config.priceAlert_roleId), ''
+                    priceNotify, output = discord.utils.get(ctx.guild.roles, id=config.PRICEALERT_ROLEID), ''
                     if fuel != 9999:
                         output += f'Fuel price is ${fuel}. '
                     if co2 != 9999:
@@ -297,7 +297,7 @@ async def price(ctx, *costs):
             except Exception as e:
                 print(e)
     else:
-        await ctx.send(f'Please use `$price` in <#{config.priceAlert_channelId}>.')
+        await ctx.send(f'Please use `$price` in <#{config.PRICEALERT_CHANNELID}>.')
 
 '''
 Mod use:
@@ -431,4 +431,4 @@ async def load(ctx, extension = 'valid extensions'):
 async def clearConsole(ctx):
     system('clear')
 
-bot.run(config.discord_token)
+bot.run(config.DISCORD_TOKEN)

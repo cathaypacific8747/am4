@@ -96,6 +96,15 @@ User User::from_discord_id(uint64_t discord_id) {
     return to_user(Database::Client()->get_user_by_discord_id->Execute(discord_id));
 }
 
+string User::get_password() {
+    if (!this->valid) return "";
+    auto result = Database::Client()->get_user_password->Execute(this->id.c_str());
+    CHECK_SUCCESS_REF(result);
+    auto chunk = result->Fetch();
+    if (!chunk || chunk->size() == 0) return "";
+    return chunk->GetValue(0, 0).GetValue<string>();
+}
+
 bool User::set_username(const string& new_uname) {
     auto result = Database::Client()->verify_user_by_username->Execute(new_uname.c_str());
     CHECK_SUCCESS_REF(result);
@@ -417,6 +426,7 @@ void pybind_init_game(py::module_& m) {
         .def_static("from_game_id", &User::from_game_id, "game_id"_a)
         .def_static("from_game_name", &User::from_game_name, "game_name"_a)
         .def_static("from_discord_id", &User::from_discord_id, "discord_id"_a)
+        .def("get_password", &User::get_password)
         .def("set_username", &User::set_username, "username"_a)
         .def("set_password", &User::set_password, "password"_a)
         .def("set_game_id", &User::set_game_id, "game_id"_a)

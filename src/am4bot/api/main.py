@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Depends
 from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,9 +7,12 @@ import am4utils
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
 from am4utils.route import Route, AircraftRoute, find_routes
+from am4utils.game import User
 from src.am4bot.api.models.aircraft import AircraftResponse, AircraftNotFoundResponse
 from src.am4bot.api.models.airport import AirportResponse, AirportNotFoundResponse
 from src.am4bot.api.models.route import RouteResponse, ACRouteResponse, ACRouteFindResponse
+from src.am4bot.api.models.game import UserResponse, UserNotFoundResponse
+from src.am4bot.api.dependencies import oauth2_scheme, authenticate_user, create_access_token, verify_user_token
 
 app = FastAPI()
 
@@ -123,6 +126,7 @@ async def ac_route_info(
         return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
     
     ac_route = AircraftRoute.create(apsr0.ap, apsr1.ap, acsr.ac)
+    print(ac_route.to_dict())
     return {
         "status": "success",
         "ap_origin": apsr0.ap.to_dict(),
@@ -148,5 +152,29 @@ async def ac_route_find_routes(
         content={
             "status": "success",
             "destinations": [destination.to_dict() for destination in destinations]
+        }
+    )
+
+# @app.get("/users/token", response_model=UserResponse, responses={404: {"model": UserNotFoundResponse}})
+# async def user_token(
+#     username: str = Query(description="Username"),
+#     password: str = Query(description="Password"),
+# ):
+#     user = User.Default()
+#     return ORJSONResponse(
+#         content={
+#             "status": "success",
+#             "user": user.to_dict()
+#         }
+#     )
+
+@app.get("/users/me", response_model=UserResponse, responses={404: {"model": UserNotFoundResponse}})
+async def user_me(
+    user: User = Depends(verify_user_token)
+):
+    return ORJSONResponse(
+        content={
+            "status": "success",
+            "user": user.to_dict()
         }
     )

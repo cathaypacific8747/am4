@@ -56,6 +56,7 @@ struct User {
     static User from_game_name(const string& game_name);
     static User from_discord_id(uint64_t discord_id);
 
+    string get_password();
     bool set_username(const string& new_uname);
     bool set_password(const string& new_pw);
     bool set_game_id(uint32_t new_gid);
