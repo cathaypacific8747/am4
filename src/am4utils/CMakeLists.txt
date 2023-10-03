@@ -105,5 +105,3 @@ if (EXCLUDE_EXECUTABLES)
     set_target_properties(_core_static PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
     set_target_properties(_core_executable PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 endif()
-
-include(docs/CMakeLists.txt)
