@@ -29,7 +29,7 @@ shared_ptr<Database> Database::Client(const string& home_dir, const string& db_n
 }
 shared_ptr<Database> Database::Client() {
     if (!default_client) {
-        Database::Client(".", "main");
+        Database::Client(".", "debug");
     }
     return default_client;
 }
@@ -530,7 +530,7 @@ void pybind_init_db(py::module_& m) {
     m_db
         .def("init", [](std::optional<string> home_dir, std::optional<string> db_name) {
             py::gil_scoped_acquire acquire;
-            string db_name_str = db_name.value_or("main");
+            string db_name_str = db_name.value_or("debug");
             if (!home_dir.has_value()) {
                 string hdir = py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>(); // am4utils.__path__[0]
                 py::function urlretrieve = py::module::import("urllib.request").attr("urlretrieve");
@@ -552,7 +552,7 @@ void pybind_init_db(py::module_& m) {
                 init(home_dir.value(), db_name_str);
             }
             py::gil_scoped_release release;
-        }, "home_dir"_a = py::none(), "db_name"_a = "main")
+        }, "home_dir"_a = py::none(), "db_name"_a = "debug")
         .def("reset", &reset)
         .def("_debug_query", &_debug_query, "query"_a);
 

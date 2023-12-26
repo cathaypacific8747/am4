@@ -1,5 +1,5 @@
 from am4utils.airport import Airport
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .util import assert_equal_property_names
 
@@ -25,12 +25,3 @@ class PyAirportSuggestion(BaseModel):
 
 assert_equal_property_names(Airport, PyAirport)
 assert_equal_property_names(Airport.Suggestion, PyAirportSuggestion)
-
-class AirportResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    airport: PyAirport
-
-class AirportNotFoundResponse(BaseModel):
-    status: str = Field("not_found", frozen=True)
-    parameter: str = Field("ap")
-    suggestions: list[PyAirportSuggestion]

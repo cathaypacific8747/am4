@@ -1,7 +1,7 @@
 from typing import Literal
 
 from am4utils.game import User
-from pydantic import BaseModel, Field, confloat, conint
+from pydantic import BaseModel, confloat, conint
 
 from .util import assert_equal_property_names
 
@@ -32,14 +32,3 @@ class PyUser(BaseModel):
     valid: bool
 
 assert_equal_property_names(User, PyUser)
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class UserResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    user: PyUser
-
-class UserNotFoundResponse(BaseModel):
-    status: str = Field("not_found", frozen=True)

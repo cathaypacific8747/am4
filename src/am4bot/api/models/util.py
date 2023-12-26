@@ -1,18 +1,5 @@
 # from enum import IntEnum
 
-# def get_schema(pybind_class: type) -> dict:
-#     d = {}
-#     for k, v in vars(pybind_class).items():
-#         if isinstance(v, property):
-            
-#             # method = v.fget
-#             # print(k, method, inspect.getdoc(method))
-#             # sig = inspect.signature(method)
-#             # return_annotation = sig.return_annotation
-#             # if return_annotation is not inspect.Signature.empty:
-#             #     print(f"Return type: {return_annotation}")
-#     return d
-
 def assert_equal_property_names(pybind_class: type, pydantic_class: type):
     pb_keys = []
     for k, v in vars(pybind_class).items():

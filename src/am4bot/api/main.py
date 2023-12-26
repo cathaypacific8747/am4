@@ -6,7 +6,7 @@ from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
 from am4utils.game import User
 from am4utils.route import AircraftRoute, Route, find_routes
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
@@ -16,92 +16,51 @@ from .dependencies import (
     # oauth2_scheme,
     verify_user_token,
 )
-from .models.aircraft import AircraftNotFoundResponse, AircraftResponse
-from .models.airport import AirportNotFoundResponse, AirportResponse
-from .models.game import UserNotFoundResponse, UserResponse
-from .models.route import (
-    ACRouteFindResponse,
-    ACRouteResponse,
-    PyACROptionsConfigAlgorithm,
-    PyACROptionsMaxDistance,
-    PyACROptionsMaxFlightTime,
-    PyACROptionsTPDMode,
-    PyACROptionsTripsPerDay,
-    RouteResponse,
+from .models.fapi import (
+    FAPIReqACROptions,
+    FAPIReqACSearchQuery,
+    FAPIReqAPSearchQuery,
+    FAPIReqRealism,
+    FAPIRespACRoute,
+    FAPIRespACRouteFind,
+    FAPIRespAircraft,
+    FAPIRespAircraftNotFound,
+    FAPIRespAirport,
+    FAPIRespAirportNotFound,
+    FAPIRespRoute,
+    FAPIRespUser,
+    FAPIRespUserNotFound,
 )
 
-app = FastAPI()
+app = FastAPI(
+    title="AM4Tools V2 API (Alpha)",
+    description="""A collection of calculators and tools for Airline Manager 4, aimed to facilitate statistical analyses and promote the development of third-party tools. This version is primarily rewritten in C++ for performance, in particular, route finding.
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["content-disposition", "set-cookie"]
+**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues to our [AM4Tools Discord server](https://discord.gg/4tVQHtf) (ping me at @cathayexpress for critical issues) and feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4bot).
+
+# Key features
+- Fuzzy airport and aircraft search
+- Basic route details (P2P)
+- Advanced route details (P2P, with aircraft)
+- Automatic best stopover, trips per day and seat algorithm selection
+- Advanced route finder (P2P, with aircraft, origin hub, and filters) - be careful: the massive response payload may crash this tab: use Insomnia or Postman instead!
+- Fuel, CO2, misc costs and contribution estimation
+
+In a nutshell, they are equivalent to enhanced versions of the `$airport <ap>`, `$aircraft <ac>`, `$route <ap0> <ap1> <ac>` and `$routes <ap0> <dist>` Discord commands.
+
+At this stage, **no authentication is required** to access the API (it will throttle ~600 requests/min). A simple user authentication system (which stores users' fuel, co2, marketing, training, fine-grained contribution-optimal settings) is currently under development, and an API token will be required to access it as this scales. The service will be free to use for all users.
+
+Click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
 )
 
 # on startup
 @app.on_event("startup")
 async def startup():
     if (os.environ.get("PRODUCTION") == '1'):
-        am4utils.db.init()
+        am4utils.db.init(db_name='production')
     else:
-        am4utils.db.init(db_name='main')
+        am4utils.db.init(db_name='debug')
 
-ACSearchQuery = Annotated[str, Query(description="Search query for aircraft. Examples: `id:1`, `shortname:b744`, `name:B747-400`, `b744`, `B747-400`, `b744[1]`, `b744[1,sfc]`, `b744[3,s,f]`")]
-APSearchQuery = Annotated[str, Query(description="Search query for airport. Examples: `id:3500`, `iata:Hkg`, `icao:vHHH`, `name:hong kong`, `VHHH`")]
-class ACROptions():
-    # not using pydantic basemodel: see https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
-    def __init__(
-        self,
-        config_algorithm: Annotated[PyACROptionsConfigAlgorithm, Query(description="[Optional] Aircraft configuration algorithm: one of `AUTO`, `FJY`, `FYJ`, `JFY`, `JYF`, `YFJ`, `YJF` for passenger aircraft, or `AUTO`, `L`, `H` for cargo aircraft - defaults to `AUTO` if not specified.")] = None,
-        max_distance: Annotated[PyACROptionsMaxDistance, Query(description="[Optional] Maximum route distance (km) - defaults to 6371π if not specified.")] = None,
-        max_flight_time: Annotated[PyACROptionsMaxFlightTime, Query(description="[Optional] Maximum flight time (h) - defaults to 24 if not specified.")] = None,
-        tpd_mode: Annotated[PyACROptionsTPDMode, Query(description="[Optional] Trips per day mode: one of `AUTO`, `AUTO_MULTIPLE_OF`, `STRICT` - defaults to `AUTO` if not specified.")] = None,
-        trips_per_day: Annotated[PyACROptionsTripsPerDay, Query(description="[Optional] Trips per day - defaults to 1 if not specified.")] = None,
-    ):
-        self.config_algorithm = config_algorithm
-        self.max_distance = max_distance
-        self.max_flight_time = max_flight_time
-        self.tpd_mode = tpd_mode
-        self.trips_per_day = trips_per_day
-    
-    def to_core(self, ac_type: Aircraft.Type) -> AircraftRoute.Options:
-        opt = {}
-        if self.config_algorithm is not None:
-            alg = Aircraft.CargoConfig.Algorithm.__members__.get(self.config_algorithm) if ac_type == Aircraft.Type.CARGO else Aircraft.PaxConfig.Algorithm.__members__.get(self.config_algorithm)
-            if alg is None:
-                raise HTTPException(status_code=422, detail=[{
-                    "loc": ["query", "config_algorithm"],
-                    "msg": "Specified algorithm does not exist for this aircraft type",
-                    "type": "value_error"
-                }])
-            opt["config_algorithm"] = alg
-        if self.max_distance is not None:
-            opt["max_distance"] = self.max_distance
-        if self.max_flight_time is not None:
-            opt["max_flight_time"] = self.max_flight_time
-        if self.tpd_mode is not None:
-            tpdm = AircraftRoute.Options.TPDMode.__members__.get(self.tpd_mode)
-            if tpdm is None:
-                raise HTTPException(status_code=422, detail=[{
-                    "loc": ["query", "tpd_mode"],
-                    "msg": "Specified trips per day mode does not exist",
-                    "type": "value_error"
-                }])
-            opt["tpd_mode"] = tpdm
-        if self.trips_per_day is not None:
-            if opt.get("tpd_mode") == AircraftRoute.Options.TPDMode.AUTO or self.tpd_mode is None:
-                kw = "explicitly specify" if self.tpd_mode is None else "use"
-                raise HTTPException(status_code=422, detail=[{
-                    "loc": ["query", "trips_per_day"],
-                    "msg": f"Trips per day cannot be specified when `tpd_mode` is `AUTO`: {kw} `AUTO_MULTIPLE_OF` or `STRICT` instead",
-                    "type": "value_error"
-                }])
-            opt["trips_per_day"] = self.trips_per_day
-        return AircraftRoute.Options(**opt)
-Realism = Annotated[bool, Query(description="[Optional] Whether to use realism mode - defaults to `false` if not specified.")]
 
 def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> ORJSONResponse:
     return ORJSONResponse(
@@ -117,8 +76,8 @@ def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion])
             ]
         }
     )
-@app.get("/ac/search", response_model=AircraftResponse, responses={404: {"model": AircraftNotFoundResponse}})
-async def ac_search(query: ACSearchQuery):
+@app.get("/ac/search", response_model=FAPIRespAircraft, responses={404: {"model": FAPIRespAircraftNotFound}})
+async def ac_search(query: FAPIReqACSearchQuery):
     ac = Aircraft.search(query)
     if ac.ac.valid:
         return {
@@ -144,8 +103,8 @@ def construct_apnf_response(param_name: str, ap_sugg: list[Airport.Suggestion]) 
             ]
         }
     )
-@app.get("/ap/search", response_model=AirportResponse, responses={404: {"model": AirportNotFoundResponse}})
-async def ap_search(query: APSearchQuery):
+@app.get("/ap/search", response_model=FAPIRespAirport, responses={404: {"model": FAPIRespAirportNotFound}})
+async def ap_search(query: FAPIReqAPSearchQuery):
     ap = Airport.search(query)
     if ap.ap.valid:
         return {
@@ -157,10 +116,10 @@ async def ap_search(query: APSearchQuery):
 
 
 
-@app.get("/route/info", response_model=RouteResponse, responses={404: {"model": AirportNotFoundResponse}})
+@app.get("/route/info", response_model=FAPIRespRoute, responses={404: {"model": FAPIRespAirportNotFound}})
 async def route_info(
-    origin: APSearchQuery,
-    destination: APSearchQuery,
+    origin: FAPIReqAPSearchQuery,
+    destination: FAPIReqAPSearchQuery,
 ):
     apsr0 = Airport.search(origin)
     if not apsr0.ap.valid:
@@ -177,13 +136,13 @@ async def route_info(
         "route": route.to_dict()
     }
 
-@app.get("/ac_route/info", response_model=ACRouteResponse, response_model_exclude_unset=True, responses={404: {"model": AirportNotFoundResponse | AircraftNotFoundResponse}})
+@app.get("/ac_route/info", response_model=FAPIRespACRoute, response_model_exclude_unset=True, responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}})
 async def ac_route_info(
-    origin: APSearchQuery,
-    destination: APSearchQuery,
-    ac: ACSearchQuery,
-    options: Annotated[ACROptions, Depends()],
-    realism: Realism = False
+    origin: FAPIReqAPSearchQuery,
+    destination: FAPIReqAPSearchQuery,
+    ac: FAPIReqACSearchQuery,
+    options: Annotated[FAPIReqACROptions, Depends()],
+    realism: FAPIReqRealism = False
 ):
     apsr0 = Airport.search(origin)
     if not apsr0.ap.valid:
@@ -210,12 +169,12 @@ async def ac_route_info(
         "ac_route": ac_route.to_dict(),
     }
 
-@app.get("/ac_route/find", response_model=ACRouteFindResponse, responses={404: {"model": AirportNotFoundResponse | AircraftNotFoundResponse}})
+@app.get("/ac_route/find", response_model=FAPIRespACRouteFind, responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}})
 async def ac_route_find_routes(
-    ap0: APSearchQuery,
-    ac: ACSearchQuery,
-    options: Annotated[ACROptions, Depends()],
-    realism: Realism = False
+    ap0: FAPIReqAPSearchQuery,
+    ac: FAPIReqACSearchQuery,
+    options: Annotated[FAPIReqACROptions, Depends()],
+    realism: FAPIReqRealism = False
 ):
     apsr0 = Airport.search(ap0)
     if not apsr0.ap.valid:
@@ -237,7 +196,7 @@ async def ac_route_find_routes(
         }
     )
 
-@app.get("/users/me", response_model=UserResponse, responses={404: {"model": UserNotFoundResponse}})
+@app.get("/users/me", response_model=FAPIRespUser, responses={404: {"model": FAPIRespUserNotFound}}, deprecated=True)
 async def user_me(
     user: Annotated[User, Depends(verify_user_token)]
 ):

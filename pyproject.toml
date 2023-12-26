@@ -24,12 +24,12 @@ dependencies = [
     "fastapi[all]",
     "httpx>=0.24.1",
     "passlib",
-    "python-jose"
+    "python-jose",
+    "rich", "loguru"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "rich", "loguru",
     "pytest", "ruff",
     "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels",
     "PyQt6"

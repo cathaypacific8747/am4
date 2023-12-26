@@ -1,11 +1,9 @@
-from typing import Annotated, Literal, Optional
+from typing import Literal, Optional
 
 from am4utils.route import AircraftRoute, Route
-from fastapi import Query
 from pydantic import BaseModel, Field, confloat, conint
 
 from .aircraft import (
-    PyAircraft,
     PyCargoConfig,
     PyConfigAlgorithm,
     PyPaxConfig,
@@ -21,12 +19,6 @@ class PyRoute(BaseModel):
     direct_distance: float
 
 assert_equal_property_names(Route, PyRoute)
-
-class RouteResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    ap_origin: PyAirport
-    ap_destination: PyAirport
-    route: PyRoute
 
 ## ACR
 
@@ -67,18 +59,3 @@ class PyACRoute(BaseModel):
 
 assert_equal_property_names(AircraftRoute.Stopover, PyACRouteStopover)
 assert_equal_property_names(AircraftRoute, PyACRoute)
-
-class ACRouteResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    ap_origin: PyAirport
-    ap_destination: PyAirport
-    ac: PyAircraft
-    ac_route: PyACRoute
-
-class Destination(BaseModel):
-    airport: PyAirport
-    ac_route: PyRoute
-
-class ACRouteFindResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    destinations: list[Destination]

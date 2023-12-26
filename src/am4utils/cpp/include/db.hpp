@@ -137,6 +137,6 @@ struct CompareSuggestion {
     }
 };
 
-void init(string home_dir, string db_name = "main");
+void init(string home_dir, string db_name = "debug");
 void reset();
 void _debug_query(string query);

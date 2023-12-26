@@ -1,7 +1,7 @@
 from typing import Literal
 
 from am4utils.aircraft import Aircraft
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .util import assert_equal_property_names
 
@@ -61,12 +61,3 @@ assert_equal_property_names(Aircraft.PaxConfig, PyPaxConfig)
 assert_equal_property_names(Aircraft.CargoConfig, PyCargoConfig)
 assert_equal_property_names(Aircraft, PyAircraft)
 assert_equal_property_names(Aircraft.Suggestion, PyAircraftSuggestion)
-
-class AircraftResponse(BaseModel):
-    status: str = Field("success", frozen=True)
-    aircraft: PyAircraft
-
-class AircraftNotFoundResponse(BaseModel):
-    status: str = Field("not_found", frozen=True)
-    parameter: str = Field("ac")
-    suggestions: list[PyAircraftSuggestion]

@@ -5,6 +5,6 @@ pytest_plugins = ('pytest_asyncio',)
 
 @pytest.fixture(scope="session", autouse=True)
 def initialize_database():
-    init(db_name='main_test')
+    init(db_name='debug_test')
     reset()
     yield
