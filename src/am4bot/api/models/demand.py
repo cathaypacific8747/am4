@@ -1,10 +1,18 @@
+from am4utils.demand import CargoDemand, PaxDemand
 from pydantic import BaseModel
 
-class PaxDemandDict(BaseModel):
+from .util import assert_equal_property_names
+
+
+class PyPaxDemand(BaseModel):
     y: int
     j: int
     f: int
 
-class CargoDemandDict(BaseModel):
+class PyCargoDemand(BaseModel):
     l: int
     h: int
+
+
+assert_equal_property_names(PaxDemand, PyPaxDemand)
+assert_equal_property_names(CargoDemand, PyCargoDemand)

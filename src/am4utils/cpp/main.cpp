@@ -94,7 +94,7 @@ int main() {
     }
     __itt_task_end(domain);
     timer.stop();
-    // getchar();
+    getchar();
 
     } catch (DatabaseException &e) {
         cerr << "DatabaseException: " << e.what() << endl;

@@ -1,9 +1,12 @@
 import asyncio
+
 import am4utils
 from am4utils.db import init
 from am4utils.game import AllianceLog
-from am4utils.game.api import fetch_alliance, fetch_user
+
+# from am4utils.game.api import fetch_alliance, fetch_user
 from src.am4bot.config import Config
+
 # from am4utils.airport import Airport
 
 if __name__ == '__main__':

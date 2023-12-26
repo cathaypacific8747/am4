@@ -576,6 +576,7 @@ py::dict to_dict(const AircraftRoute& ar) {
     d["profit"] = ar.profit;
     d["ci"] = ar.ci;
     d["contribution"] = ar.contribution;
+    d["valid"] = ar.valid;
     
     return d;
 }

@@ -14,7 +14,7 @@ using duckdb::Appender;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-constexpr int AIRCRAFT_COUNT = 487;
+constexpr int AIRCRAFT_COUNT = 489;
 constexpr int AIRPORT_COUNT = 3907;
 constexpr int AIRPORT_ID_MAX = 3982;
 constexpr int ROUTE_COUNT = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;

@@ -74,6 +74,11 @@ class Aircraft():
             :type: bool
             """
         @property
+        def fourx_mod(self) -> bool:
+            """
+            :type: bool
+            """
+        @property
         def fuel_mod(self) -> bool:
             """
             :type: bool

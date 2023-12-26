@@ -1,8 +1,12 @@
 from typing import Literal
-from pydantic import BaseModel, Field, conint, confloat
+
+from am4utils.game import User
+from pydantic import BaseModel, Field, confloat, conint
+
+from .util import assert_equal_property_names
 
 
-class User(BaseModel):
+class PyUser(BaseModel):
     id: str
     username: str
     game_id: conint(ge=0)
@@ -22,10 +26,12 @@ class User(BaseModel):
     income_loss_tol: confloat(ge=0, le=1)
     fourx: bool
     role: Literal[
-        "USER", "TRUSTED_USER", "TRUSTED_USER_2", "TOP_ALLIANCE_MEMBER",
-        "TOP_ALLIANCE_ADMIN", "HELPER", "MODERATOR", "ADMIN", "GLOBAL_ADMIN"
+        "USER", "TRUSTED_USER", "HIGHLY_TRUSTED_USER", "TOP_ALLIANCE_MEMBER",
+        "TOP_ALLIANCE_ADMIN", "HELPER", "MODERATOR", "ADMIN", "SUPERUSER"
     ]
     valid: bool
+
+assert_equal_property_names(User, PyUser)
 
 class Token(BaseModel):
     access_token: str
@@ -33,7 +39,7 @@ class Token(BaseModel):
 
 class UserResponse(BaseModel):
     status: str = Field("success", frozen=True)
-    user: User
+    user: PyUser
 
 class UserNotFoundResponse(BaseModel):
     status: str = Field("not_found", frozen=True)

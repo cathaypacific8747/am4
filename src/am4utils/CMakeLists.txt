@@ -21,7 +21,7 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 if (MSVC)
     add_compile_options(/W4 /O2 /std:c++17)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3 -std=c++17)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3 -std=c++17 -D_GLIBCXX_USE_CXX11_ABI=0)
 endif()
 add_subdirectory(cpp/include/ext/libduckdb)
 
@@ -71,6 +71,7 @@ target_compile_definitions(_core_static
     PRIVATE VERSION_INFO=${SKBUILD_PROJECT_VERSION} BUILD_PYBIND=0
 )
 target_link_libraries(_core_static PRIVATE duckdb)
+# target_compile_features(_core_static PRIVATE cxx_std_17)
 set_target_properties(_core_static PROPERTIES OUTPUT_NAME "am4tools_static")
 
 
@@ -90,6 +91,7 @@ target_include_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/inc
 target_link_directories(_core_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/lib64)
 target_link_libraries(_core_executable PRIVATE ittnotify dl pthread)
 target_link_libraries(_core_executable PRIVATE _core_static)
+# target_compile_features(_core_executable PRIVATE cxx_std_17)
 
 add_custom_command(
     TARGET _core_executable POST_BUILD

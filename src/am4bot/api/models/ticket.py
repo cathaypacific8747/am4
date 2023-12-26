@@ -1,15 +1,23 @@
+from am4utils.ticket import CargoTicket, PaxTicket, VIPTicket
 from pydantic import BaseModel
 
-class PaxTicketDict(BaseModel):
+from .util import assert_equal_property_names
+
+
+class PyPaxTicket(BaseModel):
     y: int
     j: int
     f: int
 
-class CargoTicketDict(BaseModel):
+class PyCargoTicket(BaseModel):
     l: float
     h: float
 
-class VIPTicketDict(BaseModel):
+class PyVIPTicket(BaseModel):
     y: int
     j: int
     f: int
+
+assert_equal_property_names(PaxTicket, PyPaxTicket)
+assert_equal_property_names(CargoTicket, PyCargoTicket)
+assert_equal_property_names(VIPTicket, PyVIPTicket)

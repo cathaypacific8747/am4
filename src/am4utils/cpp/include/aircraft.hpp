@@ -112,8 +112,9 @@ struct Aircraft {
         bool speed_mod;
         bool fuel_mod;
         bool co2_mod;
+        bool fourx_mod;
 
-        ParseResult(Aircraft::SearchType search_type, const string& search_str, uint8_t priority, bool speed_mod, bool fuel_mod, bool co2_mod) : search_type(search_type), search_str(search_str), priority(priority), speed_mod(speed_mod), fuel_mod(fuel_mod), co2_mod(co2_mod) {}
+        ParseResult(Aircraft::SearchType search_type, const string& search_str, uint8_t priority, bool speed_mod, bool fuel_mod, bool co2_mod, bool fourx_mod) : search_type(search_type), search_str(search_str), priority(priority), speed_mod(speed_mod), fuel_mod(fuel_mod), co2_mod(co2_mod), fourx_mod(fourx_mod) {}
     };
 
     struct SearchResult {

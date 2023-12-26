@@ -1,6 +1,10 @@
+from am4utils.airport import Airport
 from pydantic import BaseModel, Field
 
-class AirportDict(BaseModel):
+from .util import assert_equal_property_names
+
+
+class PyAirport(BaseModel):
     id: int
     name: str
     fullname: str
@@ -15,15 +19,18 @@ class AirportDict(BaseModel):
     hub_cost: int
     rwy_codes: str # TODO: split by |
 
-class AirportSuggestion(BaseModel):
-    airport: AirportDict
+class PyAirportSuggestion(BaseModel):
+    ap: PyAirport
     score: float
+
+assert_equal_property_names(Airport, PyAirport)
+assert_equal_property_names(Airport.Suggestion, PyAirportSuggestion)
 
 class AirportResponse(BaseModel):
     status: str = Field("success", frozen=True)
-    airport: AirportDict
+    airport: PyAirport
 
 class AirportNotFoundResponse(BaseModel):
     status: str = Field("not_found", frozen=True)
     parameter: str = Field("ap")
-    suggestions: list[AirportSuggestion]
+    suggestions: list[PyAirportSuggestion]

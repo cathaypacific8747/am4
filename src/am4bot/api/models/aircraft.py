@@ -1,7 +1,28 @@
 from typing import Literal
+
+from am4utils.aircraft import Aircraft
 from pydantic import BaseModel, Field
 
-class AircraftDict(BaseModel):
+from .util import assert_equal_property_names
+
+PyPaxConfigAlgorithm = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF"]
+
+class PyPaxConfig(BaseModel):
+    y: int
+    j: int
+    f: int
+    algorithm: PyPaxConfigAlgorithm
+
+PyCargoConfigAlgorithm = Literal["AUTO", "L", "H"]
+
+class PyCargoConfig(BaseModel):
+    l: int
+    h: int
+    algorithm: PyCargoConfigAlgorithm
+
+PyConfigAlgorithm = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF", "L", "H"]
+
+class PyAircraft(BaseModel):
     id: int
     shortname: str
     manufacturer: str
@@ -30,27 +51,22 @@ class AircraftDict(BaseModel):
     speed_mod: bool
     fuel_mod: bool
     co2_mod: bool
+    fourx_mod: bool
 
-class AircraftSuggestionDict(BaseModel):
-    aircraft: AircraftDict
+class PyAircraftSuggestion(BaseModel):
+    ac: PyAircraft
     score: float
+
+assert_equal_property_names(Aircraft.PaxConfig, PyPaxConfig)
+assert_equal_property_names(Aircraft.CargoConfig, PyCargoConfig)
+assert_equal_property_names(Aircraft, PyAircraft)
+assert_equal_property_names(Aircraft.Suggestion, PyAircraftSuggestion)
 
 class AircraftResponse(BaseModel):
     status: str = Field("success", frozen=True)
-    aircraft: AircraftDict
+    aircraft: PyAircraft
 
 class AircraftNotFoundResponse(BaseModel):
     status: str = Field("not_found", frozen=True)
     parameter: str = Field("ac")
-    suggestions: list[AircraftSuggestionDict]
-
-class PaxConfigDict(BaseModel):
-    y: int
-    j: int
-    f: int
-    algorithm: Literal["FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF", "NONE"]
-
-class CargoConfigDict(BaseModel):
-    l: int
-    h: int
-    algorithm: Literal["L", "H", "NONE"]
+    suggestions: list[PyAircraftSuggestion]

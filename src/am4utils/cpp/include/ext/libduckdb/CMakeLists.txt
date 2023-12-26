@@ -1,6 +1,6 @@
 include(FetchContent)
 
-set(DUCKDB_VERSION "0.8.1")
+set(DUCKDB_VERSION "0.9.2")
 
 string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
 if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR IS_ARM)
@@ -33,6 +33,8 @@ FetchContent_Declare(
     URL ${DUCKDB_URL}
 )
 FetchContent_MakeAvailable(duckdb_folder)
+
+message(STATUS "!!${duckdb_folder_SOURCE_DIR}/${DUCKDB_DLL}")
 
 add_library(duckdb SHARED IMPORTED GLOBAL)
 set_target_properties(duckdb PROPERTIES

@@ -1,12 +1,14 @@
-from src.am4bot.api.models.game import User as UserInDB
-from src.am4bot.config import Config
-from am4utils.game import User
-
 from datetime import datetime, timedelta
-from passlib.context import CryptContext
-from jose import jwt, ExpiredSignatureError, JWTError
+
+from am4utils.game import User
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import ExpiredSignatureError, JWTError, jwt
+from passlib.context import CryptContext
+
+from src.am4bot.config import Config
+
+from .models.game import PyUser as UserInDB
 
 ALGORITHM = "HS256"
 INVALID_CRED_EXCEPTION = HTTPException(

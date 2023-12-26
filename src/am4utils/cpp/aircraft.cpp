@@ -32,6 +32,7 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
     bool speed_mod = false;
     bool fuel_mod = false;
     bool co2_mod = false;
+    bool fourx_mod = false;
 
     // attempt to get modifiers, e.g. mc214[0,s,c,f] -> priority: true, speed_mod: true, co2_mod: true, fuel_mod: true
     size_t start = s_lower.find('[');
@@ -49,10 +50,11 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
         tokens.push_back(parsed.substr(last));
 
         for (const string& token : tokens) {
-            if (token.length() <= 3) {
+            if (token.length() <= 4) {
                 if (token.find('s') != string::npos) speed_mod = true;
                 if (token.find('f') != string::npos) fuel_mod = true;
                 if (token.find('c') != string::npos) co2_mod = true;
+                if (token.find('x') != string::npos) fourx_mod = true;
             }
             try {
                 if (priority == 0) priority = static_cast<uint8_t>(std::stoi(token));
@@ -62,20 +64,20 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
         }
     }
     if (s_lower.substr(0, 5) == "name:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5), priority, speed_mod, fuel_mod, co2_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
     } else if (s_lower.substr(0, 10) == "shortname:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod, co2_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
     } else if (s_lower.substr(0, 3) == "id:") {
         try {
             std::ignore = std::stoi(s.substr(3));
-            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod);
+            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
         } catch (const std::invalid_argument&) {
         } catch (const std::out_of_range&) {
         }
     } else if (s_lower.substr(0, 4) == "all:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4), priority, speed_mod, fuel_mod, co2_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
     }
-    return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower, priority, speed_mod, fuel_mod, co2_mod);
+    return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower, priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
 }
 
 Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
@@ -104,7 +106,7 @@ Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
     ac.co2_mod = parse_result.co2_mod;
     if (ac.co2_mod) ac.co2 *= 0.9f;
 
-    ac.fourx_mod = user.fourx;
+    ac.fourx_mod = parse_result.fourx_mod || user.fourx;
     if (ac.fourx_mod) ac.speed *= 4.0f;
     
     return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
@@ -439,7 +441,8 @@ py::dict to_dict(const Aircraft& ac) {
         "length"_a=ac.length,
         "speed_mod"_a=ac.speed_mod,
         "fuel_mod"_a=ac.fuel_mod,
-        "co2_mod"_a=ac.co2_mod
+        "co2_mod"_a=ac.co2_mod,
+        "fourx_mod"_a=ac.fourx_mod
     );
     py::gil_scoped_release release;
     return d;
@@ -543,7 +546,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("priority", &Aircraft::ParseResult::priority)
         .def_readonly("speed_mod", &Aircraft::ParseResult::speed_mod)
         .def_readonly("fuel_mod", &Aircraft::ParseResult::fuel_mod)
-        .def_readonly("co2_mod", &Aircraft::ParseResult::co2_mod);
+        .def_readonly("co2_mod", &Aircraft::ParseResult::co2_mod)
+        .def_readonly("fourx_mod", &Aircraft::ParseResult::fourx_mod);
     py::class_<Aircraft::SearchResult>(ac_class, "SearchResult")
         .def(py::init<shared_ptr<Aircraft>, Aircraft::ParseResult>())
         .def_readonly("ac", &Aircraft::SearchResult::ac)

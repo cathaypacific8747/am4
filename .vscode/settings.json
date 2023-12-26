@@ -8,5 +8,6 @@
         "-DCOPY_DATA=1",
         "-DCMAKE_VERBOSE_MAKEFILE=1"
     ],
-    "C_Cpp.autoAddFileAssociations": false
+    "C_Cpp.autoAddFileAssociations": false,
+    "cmake.configureOnOpen": true
 }
