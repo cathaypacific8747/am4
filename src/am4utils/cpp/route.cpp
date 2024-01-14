@@ -584,7 +584,7 @@ py::dict to_dict(const AircraftRoute& ar) {
 py::dict to_dict(const Destination& d) {
     return py::dict(
         "airport"_a = to_dict(d.airport),
-        "route"_a = to_dict(d.ac_route)
+        "ac_route"_a = to_dict(d.ac_route)
     );
 }
 

@@ -1,11 +1,9 @@
-import asyncio
 import logging
 import os
 import sys
 
 from loguru import logger
 from uvicorn import Config, Server
-from uvicorn.config import LOGGING_CONFIG
 
 # from src.am4bot.bot import bot
 from src.am4bot.config import Config as AM4Config

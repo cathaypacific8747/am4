@@ -43,7 +43,7 @@ cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
 
 # python dev
-pip3 install --verbose "src/am4utils/.[dev]"
+python3 -m pip install --verbose "src/am4utils/.[dev]" --config-settings=cmake.define.COPY_DATA=1
 pytest
 cd src/am4utils
 python3 generate-stubs.py

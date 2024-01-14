@@ -20,7 +20,7 @@ from .models.fapi import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
     FAPIReqAPSearchQuery,
-    FAPIReqRealism,
+    FAPIReqUser,
     FAPIRespACRoute,
     FAPIRespACRouteFind,
     FAPIRespAircraft,
@@ -36,21 +36,24 @@ app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
     description="""A collection of calculators and tools for Airline Manager 4, aimed to facilitate statistical analyses and promote the development of third-party tools. This version is primarily rewritten in C++ for performance, in particular, route finding.
 
-**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues to our [AM4Tools Discord server](https://discord.gg/4tVQHtf) (ping me at @cathayexpress for critical issues) and feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4bot).
+**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues on our [AM4Tools Discord server](https://discord.gg/4tVQHtf), or ping me at @cathayexpress if you encounter critical issues such as 500 Internal Server Error. This project is open source - feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4bot).
 
 # Key features
 - Fuzzy airport and aircraft search
 - Basic route details (P2P)
 - Advanced route details (P2P, with aircraft)
 - Automatic best stopover, trips per day and seat algorithm selection
-- Advanced route finder (P2P, with aircraft, origin hub, and filters) - be careful: the massive response payload may crash this tab: use Insomnia or Postman instead!
+- Advanced route finder (P2P, with aircraft, origin hub, and filters) - **be careful: the massive response payload may crash this tab**: use Insomnia or Postman instead!
 - Fuel, CO2, misc costs and contribution estimation
 
 In a nutshell, they are equivalent to enhanced versions of the `$airport <ap>`, `$aircraft <ac>`, `$route <ap0> <ap1> <ac>` and `$routes <ap0> <dist>` Discord commands.
 
-At this stage, **no authentication is required** to access the API (it will throttle ~600 requests/min). A simple user authentication system (which stores users' fuel, co2, marketing, training, fine-grained contribution-optimal settings) is currently under development, and an API token will be required to access it as this scales. The service will be free to use for all users.
+At this stage, **no authentication is required** to access the API (it will throttle ~600 requests/min). An API token in the future will be required as this scales.
 
-Click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
+This service is 100% free to use for all users. We would really appreciate any donations to help cover server costs: you can donate via [Paypal](https://paypal.me/am4tools). As a token of appreciation, you will be given a special Donor role on our server (use command `$donate` for more information).
+
+Open one of the endpoints and click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
+    version="0.1.1",
 )
 
 # on startup
@@ -142,7 +145,7 @@ async def ac_route_info(
     destination: FAPIReqAPSearchQuery,
     ac: FAPIReqACSearchQuery,
     options: Annotated[FAPIReqACROptions, Depends()],
-    realism: FAPIReqRealism = False
+    user: Annotated[FAPIReqUser, Depends()],
 ):
     apsr0 = Airport.search(origin)
     if not apsr0.ap.valid:
@@ -159,7 +162,7 @@ async def ac_route_info(
         apsr1.ap,
         acsr.ac,
         options.to_core(acsr.ac.type),
-        User.Default(realism=True) if realism else User.Default()
+        user.to_core(),
     )
     return {
         "status": "success",
@@ -174,7 +177,7 @@ async def ac_route_find_routes(
     ap0: FAPIReqAPSearchQuery,
     ac: FAPIReqACSearchQuery,
     options: Annotated[FAPIReqACROptions, Depends()],
-    realism: FAPIReqRealism = False
+    user: Annotated[FAPIReqUser, Depends()],
 ):
     apsr0 = Airport.search(ap0)
     if not apsr0.ap.valid:
@@ -187,7 +190,7 @@ async def ac_route_find_routes(
         apsr0.ap,
         acsr.ac,
         options.to_core(acsr.ac.type),
-        User.Default(realism=True) if realism else User.Default()
+        user.to_core()
     )
     return ORJSONResponse(
         content={
