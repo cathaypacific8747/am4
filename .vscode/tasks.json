@@ -41,12 +41,6 @@
             "command": "${command:python.interpreterPath} -m pytest"
         },
         {
-            "label": "upload: corelib",
-            "type": "shell",
-            "command": "rsync -avz --mkpath .venv/lib/python3.11/site-packages/am4utils am4tools:/home/thiago/am4bot-api/.venv/lib/python3.11/site-packages/",
-            "problemMatcher": []
-        },
-        {
             "label": "upload: source",
             "type": "shell",
             "command": "rsync -avz --mkpath src config.production.json main.py pyproject.toml am4tools:/home/thiago/am4bot-api/",

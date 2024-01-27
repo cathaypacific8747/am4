@@ -4,7 +4,7 @@
 
 A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
 
-Our bot is currently running legacy code in the [`src-old`](./src-old/) directory - I am now rewriting the core calculations in C++ for better performance under [`src/am4utils`](./src/am4utils/), with the main bot written in Python under [`src/am4bot (under construction)`](./src/am4bot/). The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
+Our bot is currently running legacy code in the [`src-old`](./src-old/) directory - the core calculations are being rewritten in C++ for better performance, under [`src/am4utils`](./src/am4utils/), with the main bot written in Python under [`src/am4bot (under construction)`](./src/am4bot/). The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
 
 ## Current Features
 - calculates essential statistics

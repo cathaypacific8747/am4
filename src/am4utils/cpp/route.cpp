@@ -267,7 +267,7 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
         }
     }
     acr.fuel = AircraftRoute::calc_fuel(ac, full_distance, user);
-    acr.acheck_cost = static_cast<float>(ac.check_cost) * acr.flight_time / static_cast<float>(ac.maint);
+    acr.acheck_cost = static_cast<float>(ac.check_cost) * ceil(acr.flight_time * (user.game_mode == User::GameMode::EASY ? 1.5 : 1.0)) / static_cast<float>(ac.maint);
     acr.repair_cost = ac.cost / 1000.0 * 0.0075 * (1 - 2 * user.repair_training / 100.0); // each flight adds random [0, 1.5]% wear, each tp decreases wear by 2% 
     acr.profit = (
         acr.income

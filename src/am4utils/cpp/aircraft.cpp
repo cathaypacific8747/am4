@@ -266,7 +266,7 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode, Aircraft::PaxConfig::Algorithm algorithm) {
     switch (algorithm) {
-        case Aircraft::PaxConfig::Algorithm::AUTO:
+        case Algorithm::AUTO:
             if (game_mode == User::GameMode::EASY) {
                 if (distance < 14425) {
                     return calc_fjy_conf(d_pf, capacity);
@@ -288,17 +288,17 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, ui
                     return calc_yjf_conf(d_pf, capacity);
                 }
             }
-        case Aircraft::PaxConfig::Algorithm::FJY:
+        case Algorithm::FJY:
             return calc_fjy_conf(d_pf, capacity);
-        case Aircraft::PaxConfig::Algorithm::FYJ:
+        case Algorithm::FYJ:
             return calc_fyj_conf(d_pf, capacity);
-        case Aircraft::PaxConfig::Algorithm::JFY:
+        case Algorithm::JFY:
             return calc_jfy_conf(d_pf, capacity);
-        case Aircraft::PaxConfig::Algorithm::JYF:
+        case Algorithm::JYF:
             return calc_jyf_conf(d_pf, capacity);
-        case Aircraft::PaxConfig::Algorithm::YFJ:
+        case Algorithm::YFJ:
             return calc_yfj_conf(d_pf, capacity);
-        case Aircraft::PaxConfig::Algorithm::YJF:
+        case Algorithm::YJF:
             return calc_yjf_conf(d_pf, capacity);
         default:
             return PaxConfig();
@@ -369,15 +369,15 @@ Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf
 Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training, Aircraft::CargoConfig::Algorithm algorithm) {
     // low priority is always more profitable
     switch (algorithm) {
-        case Aircraft::CargoConfig::Algorithm::AUTO:
-        case Aircraft::CargoConfig::Algorithm::L:
+        case Algorithm::AUTO:
+        case Algorithm::L:
             return calc_l_conf(
                 d_pf,
                 capacity,
                 l_training,
                 h_training
             ); 
-        case Aircraft::CargoConfig::Algorithm::H:
+        case Algorithm::H:
             return calc_h_conf(
                 d_pf,
                 capacity,

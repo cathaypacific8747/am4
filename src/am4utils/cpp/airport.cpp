@@ -13,69 +13,69 @@ Airport::ParseResult Airport::parse(const string& s) {
     std::transform(s_upper.begin(), s_upper.end(), s_upper.begin(), ::toupper);
 
     if (s_upper.substr(0, 5) == "IATA:") {
-        return Airport::ParseResult(Airport::SearchType::IATA, s_upper.substr(5));
+        return ParseResult(SearchType::IATA, s_upper.substr(5));
     } else if (s_upper.substr(0, 5) == "ICAO:") {
-        return Airport::ParseResult(Airport::SearchType::ICAO, s_upper.substr(5));
+        return Airport::ParseResult(SearchType::ICAO, s_upper.substr(5));
     } else if (s_upper.substr(0, 5) == "NAME:") {
-        return Airport::ParseResult(Airport::SearchType::NAME, s_upper.substr(5));
+        return ParseResult(SearchType::NAME, s_upper.substr(5));
     } else if (s_upper.substr(0, 9) == "FULLNAME:") {
-        return Airport::ParseResult(Airport::SearchType::FULLNAME, s_upper.substr(9));
+        return ParseResult(SearchType::FULLNAME, s_upper.substr(9));
     } else if (s_upper.substr(0, 3) == "ID:") {
         try {
             std::ignore = std::stoi(s.substr(3));
-            return Airport::ParseResult(Airport::SearchType::ID, s.substr(3));
+            return ParseResult(SearchType::ID, s.substr(3));
         } catch (const std::invalid_argument&) {
         } catch (const std::out_of_range&) {
         }
     } else if (s_upper.substr(0, 4) == "ALL:") {
-        return Airport::ParseResult(Airport::SearchType::ALL, s_upper.substr(4));
+        return ParseResult(SearchType::ALL, s_upper.substr(4));
     }
-    return Airport::ParseResult(Airport::SearchType::ALL, s_upper);
+    return ParseResult(SearchType::ALL, s_upper);
 }
 
 Airport::SearchResult Airport::search(const string& s) {
     auto parse_result = Airport::parse(s);
     Airport ap;
     switch (parse_result.search_type) {
-        case Airport::SearchType::ALL:
+        case SearchType::ALL:
             ap = Database::Client()->get_airport_by_all(parse_result.search_str);
             break;
-        case Airport::SearchType::IATA:
+        case SearchType::IATA:
             ap = Database::Client()->get_airport_by_iata(parse_result.search_str);
             break;
-        case Airport::SearchType::ICAO:
+        case SearchType::ICAO:
             ap = Database::Client()->get_airport_by_icao(parse_result.search_str);
             break;
-        case Airport::SearchType::NAME:
+        case SearchType::NAME:
             ap = Database::Client()->get_airport_by_name(parse_result.search_str);
             break;
-        case Airport::SearchType::FULLNAME:
+        case SearchType::FULLNAME:
             ap = Database::Client()->get_airport_by_fullname(parse_result.search_str);
             break;
-        case Airport::SearchType::ID:
+        case SearchType::ID:
             ap = Database::Client()->get_airport_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)));
             break;
     }
-    return Airport::SearchResult(make_shared<Airport>(ap), parse_result);
+    return SearchResult(make_shared<Airport>(ap), parse_result);
 }
 
 // note: searchtype id will return no suggestions.
-std::vector<Airport::Suggestion> Airport::suggest(const Airport::ParseResult& parse_result) {
-    std::vector<Airport::Suggestion> suggestions;
+std::vector<Airport::Suggestion> Airport::suggest(const ParseResult& parse_result) {
+    std::vector<Suggestion> suggestions;
     switch (parse_result.search_type) {
-        case Airport::SearchType::ALL:
+        case SearchType::ALL:
             suggestions = Database::Client()->suggest_airport_by_all(parse_result.search_str);
             break;
-        case Airport::SearchType::IATA:
+        case SearchType::IATA:
             suggestions = Database::Client()->suggest_airport_by_iata(parse_result.search_str);
             break;
-        case Airport::SearchType::ICAO:
+        case SearchType::ICAO:
             suggestions = Database::Client()->suggest_airport_by_icao(parse_result.search_str);
             break;
-        case Airport::SearchType::NAME:
+        case SearchType::NAME:
             suggestions = Database::Client()->suggest_airport_by_name(parse_result.search_str);
             break;
-        case Airport::SearchType::FULLNAME:
+        case SearchType::FULLNAME:
             suggestions = Database::Client()->suggest_airport_by_fullname(parse_result.search_str);
             break;
         default:
