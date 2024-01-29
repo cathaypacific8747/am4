@@ -1,21 +1,13 @@
 import os
 from typing import Annotated
 
-import am4utils
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
-from am4utils.game import User
+from am4utils.db import init as db_init
 from am4utils.route import AircraftRoute, Route, find_routes
-from fastapi import APIRouter, Depends, FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
 
-from .dependencies import (
-    # authenticate_user,
-    # create_access_token,
-    # oauth2_scheme,
-    verify_user_token,
-)
 from .models.fapi import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
@@ -31,6 +23,7 @@ from .models.fapi import (
     FAPIRespUser,
     FAPIRespUserNotFound,
 )
+from .pb import pb
 
 app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
@@ -59,10 +52,9 @@ Open one of the endpoints and click the try it out button right here in your bro
 # on startup
 @app.on_event("startup")
 async def startup():
-    if (os.environ.get("PRODUCTION") == '1'):
-        am4utils.db.init(db_name='production')
-    else:
-        am4utils.db.init(db_name='debug')
+    db_init(db_name='production' if os.environ.get("PRODUCTION") == '1' else 'debug')
+    await pb.login()
+    await pb.list()
 
 
 def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> ORJSONResponse:
@@ -196,16 +188,5 @@ async def ac_route_find_routes(
         content={
             "status": "success",
             "destinations": [destination.to_dict() for destination in destinations]
-        }
-    )
-
-@app.get("/users/me", response_model=FAPIRespUser, responses={404: {"model": FAPIRespUserNotFound}}, deprecated=True)
-async def user_me(
-    user: Annotated[User, Depends(verify_user_token)]
-):
-    return ORJSONResponse(
-        content={
-            "status": "success",
-            "user": user.to_dict()
         }
     )

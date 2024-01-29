@@ -1,3 +1,7 @@
+import json
+import os
+
+
 class Config:
     DISCORD_TOKEN: str = ''
     AM4_API_TOKEN: str = ''
@@ -8,16 +12,17 @@ class Config:
     PRICEALERT_ROLEID: int = 0
     MODERATOR_ROLEID: int = 0
     HELPER_ROLEID: int = 0
-    KEY_FILE: str = ''
-    CERT_FILE: str = ''
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    SECRET_KEY: str = ''
-    
+    PB_ENDPOINT: str = "http://127.0.0.1:8090/api/"
+    PB_EMAIL: int = 0
+    PB_PASSWORD: int = 0
+
     def __init__(self, cfg: dict):
         self.__dict__.update(cfg)
 
     @classmethod
     def from_json(cls, fn: str):
-        import json
         with open(fn) as f:
             return cls(json.load(f))
+
+production = os.environ.get("PRODUCTION") == '1'
+config = Config.from_json("config.production.json" if production else "config.json")

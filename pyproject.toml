@@ -1,6 +1,6 @@
 [project]
 name = "am4bot"
-version = "0.0.0"
+version = "0.0.1"
 description = "Discord bot for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
 license = { text = "MIT License" }
@@ -18,13 +18,10 @@ dependencies = [
     "am4utils",
     "matplotlib>=3.7.1",
     "Pillow>=9.5.0",
-    "urllib3>=2.0.2",
     "discord.py>=2.2.3",
     "adjustText>=0.8",
     "fastapi[all]",
     "httpx>=0.24.1",
-    "passlib",
-    "python-jose",
     "rich", "loguru"
 ]
 
