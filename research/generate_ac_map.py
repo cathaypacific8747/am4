@@ -1,4 +1,4 @@
-# generates id -> idx map.
+# generates id -> idx map for use in cpp
 
 import csv
 

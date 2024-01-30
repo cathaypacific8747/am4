@@ -29,7 +29,8 @@ dependencies = [
 dev = [
     "pytest", "ruff",
     "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels",
-    "PyQt6"
+    "PyQt6",
+    "tqdm", "ipykernel"
 ]
 
 [tool.pytest.ini_options]
