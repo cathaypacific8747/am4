@@ -50,6 +50,7 @@ if __name__ == '__main__':
     if not config.DISCORD_TOKEN or not config.AM4_API_TOKEN:
         raise AssertionError('Discord and AM4Tools token is required to run the bot!')
 
+    setup_logging()
     server = Server(
         Config(
             "src.am4bot.api.main:app",
@@ -62,6 +63,5 @@ if __name__ == '__main__':
             log_level=LOG_LEVEL,
         )
     )
-    setup_logging()
 
     server.run()
