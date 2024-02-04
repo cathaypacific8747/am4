@@ -1,5 +1,6 @@
 # from enum import IntEnum
 
+
 def assert_equal_property_names(pybind_class: type, pydantic_class: type):
     pb_keys = []
     for k, v in vars(pybind_class).items():
@@ -14,8 +15,11 @@ def assert_equal_property_names(pybind_class: type, pydantic_class: type):
             continue
         pd_keys.append(k)
 
-    assert set(pb_keys) == set(pd_keys), f"Keys not equal: {set(pb_keys) ^ set(pd_keys)}"
+    assert set(pb_keys) == set(
+        pd_keys
+    ), f"Keys not equal: {set(pb_keys) ^ set(pd_keys)}"
     # print(pb_keys)
+
 
 # def assert_equal_int_enums(pybind_enum: type, python_enum: IntEnum):
 #     pb_kvs = {k: int(v) for k, v in pybind_enum.__members__.items()}

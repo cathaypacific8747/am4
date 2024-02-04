@@ -1,27 +1,19 @@
 #include <iostream>
 #include <string>
-#include <duckdb.hpp>
 #include <algorithm>
 #include <queue>
+// #include <arrow/io/api.h>
+// #include <parquet/arrow/reader.h>
 
 #include "include/db.hpp"
 #include "include/ext/jaro.hpp"
 
-#define USER_COLUMNS "id, username, game_id, game_name, game_mode, discord_id, wear_training, repair_training, l_training, h_training, fuel_training, co2_training, fuel_price, co2_price, accumulated_count, load, income_loss_tol, fourx, role"
-#define SELECT_USER_STATEMENT(field) "SELECT " USER_COLUMNS " FROM users WHERE " #field " = $1 LIMIT 1;"
-#define INSERT_USER_STATEMENT "INSERT INTO users (username, password, game_id, game_name, game_mode, discord_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING " USER_COLUMNS ";"
-#define UPDATE_USER_STATEMENT(field) "UPDATE users SET " #field " = $1 WHERE id = $2;"
-
-#define SELECT_ALLIANCE_LOG_STATEMENT(field) "SELECT * FROM alliance_log WHERE " #field " = $1 LIMIT 1;" 
-
-using namespace duckdb;
-
 shared_ptr<Database> Database::default_client = nullptr;
-shared_ptr<Database> Database::Client(const string& home_dir, const string& db_name) {
+shared_ptr<Database> Database::Client(const string& home_dir) {
     if (!default_client) {
         default_client = make_shared<Database>();
-        default_client->database = make_uniq<DuckDB>(home_dir + "/data/" + db_name + ".db");
-        default_client->connection = make_uniq<Connection>(*default_client->database);
+        default_client->database = duckdb::make_uniq<DuckDB>(":memory:");
+        default_client->connection = duckdb::make_uniq<Connection>(*default_client->database);
 
         CHECK_SUCCESS(default_client->connection->Query("SET home_directory = '" + home_dir + "';"));
     }
@@ -29,150 +21,13 @@ shared_ptr<Database> Database::Client(const string& home_dir, const string& db_n
 }
 shared_ptr<Database> Database::Client() {
     if (!default_client) {
-        Database::Client(".", "debug");
+        Database::Client(".");
     }
     return default_client;
 }
 
 void Database::populate_database() {
-    CHECK_SUCCESS(connection->Query(
-        "CREATE TABLE IF NOT EXISTS users ("
-        "  id                UUID NOT NULL DEFAULT uuid(),"
-        "  username          VARCHAR NOT NULL DEFAULT '',"
-        "  password          VARCHAR NOT NULL DEFAULT '',"
-        "  game_id           UBIGINT NOT NULL DEFAULT 0,"
-        "  game_name         VARCHAR NOT NULL DEFAULT '',"
-        "  game_mode         BOOLEAN NOT NULL DEFAULT FALSE,"
-        "  discord_id        UBIGINT NOT NULL DEFAULT 0,"
-        "  wear_training     UTINYINT NOT NULL DEFAULT 0,"
-        "  repair_training   UTINYINT NOT NULL DEFAULT 0,"
-        "  l_training        UTINYINT NOT NULL DEFAULT 0,"
-        "  h_training        UTINYINT NOT NULL DEFAULT 0,"
-        "  fuel_training     UTINYINT NOT NULL DEFAULT 0,"
-        "  co2_training      UTINYINT NOT NULL DEFAULT 0,"
-        "  fuel_price        USMALLINT NOT NULL DEFAULT 700,"
-        "  co2_price         UTINYINT NOT NULL DEFAULT 120,"
-        "  accumulated_count USMALLINT NOT NULL DEFAULT 0,"
-        "  load              DOUBLE NOT NULL DEFAULT 0.87,"
-        "  income_loss_tol   DOUBLE NOT NULL DEFAULT 0.0,"
-        "  fourx             BOOLEAN NOT NULL DEFAULT FALSE,"
-        "  role              UTINYINT NOT NULL DEFAULT 0,"
-        ");"
-    ));
-    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, game_id, game_name, discord_id);"));
-
-    verify_user_by_username = connection->Prepare("SELECT id FROM users WHERE username = $1 LIMIT 1;");
-    CHECK_SUCCESS_REF(verify_user_by_username);
-
-    // TODO: use appender instead.
-    insert_user = connection->Prepare(INSERT_USER_STATEMENT);
-    CHECK_SUCCESS_REF(insert_user);
-
-    get_user_by_id = connection->Prepare(SELECT_USER_STATEMENT("id"));
-    CHECK_SUCCESS_REF(get_user_by_id);
-
-    get_user_by_username = connection->Prepare(SELECT_USER_STATEMENT("username"));
-    CHECK_SUCCESS_REF(get_user_by_username);
-
-    get_user_by_game_id = connection->Prepare(SELECT_USER_STATEMENT("game_id"));
-    CHECK_SUCCESS_REF(get_user_by_game_id);
-
-    get_user_by_game_name = connection->Prepare(SELECT_USER_STATEMENT("game_name"));
-    CHECK_SUCCESS_REF(get_user_by_game_name);
-    
-    get_user_by_discord_id = connection->Prepare(SELECT_USER_STATEMENT("discord_id"));
-    CHECK_SUCCESS_REF(get_user_by_discord_id);
-
-    get_user_password = connection->Prepare("SELECT password FROM users WHERE id = $1 LIMIT 1;");
-    CHECK_SUCCESS_REF(get_user_password);
-
-
-    update_user_username = connection->Prepare(UPDATE_USER_STATEMENT("username"));
-    CHECK_SUCCESS_REF(update_user_username);
-
-    update_user_password = connection->Prepare(UPDATE_USER_STATEMENT("password"));
-    CHECK_SUCCESS_REF(update_user_password);
-
-    update_user_game_id = connection->Prepare(UPDATE_USER_STATEMENT("game_id"));
-    CHECK_SUCCESS_REF(update_user_game_id);
-
-    update_user_game_name = connection->Prepare(UPDATE_USER_STATEMENT("game_name"));
-    CHECK_SUCCESS_REF(update_user_game_name);
-
-    update_user_game_mode = connection->Prepare(UPDATE_USER_STATEMENT("game_mode"));
-    CHECK_SUCCESS_REF(update_user_game_mode);
-
-    update_user_discord_id = connection->Prepare(UPDATE_USER_STATEMENT("discord_id"));
-    CHECK_SUCCESS_REF(update_user_discord_id);
-
-    update_user_wear_training = connection->Prepare(UPDATE_USER_STATEMENT("wear_training"));
-    CHECK_SUCCESS_REF(update_user_wear_training);
-
-    update_user_repair_training = connection->Prepare(UPDATE_USER_STATEMENT("repair_training"));
-    CHECK_SUCCESS_REF(update_user_repair_training);
-
-    update_user_l_training = connection->Prepare(UPDATE_USER_STATEMENT("l_training"));
-    CHECK_SUCCESS_REF(update_user_l_training);
-
-    update_user_h_training = connection->Prepare(UPDATE_USER_STATEMENT("h_training"));
-    CHECK_SUCCESS_REF(update_user_h_training);
-
-    update_user_fuel_training = connection->Prepare(UPDATE_USER_STATEMENT("fuel_training"));
-    CHECK_SUCCESS_REF(update_user_fuel_training);
-
-    update_user_co2_training = connection->Prepare(UPDATE_USER_STATEMENT("co2_training"));
-    CHECK_SUCCESS_REF(update_user_co2_training);
-
-    update_user_fuel_price = connection->Prepare(UPDATE_USER_STATEMENT("fuel_price"));
-    CHECK_SUCCESS_REF(update_user_fuel_price);
-
-    update_user_co2_price = connection->Prepare(UPDATE_USER_STATEMENT("co2_price"));
-    CHECK_SUCCESS_REF(update_user_co2_price);
-
-    update_user_accumulated_count = connection->Prepare(UPDATE_USER_STATEMENT("accumulated_count"));
-    CHECK_SUCCESS_REF(update_user_accumulated_count);
-
-    update_user_load = connection->Prepare(UPDATE_USER_STATEMENT("load"));
-    CHECK_SUCCESS_REF(update_user_load);
-
-    update_user_income_loss_tol = connection->Prepare(UPDATE_USER_STATEMENT("income_loss_tol"));
-    CHECK_SUCCESS_REF(update_user_income_loss_tol);
-
-    update_user_fourx = connection->Prepare(UPDATE_USER_STATEMENT("fourx"));
-    CHECK_SUCCESS_REF(update_user_fourx);
-
-    update_user_role = connection->Prepare(UPDATE_USER_STATEMENT("role"));
-    CHECK_SUCCESS_REF(update_user_role);
-
-    CHECK_SUCCESS(connection->Query(
-        "CREATE TABLE IF NOT EXISTS alliance_log ("
-        "  log_id        UUID NOT NULL DEFAULT uuid(),"
-        "  log_time      TIMESTAMP NOT NULL,"
-        "  id            UINTEGER NOT NULL," // 0 = unknown
-        "  name          VARCHAR NOT NULL,"
-        "  rank          UINTEGER NOT NULL,"
-        "  member_count  UTINYINT NOT NULL,"
-        "  max_members   UTINYINT NOT NULL,"
-        "  value         DOUBLE NOT NULL,"
-        "  ipo           BOOLEAN NOT NULL,"
-        "  min_sv        FLOAT NOT NULL,"
-        "  members       STRUCT("
-        "                  id                  UINTEGER," // 0 = unknown
-        "                  username            VARCHAR,"
-        "                  joined              TIMESTAMP,"
-        "                  flights             UINTEGER,"
-        "                  contributed         UINTEGER,"
-        "                  daily_contribution  UINTEGER,"
-        "                  online              TIMESTAMP,"
-        "                  sv                  FLOAT,"
-        "                  season              UINTEGER"
-        "                )[]"
-        ");"
-    ));
-    CHECK_SUCCESS(connection->Query("CREATE INDEX IF NOT EXISTS alliance_log_idx ON alliance_log(log_id, id, name);"));
-
-    get_alliance_log_by_log_id = connection->Prepare(SELECT_ALLIANCE_LOG_STATEMENT("log_id"));
-    CHECK_SUCCESS_REF(get_alliance_log_by_log_id);
+    // std::cout << "removed!" << std::endl;
 }
 
 void Database::populate_internal() {
@@ -497,15 +352,9 @@ std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_all(const string
 }
 
 
-void init(string home_dir, string db_name) {
-    auto client = Database::Client(home_dir, db_name);
+void init(string home_dir) {
+    auto client = Database::Client(home_dir);
     client->populate_internal();
-    client->populate_database();
-}
-
-void reset() {
-    auto client = Database::Client();
-    CHECK_SUCCESS(client->connection->Query("DROP TABLE users;"));
     client->populate_database();
 }
 
@@ -528,9 +377,8 @@ void pybind_init_db(py::module_& m) {
     py::module_ m_db = m.def_submodule("db");
 
     m_db
-        .def("init", [](std::optional<string> home_dir, std::optional<string> db_name) {
+        .def("init", [](std::optional<string> home_dir) {
             py::gil_scoped_acquire acquire;
-            string db_name_str = db_name.value_or("debug");
             if (!home_dir.has_value()) {
                 string hdir = py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>(); // am4utils.__path__[0]
                 py::function urlretrieve = py::module::import("urllib.request").attr("urlretrieve");
@@ -547,13 +395,12 @@ void pybind_init_db(py::module_& m) {
                         );
                     }
                 }
-                init(hdir, db_name_str);
+                init(hdir);
             } else {
-                init(home_dir.value(), db_name_str);
+                init(home_dir.value());
             }
             py::gil_scoped_release release;
-        }, "home_dir"_a = py::none(), "db_name"_a = "debug")
-        .def("reset", &reset)
+        }, "home_dir"_a = py::none())
         .def("_debug_query", &_debug_query, "query"_a);
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");

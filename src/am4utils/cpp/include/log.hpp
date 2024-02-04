@@ -1,5 +1,4 @@
 #pragma once
-#include <duckdb.hpp>
 #include <string>
 #include <vector>
 #include <chrono>
@@ -37,12 +36,7 @@ struct AllianceLog {
     std::vector<Member> members;
 
     AllianceLog(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value, bool ipo, float min_sv, std::vector<Member> members);
-    
     AllianceLog();
-    AllianceLog(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
-    AllianceLog& insert_to_db();
-
-    static AllianceLog from_log_id(const string& log_id);
 };
 
 struct UserLog {

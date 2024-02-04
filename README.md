@@ -4,7 +4,10 @@
 
 A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
 
-Our bot is currently running legacy code in the [`src-old`](./src-old/) directory - the core calculations are being rewritten in C++ for better performance, under [`src/am4utils`](./src/am4utils/), with the main bot written in Python under [`src/am4bot (under construction)`](./src/am4bot/). The backend for [am4help.com](https://am4help.com/) is developed in a separate repository and can be found [here](https://github.com/br-tsilva/api.am4tools.com) instead.
+Our bot is currently running legacy code under [`src-old`](./src-old/) and is being rewritten completely:
+- [x] core calculations rewritten in C++ for bettter performance ([`src/am4utils`](./src/am4utils/))
+- [ ] main bot and API written in Python ([`src/am4bot (under construction)`](./src/am4bot/))
+- [ ] [am4help.com](https://am4help.com/) utilising this codebase to be developed
 
 ## Current Features
 - calculates essential statistics
@@ -24,37 +27,38 @@ Our bot is currently running legacy code in the [`src-old`](./src-old/) director
     - member tracking: cheat detection tools, departure pattern identification
 
 ## AM4Utils Development
-Requirements: python3.9+, C++17 compliant compiler
-Optional: install vtune for `_core_executable` profiling
+Recommended: C++17 compliant compiler, python3.9+
 
-```bash
-# windows
-virtualenv .venv
-.venv\Scripts\activate
+## C++ debug executable
+install [vcpkg](https://vcpkg.io/en/getting-started.html) and set envvar `VCPKG_ROOT`
+```sh
+sudo apt-get install build-essential bison flex
+vcpkg install arrow
+# optionally install vtune for profiling
 
-# linux
-sudo apt install build-essential python3-dev
-virtualenv .venv
-source .venv/bin/activate
-
-# C++ main dev
+cd src/am4utils
 mkdir build
 cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
+```
 
-# python dev
+## Python bindings
+```sh
+sudo apt-get install python3-dev
+virtualenv .venv
+source .venv/bin/activate
+
 python3 -m pip install --verbose "src/am4utils/.[dev]" --config-settings=cmake.define.COPY_DATA=1
 pytest
 cd src/am4utils
 python3 generate-stubs.py
 pip3 uninstall am4utils -y
-
-# build wheel
+```
+### Build wheel
+```sh
 mkdir wheelhouse
 python3 -m pip wheel . --wheel-dir=wheelhouse no-deps -v
 pip install wheelhouse/am4utils-*.whl --force-reinstall
-
-.venv/scripts/deactivate
 ```
 
 ## AM4 Bot development
@@ -64,7 +68,7 @@ cp config.example.json config.production.json
 PRODUCTION=1 python3 main.py
 ```
 
-## Commands
+## Commands (for old bot - to be updated!)
 
 ### Public
 - `$route|stop <airport> <airport> <aircraft> [flights_per_day] [reputation]`: finds the best route between two airports

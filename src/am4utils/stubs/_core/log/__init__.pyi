@@ -59,9 +59,6 @@ class AllianceLog():
             """
         pass
     def __init__(self, id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float, members: typing.List[AllianceLog.Member]) -> None: ...
-    @staticmethod
-    def from_log_id(log_id: str) -> AllianceLog: ...
-    def insert_to_db(self) -> AllianceLog: ...
     @property
     def id(self) -> int:
         """

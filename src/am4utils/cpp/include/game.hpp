@@ -1,7 +1,7 @@
 #pragma once
-#include <duckdb.hpp>
 #include <string>
 #include <algorithm>
+#include <cstdint>
 
 using std::string;
 using std::to_string;
@@ -46,36 +46,7 @@ struct User {
     bool valid;
 
     User();
-    User(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row);
     static User Default(bool realism = false);
-    
-    static User create(const string& username, const string& password, uint32_t game_id, const string& game_name, GameMode game_mode = GameMode::EASY, uint64_t discord_id = 0);
-    static User from_id(const string& id);
-    static User from_username(const string& username);
-    static User from_game_id(uint32_t game_id);
-    static User from_game_name(const string& game_name);
-    static User from_discord_id(uint64_t discord_id);
-
-    string get_password();
-    bool set_username(const string& new_uname);
-    bool set_password(const string& new_pw);
-    bool set_game_id(uint32_t new_gid);
-    bool set_game_name(const string& new_gn);
-    bool set_game_mode(GameMode new_gm);
-    bool set_discord_id(uint64_t new_did);
-    bool set_wear_training(uint8_t new_wt);
-    bool set_repair_training(uint8_t new_rt);
-    bool set_l_training(uint8_t new_lt);
-    bool set_h_training(uint8_t new_ht);
-    bool set_fuel_training(uint8_t new_ft);
-    bool set_co2_training(uint8_t new_ct);
-    bool set_fuel_price(uint16_t new_fp);
-    bool set_co2_price(uint8_t new_cp);
-    bool set_accumulated_count(uint16_t new_acc);
-    bool set_load(double new_l);
-    bool set_income_tolerance(double new_ilt);
-    bool set_fourx(bool new_fx);
-    bool set_role(const User::Role& new_role);
 
     static const string repr(const User& r);
 };

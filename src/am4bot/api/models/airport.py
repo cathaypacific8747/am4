@@ -17,11 +17,13 @@ class PyAirport(BaseModel):
     rwy: int
     market: int
     hub_cost: int
-    rwy_codes: str # TODO: split by |
+    rwy_codes: str  # TODO: split by |
+
 
 class PyAirportSuggestion(BaseModel):
     ap: PyAirport
     score: float
+
 
 assert_equal_property_names(Airport, PyAirport)
 assert_equal_property_names(Airport.Suggestion, PyAirportSuggestion)

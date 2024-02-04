@@ -4,8 +4,7 @@ import typing
 
 __all__ = [
     "DatabaseException",
-    "init",
-    "reset"
+    "init"
 ]
 
 
@@ -13,7 +12,5 @@ class DatabaseException(Exception, BaseException):
     pass
 def _debug_query(query: str) -> None:
     pass
-def init(home_dir: typing.Optional[str] = None, db_name: typing.Optional[str] = 'debug') -> None:
-    pass
-def reset() -> None:
+def init(home_dir: typing.Optional[str] = None) -> None:
     pass

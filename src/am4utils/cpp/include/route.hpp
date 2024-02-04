@@ -1,5 +1,4 @@
 #pragma once
-#include <duckdb.hpp>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <limits>

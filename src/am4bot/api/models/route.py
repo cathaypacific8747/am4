@@ -18,6 +18,7 @@ class PyRoute(BaseModel):
     pax_demand: PyPaxDemand
     direct_distance: float
 
+
 assert_equal_property_names(Route, PyRoute)
 
 ## ACR
@@ -28,13 +29,16 @@ PyACROptionsMaxFlightTime = confloat(ge=0)
 PyACROptionsTPDMode = Literal["AUTO", "AUTO_MULTIPLE_OF", "STRICT"]
 PyACROptionsTripsPerDay = conint(ge=1)
 
+
 class PyACRouteStopover(BaseModel):
     airport: PyAirport
     full_distance: float
     exists: Literal[True] = Field(True, frozen=True)
 
+
 class PyACRouteStopoverNonExistent(BaseModel):
     exists: Literal[False] = Field(False, frozen=True)
+
 
 class PyACRoute(BaseModel):
     route: PyRoute
@@ -54,8 +58,19 @@ class PyACRoute(BaseModel):
     contribution: Optional[float] = None
     ci: Optional[int] = None
     stopover: Optional[PyACRouteStopover | PyACRouteStopoverNonExistent] = None
-    warnings: list[Literal["ERR_DISTANCE_ABOVE_SPECIFIED", "ERR_DISTANCE_TOO_LONG", "ERR_DISTANCE_TOO_SHORT", "REDUCED_CONTRIBUTION", "ERR_NO_STOPOVER", "ERR_FLIGHT_TIME_ABOVE_SPECIFIED", "ERR_INSUFFICIENT_DEMAND"]]
+    warnings: list[
+        Literal[
+            "ERR_DISTANCE_ABOVE_SPECIFIED",
+            "ERR_DISTANCE_TOO_LONG",
+            "ERR_DISTANCE_TOO_SHORT",
+            "REDUCED_CONTRIBUTION",
+            "ERR_NO_STOPOVER",
+            "ERR_FLIGHT_TIME_ABOVE_SPECIFIED",
+            "ERR_INSUFFICIENT_DEMAND",
+        ]
+    ]
     valid: Optional[bool]
+
 
 assert_equal_property_names(AircraftRoute.Stopover, PyACRouteStopover)
 assert_equal_property_names(AircraftRoute, PyACRoute)

@@ -1,3 +1,4 @@
-*
-!.gitignore
-!pb_schema.json
+CHANGELOG.md
+LICENSE.md
+pb_data/*
+pocketbase

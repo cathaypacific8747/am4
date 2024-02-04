@@ -7,20 +7,25 @@ from .util import assert_equal_property_names
 
 PyPaxConfigAlgorithm = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF"]
 
+
 class PyPaxConfig(BaseModel):
     y: int
     j: int
     f: int
     algorithm: PyPaxConfigAlgorithm
 
+
 PyCargoConfigAlgorithm = Literal["AUTO", "L", "H"]
+
 
 class PyCargoConfig(BaseModel):
     l: int
     h: int
     algorithm: PyCargoConfigAlgorithm
 
+
 PyConfigAlgorithm = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF", "L", "H"]
+
 
 class PyAircraft(BaseModel):
     id: int
@@ -53,9 +58,11 @@ class PyAircraft(BaseModel):
     co2_mod: bool
     fourx_mod: bool
 
+
 class PyAircraftSuggestion(BaseModel):
     ac: PyAircraft
     score: float
+
 
 assert_equal_property_names(Aircraft.PaxConfig, PyPaxConfig)
 assert_equal_property_names(Aircraft.CargoConfig, PyCargoConfig)

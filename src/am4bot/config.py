@@ -3,9 +3,9 @@ import os
 
 
 class Config:
-    DISCORD_TOKEN: str = ''
-    AM4_API_TOKEN: str = ''
-    COMMAND_PREFIX: str = '$'
+    DISCORD_TOKEN: str = ""
+    AM4_API_TOKEN: str = ""
+    COMMAND_PREFIX: str = "$"
     DEBUG_CHANNELID: int = 0
     BOTSPAM_CHANNELID: int = 0
     PRICEALERT_CHANNELID: int = 0
@@ -24,5 +24,6 @@ class Config:
         with open(fn) as f:
             return cls(json.load(f))
 
-production = os.environ.get("PRODUCTION") == '1'
+
+production = os.environ.get("PRODUCTION") == "1"
 config = Config.from_json("config.production.json" if production else "config.json")

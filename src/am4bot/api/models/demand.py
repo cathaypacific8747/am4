@@ -9,6 +9,7 @@ class PyPaxDemand(BaseModel):
     j: int
     f: int
 
+
 class PyCargoDemand(BaseModel):
     l: int
     h: int

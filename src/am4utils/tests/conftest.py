@@ -1,10 +1,10 @@
 import pytest
-from am4utils.db import init, reset
+from am4utils.db import init
 
-pytest_plugins = ('pytest_asyncio',)
+pytest_plugins = ("pytest_asyncio",)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def initialize_database():
-    init(db_name='debug_test')
-    reset()
+    init()
     yield

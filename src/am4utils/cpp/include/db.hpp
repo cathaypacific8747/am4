@@ -48,38 +48,6 @@ struct Database {
     duckdb::unique_ptr<DuckDB> database;
     duckdb::unique_ptr<Connection> connection;
     
-    duckdb::unique_ptr<PreparedStatement> verify_user_by_username;
-    duckdb::unique_ptr<PreparedStatement> insert_user;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_id;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_username;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_game_id;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_game_name;
-    duckdb::unique_ptr<PreparedStatement> get_user_by_discord_id;
-    
-    duckdb::unique_ptr<PreparedStatement> get_user_password;
-
-    duckdb::unique_ptr<PreparedStatement> update_user_username;
-    duckdb::unique_ptr<PreparedStatement> update_user_password;
-    duckdb::unique_ptr<PreparedStatement> update_user_game_id;
-    duckdb::unique_ptr<PreparedStatement> update_user_game_name;
-    duckdb::unique_ptr<PreparedStatement> update_user_game_mode;
-    duckdb::unique_ptr<PreparedStatement> update_user_discord_id;
-    duckdb::unique_ptr<PreparedStatement> update_user_wear_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_repair_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_l_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_h_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_fuel_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_co2_training;
-    duckdb::unique_ptr<PreparedStatement> update_user_fuel_price;
-    duckdb::unique_ptr<PreparedStatement> update_user_co2_price;
-    duckdb::unique_ptr<PreparedStatement> update_user_accumulated_count;
-    duckdb::unique_ptr<PreparedStatement> update_user_load;
-    duckdb::unique_ptr<PreparedStatement> update_user_income_loss_tol;
-    duckdb::unique_ptr<PreparedStatement> update_user_fourx;
-    duckdb::unique_ptr<PreparedStatement> update_user_role;
-
-    duckdb::unique_ptr<PreparedStatement> get_alliance_log_by_log_id;
-
     Airport airports[AIRPORT_COUNT]; // 1,031,448 B
     uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1]; // 63,728 B: airport id -> airports index
     Airport get_airport_by_id(uint16_t id);
@@ -122,7 +90,7 @@ struct Database {
     
     static shared_ptr<Database> default_client;
     static shared_ptr<Database> Client();
-    static shared_ptr<Database> Client(const string& home_dir, const string& db_name);
+    static shared_ptr<Database> Client(const string& home_dir);
 
     void populate_database();
     void populate_internal();
@@ -137,6 +105,5 @@ struct CompareSuggestion {
     }
 };
 
-void init(string home_dir, string db_name = "debug");
-void reset();
+void init(string home_dir);
 void _debug_query(string query);

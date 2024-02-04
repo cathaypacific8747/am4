@@ -26,9 +26,17 @@ class PyUser(BaseModel):
     income_loss_tol: confloat(ge=0, le=1)
     fourx: bool
     role: Literal[
-        "USER", "TRUSTED_USER", "HIGHLY_TRUSTED_USER", "TOP_ALLIANCE_MEMBER",
-        "TOP_ALLIANCE_ADMIN", "HELPER", "MODERATOR", "ADMIN", "SUPERUSER"
+        "USER",
+        "TRUSTED_USER",
+        "HIGHLY_TRUSTED_USER",
+        "TOP_ALLIANCE_MEMBER",
+        "TOP_ALLIANCE_ADMIN",
+        "HELPER",
+        "MODERATOR",
+        "ADMIN",
+        "SUPERUSER",
     ]
     valid: bool
+
 
 assert_equal_property_names(User, PyUser)

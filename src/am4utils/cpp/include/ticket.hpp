@@ -1,6 +1,7 @@
 #pragma once
 #include "game.hpp"
 #include <variant>
+#include <cstdint>
 
 using std::string;
 using std::to_string;

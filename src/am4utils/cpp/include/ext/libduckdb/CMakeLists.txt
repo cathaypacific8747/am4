@@ -3,29 +3,17 @@ include(FetchContent)
 set(DUCKDB_VERSION "0.9.2")
 
 string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR IS_ARM)
-    message(WARNING "32-bit / ARM builds are not tested!")
+    message(FATAL_ERROR "32-bit / ARM builds are not supported!")
 endif()
-if(APPLE)
-    set(DUCKDB_FN "libduckdb-osx-universal")
-    set(DUCKDB_DLL "libduckdb.dylib")
-elseif(WIN32)
-    if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(DUCKDB_FN "libduckdb-windows-i386")
-    else()
-        set(DUCKDB_FN "libduckdb-windows-amd64")
-    endif()
-    set(DUCKDB_DLL "duckdb.dll")
-elseif(UNIX)
-    if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(DUCKDB_FN "libduckdb-linux-i386")
-    elseif(IS_ARM)
-        set(DUCKDB_FN "libduckdb-linux-aarch64")
-    else()
-        set(DUCKDB_FN "libduckdb-linux-amd64")
-    endif()
-    set(DUCKDB_DLL "libduckdb.so")
+
+if(APPLE OR WIN32)
+    message(FATAL_ERROR "Apple and Windows builds are not supported!")
 endif()
+
+set(DUCKDB_FN "libduckdb-linux-amd64")
+set(DUCKDB_DLL "libduckdb.so")
 set(DUCKDB_URL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/${DUCKDB_FN}.zip")
 
 FetchContent_Declare(
@@ -42,6 +30,7 @@ set_target_properties(duckdb PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${duckdb_folder_SOURCE_DIR}"
     POSITION_INDEPENDENT_CODE ON
 )
+
 if(WIN32)
     set_target_properties(duckdb PROPERTIES
         IMPORTED_IMPLIB "${duckdb_folder_SOURCE_DIR}/duckdb.lib"
@@ -56,7 +45,8 @@ function(duckdb_set_rpath target)
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH_USE_LINK_PATH TRUE
     )
-    if (APPLE)
+
+    if(APPLE)
         set_target_properties(${target} PROPERTIES INSTALL_RPATH "@loader_path")
     elseif(UNIX)
         set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")

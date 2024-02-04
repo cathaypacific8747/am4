@@ -49,69 +49,76 @@ Open one of the endpoints and click the try it out button right here in your bro
     version="0.1.1",
 )
 
+
 # on startup
 @app.on_event("startup")
 async def startup():
-    db_init(db_name='production' if os.environ.get("PRODUCTION") == '1' else 'debug')
+    db_init()
     await pb.login()
     await pb.list()
 
 
-def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> ORJSONResponse:
+def construct_acnf_response(
+    param_name: str, ac_sugg: list[Aircraft.Suggestion]
+) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",
             "parameter": param_name,
             "suggestions": [
-                {
-                    "aircraft": a0s.ac.to_dict(),
-                    "score": a0s.score
-                } for a0s in ac_sugg
-            ]
-        }
+                {"aircraft": a0s.ac.to_dict(), "score": a0s.score} for a0s in ac_sugg
+            ],
+        },
     )
-@app.get("/ac/search", response_model=FAPIRespAircraft, responses={404: {"model": FAPIRespAircraftNotFound}})
+
+
+@app.get(
+    "/ac/search",
+    response_model=FAPIRespAircraft,
+    responses={404: {"model": FAPIRespAircraftNotFound}},
+)
 async def ac_search(query: FAPIReqACSearchQuery):
     ac = Aircraft.search(query)
     if ac.ac.valid:
-        return {
-            "status": "success",
-            "aircraft": ac.ac.to_dict()
-        }
-    
+        return {"status": "success", "aircraft": ac.ac.to_dict()}
+
     return construct_acnf_response("ac", Aircraft.suggest(ac.parse_result))
 
 
-
-def construct_apnf_response(param_name: str, ap_sugg: list[Airport.Suggestion]) -> ORJSONResponse:
+def construct_apnf_response(
+    param_name: str, ap_sugg: list[Airport.Suggestion]
+) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",
             "parameter": param_name,
             "suggestions": [
-                {
-                    "airport": a0s.ap.to_dict(),
-                    "score": a0s.score
-                } for a0s in ap_sugg
-            ]
-        }
+                {"airport": a0s.ap.to_dict(), "score": a0s.score} for a0s in ap_sugg
+            ],
+        },
     )
-@app.get("/ap/search", response_model=FAPIRespAirport, responses={404: {"model": FAPIRespAirportNotFound}})
+
+
+@app.get(
+    "/ap/search",
+    response_model=FAPIRespAirport,
+    responses={404: {"model": FAPIRespAirportNotFound}},
+)
 async def ap_search(query: FAPIReqAPSearchQuery):
     ap = Airport.search(query)
     if ap.ap.valid:
-        return {
-            "status": "success",
-            "airport": ap.ap.to_dict()
-        }
+        return {"status": "success", "airport": ap.ap.to_dict()}
 
     return construct_apnf_response("ap", Airport.suggest(ap.parse_result))
 
 
-
-@app.get("/route/info", response_model=FAPIRespRoute, responses={404: {"model": FAPIRespAirportNotFound}})
+@app.get(
+    "/route/info",
+    response_model=FAPIRespRoute,
+    responses={404: {"model": FAPIRespAirportNotFound}},
+)
 async def route_info(
     origin: FAPIReqAPSearchQuery,
     destination: FAPIReqAPSearchQuery,
@@ -122,16 +129,22 @@ async def route_info(
     apsr1 = Airport.search(destination)
     if not apsr1.ap.valid:
         return construct_apnf_response("ap1", Airport.suggest(apsr1.parse_result))
-    
+
     route = Route.create(apsr0.ap, apsr1.ap)
     return {
         "status": "success",
         "ap_origin": apsr0.ap.to_dict(),
         "ap_destination": apsr1.ap.to_dict(),
-        "route": route.to_dict()
+        "route": route.to_dict(),
     }
 
-@app.get("/ac_route/info", response_model=FAPIRespACRoute, response_model_exclude_unset=True, responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}})
+
+@app.get(
+    "/ac_route/info",
+    response_model=FAPIRespACRoute,
+    response_model_exclude_unset=True,
+    responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}},
+)
 async def ac_route_info(
     origin: FAPIReqAPSearchQuery,
     destination: FAPIReqAPSearchQuery,
@@ -164,7 +177,12 @@ async def ac_route_info(
         "ac_route": ac_route.to_dict(),
     }
 
-@app.get("/ac_route/find", response_model=FAPIRespACRouteFind, responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}})
+
+@app.get(
+    "/ac_route/find",
+    response_model=FAPIRespACRouteFind,
+    responses={404: {"model": FAPIRespAirportNotFound | FAPIRespAircraftNotFound}},
+)
 async def ac_route_find_routes(
     ap0: FAPIReqAPSearchQuery,
     ac: FAPIReqACSearchQuery,
@@ -177,16 +195,13 @@ async def ac_route_find_routes(
     acsr = Aircraft.search(ac)
     if not acsr.ac.valid:
         return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
-    
+
     destinations = find_routes(
-        apsr0.ap,
-        acsr.ac,
-        options.to_core(acsr.ac.type),
-        user.to_core()
+        apsr0.ap, acsr.ac, options.to_core(acsr.ac.type), user.to_core()
     )
     return ORJSONResponse(
         content={
             "status": "success",
-            "destinations": [destination.to_dict() for destination in destinations]
+            "destinations": [destination.to_dict() for destination in destinations],
         }
     )

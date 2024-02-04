@@ -1,5 +1,6 @@
 #pragma once
-#include <duckdb.hpp>
+#include <string>
+#include <cstdint>
 
 using std::string;
 using std::to_string;
