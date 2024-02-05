@@ -1,13 +1,13 @@
-import os
 from typing import Annotated
 
 from am4utils.aircraft import Aircraft
 from am4utils.airport import Airport
-from am4utils.db import init as db_init
+from am4utils.db import init as utils_init
 from am4utils.route import AircraftRoute, Route, find_routes
 from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
 
+from ..db.client import pb
 from .models.fapi import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
@@ -23,7 +23,6 @@ from .models.fapi import (
     FAPIRespUser,
     FAPIRespUserNotFound,
 )
-from .pb import pb
 
 app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
@@ -46,16 +45,14 @@ At this stage, **no authentication is required** to access the API (it will thro
 This service is 100% free to use for all users. We would really appreciate any donations to help cover server costs: you can donate via [Paypal](https://paypal.me/am4tools). As a token of appreciation, you will be given a special Donor role on our server (use command `$donate` for more information).
 
 Open one of the endpoints and click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
-    version="0.1.1",
+    version="0.1.2-alpha.0",
 )
 
 
-# on startup
 @app.on_event("startup")
 async def startup():
-    db_init()
-    await pb.login()
-    await pb.list()
+    utils_init()
+    await pb._login_admin()
 
 
 def construct_acnf_response(

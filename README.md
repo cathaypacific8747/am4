@@ -6,10 +6,15 @@ A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our 
 
 Our bot is currently running legacy code under [`src-old`](./src-old/) and is being rewritten completely:
 - [x] core calculations rewritten in C++ for bettter performance ([`src/am4utils`](./src/am4utils/))
-- [ ] main bot and API written in Python ([`src/am4bot (under construction)`](./src/am4bot/))
-- [ ] [am4help.com](https://am4help.com/) utilising this codebase to be developed
+- [ ] api written in Python ([`src/am4api (under construction)`](./src/am4api/))
+- [ ] discord bot written in Python ([`src/am4bot (under construction)`](./src/am4bot/))
+- [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4web (under construction)`](./src/am4web/)to be developed)
 
-## Current Features
+![overview](src/am4bot/assets/img/overview.drawio.svg)
+
+
+## Features
+Old bot:
 - calculates essential statistics
     - most distance-efficient stopovers
     - route demands, best seat configurations, best ticket prices, estimated income
@@ -29,7 +34,7 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 ## AM4Utils Development
 Recommended: C++17 compliant compiler, python3.9+
 
-## C++ debug executable
+### C++ debug executable
 install [vcpkg](https://vcpkg.io/en/getting-started.html) and set envvar `VCPKG_ROOT`
 ```sh
 sudo apt-get install build-essential bison flex
@@ -42,7 +47,7 @@ cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
 ```
 
-## Python bindings
+### Python bindings
 ```sh
 sudo apt-get install python3-dev
 virtualenv .venv

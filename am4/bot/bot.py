@@ -2,13 +2,12 @@ import am4utils
 import discord
 from discord.ext.commands import Bot, Context
 
-from src.am4bot.config import Config
-
 from .checks import ignore_dm, ignore_pricealert
+from .config import config
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = Bot(command_prefix=Config.COMMAND_PREFIX, intents=intents, help_command=None)
+bot = Bot(command_prefix=config.COMMAND_PREFIX, intents=intents, help_command=None)
 
 
 @bot.event

@@ -18,7 +18,6 @@ def assert_equal_property_names(pybind_class: type, pydantic_class: type):
     assert set(pb_keys) == set(
         pd_keys
     ), f"Keys not equal: {set(pb_keys) ^ set(pd_keys)}"
-    # print(pb_keys)
 
 
 # def assert_equal_int_enums(pybind_enum: type, python_enum: IntEnum):

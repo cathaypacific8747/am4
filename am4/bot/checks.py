@@ -1,7 +1,7 @@
 from discord.ext.commands import Context, check
 from discord.utils import get
 
-from .config import Config
+from ..config import Config
 
 
 def guideDevsOnly():
