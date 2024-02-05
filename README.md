@@ -5,10 +5,10 @@
 A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
 
 Our bot is currently running legacy code under [`src-old`](./src-old/) and is being rewritten completely:
-- [x] core calculations rewritten in C++ for bettter performance ([`src/am4utils`](./src/am4utils/))
-- [ ] api written in Python ([`src/am4api (under construction)`](./src/am4api/))
-- [ ] discord bot written in Python ([`src/am4bot (under construction)`](./src/am4bot/))
-- [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4web (under construction)`](./src/am4web/)to be developed)
+- [x] core calculations rewritten in C++ for bettter performance ([`am4/utils`](./am4/utils))
+- [ ] api written in Python ([`am4/api (under construction)`](./am4/api/))
+- [ ] discord bot written in Python ([`am4/bot (under construction)`](./am4/bot/))
+- [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`am4/web (under construction)`](./am4/web/)to be developed)
 
 ![overview](src/am4bot/assets/img/overview.drawio.svg)
 
@@ -16,11 +16,12 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 ## Installation
 Clone the repo and in the root directory:
 ```sh
+python3 -m virtualenv .venv
+source .venv/bin/activate
 pip install .
 am4 --help
 ```
 
-Alternatively, if you do not want to install it directly:
 ```sh
 python3 -m am4.__main__ --help
 ```
@@ -43,7 +44,7 @@ Old bot:
     - realtime alliance-member comparisons: SV/contribution distribution
     - member tracking: cheat detection tools, departure pattern identification
 
-## AM4Utils Development
+## am4/utils Development
 Recommended: C++17 compliant compiler, python3.9+
 
 ### C++ debug executable
@@ -53,7 +54,7 @@ sudo apt-get install build-essential bison flex
 vcpkg install arrow
 # optionally install vtune for profiling
 
-cd src/am4utils
+cd am4/utils
 mkdir build
 cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
@@ -65,17 +66,17 @@ sudo apt-get install python3-dev
 virtualenv .venv
 source .venv/bin/activate
 
-python3 -m pip install --verbose "src/am4utils/.[dev]" --config-settings=cmake.define.COPY_DATA=1
+python3 -m pip install --verbose "src/am4/utils/.[dev]" --config-settings=cmake.define.COPY_DATA=1
 pytest
-cd src/am4utils
+cd src/am4/utils
 python3 generate-stubs.py
-pip3 uninstall am4utils -y
+pip3 uninstall am4/utils -y
 ```
 ### Build wheel
 ```sh
 mkdir wheelhouse
 python3 -m pip wheel . --wheel-dir=wheelhouse no-deps -v
-pip install wheelhouse/am4utils-*.whl --force-reinstall
+pip install wheelhouse/am4/utils-*.whl --force-reinstall
 ```
 
 ## AM4 Bot development

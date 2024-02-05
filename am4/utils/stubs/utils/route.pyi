@@ -1,0 +1,232 @@
+from __future__ import annotations
+import am4.utils.aircraft
+import am4.utils.airport
+import am4.utils.demand
+import am4.utils.game
+import am4.utils.ticket
+import typing
+__all__ = ['AircraftRoute', 'Destination', 'Route', 'find_routes']
+class AircraftRoute:
+    class Options:
+        class TPDMode:
+            """
+            Members:
+            
+              AUTO
+            
+              AUTO_MULTIPLE_OF
+            
+              STRICT
+            """
+            AUTO: typing.ClassVar[AircraftRoute.Options.TPDMode]  # value = <TPDMode.AUTO: 0>
+            AUTO_MULTIPLE_OF: typing.ClassVar[AircraftRoute.Options.TPDMode]  # value = <TPDMode.AUTO_MULTIPLE_OF: 1>
+            STRICT: typing.ClassVar[AircraftRoute.Options.TPDMode]  # value = <TPDMode.STRICT: 2>
+            __members__: typing.ClassVar[dict[str, AircraftRoute.Options.TPDMode]]  # value = {'AUTO': <TPDMode.AUTO: 0>, 'AUTO_MULTIPLE_OF': <TPDMode.AUTO_MULTIPLE_OF: 1>, 'STRICT': <TPDMode.STRICT: 2>}
+            def __eq__(self, other: typing.Any) -> bool:
+                ...
+            def __getstate__(self) -> int:
+                ...
+            def __hash__(self) -> int:
+                ...
+            def __index__(self) -> int:
+                ...
+            def __init__(self, value: int) -> None:
+                ...
+            def __int__(self) -> int:
+                ...
+            def __ne__(self, other: typing.Any) -> bool:
+                ...
+            def __repr__(self) -> str:
+                ...
+            def __setstate__(self, state: int) -> None:
+                ...
+            def __str__(self) -> str:
+                ...
+            @property
+            def name(self) -> str:
+                ...
+            @property
+            def value(self) -> int:
+                ...
+        config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm
+        max_distance: float
+        max_flight_time: float
+        tpd_mode: AircraftRoute.Options.TPDMode
+        trips_per_day: int
+        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24.0, config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm = None) -> None:
+            ...
+    class Stopover:
+        @staticmethod
+        def find_by_efficiency(origin: am4.utils.airport.Airport, destination: am4.utils.airport.Airport, aircraft: am4.utils.aircraft.Aircraft, game_mode: am4.utils.game.User.GameMode) -> AircraftRoute.Stopover:
+            ...
+        def __repr__(self) -> str:
+            ...
+        def to_dict(self) -> dict:
+            ...
+        @property
+        def airport(self) -> am4.utils.airport.Airport:
+            ...
+        @property
+        def exists(self) -> bool:
+            ...
+        @property
+        def full_distance(self) -> float:
+            ...
+    class Warning:
+        """
+        Members:
+        
+          ERR_RWY_TOO_SHORT
+        
+          ERR_DISTANCE_ABOVE_SPECIFIED
+        
+          ERR_DISTANCE_TOO_LONG
+        
+          ERR_DISTANCE_TOO_SHORT
+        
+          REDUCED_CONTRIBUTION
+        
+          ERR_NO_STOPOVER
+        
+          ERR_FLIGHT_TIME_ABOVE_SPECIFIED
+        
+          ERR_INSUFFICIENT_DEMAND
+        """
+        ERR_DISTANCE_ABOVE_SPECIFIED: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 1>
+        ERR_DISTANCE_TOO_LONG: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_DISTANCE_TOO_LONG: 2>
+        ERR_DISTANCE_TOO_SHORT: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_DISTANCE_TOO_SHORT: 3>
+        ERR_FLIGHT_TIME_ABOVE_SPECIFIED: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 6>
+        ERR_INSUFFICIENT_DEMAND: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_INSUFFICIENT_DEMAND: 7>
+        ERR_NO_STOPOVER: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_NO_STOPOVER: 5>
+        ERR_RWY_TOO_SHORT: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_RWY_TOO_SHORT: 0>
+        REDUCED_CONTRIBUTION: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.REDUCED_CONTRIBUTION: 4>
+        __members__: typing.ClassVar[dict[str, AircraftRoute.Warning]]  # value = {'ERR_RWY_TOO_SHORT': <Warning.ERR_RWY_TOO_SHORT: 0>, 'ERR_DISTANCE_ABOVE_SPECIFIED': <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 1>, 'ERR_DISTANCE_TOO_LONG': <Warning.ERR_DISTANCE_TOO_LONG: 2>, 'ERR_DISTANCE_TOO_SHORT': <Warning.ERR_DISTANCE_TOO_SHORT: 3>, 'REDUCED_CONTRIBUTION': <Warning.REDUCED_CONTRIBUTION: 4>, 'ERR_NO_STOPOVER': <Warning.ERR_NO_STOPOVER: 5>, 'ERR_FLIGHT_TIME_ABOVE_SPECIFIED': <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 6>, 'ERR_INSUFFICIENT_DEMAND': <Warning.ERR_INSUFFICIENT_DEMAND: 7>}
+        def __eq__(self, other: typing.Any) -> bool:
+            ...
+        def __getstate__(self) -> int:
+            ...
+        def __hash__(self) -> int:
+            ...
+        def __index__(self) -> int:
+            ...
+        def __init__(self, value: int) -> None:
+            ...
+        def __int__(self) -> int:
+            ...
+        def __ne__(self, other: typing.Any) -> bool:
+            ...
+        def __repr__(self) -> str:
+            ...
+        def __setstate__(self, state: int) -> None:
+            ...
+        def __str__(self) -> str:
+            ...
+        @property
+        def name(self) -> str:
+            ...
+        @property
+        def value(self) -> int:
+            ...
+    @staticmethod
+    @typing.overload
+    def calc_co2(ac: am4.utils.aircraft.Aircraft, cfg: am4.utils.aircraft.Aircraft.PaxConfig, distance: float, user: am4.utils.game.User = am4.utils.game.User.Default(), ci: int = 200) -> float:
+        ...
+    @staticmethod
+    @typing.overload
+    def calc_co2(ac: am4.utils.aircraft.Aircraft, cfg: am4.utils.aircraft.Aircraft.CargoConfig, distance: float, user: am4.utils.game.User = am4.utils.game.User.Default(), ci: int = 200) -> float:
+        ...
+    @staticmethod
+    def calc_fuel(ac: am4.utils.aircraft.Aircraft, distance: float, user: am4.utils.game.User = am4.utils.game.User.Default(), ci: int = 200) -> float:
+        ...
+    @staticmethod
+    def create(ap0: am4.utils.airport.Airport, ap1: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> AircraftRoute:
+        ...
+    @staticmethod
+    def estimate_load(reputation: float = 87, autoprice_ratio: float = 1.06, has_stopover: bool = False) -> float:
+        ...
+    def __repr__(self) -> str:
+        ...
+    def to_dict(self) -> dict:
+        ...
+    @property
+    def acheck_cost(self) -> float:
+        ...
+    @property
+    def ci(self) -> int:
+        ...
+    @property
+    def co2(self) -> float:
+        ...
+    @property
+    def config(self) -> am4.utils.aircraft.Aircraft.PaxConfig | am4.utils.aircraft.Aircraft.CargoConfig:
+        ...
+    @property
+    def contribution(self) -> float:
+        ...
+    @property
+    def flight_time(self) -> float:
+        ...
+    @property
+    def fuel(self) -> float:
+        ...
+    @property
+    def income(self) -> float:
+        ...
+    @property
+    def max_income(self) -> float:
+        ...
+    @property
+    def needs_stopover(self) -> bool:
+        ...
+    @property
+    def profit(self) -> float:
+        ...
+    @property
+    def repair_cost(self) -> float:
+        ...
+    @property
+    def route(self) -> Route:
+        ...
+    @property
+    def stopover(self) -> AircraftRoute.Stopover:
+        ...
+    @property
+    def ticket(self) -> am4.utils.ticket.PaxTicket | am4.utils.ticket.CargoTicket | am4.utils.ticket.VIPTicket:
+        ...
+    @property
+    def trips_per_day(self) -> int:
+        ...
+    @property
+    def valid(self) -> bool:
+        ...
+    @property
+    def warnings(self) -> list[AircraftRoute.Warning]:
+        ...
+class Destination:
+    def to_dict(self) -> dict:
+        ...
+    @property
+    def ac_route(self) -> AircraftRoute:
+        ...
+    @property
+    def airport(self) -> am4.utils.airport.Airport:
+        ...
+class Route:
+    @staticmethod
+    def create(ap0: am4.utils.airport.Airport, ap1: am4.utils.airport.Airport) -> Route:
+        ...
+    def __repr__(self) -> str:
+        ...
+    def to_dict(self) -> dict:
+        ...
+    @property
+    def direct_distance(self) -> float:
+        ...
+    @property
+    def pax_demand(self) -> am4.utils.demand.PaxDemand:
+        ...
+    @property
+    def valid(self) -> bool:
+        ...
+def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> list[Destination]:
+    ...

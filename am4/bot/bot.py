@@ -1,6 +1,7 @@
-import am4utils
 import discord
 from discord.ext.commands import Bot, Context
+
+import am4
 
 from .checks import ignore_dm, ignore_pricealert
 from .config import config
@@ -13,10 +14,8 @@ bot = Bot(command_prefix=config.COMMAND_PREFIX, intents=intents, help_command=No
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} on {", ".join([g.name for g in bot.guilds])}')
-    am4utils.db.init()
-    print(
-        f"am4utils ({am4utils._core.__version__}), executable_path={am4utils.__path__[0]} loaded"
-    )
+    am4.db.init()
+    print(f"am4utils ({am4.utils.__version__}), executable_path={am4.__path__[0]} loaded")
 
 
 async def warn_broken(ctx: Context):

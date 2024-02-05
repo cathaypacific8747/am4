@@ -20,7 +20,7 @@ void pybind_init_aircraft(py::module_&);
 void pybind_init_route(py::module_&);
 void pybind_init_log(py::module_&);
 
-PYBIND11_MODULE(_core, m) {
+PYBIND11_MODULE(utils, m) {
     pybind_init_db(m);
     pybind_init_game(m);
     pybind_init_ticket(m);

@@ -608,7 +608,7 @@ void pybind_init_route(py::module_& m) {
         .value("STRICT", AircraftRoute::Options::TPDMode::STRICT);
     acr_options_class
         .def(py::init<AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm>(),
-            "tpd_mode"_a = AircraftRoute::Options::TPDMode::AUTO,
+            py::arg_v("tpd_mode", AircraftRoute::Options::TPDMode::AUTO, "TPDMode.AUTO"),
             "trips_per_day"_a = 1,
             "max_distance"_a = MAX_DISTANCE,
             "max_flight_time"_a = 24.0f,
@@ -662,7 +662,7 @@ void pybind_init_route(py::module_& m) {
             "ap1"_a,
             "ac"_a,
             py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
-            py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()")
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
         )
         .def_static("estimate_load", &AircraftRoute::estimate_load,
             "reputation"_a = 87,
@@ -672,21 +672,21 @@ void pybind_init_route(py::module_& m) {
         .def_static("calc_fuel", &AircraftRoute::calc_fuel,
             "ac"_a,
             "distance"_a,
-            py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
             "ci"_a = 200
         )
         .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::PaxConfig&, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
             "ac"_a,
             "cfg"_a,
             "distance"_a,
-            py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
             "ci"_a = 200
         )
         .def_static("calc_co2", py::overload_cast<const Aircraft&, const Aircraft::CargoConfig&, double, const User&, uint8_t>(&AircraftRoute::calc_co2),
             "ac"_a,
             "cfg"_a,
             "distance"_a,
-            py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"),
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
             "ci"_a = 200
         )
         .def("__repr__", &AircraftRoute::repr)
@@ -697,6 +697,6 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("ac_route", &Destination::ac_route)
         .def("to_dict", py::overload_cast<const Destination&>(&to_dict));
 
-    m_route.def("find_routes", &find_routes, "ap0"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"));
+    m_route.def("find_routes", &find_routes, "ap0"_a, "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"), py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"));
 }
 #endif

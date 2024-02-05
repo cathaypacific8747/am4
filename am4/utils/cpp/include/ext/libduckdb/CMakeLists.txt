@@ -5,15 +5,32 @@ set(DUCKDB_VERSION "0.9.2")
 string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR IS_ARM)
-    message(FATAL_ERROR "32-bit / ARM builds are not supported!")
+    message(WARNING "32-bit / ARM builds are not tested!")
 endif()
 
-if(APPLE OR WIN32)
-    message(FATAL_ERROR "Apple and Windows builds are not supported!")
+if(APPLE)
+    set(DUCKDB_FN "libduckdb-osx-universal")
+    set(DUCKDB_DLL "libduckdb.dylib")
+elseif(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(DUCKDB_FN "libduckdb-windows-i386")
+    else()
+        set(DUCKDB_FN "libduckdb-windows-amd64")
+    endif()
+
+    set(DUCKDB_DLL "duckdb.dll")
+elseif(UNIX)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(DUCKDB_FN "libduckdb-linux-i386")
+    elseif(IS_ARM)
+        set(DUCKDB_FN "libduckdb-linux-aarch64")
+    else()
+        set(DUCKDB_FN "libduckdb-linux-amd64")
+    endif()
+
+    set(DUCKDB_DLL "libduckdb.so")
 endif()
 
-set(DUCKDB_FN "libduckdb-linux-amd64")
-set(DUCKDB_DLL "libduckdb.so")
 set(DUCKDB_URL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/${DUCKDB_FN}.zip")
 
 FetchContent_Declare(

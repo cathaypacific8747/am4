@@ -15,14 +15,14 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build sdist
-      working-directory: ./src/am4utils
+      working-directory: ./
       run: pipx run build --sdist
 
     - name: Store artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dist
-        path: ./src/am4utils/dist/*.tar.gz
+        path: ./dist/*.tar.gz
 
   build_wheels:
     name: Build wheels for py${{ matrix.python }}-${{ matrix.platform_id }}
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: build and test wheels
-        working-directory: ./src/am4utils
+        working-directory: ./
         env:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_MANYLINUX_X86_64_IMAGE: "quay.io/pypa/manylinux_2_28_x86_64"
@@ -77,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: ./src/am4utils/wheelhouse/*.whl
+          path: ./wheelhouse/*.whl
 
   upload_pypi:
     needs: [build_wheels, build_sdist]

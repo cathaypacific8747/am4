@@ -2,10 +2,10 @@
 
 A C++ library containing the core calculations.
 Core code under [cpp](./cpp) builds a Python library using pybind11.
-By default, `am4utils._core` is a `.so` module in the root dir of `site-packages`, so files under [py](./py) allow you to do:
+By default, `am4.utils.utils` is a `.so` module in the root dir of `site-packages`, so files under [py](./py) allow you to do:
 ```py
-import am4utils
-am4utils.db.init() # instead of `am4utils._core.db.init()`
+import am4
+am4.utils.db.init() # instead of `am4.utils.utils.db.init()`
 ```
 [stubs](./stubs) are auto-genereated with `generate-stubs.py`.
 

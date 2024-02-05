@@ -3,12 +3,13 @@ import csv
 import os
 import time
 
-from am4utils.aircraft import Aircraft
-from am4utils.airport import Airport
-from am4utils.db import init
-from am4utils.game import User
-from am4utils.route import AircraftRoute, Destination, find_routes
 from tqdm import tqdm
+
+from am4.utils.aircraft import Aircraft
+from am4.utils.airport import Airport
+from am4.utils.db import init
+from am4.utils.game import User
+from am4.utils.route import AircraftRoute, Destination, find_routes
 
 init()
 
@@ -103,13 +104,9 @@ for ap, dests in all_dest.items():
                 )
     results[ap] = (count, score, income)
 # %%
-for ap, (count, score, income) in sorted(
-    results.items(), key=lambda x: x[1][1], reverse=True
-):
+for ap, (count, score, income) in sorted(results.items(), key=lambda x: x[1][1], reverse=True):
     ap: Airport
-    print(
-        f"{count} | {score:.0f} | ${income/1e6:>4.0f}M | {ap.icao} | {ap.name}, {ap.country}"
-    )
+    print(f"{count} | {score:.0f} | ${income/1e6:>4.0f}M | {ap.icao} | {ap.name}, {ap.country}")
     if count > 10:
         os.system(f"cp data/a388/{ap.icao}.csv data/{ap.icao}.csv")
 # %%

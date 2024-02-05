@@ -380,7 +380,7 @@ void pybind_init_db(py::module_& m) {
         .def("init", [](std::optional<string> home_dir) {
             py::gil_scoped_acquire acquire;
             if (!home_dir.has_value()) {
-                string hdir = py::module::import("am4utils").attr("__path__").cast<py::list>()[0].cast<string>(); // am4utils.__path__[0]
+                string hdir = py::module::import("am4").attr("__path__").cast<py::list>()[0].cast<string>(); // am4.__path__[0]
                 py::function urlretrieve = py::module::import("urllib.request").attr("urlretrieve");
                 if (!std::filesystem::exists(hdir + "/data")) {
                     std::cout << "WARN: data directory not found, creating..." << std::endl;

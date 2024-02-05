@@ -1,4 +1,4 @@
-from am4utils.game import Campaign, User
+from am4.utils.game import Campaign, User
 
 
 def test_campaign():

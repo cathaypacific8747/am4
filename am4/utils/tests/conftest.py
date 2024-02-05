@@ -1,5 +1,6 @@
 import pytest
-from am4utils.db import init
+
+from am4.utils.db import init
 
 pytest_plugins = ("pytest_asyncio",)
 

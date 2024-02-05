@@ -557,7 +557,7 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("ac", &Aircraft::Suggestion::ac)
         .def_readonly("score", &Aircraft::Suggestion::score);
     ac_class
-        .def_static("search", &Aircraft::search, "s"_a, py::arg_v("user", User::Default(), "am4utils._core.game.User.Default()"))
+        .def_static("search", &Aircraft::search, "s"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"))
         .def_static("suggest", &Aircraft::suggest, "s"_a);
 }
 #endif

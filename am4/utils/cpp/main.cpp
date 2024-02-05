@@ -74,7 +74,7 @@ int main() {
     // __itt_domain* domain = __itt_domain_create("main_domain");
     // __itt_string_handle* handle_main = __itt_string_handle_create("main_handle");
     string executable_path = get_executable_path();
-    cout << "am4utils (v" << version << "), executable_path: " << executable_path << "\n_______" << std::setprecision(15) << endl;
+    cout << "am4.utils (v" << version << "), executable_path: " << executable_path << "\n_______" << std::setprecision(15) << endl;
 
     try {
     init(executable_path); // 1.3s

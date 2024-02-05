@@ -1,7 +1,8 @@
 from typing import Literal, Optional
 
-from am4utils.route import AircraftRoute, Route
 from pydantic import BaseModel, Field, confloat, conint
+
+from am4.utils.route import AircraftRoute, Route
 
 from .aircraft import (
     PyCargoConfig,

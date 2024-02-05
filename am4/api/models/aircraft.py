@@ -1,7 +1,8 @@
 from typing import Literal
 
-from am4utils.aircraft import Aircraft
 from pydantic import BaseModel
+
+from am4.utils.aircraft import Aircraft
 
 from .util import assert_equal_property_names
 

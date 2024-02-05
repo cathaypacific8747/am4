@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "${vcpkgRoot}/x64-windows/include",
                 "${vcpkgRoot}/x86-windows/include",
-                "${workspaceFolder}/src/am4utils/build/_deps/duckdb_folder-src"
+                "${workspaceFolder}/am4/utils/build/_deps/duckdb_folder-src"
             ],
             "defines": [
                 "_DEBUG",
@@ -22,8 +22,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/src/am4utils/build/_deps/duckdb_folder-src"
+                // "${workspaceFolder}/**",
+                // "${workspaceFolder}/am4/utils/build/_deps/duckdb_folder-src"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",

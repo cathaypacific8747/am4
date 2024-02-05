@@ -1,5 +1,6 @@
-from am4utils.demand import CargoDemand, PaxDemand
 from pydantic import BaseModel
+
+from am4.utils.demand import CargoDemand, PaxDemand
 
 from .util import assert_equal_property_names
 

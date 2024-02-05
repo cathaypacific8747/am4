@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from am4utils.aircraft import Aircraft
-from am4utils.airport import Airport
-from am4utils.db import init as utils_init
-from am4utils.route import AircraftRoute, Route, find_routes
 from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
 from uvicorn import Config, Server
+
+from am4.utils.aircraft import Aircraft
+from am4.utils.airport import Airport
+from am4.utils.db import init as utils_init
+from am4.utils.route import AircraftRoute, Route, find_routes
 
 from ..config import cfg
 from ..db.client import pb
@@ -61,17 +62,13 @@ Open one of the endpoints and click the try it out button right here in your bro
 )
 
 
-def construct_acnf_response(
-    param_name: str, ac_sugg: list[Aircraft.Suggestion]
-) -> ORJSONResponse:
+def construct_acnf_response(param_name: str, ac_sugg: list[Aircraft.Suggestion]) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",
             "parameter": param_name,
-            "suggestions": [
-                {"aircraft": a0s.ac.to_dict(), "score": a0s.score} for a0s in ac_sugg
-            ],
+            "suggestions": [{"aircraft": a0s.ac.to_dict(), "score": a0s.score} for a0s in ac_sugg],
         },
     )
 
@@ -89,17 +86,13 @@ async def ac_search(query: FAPIReqACSearchQuery):
     return construct_acnf_response("ac", Aircraft.suggest(ac.parse_result))
 
 
-def construct_apnf_response(
-    param_name: str, ap_sugg: list[Airport.Suggestion]
-) -> ORJSONResponse:
+def construct_apnf_response(param_name: str, ap_sugg: list[Airport.Suggestion]) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=404,
         content={
             "status": "not_found",
             "parameter": param_name,
-            "suggestions": [
-                {"airport": a0s.ap.to_dict(), "score": a0s.score} for a0s in ap_sugg
-            ],
+            "suggestions": [{"airport": a0s.ap.to_dict(), "score": a0s.score} for a0s in ap_sugg],
         },
     )
 
@@ -199,9 +192,7 @@ async def ac_route_find_routes(
     if not acsr.ac.valid:
         return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
 
-    destinations = find_routes(
-        apsr0.ap, acsr.ac, options.to_core(acsr.ac.type), user.to_core()
-    )
+    destinations = find_routes(apsr0.ap, acsr.ac, options.to_core(acsr.ac.type), user.to_core())
     return ORJSONResponse(
         content={
             "status": "success",

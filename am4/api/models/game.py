@@ -1,7 +1,8 @@
 from typing import Literal
 
-from am4utils.game import User
 from pydantic import BaseModel, confloat, conint
+
+from am4.utils.game import User
 
 from .util import assert_equal_property_names
 

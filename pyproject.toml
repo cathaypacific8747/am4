@@ -1,8 +1,22 @@
+[build-system]
+requires = ["scikit_build_core[pyproject]", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+build-dir = "am4/utils/build"
+cmake.args = ["-DEXCLUDE_EXECUTABLES=1"]
+cmake.build-type = "Release"
+cmake.source-dir = "am4/utils"
+cmake.verbose = true
+logging.level = "DEBUG"
+wheel.install-dir = "am4"
+wheel.expand-macos-universal-tags = true
+
 [project]
-name = "am4bot"
-version = "0.0.1"
-description = "Discord bot for the game Airline Manager 4."
-authors = [{ name = "cathaypacific8747", email = "58929011+cathaypacific8747@users.noreply.github.com" }]
+name = "am4"
+version = "0.1.8-alpha.0"
+description = "Tools and utilities for the game Airline Manager 4."
+authors = [{ name = "cathaypacific8747", email = "abraham@ylcheung.com" }]
 license = { text = "MIT License" }
 readme = "README.md"
 requires-python = ">=3.9"
@@ -12,31 +26,42 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.9"
+    "Programming Language :: Python :: 3.9",
 ]
 dependencies = [
-    "am4utils",
-    "matplotlib>=3.7.1",
-    "Pillow>=9.5.0",
-    "discord.py>=2.2.3",
-    "adjustText>=0.8",
-    "fastapi[all]",
-    "httpx>=0.24.1",
-    "rich", "loguru"
+    "httpx>=0.26.0",
+    "pydantic>=2.6.1",
+    "loguru>=0.7.2",
+    "typer>=0.9.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest", "ruff",
-    "beautifulsoup4", "pyjsparser", "pandas", "seaborn", "statsmodels",
+    # cpp
+    "pybind11>=2.11.1",
+    "pybind11-stubgen>=2.4.2",
+    "pytest>=7.4.4",
+    "pytest-asyncio>=0.23.4",
+    # py
+    "ruff",
+]
+api = ["fastapi>=0.109.2", "uvicorn>=0.27.0"]
+bot = ["matplotlib>=3.7.1", "Pillow>=9.5.0", "discord.py>=2.2.3"]
+debug = [
+    "beautifulsoup4",
+    "pyjsparser",
+    "pandas",
+    "seaborn",
+    "statsmodels",
     "PyQt6",
-    "tqdm", "ipykernel"
+    "tqdm",
+    "ipykernel",
 ]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["-ra", "--showlocals"]
-testpaths = ["src/am4utils/tests"]
+testpaths = ["am4/utils/tests"]
 
 
 [tool.ruff]
@@ -44,13 +69,16 @@ select = ["E", "F"]
 ignore = [
     "PT011",
     "W292",
-    "E501", # line too long
-    "E741", # ambiguous variable name
+    "E741",  # ambiguous variable name
 ]
-
 exclude = ["src-old", "src-v2-v3", "research/nn"]
-
+line-length = 120
 target-version = "py39"
 
 [tool.ruff.per-file-ignores]
 "tests/**" = ["T20"]
+
+[tool.cibuildwheel]
+test-requires = "pytest"
+test-command = "pytest"
+build-verbosity = 1

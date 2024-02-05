@@ -8,6 +8,7 @@ research/analytics/*.json
 research/analytics/*.parquet
 config.json
 config.production.json
+am4/utils/build*
 
 # Python.gitignore, C++.gitignore, CMake.gitignore
 # Prerequisites

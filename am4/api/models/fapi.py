@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from am4utils.aircraft import Aircraft
-from am4utils.game import User
-from am4utils.route import AircraftRoute
 from fastapi import HTTPException, Query
 from pydantic import BaseModel, Field
+
+from am4.utils.aircraft import Aircraft
+from am4.utils.game import User
+from am4.utils.route import AircraftRoute
 
 from .aircraft import PyAircraft, PyAircraftSuggestion
 from .airport import PyAirport, PyAirportSuggestion
@@ -100,9 +101,7 @@ Examples: `id:3500`, `iata:Hkg`, `icao:vHHH`, `name:hong kong`, `VHHH`"""
 ]
 FAPIReqRealism = Annotated[
     bool,
-    Query(
-        description="[Optional] **Whether to use realism mode** - defaults to `false` (easy) if not specified."
-    ),
+    Query(description="[Optional] **Whether to use realism mode** - defaults to `false` (easy) if not specified."),
 ]
 
 
@@ -118,15 +117,11 @@ class FAPIReqACROptions:
         ] = None,
         max_distance: Annotated[
             PyACROptionsMaxDistance,
-            Query(
-                description="[Optional] **Maximum route distance (km)** - defaults to 6371π if not specified."
-            ),
+            Query(description="[Optional] **Maximum route distance (km)** - defaults to 6371π if not specified."),
         ] = None,
         max_flight_time: Annotated[
             PyACROptionsMaxFlightTime,
-            Query(
-                description="[Optional] **Maximum flight time (h)** - defaults to 24 if not specified."
-            ),
+            Query(description="[Optional] **Maximum flight time (h)** - defaults to 24 if not specified."),
         ] = None,
         tpd_mode: Annotated[
             PyACROptionsTPDMode,
@@ -186,10 +181,7 @@ class FAPIReqACROptions:
                 )
             opt["tpd_mode"] = tpdm
         if self.trips_per_day is not None:
-            if (
-                opt.get("tpd_mode") == AircraftRoute.Options.TPDMode.AUTO
-                or self.tpd_mode is None
-            ):
+            if opt.get("tpd_mode") == AircraftRoute.Options.TPDMode.AUTO or self.tpd_mode is None:
                 kw = "explicitly specify" if self.tpd_mode is None else "use"
                 raise HTTPException(
                     status_code=422,

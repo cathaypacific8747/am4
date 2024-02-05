@@ -1,5 +1,6 @@
-from am4utils.airport import Airport
 from pydantic import BaseModel
+
+from am4.utils.airport import Airport
 
 from .util import assert_equal_property_names
 
