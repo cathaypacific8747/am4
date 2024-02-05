@@ -1,6 +1,6 @@
 class Config:
     DISCORD_TOKEN: str = ''
-    AM4_API_TOKEN: str = ''
+    OFFICIAL_API_TOKEN: str = ''
     COMMAND_PREFIX: str = '$'
     DEBUG_CHANNELID: int = 0
     BOTSPAM_CHANNELID: int = 0

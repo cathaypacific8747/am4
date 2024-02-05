@@ -1,12 +1,16 @@
 {
-    "DISCORD_TOKEN": "",
-    "AM4_API_TOKEN": "",
-    "DEBUG_CHANNELID": 0,
-    "BOTSPAM_CHANNELID": 0,
-    "PRICEALERT_CHANNELID": 0,
-    "PRICEALERT_ROLEID": 0,
-    "MODERATOR_ROLEID": 0,
-    "HELPER_ROLEID": 0,
-    "PB_EMAIL": "",
-    "PB_PASSWORD": ""
+    "bot": {
+        "DISCORD_TOKEN": "",
+        "OFFICIAL_API_TOKEN": "",
+        "DEBUG_CHANNELID": 0,
+        "BOTSPAM_CHANNELID": 0,
+        "PRICEALERT_CHANNELID": 0,
+        "PRICEALERT_ROLEID": 0,
+        "MODERATOR_ROLEID": 0,
+        "HELPER_ROLEID": 0
+    },
+    "db": {
+        "PB_EMAIL": "admin@localhost",
+        "PB_PASSWORD": "am4"
+    }
 }

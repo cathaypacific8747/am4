@@ -1,21 +1,20 @@
 import httpx
 from loguru import logger
 
-from ..config import production
-from .config import config
+from ..config import cfg
 from .user import UserAPI
 
 
 class PocketBase:
-    def __init__(self, endpoint: str = config.PB_ENDPOINT) -> None:
+    def __init__(self, endpoint: str = cfg.db.PB_ENDPOINT) -> None:
         self.client = httpx.AsyncClient(
             base_url=endpoint,
-            headers={"User-Agent": f"am4db{'-dev' if not production else ''}"},
+            headers={"User-Agent": "am4-db"},
         )
         self._user_api = UserAPI(self.client)
 
     async def _login_admin(
-        self, identity: str = config.PB_EMAIL, password: str = config.PB_PASSWORD
+        self, identity: str = cfg.db.PB_EMAIL, password: str = cfg.db.PB_PASSWORD
     ):
         data = (
             await self.client.post(

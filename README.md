@@ -13,6 +13,18 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 ![overview](src/am4bot/assets/img/overview.drawio.svg)
 
 
+## Installation
+Clone the repo and in the root directory:
+```sh
+pip install .
+am4 --help
+```
+
+Alternatively, if you do not want to install it directly:
+```sh
+python3 -m am4.__main__ --help
+```
+
 ## Features
 Old bot:
 - calculates essential statistics

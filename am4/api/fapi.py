@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from am4utils.aircraft import Aircraft
@@ -6,7 +7,9 @@ from am4utils.db import init as utils_init
 from am4utils.route import AircraftRoute, Route, find_routes
 from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
+from uvicorn import Config, Server
 
+from ..config import cfg
 from ..db.client import pb
 from .models.fapi import (
     FAPIReqACROptions,
@@ -23,6 +26,14 @@ from .models.fapi import (
     FAPIRespUser,
     FAPIRespUserNotFound,
 )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    utils_init()
+    await pb._login_admin()
+    yield
+
 
 app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
@@ -46,13 +57,8 @@ This service is 100% free to use for all users. We would really appreciate any d
 
 Open one of the endpoints and click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
     version="0.1.2-alpha.0",
+    lifespan=lifespan,
 )
-
-
-@app.on_event("startup")
-async def startup():
-    utils_init()
-    await pb._login_admin()
 
 
 def construct_acnf_response(
@@ -202,3 +208,15 @@ async def ac_route_find_routes(
             "destinations": [destination.to_dict() for destination in destinations],
         }
     )
+
+
+server = Server(
+    Config(
+        app,
+        host="127.0.0.1",
+        port=cfg.api.PORT,
+        reload=cfg.api.RELOAD,
+        server_header=False,
+        log_level=cfg.LOG_LEVEL.lower(),
+    )
+)

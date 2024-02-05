@@ -2,7 +2,7 @@
     "files.associations": {
         "*.spec": "python"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/src/am4utils",
+    "cmake.sourceDirectory": "/home/cx/projects/am4bot/am4/utils",
     "cmake.buildDirectory": "${workspaceFolder}/src/am4utils/build-vscode",
     "cmake.configureArgs": [
         "-DCOPY_DATA=1",

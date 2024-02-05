@@ -1,13 +1,9 @@
 import logging
-import os
 import sys
 
 from loguru import logger
 
-from am4 import api_server
-
-LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
-JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
+from .config import cfg
 
 
 class InterceptHandler(logging.Handler):
@@ -32,7 +28,7 @@ class InterceptHandler(logging.Handler):
 def setup_logging():
     # intercept everything at the root logger
     logging.root.handlers = [InterceptHandler()]
-    logging.root.setLevel(LOG_LEVEL)
+    logging.root.setLevel(cfg.LOG_LEVEL)
 
     # remove every other logger's handlers
     # and propagate to root logger
@@ -47,9 +43,3 @@ def setup_logging():
             {"sink": "am4bot.log", "serialize": True},
         ]
     )
-
-
-if __name__ == "__main__":
-    setup_logging()
-
-    api_server.run()
