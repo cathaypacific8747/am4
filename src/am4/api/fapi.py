@@ -11,8 +11,6 @@ from fastapi.responses import ORJSONResponse
 from uvicorn import Config, Server
 
 from ..config import cfg
-
-# from ..db.client import pb
 from .models.fapi import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
@@ -33,7 +31,6 @@ from .models.fapi import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     utils_init()
-    # await pb._login_admin()
     yield
 
 

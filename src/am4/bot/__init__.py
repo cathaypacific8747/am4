@@ -2,10 +2,12 @@ import asyncio
 
 import discord
 from am4.utils import __version__ as am4utils_version
+from am4.utils.db import init as utils_init
 from discord.ext.commands import Bot
 from loguru import logger
 
 from ..config import cfg
+from .aircraft import AircraftCog
 from .airport import AirportCog
 from .help import HelpCog
 
@@ -22,6 +24,8 @@ async def on_ready():
 
 async def start(db_done: asyncio.Event):
     await db_done.wait()
+    utils_init()
     await bot.add_cog(HelpCog(bot))
     await bot.add_cog(AirportCog(bot))
+    await bot.add_cog(AircraftCog(bot))
     await bot.start(cfg.bot.DISCORD_TOKEN)

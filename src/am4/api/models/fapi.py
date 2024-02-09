@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import HTTPException, Query
-from pydantic import BaseModel, Field
-
 from am4.utils.aircraft import Aircraft
 from am4.utils.game import User
 from am4.utils.route import AircraftRoute
+from fastapi import HTTPException, Query
+from pydantic import BaseModel, Field
 
+from ...common import HELP_AC_ARG0, HELP_AP_ARG0
 from .aircraft import PyAircraft, PyAircraftSuggestion
 from .airport import PyAirport, PyAirportSuggestion
 from .game import PyUser
@@ -84,20 +84,11 @@ class FAPIRespRoute(BaseModel):
 
 FAPIReqACSearchQuery = Annotated[
     str,
-    Query(
-        description="""**Search query for aircraft** (case insensitive).
-Examples: `b744`, `B747-400`, `id:1`, `shortname:b744`, `name:B747-400`, `b744[1]`, `b744[1,sfc]`, `b744[3,s,f,x]`.
-Characters inside square brackets denote engine options: `s` for 1.1x **s**peed, `f` for 0.9x **f**uel, `c` for 0.9x **C**O2, `x` for 4**x** speed.
-By default, the fastest engine option is used (priority 0) - for slower engine options, specify the engine option in the query.
-"""
-    ),
+    Query(description=HELP_AC_ARG0),
 ]
 FAPIReqAPSearchQuery = Annotated[
     str,
-    Query(
-        description="""**Search query for airport** (case-insensitive).
-Examples: `id:3500`, `iata:Hkg`, `icao:vHHH`, `name:hong kong`, `VHHH`"""
-    ),
+    Query(description=HELP_AP_ARG0),
 ]
 FAPIReqRealism = Annotated[
     bool,
