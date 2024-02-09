@@ -15,7 +15,7 @@
             "label": "py: generate stubs",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/am4/utils"
+                "cwd": "${workspaceFolder}/src/am4/utils"
             },
             "command": "${command:python.interpreterPath} generate-stubs.py",
             "problemMatcher": []
@@ -40,11 +40,5 @@
             "type": "shell",
             "command": "${command:python.interpreterPath} -m pytest"
         },
-        // {
-        //     "label": "upload: source",
-        //     "type": "shell",
-        //     "command": "rsync -avz --mkpath src config.production.json main.py pyproject.toml am4tools:/home/thiago/am4bot-api/",
-        //     "problemMatcher": []
-        // }
     ]
 }

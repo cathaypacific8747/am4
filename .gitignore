@@ -6,9 +6,8 @@ research/nn/routes.csv
 research/nn/nn_selfself.py
 research/analytics/*.json
 research/analytics/*.parquet
-config.json
-config.production.json
-am4/utils/build*
+*config.json
+*config.production.json
 
 # Python.gitignore, C++.gitignore, CMake.gitignore
 # Prerequisites

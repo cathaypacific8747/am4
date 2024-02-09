@@ -3,10 +3,10 @@ requires = ["scikit_build_core[pyproject]", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-build-dir = "am4/utils/build"
+build-dir = "src/am4/utils/build"
 cmake.args = ["-DEXCLUDE_EXECUTABLES=1"]
 cmake.build-type = "Release"
-cmake.source-dir = "am4/utils"
+cmake.source-dir = "src/am4/utils"
 cmake.verbose = true
 logging.level = "DEBUG"
 wheel.install-dir = "am4"
@@ -33,6 +33,7 @@ dependencies = [
     "pydantic>=2.6.1",
     "loguru>=0.7.2",
     "typer>=0.9.0",
+    "orjson>=3.9.13",
 ]
 
 [project.optional-dependencies]
@@ -61,7 +62,7 @@ debug = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["-ra", "--showlocals"]
-testpaths = ["am4/utils/tests"]
+testpaths = ["src/am4/utils/tests"]
 
 
 [tool.ruff]

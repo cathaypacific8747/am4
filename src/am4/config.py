@@ -1,10 +1,9 @@
 from pathlib import Path
-from typing import Self
 
 import orjson
 from pydantic import BaseModel
 
-_cfg_internal_fp = Path(__file__).parent / "config.json"
+_cfg_internal_fp = Path(__file__).parent / ".config.json"
 
 
 class ConfigDB(BaseModel):

@@ -1,14 +1,13 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
-from fastapi.responses import ORJSONResponse
-from uvicorn import Config, Server
-
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db import init as utils_init
 from am4.utils.route import AircraftRoute, Route, find_routes
+from fastapi import Depends, FastAPI
+from fastapi.responses import ORJSONResponse
+from uvicorn import Config, Server
 
 from ..config import cfg
 from ..db.client import pb

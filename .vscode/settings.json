@@ -2,12 +2,12 @@
     "files.associations": {
         "*.spec": "python"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/am4/utils",
-    "cmake.buildDirectory": "${workspaceFolder}/am4/utils/build-vscode",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/am4/utils",
+    "cmake.buildDirectory": "${workspaceFolder}/src/am4/utils/build-vscode",
     "cmake.configureArgs": [
         "-DCOPY_DATA=1",
         "-DCMAKE_VERBOSE_MAKEFILE=1",
     ],
     "C_Cpp.autoAddFileAssociations": false,
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
 }
