@@ -4,9 +4,10 @@ from pathlib import Path
 import rich
 import typer
 
-from .api.fapi import server as fapi_server
+from .api.fapi import start as start_fapi
+from .bot import start as start_bot
 from .config import cfg, get_from_file
-from .db import run_server as init_db_server
+from .db import start as start_db
 from .log import setup_logging
 
 app = typer.Typer()
@@ -18,9 +19,7 @@ app.add_typer(app_config, name="cfg", help="config commands")
 def cfg_show():
     rich.print(cfg)
     if cfg._source is None:
-        rich.print(
-            "[yellow]using default - run `am4 cfg set [path/to/config.json]!`[/yellow]"
-        )
+        rich.print("[yellow]using default - run `am4 cfg set [path/to/config.json]!`[/yellow]")
     else:
         rich.print(f"config loaded from: {cfg._source}.")
 
@@ -39,13 +38,10 @@ def start():
     async def main():
         db_done = asyncio.Event()
 
-        async def init_fapi_server(e: asyncio.Event):
-            await e.wait()
-            await fapi_server.serve()
-
         await asyncio.gather(
-            asyncio.create_task(init_db_server(db_done)),
-            asyncio.create_task(init_fapi_server(db_done)),
+            asyncio.create_task(start_db(db_done)),
+            # asyncio.create_task(start_fapi(db_done)),
+            asyncio.create_task(start_bot(db_done)),
         )
 
     asyncio.run(main())

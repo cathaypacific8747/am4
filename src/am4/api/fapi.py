@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -10,7 +11,8 @@ from fastapi.responses import ORJSONResponse
 from uvicorn import Config, Server
 
 from ..config import cfg
-from ..db.client import pb
+
+# from ..db.client import pb
 from .models.fapi import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
@@ -31,7 +33,7 @@ from .models.fapi import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     utils_init()
-    await pb._login_admin()
+    # await pb._login_admin()
     yield
 
 
@@ -210,3 +212,8 @@ server = Server(
         log_level=cfg.LOG_LEVEL.lower(),
     )
 )
+
+
+async def start(db_done: asyncio.Event):
+    await db_done.wait()
+    await server.serve()

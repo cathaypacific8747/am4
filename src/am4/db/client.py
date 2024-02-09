@@ -13,9 +13,7 @@ class PocketBase:
         )
         self._user_api = UserAPI(self.client)
 
-    async def _login_admin(
-        self, identity: str = cfg.db.PB_EMAIL, password: str = cfg.db.PB_PASSWORD
-    ):
+    async def _login_admin(self, identity: str = cfg.db.PB_EMAIL, password: str = cfg.db.PB_PASSWORD):
         data = (
             await self.client.post(
                 "/admins/auth-with-password",
@@ -32,7 +30,7 @@ class PocketBase:
                 "Authorization": data["token"],
             }
         )
-        logger.success("logged in to pocketbase with admin id {}", data["admin"]["id"])
+        logger.success("db client connection started with admin.id={}!", data["admin"]["id"])
 
     @property
     def users(self):

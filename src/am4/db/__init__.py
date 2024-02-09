@@ -7,6 +7,8 @@ from io import BytesIO
 import httpx
 from loguru import logger
 
+from .client import pb
+
 PB_VERSION = "0.21.1"
 base_path = pathlib.Path(__file__).parent
 
@@ -26,7 +28,7 @@ def ensure_pb_exists():
     os.chmod(str(base_path / "pocketbase"), 0o755)
 
 
-async def run_server(db_done: asyncio.Event):
+async def start(db_done: asyncio.Event):
     ensure_pb_exists()
     logger.info("Starting PocketBase...")
     process = await asyncio.create_subprocess_exec(
@@ -43,8 +45,9 @@ async def run_server(db_done: asyncio.Event):
             break
         data = line.decode().strip()
         if "Server started" in data:
-            db_done.set()
             logger.success(data)
+            await pb._login_admin()
+            db_done.set()
         elif "Error" in data:
             logger.error(data)
             break

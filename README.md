@@ -1,4 +1,4 @@
-# ![logo](src/am4bot/assets/img/logo-small.png) am4bot
+# ![logo](src/am4/bot/assets/img/logo-small.png) am4bot
 
 [![](https://dcbadge.vercel.app/api/server/4tVQHtf?style=flat)](https://discord.gg/4tVQHtf) [![CI](https://github.com/cathaypacific8747/am4bot/actions/workflows/ci.yml/badge.svg)](https://github.com/cathaypacific8747/am4bot/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 - [ ] discord bot written in Python ([`src/am4/bot (under construction)`](./src/am4/bot/))
 - [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4web (under construction)`](./src/am4/web/)to be developed)
 
-![overview](src/am4bot/assets/img/overview.drawio.svg)
+![overview](src/am4/bot/assets/img/overview.drawio.svg)
 
 
 ## Installation
@@ -18,7 +18,7 @@ Clone the repo and in the root directory:
 ```sh
 python3 -m virtualenv .venv
 source .venv/bin/activate
-pip install .
+pip install ".[api,bot]"
 python3 -m src.am4 --help
 ```
 
@@ -44,10 +44,8 @@ Old bot:
 Recommended: C++17 compliant compiler, python3.9+
 
 ### C++ debug executable
-install [vcpkg](https://vcpkg.io/en/getting-started.html) and set envvar `VCPKG_ROOT`
 ```sh
-sudo apt-get install build-essential bison flex
-vcpkg install arrow
+sudo apt-get install build-essential
 # optionally install vtune for profiling
 
 cd src/am4/utils
@@ -87,46 +85,46 @@ PRODUCTION=1 python3 main.py
 ### Public
 - `$route|stop <airport> <airport> <aircraft> [flights_per_day] [reputation]`: finds the best route between two airports
   
-  ![route](src/am4bot/assets/img/route.png)
+  ![route](src/am4/bot/assets/img/route.png)
 - `$routes <airport> <aircraft> <max_distance> <flights_per_day> [reputation]`: finds the best destinations from a certain airport, sorted by decreasing estimated income
   
-  ![routes](src/am4bot/assets/img/routes.png)
+  ![routes](src/am4/bot/assets/img/routes.png)
 - `$user [player]`: shows player (and associated alliance if found) statistics
   
-  ![user](src/am4bot/assets/img/user.png)
+  ![user](src/am4/bot/assets/img/user.png)
 - `$fleet [player]`: shows player fleet and estimated income
   
-  ![fleet](src/am4bot/assets/img/fleet.png)
+  ![fleet](src/am4/bot/assets/img/fleet.png)
 - `$info <aircraft>`: shows basic aircraft information and rough profit estimations
   
-  ![info](src/am4bot/assets/img/info.png)
+  ![info](src/am4/bot/assets/img/info.png)
 - `$compare <aircraft>`: compares two aircrafts
   
-  ![compare](src/am4bot/assets/img/compare.png)
+  ![compare](src/am4/bot/assets/img/compare.png)
 - `$search <aircraft>`: finds the associated aircraft shortname for aircraft commands
   
-  ![search](src/am4bot/assets/img/search.png)
+  ![search](src/am4/bot/assets/img/search.png)
 - `$airport <airport>`: shows airport information
   
-  ![airport](src/am4bot/assets/img/airport.png)
+  ![airport](src/am4/bot/assets/img/airport.png)
 - `$price f[fuel_price] c[co2_price]`: notifies everyone for the fuel price
   
-  ![price](src/am4bot/assets/img/price.png)
+  ![price](src/am4/bot/assets/img/price.png)
 
 ### Internal Alliance Tools
 - `$memberCompare <player> <player>`: compares descending structure of contribution/day and SV
   
-  ![member-compare](src/am4bot/assets/img/member-compare.png)
+  ![member-compare](src/am4/bot/assets/img/member-compare.png)
 - `$alliance <alliance>`: shows AV progression and d(AV)/dt.
   
-  ![alliance](src/am4bot/assets/img/alliance.png)
+  ![alliance](src/am4/bot/assets/img/alliance.png)
 - `$allianceCompare <alliance> <alliance>`: compares AV progression and gap difference over time, shows 48h/12h-average contribution/day graphs
   
-  ![alliance-compare](src/am4bot/assets/img/alliance-compare.png)
+  ![alliance-compare](src/am4/bot/assets/img/alliance-compare.png)
 - `$member <player> [player[]]` shows contribution/day, total contribution and SV history for 1+ members
   
-  ![member](src/am4bot/assets/img/member.png)
+  ![member](src/am4/bot/assets/img/member.png)
 - `$actions <player> [maxResults]`: shows log of estimated departures, contributions and income
   
-  ![member-compare](src/am4bot/assets/img/member-compare.png)
+  ![member-compare](src/am4/bot/assets/img/member-compare.png)
 - `$watchlist [add|+, remove|rm|-] [alliance]`: shows, adds or remove alliance(s) to the watchlist
