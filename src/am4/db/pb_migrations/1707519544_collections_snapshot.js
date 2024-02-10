@@ -3,8 +3,8 @@ migrate((db) => {
   const snapshot = [
     {
       "id": "_pb_users_auth_",
-      "created": "2024-01-27 12:17:42.005Z",
-      "updated": "2024-01-27 16:40:06.657Z",
+      "created": "2024-02-03 13:18:53.989Z",
+      "updated": "2024-02-09 22:58:44.859Z",
       "name": "users",
       "type": "auth",
       "system": false,
@@ -28,7 +28,7 @@ migrate((db) => {
           "id": "0v5iz2wb",
           "name": "game_id",
           "type": "number",
-          "required": true,
+          "required": false,
           "presentable": false,
           "unique": false,
           "options": {
@@ -210,7 +210,7 @@ migrate((db) => {
         {
           "system": false,
           "id": "1tnjcpie",
-          "name": "income_tolerance",
+          "name": "income_loss_tol",
           "type": "number",
           "required": false,
           "presentable": false,
@@ -251,6 +251,18 @@ migrate((db) => {
               "ADMIN",
               "GLOBAL_ADMIN"
             ]
+          }
+        },
+        {
+          "system": false,
+          "id": "cq4myxa2",
+          "name": "metadata",
+          "type": "json",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSize": 2000000
           }
         }
       ],

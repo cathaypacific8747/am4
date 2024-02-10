@@ -10,4 +10,5 @@
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "cmake.configureOnOpen": true,
+    "clang-format.style": "{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 120, SortIncludes: false}",
 }

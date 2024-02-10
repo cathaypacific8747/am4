@@ -84,22 +84,21 @@ std::vector<Airport::Suggestion> Airport::suggest(const ParseResult& parse_resul
     return suggestions;
 }
 
-
-Airport::Airport(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) :
-    id(chunk->GetValue(0, row).GetValue<uint16_t>()),
-    name(chunk->GetValue(1, row).GetValue<string>()),
-    fullname(chunk->GetValue(2, row).GetValue<string>()),
-    country(chunk->GetValue(3, row).GetValue<string>()),
-    continent(chunk->GetValue(4, row).GetValue<string>()),
-    iata(chunk->GetValue(5, row).GetValue<string>()),
-    icao(chunk->GetValue(6, row).GetValue<string>()),
-    lat(chunk->GetValue(7, row).GetValue<double>()),
-    lng(chunk->GetValue(8, row).GetValue<double>()),
-    rwy(chunk->GetValue(9, row).GetValue<uint16_t>()),
-    market(chunk->GetValue(10, row).GetValue<uint8_t>()),
-    hub_cost(chunk->GetValue(11, row).GetValue<uint32_t>()),
-    rwy_codes(chunk->GetValue(12, row).GetValue<string>()),
-    valid(true) {}
+Airport::Airport(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row)
+    : id(chunk->GetValue(0, row).GetValue<uint16_t>()),
+      name(chunk->GetValue(1, row).GetValue<string>()),
+      fullname(chunk->GetValue(2, row).GetValue<string>()),
+      country(chunk->GetValue(3, row).GetValue<string>()),
+      continent(chunk->GetValue(4, row).GetValue<string>()),
+      iata(chunk->GetValue(5, row).GetValue<string>()),
+      icao(chunk->GetValue(6, row).GetValue<string>()),
+      lat(chunk->GetValue(7, row).GetValue<double>()),
+      lng(chunk->GetValue(8, row).GetValue<double>()),
+      rwy(chunk->GetValue(9, row).GetValue<uint16_t>()),
+      market(chunk->GetValue(10, row).GetValue<uint8_t>()),
+      hub_cost(chunk->GetValue(11, row).GetValue<uint32_t>()),
+      rwy_codes(chunk->GetValue(12, row).GetValue<string>()),
+      valid(true) {}
 
 inline const string to_string(Airport::SearchType st) {
     switch (st) {
@@ -122,38 +121,26 @@ inline const string to_string(Airport::SearchType st) {
 
 const string Airport::repr(const Airport& ap) {
     if (!ap.valid) return "<Airport.INVALID>";
-    return "<Airport." + to_string(ap.id) + " " + ap.iata + "|" + ap.icao + "|" + ap.name + "," +
-    ap.country + " @ " + to_string(ap.lat) + "," + to_string(ap.lng) + " " +
-    to_string(ap.rwy) + "ft " + to_string(ap.market) + "% $" + to_string(ap.hub_cost) + ">";
+    return "<Airport." + to_string(ap.id) + " " + ap.iata + "|" + ap.icao + "|" + ap.name + "," + ap.country + " @ " +
+           to_string(ap.lat) + "," + to_string(ap.lng) + " " + to_string(ap.rwy) + "ft " + to_string(ap.market) +
+           "% $" + to_string(ap.hub_cost) + ">";
 }
 
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
 py::dict to_dict(const Airport& ap) {
-    return py::dict(
-        "id"_a=ap.id,
-        "name"_a=ap.name,
-        "fullname"_a=ap.fullname,
-        "country"_a=ap.country,
-        "continent"_a=ap.continent,
-        "iata"_a=ap.iata,
-        "icao"_a=ap.icao,
-        "lat"_a=ap.lat,
-        "lng"_a=ap.lng,
-        "rwy"_a=ap.rwy,
-        "market"_a=ap.market,
-        "hub_cost"_a=ap.hub_cost,
-        "rwy_codes"_a=ap.rwy_codes
-    );
+    return py::dict("id"_a = ap.id, "name"_a = ap.name, "fullname"_a = ap.fullname, "country"_a = ap.country,
+                    "continent"_a = ap.continent, "iata"_a = ap.iata, "icao"_a = ap.icao, "lat"_a = ap.lat,
+                    "lng"_a = ap.lng, "rwy"_a = ap.rwy, "market"_a = ap.market, "hub_cost"_a = ap.hub_cost,
+                    "rwy_codes"_a = ap.rwy_codes);
 }
 
 void pybind_init_airport(py::module_& m) {
     py::module_ m_ap = m.def_submodule("airport");
-    
+
     py::class_<Airport, shared_ptr<Airport>> ap_class(m_ap, "Airport");
-    ap_class
-        .def_readonly("id", &Airport::id)
+    ap_class.def_readonly("id", &Airport::id)
         .def_readonly("name", &Airport::name)
         .def_readonly("fullname", &Airport::fullname)
         .def_readonly("country", &Airport::country)
@@ -169,7 +156,7 @@ void pybind_init_airport(py::module_& m) {
         .def_readonly("valid", &Airport::valid)
         .def("__repr__", &Airport::repr)
         .def("to_dict", py::overload_cast<const Airport&>(&to_dict));
-    
+
     py::enum_<Airport::SearchType>(ap_class, "SearchType")
         .value("ALL", Airport::SearchType::ALL)
         .value("IATA", Airport::SearchType::IATA)
@@ -177,7 +164,7 @@ void pybind_init_airport(py::module_& m) {
         .value("NAME", Airport::SearchType::NAME)
         .value("FULLNAME", Airport::SearchType::FULLNAME)
         .value("ID", Airport::SearchType::ID);
-    
+
     py::class_<Airport::ParseResult>(ap_class, "ParseResult")
         .def(py::init<Airport::SearchType, const string&>())
         .def_readonly("search_type", &Airport::ParseResult::search_type)
@@ -193,8 +180,6 @@ void pybind_init_airport(py::module_& m) {
         .def_readonly("ap", &Airport::Suggestion::ap)
         .def_readonly("score", &Airport::Suggestion::score);
 
-    ap_class
-        .def_static("search", &Airport::search, "s"_a)
-        .def_static("suggest", &Airport::suggest, "s"_a);
+    ap_class.def_static("search", &Airport::search, "s"_a).def_static("suggest", &Airport::suggest, "s"_a);
 }
 #endif

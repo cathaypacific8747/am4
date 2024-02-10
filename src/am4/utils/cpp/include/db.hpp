@@ -4,12 +4,12 @@
 #include "airport.hpp"
 #include "aircraft.hpp"
 
-using std::string;
-using std::shared_ptr;
-using duckdb::DuckDB;
-using duckdb::Connection;
-using duckdb::PreparedStatement;
 using duckdb::Appender;
+using duckdb::Connection;
+using duckdb::DuckDB;
+using duckdb::PreparedStatement;
+using std::shared_ptr;
+using std::string;
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -20,9 +20,10 @@ constexpr int AIRPORT_ID_MAX = 3982;
 constexpr int ROUTE_COUNT = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
 class DatabaseException : public std::exception {
-private:
+   private:
     string msg;
-public:
+
+   public:
     DatabaseException(string msg) : msg(msg) {}
     const char* what() const throw() { return msg.c_str(); }
 };
@@ -47,9 +48,9 @@ inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<T> q) {
 struct Database {
     duckdb::unique_ptr<DuckDB> database;
     duckdb::unique_ptr<Connection> connection;
-    
-    Airport airports[AIRPORT_COUNT]; // 1,031,448 B
-    uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1]; // 63,728 B: airport id -> airports index
+
+    Airport airports[AIRPORT_COUNT];                    // 1,031,448 B
+    uint16_t airport_id_hashtable[AIRPORT_ID_MAX + 1];  // 63,728 B: airport id -> airports index
     Airport get_airport_by_id(uint16_t id);
     // note: input string are assumed to be already uppercased
     Airport get_airport_by_iata(const string& iata);
@@ -57,8 +58,8 @@ struct Database {
     Airport get_airport_by_name(const string& name);
     Airport get_airport_by_fullname(const string& name);
     Airport get_airport_by_all(const string& all);
-    
-    template<typename ScoreFn>
+
+    template <typename ScoreFn>
     std::vector<Airport::Suggestion> suggest_airport(const string& input, ScoreFn score_fn);
     std::vector<Airport::Suggestion> suggest_airport_by_iata(const string& iata);
     std::vector<Airport::Suggestion> suggest_airport_by_icao(const string& icao);
@@ -73,21 +74,20 @@ struct Database {
     Aircraft get_aircraft_by_shortname(const string& shortname, uint8_t priority);
     Aircraft get_aircraft_by_name(const string& name, uint8_t priority);
     Aircraft get_aircraft_by_all(const string& all, uint8_t priority);
-    
-    template<typename ScoreFn>
+
+    template <typename ScoreFn>
     std::vector<Aircraft::Suggestion> suggest_aircraft(const string& input, ScoreFn score_fn);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_shortname(const string& shortname);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_name(const string& name);
     std::vector<Aircraft::Suggestion> suggest_aircraft_by_all(const string& all);
 
     PaxDemand pax_demands[ROUTE_COUNT];
-    double distances[AIRPORT_COUNT][AIRPORT_COUNT]; // 96,799,832 B
+    double distances[AIRPORT_COUNT][AIRPORT_COUNT];  // 96,799,832 B
     static inline uint32_t get_dbroute_idx(uint16_t oidx, uint16_t didx) {
-        if (oidx > didx)
-            return ((didx * (2*AIRPORT_COUNT - didx - 1)) >> 1) + oidx - didx - 1;
-        return ((oidx * (2*AIRPORT_COUNT - oidx - 1)) >> 1) + didx - oidx - 1;
+        if (oidx > didx) return ((didx * (2 * AIRPORT_COUNT - didx - 1)) >> 1) + oidx - didx - 1;
+        return ((oidx * (2 * AIRPORT_COUNT - oidx - 1)) >> 1) + didx - oidx - 1;
     };
-    
+
     static shared_ptr<Database> default_client;
     static shared_ptr<Database> Client();
     static shared_ptr<Database> Client(const string& home_dir);
@@ -97,12 +97,8 @@ struct Database {
 };
 
 struct CompareSuggestion {
-    bool operator()(const Airport::Suggestion& s1, const Airport::Suggestion& s2) {
-        return s1.score > s2.score;
-    }
-    bool operator()(const Aircraft::Suggestion& s1, const Aircraft::Suggestion& s2) {
-        return s1.score > s2.score;
-    }
+    bool operator()(const Airport::Suggestion& s1, const Airport::Suggestion& s2) { return s1.score > s2.score; }
+    bool operator()(const Aircraft::Suggestion& s1, const Aircraft::Suggestion& s2) { return s1.score > s2.score; }
 };
 
 void init(string home_dir);

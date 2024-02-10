@@ -7,9 +7,10 @@ from discord.ext.commands import Bot
 from loguru import logger
 
 from ..config import cfg
-from .aircraft import AircraftCog
-from .airport import AirportCog
-from .help import HelpCog
+from .cogs.aircraft import AircraftCog
+from .cogs.airport import AirportCog
+from .cogs.help import HelpCog
+from .cogs.settings import SettingsCog
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -28,4 +29,5 @@ async def start(db_done: asyncio.Event):
     await bot.add_cog(HelpCog(bot))
     await bot.add_cog(AirportCog(bot))
     await bot.add_cog(AircraftCog(bot))
+    await bot.add_cog(SettingsCog(bot))
     await bot.start(cfg.bot.DISCORD_TOKEN)

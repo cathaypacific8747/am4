@@ -50,36 +50,35 @@ const string VIPTicket::repr(const VIPTicket& ticket) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
-py::dict to_dict(const PaxTicket& ticket) {
-    return py::dict("y"_a=ticket.y, "j"_a=ticket.j, "f"_a=ticket.f);
-}
+py::dict to_dict(const PaxTicket& ticket) { return py::dict("y"_a = ticket.y, "j"_a = ticket.j, "f"_a = ticket.f); }
 
-py::dict to_dict(const CargoTicket& ticket) {
-    return py::dict("l"_a=ticket.l, "h"_a=ticket.h);
-}
+py::dict to_dict(const CargoTicket& ticket) { return py::dict("l"_a = ticket.l, "h"_a = ticket.h); }
 
-py::dict to_dict(const VIPTicket& ticket) {
-    return py::dict("y"_a=ticket.y, "j"_a=ticket.j, "f"_a=ticket.f);
-}
+py::dict to_dict(const VIPTicket& ticket) { return py::dict("y"_a = ticket.y, "j"_a = ticket.j, "f"_a = ticket.f); }
 
 void pybind_init_ticket(py::module_& m) {
     py::module_ m_ticket = m.def_submodule("ticket");
-    
+
     py::class_<PaxTicket>(m_ticket, "PaxTicket")
         .def_readonly("y", &PaxTicket::y)
         .def_readonly("j", &PaxTicket::j)
         .def_readonly("f", &PaxTicket::f)
-        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4.utils.game.User.GameMode.EASY")) // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
+        .def_static(
+            "from_optimal", &PaxTicket::from_optimal, "distance"_a,
+            py::arg_v(
+                "game_mode", User::GameMode::EASY,
+                "am4.utils.game.User.GameMode.EASY"))  // https://pybind11.readthedocs.io/en/stable/advanced/functions.html?highlight=default%20argument#default-arguments-revisited
         .def("__repr__", &PaxTicket::repr)
         .def("to_dict", py::overload_cast<const PaxTicket&>(&to_dict));
 
     py::class_<CargoTicket>(m_ticket, "CargoTicket")
         .def_readonly("l", &CargoTicket::l)
         .def_readonly("h", &CargoTicket::h)
-        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a, py::arg_v("game_mode", User::GameMode::EASY, "am4.utils.game.User.GameMode.EASY"))
+        .def_static("from_optimal", &PaxTicket::from_optimal, "distance"_a,
+                    py::arg_v("game_mode", User::GameMode::EASY, "am4.utils.game.User.GameMode.EASY"))
         .def("__repr__", &CargoTicket::repr)
         .def("to_dict", py::overload_cast<const CargoTicket&>(&to_dict));
-    
+
     py::class_<VIPTicket>(m_ticket, "VIPTicket")
         .def_readonly("y", &VIPTicket::y)
         .def_readonly("j", &VIPTicket::j)

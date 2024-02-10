@@ -1,9 +1,10 @@
-#include <iostream>
+#include "include/aircraft.hpp"
+
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "include/db.hpp"
-#include "include/aircraft.hpp"
 
 Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), fourx_mod(false), valid(false) {}
 
@@ -13,7 +14,7 @@ void remove_spaces_custom(string& str) {
     size_t len = str.length();
 
     for (size_t i = 0; i < len; i++) {
-        if (str[i] == ' ' && ((i == 0 || i == len - 1 || str[i-1] == ',') || space_found)) {
+        if (str[i] == ' ' && ((i == 0 || i == len - 1 || str[i - 1] == ',') || space_found)) {
             space_found = true;
             str.erase(i, 1);
             i--;
@@ -34,7 +35,8 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
     bool co2_mod = false;
     bool fourx_mod = false;
 
-    // attempt to get modifiers, e.g. mc214[0,s,c,f] -> priority: true, speed_mod: true, co2_mod: true, fuel_mod: true
+    // attempt to get modifiers, e.g. mc214[0,s,c,f] -> priority: true,
+    // speed_mod: true, co2_mod: true, fuel_mod: true
     size_t start = s_lower.find('[');
     if (start != string::npos && s_lower.at(s_lower.size() - 1) == ']') {
         string parsed = s_lower.substr(start + 1, s_lower.size() - start - 2);
@@ -44,7 +46,7 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
         std::vector<string> tokens;
         size_t last = 0, next = 0;
         while ((next = parsed.find(',', last)) != string::npos) {
-            tokens.push_back(parsed.substr(last, next-last));
+            tokens.push_back(parsed.substr(last, next - last));
             last = next + 1;
         }
         tokens.push_back(parsed.substr(last));
@@ -64,18 +66,22 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
         }
     }
     if (s_lower.substr(0, 5) == "name:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::NAME, s_lower.substr(5), priority, speed_mod, fuel_mod,
+                                     co2_mod, fourx_mod);
     } else if (s_lower.substr(0, 10) == "shortname:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod,
+                                     co2_mod, fourx_mod);
     } else if (s_lower.substr(0, 3) == "id:") {
         try {
             std::ignore = std::stoi(s.substr(3));
-            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
+            return Aircraft::ParseResult(Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod,
+                                         fourx_mod);
         } catch (const std::invalid_argument&) {
         } catch (const std::out_of_range&) {
         }
     } else if (s_lower.substr(0, 4) == "all:") {
-        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4), priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
+        return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower.substr(4), priority, speed_mod, fuel_mod,
+                                     co2_mod, fourx_mod);
     }
     return Aircraft::ParseResult(Aircraft::SearchType::ALL, s_lower, priority, speed_mod, fuel_mod, co2_mod, fourx_mod);
 }
@@ -94,7 +100,8 @@ Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
             ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::ID:
-            ac = Database::Client()->get_aircraft_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)), parse_result.priority);
+            ac = Database::Client()->get_aircraft_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)),
+                                                        parse_result.priority);
             break;
     }
     ac.speed_mod = parse_result.speed_mod;
@@ -102,13 +109,13 @@ Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
 
     ac.fuel_mod = parse_result.fuel_mod;
     if (ac.fuel_mod) ac.fuel *= 0.9f;
-    
+
     ac.co2_mod = parse_result.co2_mod;
     if (ac.co2_mod) ac.co2 *= 0.9f;
 
     ac.fourx_mod = parse_result.fourx_mod || user.fourx;
     if (ac.fourx_mod) ac.speed *= 4.0f;
-    
+
     return Aircraft::SearchResult(make_shared<Aircraft>(ac), parse_result);
 }
 
@@ -130,41 +137,40 @@ std::vector<Aircraft::Suggestion> Aircraft::suggest(const ParseResult& parse_res
     return suggestions;
 }
 
-Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row) : 
-    id(chunk->GetValue(0, row).GetValue<uint16_t>()),
-    shortname(chunk->GetValue(1, row).GetValue<string>()),
-    manufacturer(chunk->GetValue(2, row).GetValue<string>()),
-    name(chunk->GetValue(3, row).GetValue<string>()),
-    type(static_cast<Aircraft::Type>(chunk->GetValue(4, row).GetValue<uint8_t>())),
-    priority(chunk->GetValue(5, row).GetValue<uint8_t>()),
-    eid(chunk->GetValue(6, row).GetValue<uint16_t>()),
-    ename(chunk->GetValue(7, row).GetValue<string>()),
-    speed(chunk->GetValue(8, row).GetValue<float>()),
-    fuel(chunk->GetValue(9, row).GetValue<float>()),
-    co2(chunk->GetValue(10, row).GetValue<float>()),
-    cost(chunk->GetValue(11, row).GetValue<uint32_t>()),
-    capacity(chunk->GetValue(12, row).GetValue<uint32_t>()),
-    rwy(chunk->GetValue(13, row).GetValue<uint16_t>()),
-    check_cost(chunk->GetValue(14, row).GetValue<uint32_t>()),
-    range(chunk->GetValue(15, row).GetValue<uint16_t>()),
-    ceil(chunk->GetValue(16, row).GetValue<uint16_t>()),
-    maint(chunk->GetValue(17, row).GetValue<uint16_t>()),
-    pilots(chunk->GetValue(18, row).GetValue<uint8_t>()),
-    crew(chunk->GetValue(19, row).GetValue<uint8_t>()),
-    engineers(chunk->GetValue(20, row).GetValue<uint8_t>()),
-    technicians(chunk->GetValue(21, row).GetValue<uint8_t>()),
-    img(chunk->GetValue(22, row).GetValue<string>()),
-    wingspan(chunk->GetValue(23, row).GetValue<uint8_t>()),
-    length(chunk->GetValue(24, row).GetValue<uint8_t>()),
-    speed_mod(false),
-    fuel_mod(false),
-    co2_mod(false),
-    fourx_mod(false),
-    valid(true)
-{};
+Aircraft::Aircraft(const duckdb::unique_ptr<duckdb::DataChunk>& chunk, idx_t row)
+    : id(chunk->GetValue(0, row).GetValue<uint16_t>()),
+      shortname(chunk->GetValue(1, row).GetValue<string>()),
+      manufacturer(chunk->GetValue(2, row).GetValue<string>()),
+      name(chunk->GetValue(3, row).GetValue<string>()),
+      type(static_cast<Aircraft::Type>(chunk->GetValue(4, row).GetValue<uint8_t>())),
+      priority(chunk->GetValue(5, row).GetValue<uint8_t>()),
+      eid(chunk->GetValue(6, row).GetValue<uint16_t>()),
+      ename(chunk->GetValue(7, row).GetValue<string>()),
+      speed(chunk->GetValue(8, row).GetValue<float>()),
+      fuel(chunk->GetValue(9, row).GetValue<float>()),
+      co2(chunk->GetValue(10, row).GetValue<float>()),
+      cost(chunk->GetValue(11, row).GetValue<uint32_t>()),
+      capacity(chunk->GetValue(12, row).GetValue<uint32_t>()),
+      rwy(chunk->GetValue(13, row).GetValue<uint16_t>()),
+      check_cost(chunk->GetValue(14, row).GetValue<uint32_t>()),
+      range(chunk->GetValue(15, row).GetValue<uint16_t>()),
+      ceil(chunk->GetValue(16, row).GetValue<uint16_t>()),
+      maint(chunk->GetValue(17, row).GetValue<uint16_t>()),
+      pilots(chunk->GetValue(18, row).GetValue<uint8_t>()),
+      crew(chunk->GetValue(19, row).GetValue<uint8_t>()),
+      engineers(chunk->GetValue(20, row).GetValue<uint8_t>()),
+      technicians(chunk->GetValue(21, row).GetValue<uint8_t>()),
+      img(chunk->GetValue(22, row).GetValue<string>()),
+      wingspan(chunk->GetValue(23, row).GetValue<uint8_t>()),
+      length(chunk->GetValue(24, row).GetValue<uint8_t>()),
+      speed_mod(false),
+      fuel_mod(false),
+      co2_mod(false),
+      fourx_mod(false),
+      valid(true){};
 
 inline const string to_string(Aircraft::Type type) {
-    switch(type) {
+    switch (type) {
         case Aircraft::Type::PAX:
             return "PAX";
         case Aircraft::Type::CARGO:
@@ -194,12 +200,14 @@ inline const string to_string(Aircraft::SearchType searchtype) {
 const string Aircraft::repr(const Aircraft& ac) {
     if (!ac.valid) return "<Aircraft.INVALID>";
     string result;
-    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname + " name=" + ac.name + " priority=" + to_string(ac.priority);
+    result += "<Aircraft." + to_string(ac.id) + "." + to_string(ac.eid) + " shortname=" + ac.shortname +
+              " name=" + ac.name + " priority=" + to_string(ac.priority);
     result += " mod=";
     if (ac.speed_mod) result += "s";
     if (ac.fuel_mod) result += "f";
     if (ac.co2_mod) result += "c";
-    result += " speed=" + to_string(ac.speed) + " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" + to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
+    result += " speed=" + to_string(ac.speed) + " fuel=" + to_string(ac.fuel) + " co2=" + to_string(ac.co2) + " $" +
+              to_string(ac.cost) + " rng=" + to_string(ac.range) + ">";
     return result;
 }
 
@@ -264,7 +272,9 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, ui
     return config;
 };
 
-Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance, User::GameMode game_mode, Aircraft::PaxConfig::Algorithm algorithm) {
+Aircraft::PaxConfig Aircraft::PaxConfig::calc_pax_conf(const PaxDemand& d_pf, uint16_t capacity, double distance,
+                                                       User::GameMode game_mode,
+                                                       Aircraft::PaxConfig::Algorithm algorithm) {
     switch (algorithm) {
         case Algorithm::AUTO:
             if (game_mode == User::GameMode::EASY) {
@@ -330,8 +340,8 @@ const string Aircraft::PaxConfig::repr(const Aircraft::PaxConfig& config) {
     return "<PaxConfig " + to_string(config.y) + "|" + to_string(config.j) + "|" + to_string(config.f) + ">";
 }
 
-
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training,
+                                                         uint8_t h_training) {
     double l_cap = capacity * 0.7 * (1 + l_training / 100.0);
 
     CargoConfig config;
@@ -349,9 +359,10 @@ Aircraft::CargoConfig Aircraft::CargoConfig::calc_l_conf(const CargoDemand& d_pf
 }
 
 // virually useless, never profitable unless distance > ~23000 km
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training,
+                                                         uint8_t h_training) {
     double h_cap = capacity * (1 + h_training / 100.0);
-    
+
     CargoConfig config;
     if (d_pf.h > h_cap) {
         config.h = 100;
@@ -366,28 +377,20 @@ Aircraft::CargoConfig Aircraft::CargoConfig::calc_h_conf(const CargoDemand& d_pf
     return config;
 }
 
-Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training, uint8_t h_training, Aircraft::CargoConfig::Algorithm algorithm) {
+Aircraft::CargoConfig Aircraft::CargoConfig::calc_cargo_conf(const CargoDemand& d_pf, uint32_t capacity,
+                                                             uint8_t l_training, uint8_t h_training,
+                                                             Aircraft::CargoConfig::Algorithm algorithm) {
     // low priority is always more profitable
     switch (algorithm) {
         case Algorithm::AUTO:
         case Algorithm::L:
-            return calc_l_conf(
-                d_pf,
-                capacity,
-                l_training,
-                h_training
-            ); 
+            return calc_l_conf(d_pf, capacity, l_training, h_training);
         case Algorithm::H:
-            return calc_h_conf(
-                d_pf,
-                capacity,
-                l_training,
-                h_training
-            );
+            return calc_h_conf(d_pf, capacity, l_training, h_training);
         default:
             return CargoConfig();
     }
-}  
+}
 
 inline const string to_string(Aircraft::CargoConfig::Algorithm algorithm) {
     switch (algorithm) {
@@ -406,78 +409,47 @@ const string Aircraft::CargoConfig::repr(const CargoConfig& config) {
     return "<CargoConfig " + to_string(config.l) + "|" + to_string(config.h) + ">";
 }
 
-
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
 py::dict to_dict(const Aircraft& ac) {
     py::gil_scoped_acquire acquire;
     py::function round = py::module::import("builtins").attr("round");
-    py::dict d(
-        "id"_a=ac.id,
-        "shortname"_a=ac.shortname,
-        "manufacturer"_a=ac.manufacturer,
-        "name"_a=ac.name,
-        "type"_a=to_string(ac.type),
-        "priority"_a=ac.priority,
-        "eid"_a=ac.eid,
-        "ename"_a=ac.ename,
-        "speed"_a=round(ac.speed, 3),
-        "fuel"_a=round(ac.fuel, 3),
-        "co2"_a=round(ac.co2, 3),
-        "cost"_a=ac.cost,
-        "capacity"_a=ac.capacity,
-        "rwy"_a=ac.rwy,
-        "check_cost"_a=ac.check_cost,
-        "range"_a=ac.range,
-        "ceil"_a=ac.ceil,
-        "maint"_a=ac.maint,
-        "pilots"_a=ac.pilots,
-        "crew"_a=ac.crew,
-        "engineers"_a=ac.engineers,
-        "technicians"_a=ac.technicians,
-        "img"_a=ac.img,
-        "wingspan"_a=ac.wingspan,
-        "length"_a=ac.length,
-        "speed_mod"_a=ac.speed_mod,
-        "fuel_mod"_a=ac.fuel_mod,
-        "co2_mod"_a=ac.co2_mod,
-        "fourx_mod"_a=ac.fourx_mod
-    );
+    py::dict d("id"_a = ac.id, "shortname"_a = ac.shortname, "manufacturer"_a = ac.manufacturer, "name"_a = ac.name,
+               "type"_a = to_string(ac.type), "priority"_a = ac.priority, "eid"_a = ac.eid, "ename"_a = ac.ename,
+               "speed"_a = round(ac.speed, 3), "fuel"_a = round(ac.fuel, 3), "co2"_a = round(ac.co2, 3),
+               "cost"_a = ac.cost, "capacity"_a = ac.capacity, "rwy"_a = ac.rwy, "check_cost"_a = ac.check_cost,
+               "range"_a = ac.range, "ceil"_a = ac.ceil, "maint"_a = ac.maint, "pilots"_a = ac.pilots,
+               "crew"_a = ac.crew, "engineers"_a = ac.engineers, "technicians"_a = ac.technicians, "img"_a = ac.img,
+               "wingspan"_a = ac.wingspan, "length"_a = ac.length, "speed_mod"_a = ac.speed_mod,
+               "fuel_mod"_a = ac.fuel_mod, "co2_mod"_a = ac.co2_mod, "fourx_mod"_a = ac.fourx_mod);
     py::gil_scoped_release release;
     return d;
 }
 
 py::dict to_dict(const Aircraft::PaxConfig& pc) {
-    return py::dict(
-        "y"_a=pc.y,
-        "j"_a=pc.j,
-        "f"_a=pc.f,
-        "algorithm"_a=to_string(pc.algorithm)
-    );
+    return py::dict("y"_a = pc.y, "j"_a = pc.j, "f"_a = pc.f, "algorithm"_a = to_string(pc.algorithm));
 }
 
 py::dict to_dict(const Aircraft::CargoConfig& cc) {
-    return py::dict(
-        "l"_a=cc.l,
-        "h"_a=cc.h,
-        "algorithm"_a=to_string(cc.algorithm)
-    );
+    return py::dict("l"_a = cc.l, "h"_a = cc.h, "algorithm"_a = to_string(cc.algorithm));
 }
 
 void pybind_init_aircraft(py::module_& m) {
     py::module_ m_ac = m.def_submodule("aircraft");
-    
+
     py::class_<Aircraft, shared_ptr<Aircraft>> ac_class(m_ac, "Aircraft");
-    
+
     py::class_<Aircraft::PaxConfig> pc_class(ac_class, "PaxConfig");
     py::enum_<Aircraft::PaxConfig::Algorithm>(pc_class, "Algorithm")
         .value("AUTO", Aircraft::PaxConfig::Algorithm::AUTO)
-        .value("FJY", Aircraft::PaxConfig::Algorithm::FJY).value("FYJ", Aircraft::PaxConfig::Algorithm::FYJ)
-        .value("JFY", Aircraft::PaxConfig::Algorithm::JFY).value("JYF", Aircraft::PaxConfig::Algorithm::JYF)
-        .value("YJF", Aircraft::PaxConfig::Algorithm::YJF).value("YFJ", Aircraft::PaxConfig::Algorithm::YFJ);
-    pc_class
-        .def_readonly("y", &Aircraft::PaxConfig::y)
+        .value("FJY", Aircraft::PaxConfig::Algorithm::FJY)
+        .value("FYJ", Aircraft::PaxConfig::Algorithm::FYJ)
+        .value("JFY", Aircraft::PaxConfig::Algorithm::JFY)
+        .value("JYF", Aircraft::PaxConfig::Algorithm::JYF)
+        .value("YJF", Aircraft::PaxConfig::Algorithm::YJF)
+        .value("YFJ", Aircraft::PaxConfig::Algorithm::YFJ);
+    pc_class.def_readonly("y", &Aircraft::PaxConfig::y)
         .def_readonly("j", &Aircraft::PaxConfig::j)
         .def_readonly("f", &Aircraft::PaxConfig::f)
         .def_readonly("valid", &Aircraft::PaxConfig::valid)
@@ -488,9 +460,9 @@ void pybind_init_aircraft(py::module_& m) {
     py::class_<Aircraft::CargoConfig> cc_class(ac_class, "CargoConfig");
     py::enum_<Aircraft::CargoConfig::Algorithm>(cc_class, "Algorithm")
         .value("AUTO", Aircraft::CargoConfig::Algorithm::AUTO)
-        .value("L", Aircraft::CargoConfig::Algorithm::L).value("H", Aircraft::CargoConfig::Algorithm::H);
-    cc_class
-        .def_readonly("l", &Aircraft::CargoConfig::l)
+        .value("L", Aircraft::CargoConfig::Algorithm::L)
+        .value("H", Aircraft::CargoConfig::Algorithm::H);
+    cc_class.def_readonly("l", &Aircraft::CargoConfig::l)
         .def_readonly("h", &Aircraft::CargoConfig::h)
         .def_readonly("valid", &Aircraft::CargoConfig::valid)
         .def_readonly("algorithm", &Aircraft::CargoConfig::algorithm)
@@ -501,8 +473,7 @@ void pybind_init_aircraft(py::module_& m) {
         .value("PAX", Aircraft::Type::PAX)
         .value("CARGO", Aircraft::Type::CARGO)
         .value("VIP", Aircraft::Type::VIP);
-    ac_class
-        .def_readonly("id", &Aircraft::id)
+    ac_class.def_readonly("id", &Aircraft::id)
         .def_readonly("shortname", &Aircraft::shortname)
         .def_readonly("manufacturer", &Aircraft::manufacturer)
         .def_readonly("name", &Aircraft::name)
@@ -557,7 +528,8 @@ void pybind_init_aircraft(py::module_& m) {
         .def_readonly("ac", &Aircraft::Suggestion::ac)
         .def_readonly("score", &Aircraft::Suggestion::score);
     ac_class
-        .def_static("search", &Aircraft::search, "s"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"))
+        .def_static("search", &Aircraft::search, "s"_a,
+                    py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"))
         .def_static("suggest", &Aircraft::suggest, "s"_a);
 }
 #endif

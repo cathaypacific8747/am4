@@ -2,9 +2,9 @@ import discord
 from am4.utils.aircraft import Aircraft
 from discord.ext import commands
 
-from ..common import HELP_AC_ARG0
-from ..config import cfg
-from .utils import COLOUR_ERROR, COLOUR_GENERIC, handle_too_many_args
+from ...common import HELP_AC_ARG0
+from ...config import cfg
+from ..utils import COLOUR_ERROR, COLOUR_GENERIC, handle_too_many_args
 
 
 class AircraftCog(commands.Cog):
@@ -14,7 +14,7 @@ class AircraftCog(commands.Cog):
     @commands.command(
         brief="Finds an aircraft",
         help=(
-            "Finds information about an aircraft given a *query*, examples:```sh\n"
+            "Finds information about an aircraft given a *query*, examples:```php\n"
             f"{cfg.bot.COMMAND_PREFIX}aircraft a388\n"
             f"{cfg.bot.COMMAND_PREFIX}aircraft b744[2]\n"
             f'{cfg.bot.COMMAND_PREFIX}aircraft "ATR 42-300[sfcx]"\n'
@@ -69,7 +69,7 @@ class AircraftCog(commands.Cog):
             emb.add_field(
                 name="Suggested commands:",
                 value=(
-                    "```sh\n"
+                    "```php\n"
                     f"{cfg.bot.COMMAND_PREFIX}help aircraft\n"
                     f"{cfg.bot.COMMAND_PREFIX}aircraft {suggs[0].ac.shortname}\n"
                     "```"

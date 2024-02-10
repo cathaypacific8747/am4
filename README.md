@@ -74,7 +74,7 @@ pip install wheelhouse/src/am4/utils-*.whl --force-reinstall
 ```
 
 ## AM4 Bot development
-```bash
+```sh
 pip3 install --verbose ".[dev]"
 cp config.example.json config.production.json
 PRODUCTION=1 python3 main.py

@@ -4,10 +4,10 @@
 #include <memory>
 #include <duckdb.hpp>
 
+using std::make_shared;
+using std::shared_ptr;
 using std::string;
 using std::to_string;
-using std::shared_ptr;
-using std::make_shared;
 
 struct Airport {
     enum class SearchType {
@@ -38,9 +38,10 @@ struct Airport {
         Airport::SearchType search_type;
         string search_str;
 
-        ParseResult(Airport::SearchType search_type, const string& search_str) : search_type(search_type), search_str(search_str) {}
+        ParseResult(Airport::SearchType search_type, const string& search_str)
+            : search_type(search_type), search_str(search_str) {}
     };
-    
+
     struct SearchResult {
         shared_ptr<Airport> ap;
         Airport::ParseResult parse_result;

@@ -30,7 +30,7 @@ PYBIND11_MODULE(utils, m) {
     pybind_init_route(m);
     pybind_init_log(m);
 
-    #ifdef VERSION_INFO
-        m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
-    #endif
+#ifdef VERSION_INFO
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+#endif
 }

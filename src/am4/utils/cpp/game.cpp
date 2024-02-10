@@ -1,21 +1,30 @@
-#include <iostream>
 #include "include/game.hpp"
+
+#include <iostream>
+
 #include "include/db.hpp"
 
-User::User() :
-    id("00000000-0000-0000-0000-000000000000"),
-    username(""), game_id(0), game_name(""), game_mode(GameMode::EASY),
-    discord_id(0),
-    wear_training(0), repair_training(0), l_training(0), h_training(0),
-    fuel_training(0), co2_training(0),
-    fuel_price(700), co2_price(120),
-    accumulated_count(0),
-    load(0.87),
-    income_loss_tol(0.0),
-    fourx(false),
-    role(User::Role::USER),
-    valid(false)
-{}
+User::User()
+    : id("00000000-0000-0000-0000-000000000000"),
+      username(""),
+      game_id(0),
+      game_name(""),
+      game_mode(GameMode::EASY),
+      discord_id(0),
+      wear_training(0),
+      repair_training(0),
+      l_training(0),
+      h_training(0),
+      fuel_training(0),
+      co2_training(0),
+      fuel_price(700),
+      co2_price(120),
+      accumulated_count(0),
+      load(0.87),
+      income_loss_tol(0.0),
+      fourx(false),
+      role(User::Role::USER),
+      valid(false) {}
 
 User User::Default(bool realism) {
     User user;
@@ -38,39 +47,62 @@ inline const string to_string(User::GameMode game_mode) {
     }
 }
 
+inline User::GameMode gamemode_from_string(const string &s) {
+    if (s == "REALISM") return User::GameMode::REALISM;
+    return User::GameMode::EASY;
+}
+
 inline const string to_string(User::Role role) {
     switch (role) {
         case User::Role::USER:
             return "USER";
         case User::Role::TRUSTED_USER:
             return "TRUSTED_USER";
+        case User::Role::TRUSTED_USER_2:
+            return "TRUSTED_USER_2";
+        case User::Role::TOP_ALLIANCE_MEMBER:
+            return "TOP_ALLIANCE_MEMBER";
+        case User::Role::TOP_ALLIANCE_ADMIN:
+            return "TOP_ALLIANCE_ADMIN";
+        case User::Role::HELPER:
+            return "HELPER";
+        case User::Role::MODERATOR:
+            return "MODERATOR";
         case User::Role::ADMIN:
             return "ADMIN";
+        case User::Role::GLOBAL_ADMIN:
+            return "GLOBAL_ADMIN";
         default:
             return "[UNKNOWN]";
     }
 }
 
-const string User::repr(const User& user) {
+inline User::Role role_from_string(const string &s) {
+    if (s == "USER") return User::Role::USER;
+    if (s == "TRUSTED_USER") return User::Role::TRUSTED_USER;
+    if (s == "TRUSTED_USER_2") return User::Role::TRUSTED_USER_2;
+    if (s == "TOP_ALLIANCE_MEMBER") return User::Role::TOP_ALLIANCE_MEMBER;
+    if (s == "TOP_ALLIANCE_ADMIN") return User::Role::TOP_ALLIANCE_ADMIN;
+    if (s == "HELPER") return User::Role::HELPER;
+    if (s == "MODERATOR") return User::Role::MODERATOR;
+    if (s == "ADMIN") return User::Role::ADMIN;
+    if (s == "GLOBAL_ADMIN") return User::Role::GLOBAL_ADMIN;
+    return User::Role::USER;
+}
+
+const string User::repr(const User &user) {
     if (!user.valid) return "<User.INVALID>";
-    return "<User id=" + user.id + " username=" + user.username + " discord_id=" + to_string(user.discord_id) + " game_id=" + to_string(user.game_id) + " game_name=" + user.game_name + " game_mode=" + to_string(user.game_mode) + ">";
+    return "<User id=" + user.id + " username=" + user.username + " discord_id=" + to_string(user.discord_id) +
+           " game_id=" + to_string(user.game_id) + " game_name=" + user.game_name +
+           " game_mode=" + to_string(user.game_mode) + ">";
 }
 
-Campaign::Campaign() :
-    pax_activated(Airline::NONE),
-    cargo_activated(Airline::NONE),
-    eco_activated(Eco::NONE)
-{}
+Campaign::Campaign() : pax_activated(Airline::NONE), cargo_activated(Airline::NONE), eco_activated(Eco::NONE) {}
 
-Campaign::Campaign(Airline pax_activated, Airline cargo_activated, Eco eco_activated) :
-    pax_activated(pax_activated),
-    cargo_activated(cargo_activated),
-    eco_activated(eco_activated)
-{}
+Campaign::Campaign(Airline pax_activated, Airline cargo_activated, Eco eco_activated)
+    : pax_activated(pax_activated), cargo_activated(cargo_activated), eco_activated(eco_activated) {}
 
-Campaign Campaign::Default() {
-    return Campaign(Airline::C4_24HR, Airline::C4_24HR, Eco::C_24HR);
-}
+Campaign Campaign::Default() { return Campaign(Airline::C4_24HR, Airline::C4_24HR, Eco::C_24HR); }
 
 double Campaign::estimate_pax_reputation(double base_reputation) {
     double reputation = base_reputation;
@@ -88,13 +120,33 @@ double Campaign::estimate_cargo_reputation(double base_reputation) {
 
 double Campaign::_estimate_airline_reputation(Airline airline) {
     switch (airline) {
-        case Airline::C4_4HR: case Airline::C4_8HR: case Airline::C4_12HR: case Airline::C4_16HR: case Airline::C4_20HR: case Airline::C4_24HR:
+        case Airline::C4_4HR:
+        case Airline::C4_8HR:
+        case Airline::C4_12HR:
+        case Airline::C4_16HR:
+        case Airline::C4_20HR:
+        case Airline::C4_24HR:
             return 30;
-        case Airline::C3_4HR: case Airline::C3_8HR: case Airline::C3_12HR: case Airline::C3_16HR: case Airline::C3_20HR: case Airline::C3_24HR:
+        case Airline::C3_4HR:
+        case Airline::C3_8HR:
+        case Airline::C3_12HR:
+        case Airline::C3_16HR:
+        case Airline::C3_20HR:
+        case Airline::C3_24HR:
             return 21.5;
-        case Airline::C2_4HR: case Airline::C2_8HR: case Airline::C2_12HR: case Airline::C2_16HR: case Airline::C2_20HR: case Airline::C2_24HR:
+        case Airline::C2_4HR:
+        case Airline::C2_8HR:
+        case Airline::C2_12HR:
+        case Airline::C2_16HR:
+        case Airline::C2_20HR:
+        case Airline::C2_24HR:
             return 14;
-        case Airline::C1_4HR: case Airline::C1_8HR: case Airline::C1_12HR: case Airline::C1_16HR: case Airline::C1_20HR: case Airline::C1_24HR:
+        case Airline::C1_4HR:
+        case Airline::C1_8HR:
+        case Airline::C1_12HR:
+        case Airline::C1_16HR:
+        case Airline::C1_20HR:
+        case Airline::C1_24HR:
             return 7.5;
         case Airline::NONE:
             return 0;
@@ -104,7 +156,12 @@ double Campaign::_estimate_airline_reputation(Airline airline) {
 
 double Campaign::_estimate_eco_reputation(Eco eco) {
     switch (eco) {
-        case Eco::C_4HR: case Eco::C_8HR: case Eco::C_12HR: case Eco::C_16HR: case Eco::C_20HR: case Eco::C_24HR:
+        case Eco::C_4HR:
+        case Eco::C_8HR:
+        case Eco::C_12HR:
+        case Eco::C_16HR:
+        case Eco::C_20HR:
+        case Eco::C_24HR:
             return 10;
         case Eco::NONE:
             return 0;
@@ -112,7 +169,7 @@ double Campaign::_estimate_eco_reputation(Eco eco) {
     return 0;
 }
 
-bool Campaign::_set(const string& s) {
+bool Campaign::_set(const string &s) {
     if (s == "C1") {
         pax_activated = Airline::C1_24HR;
         cargo_activated = Airline::C1_24HR;
@@ -136,7 +193,7 @@ bool Campaign::_set(const string& s) {
     return false;
 }
 
-Campaign Campaign::parse(const string& s) {
+Campaign Campaign::parse(const string &s) {
     Campaign campaign;
     string s_upper = s;
     s_upper.erase(std::remove_if(s_upper.begin(), s_upper.end(), isspace), s_upper.end());
@@ -157,31 +214,43 @@ Campaign Campaign::parse(const string& s) {
 #if BUILD_PYBIND == 1
 #include "include/binder.hpp"
 
-py::dict to_dict(const User& user) {
+py::dict to_dict(const User &user) {
     return py::dict(
-        "id"_a = user.id,
-        "username"_a = user.username,
-        "discord_id"_a = user.discord_id,
-        "game_id"_a = user.game_id,
-        "game_name"_a = user.game_name,
-        "game_mode"_a = to_string(user.game_mode),
-        "wear_training"_a = user.wear_training,
-        "repair_training"_a = user.repair_training,
-        "l_training"_a = user.l_training,
-        "h_training"_a = user.h_training,
-        "fuel_training"_a = user.fuel_training,
-        "co2_training"_a = user.co2_training,
-        "fuel_price"_a = user.fuel_price,
-        "co2_price"_a = user.co2_price,
-        "accumulated_count"_a = user.accumulated_count,
-        "load"_a = user.load,
-        "income_loss_tol"_a = user.income_loss_tol,
-        "fourx"_a = user.fourx,
-        "role"_a = to_string(user.role)
-    );
+        "id"_a = user.id, "username"_a = user.username, "discord_id"_a = user.discord_id, "game_id"_a = user.game_id,
+        "game_name"_a = user.game_name, "game_mode"_a = to_string(user.game_mode),
+        "wear_training"_a = user.wear_training, "repair_training"_a = user.repair_training,
+        "l_training"_a = user.l_training, "h_training"_a = user.h_training, "fuel_training"_a = user.fuel_training,
+        "co2_training"_a = user.co2_training, "fuel_price"_a = user.fuel_price, "co2_price"_a = user.co2_price,
+        "accumulated_count"_a = user.accumulated_count, "load"_a = user.load,
+        "income_loss_tol"_a = user.income_loss_tol, "fourx"_a = user.fourx, "role"_a = to_string(user.role));
 }
 
-void pybind_init_game(py::module_& m) {
+User from_dict(py::dict d) {
+    User user = User::Default();
+    user.id = d["id"].cast<string>();
+    user.username = d["username"].cast<string>();
+    user.game_id = d["game_id"].cast<uint32_t>();
+    user.game_name = d["game_name"].cast<string>();
+    user.game_mode = gamemode_from_string(d["game_mode"].cast<std::string>());
+    user.discord_id = d["discord_id"].cast<uint64_t>();
+    user.wear_training = d["wear_training"].cast<uint8_t>();
+    user.repair_training = d["repair_training"].cast<uint8_t>();
+    user.l_training = d["l_training"].cast<uint8_t>();
+    user.h_training = d["h_training"].cast<uint8_t>();
+    user.fuel_training = d["fuel_training"].cast<uint8_t>();
+    user.co2_training = d["co2_training"].cast<uint8_t>();
+    user.fuel_price = d["fuel_price"].cast<uint16_t>();
+    user.co2_price = d["co2_price"].cast<uint8_t>();
+    user.accumulated_count = d["accumulated_count"].cast<uint16_t>();
+    user.load = d["load"].cast<double>();
+    user.income_loss_tol = d["income_loss_tol"].cast<double>();
+    user.fourx = d["fourx"].cast<bool>();
+    user.role = role_from_string(d["role"].cast<std::string>());
+    user.valid = true;
+    return user;
+}
+
+void pybind_init_game(py::module_ &m) {
     py::module_ m_game = m.def_submodule("game");
 
     py::class_<User> user_class(m_game, "User");
@@ -192,8 +261,7 @@ void pybind_init_game(py::module_& m) {
         .value("USER", User::Role::USER)
         .value("TRUSTED_USER", User::Role::TRUSTED_USER)
         .value("ADMIN", User::Role::ADMIN);
-    user_class
-        .def_readonly("id", &User::id)
+    user_class.def_readonly("id", &User::id)
         .def_readwrite("username", &User::username)
         .def_readwrite("discord_id", &User::discord_id)
         .def_readwrite("game_id", &User::game_id)
@@ -214,27 +282,51 @@ void pybind_init_game(py::module_& m) {
         .def_readwrite("fourx", &User::fourx)
         .def_readwrite("role", &User::role)
         .def_static("Default", &User::Default, "realism"_a = false)
-        .def("to_dict", py::overload_cast<const User&>(&to_dict))
+        .def_static("from_dict", &from_dict)
+        .def("to_dict", py::overload_cast<const User &>(&to_dict))
         .def("__repr__", &User::repr);
 
     py::class_<Campaign> campaign_class(m_game, "Campaign");
     py::enum_<Campaign::Airline>(campaign_class, "Airline")
-        .value("C4_4HR", Campaign::Airline::C4_4HR).value("C4_8HR", Campaign::Airline::C4_8HR).value("C4_12HR", Campaign::Airline::C4_12HR).value("C4_16HR", Campaign::Airline::C4_16HR).value("C4_20HR", Campaign::Airline::C4_20HR).value("C4_24HR", Campaign::Airline::C4_24HR)
-        .value("C3_4HR", Campaign::Airline::C3_4HR).value("C3_8HR", Campaign::Airline::C3_8HR).value("C3_12HR", Campaign::Airline::C3_12HR).value("C3_16HR", Campaign::Airline::C3_16HR).value("C3_20HR", Campaign::Airline::C3_20HR).value("C3_24HR", Campaign::Airline::C3_24HR)
-        .value("C2_4HR", Campaign::Airline::C2_4HR).value("C2_8HR", Campaign::Airline::C2_8HR).value("C2_12HR", Campaign::Airline::C2_12HR).value("C2_16HR", Campaign::Airline::C2_16HR).value("C2_20HR", Campaign::Airline::C2_20HR).value("C2_24HR", Campaign::Airline::C2_24HR)
-        .value("C1_4HR", Campaign::Airline::C1_4HR).value("C1_8HR", Campaign::Airline::C1_8HR).value("C1_12HR", Campaign::Airline::C1_12HR).value("C1_16HR", Campaign::Airline::C1_16HR).value("C1_20HR", Campaign::Airline::C1_20HR).value("C1_24HR", Campaign::Airline::C1_24HR)
+        .value("C4_4HR", Campaign::Airline::C4_4HR)
+        .value("C4_8HR", Campaign::Airline::C4_8HR)
+        .value("C4_12HR", Campaign::Airline::C4_12HR)
+        .value("C4_16HR", Campaign::Airline::C4_16HR)
+        .value("C4_20HR", Campaign::Airline::C4_20HR)
+        .value("C4_24HR", Campaign::Airline::C4_24HR)
+        .value("C3_4HR", Campaign::Airline::C3_4HR)
+        .value("C3_8HR", Campaign::Airline::C3_8HR)
+        .value("C3_12HR", Campaign::Airline::C3_12HR)
+        .value("C3_16HR", Campaign::Airline::C3_16HR)
+        .value("C3_20HR", Campaign::Airline::C3_20HR)
+        .value("C3_24HR", Campaign::Airline::C3_24HR)
+        .value("C2_4HR", Campaign::Airline::C2_4HR)
+        .value("C2_8HR", Campaign::Airline::C2_8HR)
+        .value("C2_12HR", Campaign::Airline::C2_12HR)
+        .value("C2_16HR", Campaign::Airline::C2_16HR)
+        .value("C2_20HR", Campaign::Airline::C2_20HR)
+        .value("C2_24HR", Campaign::Airline::C2_24HR)
+        .value("C1_4HR", Campaign::Airline::C1_4HR)
+        .value("C1_8HR", Campaign::Airline::C1_8HR)
+        .value("C1_12HR", Campaign::Airline::C1_12HR)
+        .value("C1_16HR", Campaign::Airline::C1_16HR)
+        .value("C1_20HR", Campaign::Airline::C1_20HR)
+        .value("C1_24HR", Campaign::Airline::C1_24HR)
         .value("NONE", Campaign::Airline::NONE);
     py::enum_<Campaign::Eco>(campaign_class, "Eco")
-        .value("C_4HR", Campaign::Eco::C_4HR).value("C_8HR", Campaign::Eco::C_8HR).value("C_12HR", Campaign::Eco::C_12HR).value("C_16HR", Campaign::Eco::C_16HR).value("C_20HR", Campaign::Eco::C_20HR).value("C_24HR", Campaign::Eco::C_24HR)
+        .value("C_4HR", Campaign::Eco::C_4HR)
+        .value("C_8HR", Campaign::Eco::C_8HR)
+        .value("C_12HR", Campaign::Eco::C_12HR)
+        .value("C_16HR", Campaign::Eco::C_16HR)
+        .value("C_20HR", Campaign::Eco::C_20HR)
+        .value("C_24HR", Campaign::Eco::C_24HR)
         .value("NONE", Campaign::Eco::NONE);
-    campaign_class
-        .def_readonly("pax_activated", &Campaign::pax_activated)
+    campaign_class.def_readonly("pax_activated", &Campaign::pax_activated)
         .def_readonly("cargo_activated", &Campaign::cargo_activated)
         .def_readonly("eco_activated", &Campaign::eco_activated)
         .def_static("Default", &Campaign::Default)
         .def_static("parse", &Campaign::parse, "s"_a)
         .def("estimate_pax_reputation", &Campaign::estimate_pax_reputation, "base_reputation"_a = 45)
         .def("estimate_cargo_reputation", &Campaign::estimate_cargo_reputation, "base_reputation"_a = 45);
-
 }
 #endif

@@ -279,6 +279,9 @@ class User:
     @staticmethod
     def Default(realism: bool = False) -> User:
         ...
+    @staticmethod
+    def from_dict(arg0: dict) -> User:
+        ...
     def __repr__(self) -> str:
         ...
     def to_dict(self) -> dict:

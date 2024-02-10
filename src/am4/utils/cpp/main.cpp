@@ -18,17 +18,16 @@
 
 #include "include/log.hpp"
 
-using std::string;
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
+using std::string;
 
 #ifdef VERSION_INFO
-    string version = MACRO_STRINGIFY(VERSION_INFO);
+string version = MACRO_STRINGIFY(VERSION_INFO);
 #else
-    string version = "dev";
+string version = "dev";
 #endif
-
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -53,10 +52,8 @@ string get_executable_path() {
 class Timer {
     std::chrono::high_resolution_clock::time_point start;
 
-public:
-    Timer() {
-        start = std::chrono::high_resolution_clock::now();
-    }
+   public:
+    Timer() { start = std::chrono::high_resolution_clock::now(); }
 
     void stop() {
         auto finish = std::chrono::high_resolution_clock::now();
@@ -74,29 +71,30 @@ int main() {
     // __itt_domain* domain = __itt_domain_create("main_domain");
     // __itt_string_handle* handle_main = __itt_string_handle_create("main_handle");
     string executable_path = get_executable_path();
-    cout << "am4.utils (v" << version << "), executable_path: " << executable_path << "\n_______" << std::setprecision(15) << endl;
+    cout << "am4.utils (v" << version << "), executable_path: " << executable_path << "\n_______"
+         << std::setprecision(15) << endl;
 
     try {
-    init(executable_path); // 1.3s
-    // const auto& db = Database::Client();
+        init(executable_path);  // 1.3s
+        // const auto& db = Database::Client();
 
-    // Airport ap0 = *Airport::search("VHHH").ap;
-    // Airport ap1 = *Airport::search("TPE").ap;
-    // Aircraft ac = *Aircraft::search("mc214").ac;
-    // // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-    // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
-    // User user = User::Default();
+        // Airport ap0 = *Airport::search("VHHH").ap;
+        // Airport ap1 = *Airport::search("TPE").ap;
+        // Aircraft ac = *Aircraft::search("mc214").ac;
+        // // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
+        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
+        // User user = User::Default();
 
-    // auto timer = Timer();
-    // __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-    // for (int i = 0; i < 1000; i++) {
-    //     std::ignore = find_routes(ap0, ac, options, User::Default());
-    // }
-    // __itt_task_end(domain);
-    // timer.stop();
-    getchar();
+        // auto timer = Timer();
+        // __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
+        // for (int i = 0; i < 1000; i++) {
+        //     std::ignore = find_routes(ap0, ac, options, User::Default());
+        // }
+        // __itt_task_end(domain);
+        // timer.stop();
+        getchar();
 
-    } catch (DatabaseException &e) {
+    } catch (DatabaseException& e) {
         cerr << "DatabaseException: " << e.what() << endl;
         return 1;
     }

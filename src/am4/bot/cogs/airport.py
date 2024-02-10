@@ -2,9 +2,9 @@ import discord
 from am4.utils.airport import Airport
 from discord.ext import commands
 
-from ..common import HELP_AP_ARG0
-from ..config import cfg
-from .utils import COLOUR_ERROR, COLOUR_GENERIC, handle_too_many_args
+from ...common import HELP_AP_ARG0
+from ...config import cfg
+from ..utils import COLOUR_ERROR, COLOUR_GENERIC, handle_too_many_args
 
 
 class AirportCog(commands.Cog):
@@ -14,7 +14,7 @@ class AirportCog(commands.Cog):
     @commands.command(
         brief="Finds an airport",
         help=(
-            "Finds information about an airport given a *query*, examples:```sh\n"
+            "Finds information about an airport given a *query*, examples:```php\n"
             f"{cfg.bot.COMMAND_PREFIX}airport HKG\n"
             f"{cfg.bot.COMMAND_PREFIX}airport id:3500\n"
             "```"
@@ -46,7 +46,7 @@ class AirportCog(commands.Cog):
         emb = sugg_embed(ap, suggs)
         if suggs:
             emb.add_field(
-                name="Suggested command:", value=f"```sh\n{cfg.bot.COMMAND_PREFIX}airport {suggs[0].ap.icao}\n```"
+                name="Suggested command:", value=f"```php\n{cfg.bot.COMMAND_PREFIX}airport {suggs[0].ap.icao}\n```"
             )
         await ctx.send(embed=emb)
         return
