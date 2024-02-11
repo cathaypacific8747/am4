@@ -6,11 +6,11 @@ from am4.utils.route import AircraftRoute
 from fastapi import HTTPException, Query
 from pydantic import BaseModel, Field
 
-from ...common import HELP_AC_ARG0, HELP_AP_ARG0
-from .aircraft import PyAircraft, PyAircraftSuggestion
-from .airport import PyAirport, PyAirportSuggestion
-from .game import PyUser
-from .route import (
+from ..common import HELP_AC_ARG0, HELP_AP_ARG0
+from ..db.models.aircraft import PyAircraft, PyAircraftSuggestion
+from ..db.models.airport import PyAirport, PyAirportSuggestion
+from ..db.models.game import PyUser
+from ..db.models.route import (
     PyACROptionsConfigAlgorithm,
     PyACROptionsMaxDistance,
     PyACROptionsMaxFlightTime,

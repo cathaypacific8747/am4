@@ -37,8 +37,10 @@ def get_err_embed(
 
 async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     u = ctx.author
-    game_mode = "REALISM" if discord.utils.get(u.roles, name="Realism") else "EASY"
-    user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.nick, game_mode, u.id)
+    local_is_realism = discord.utils.get(u.roles, name="Realism") is not None
+    user, user_extra, dbstatus = await pb.users.get_from_discord(
+        u.name, u.nick, "REALISM" if local_is_realism else "EASY", u.id
+    )
     if dbstatus == "created":
         await ctx.send(
             embed=discord.Embed(
@@ -51,6 +53,17 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
                     f"Learn more about the settings with `{cfg.bot.COMMAND_PREFIX}help settings`."
                 ),
                 color=COLOUR_SUCCESS,
+            )
+        )
+    if local_is_realism and user.game_mode == User.GameMode.EASY:
+        await ctx.send(
+            embed=get_err_embed(
+                title="You are in the wrong game mode!",
+                desc=(
+                    "I detected the `Realism` role on your account, but your settings indicate"
+                    " that you are in the Easy game mode.\n"
+                ),
+                suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism"],
             )
         )
     return user, user_extra

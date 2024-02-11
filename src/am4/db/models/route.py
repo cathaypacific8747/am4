@@ -1,8 +1,7 @@
-from typing import Literal, Optional
-
-from pydantic import BaseModel, Field, confloat, conint
+from typing import Annotated, Literal, Optional
 
 from am4.utils.route import AircraftRoute, Route
+from pydantic import BaseModel, Field
 
 from .aircraft import (
     PyCargoConfig,
@@ -25,10 +24,10 @@ assert_equal_property_names(Route, PyRoute)
 ## ACR
 
 PyACROptionsConfigAlgorithm = PyConfigAlgorithm
-PyACROptionsMaxDistance = confloat(ge=0)
-PyACROptionsMaxFlightTime = confloat(ge=0)
+PyACROptionsMaxDistance = Annotated[float, Field(ge=0)]
+PyACROptionsMaxFlightTime = Annotated[float, Field(ge=0)]
 PyACROptionsTPDMode = Literal["AUTO", "AUTO_MULTIPLE_OF", "STRICT"]
-PyACROptionsTripsPerDay = conint(ge=1)
+PyACROptionsTripsPerDay = Annotated[int, Field(ge=1)]
 
 
 class PyACRouteStopover(BaseModel):

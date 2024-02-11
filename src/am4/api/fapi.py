@@ -11,7 +11,7 @@ from fastapi.responses import ORJSONResponse
 from uvicorn import Config, Server
 
 from ..config import cfg
-from .models.fapi import (
+from .models import (
     FAPIReqACROptions,
     FAPIReqACSearchQuery,
     FAPIReqAPSearchQuery,
@@ -23,8 +23,6 @@ from .models.fapi import (
     FAPIRespAirport,
     FAPIRespAirportNotFound,
     FAPIRespRoute,
-    FAPIRespUser,
-    FAPIRespUserNotFound,
 )
 
 

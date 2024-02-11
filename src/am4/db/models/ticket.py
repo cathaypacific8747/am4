@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-
 from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
+from pydantic import BaseModel
 
 from .util import assert_equal_property_names
 

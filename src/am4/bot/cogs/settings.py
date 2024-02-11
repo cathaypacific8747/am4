@@ -1,17 +1,29 @@
+import heapq
 from typing import Literal
 
 import discord
+from am4.utils.db.utils import jaro_winkler_distance
 from am4.utils.game import User
 from discord.ext import commands
+from pydantic import ValidationError
 
 from ...config import cfg
+from ...db.models.game import PyUser, pyuser_whitelisted_keys
 from ..utils import (
     COLOUR_GENERIC,
     fetch_user_info,
+    get_err_embed,
     handle_bad_literal,
     handle_missing_arg,
     handle_too_many_args,
 )
+
+
+def suggest_setting_keys(k_input: str) -> list[str]:
+    top_keys = []
+    for k in pyuser_whitelisted_keys:
+        heapq.heappush(top_keys, (jaro_winkler_distance(k_input, k), k))
+    return [k for _, k in heapq.nlargest(3, top_keys)]
 
 
 class SettingsCog(commands.Cog):
@@ -48,7 +60,7 @@ class SettingsCog(commands.Cog):
         ignore_extra=False,
     )
     async def show(self, ctx: commands.Context):
-        u, ue = await fetch_user_info(ctx)
+        u, _ue = await fetch_user_info(ctx)
         e = discord.Embed(
             title=f"Settings for `@{u.username}`)",
             description=(
@@ -81,8 +93,44 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def set(self, ctx: commands.Context, key: str, value: str):
-        await ctx.send(f"TODO: Set setting {key} to {value}")
+    async def set(self, ctx: commands.Context, key: str, value: str | int | float | bool):
+        # check whether key is whitelisted, and value conforms to pydantic, if so, update db.
+        if key not in pyuser_whitelisted_keys:
+            sugg_keys = suggest_setting_keys(key)
+            await ctx.send(
+                embed=get_err_embed(
+                    title=f"Setting key `{key}` is invalid.",
+                    desc=(
+                        "The provided setting key is not valid. Did you mean:\n"
+                        + "\n".join(f"- `{k}`" for k in sugg_keys)
+                    ),
+                    suggested_commands=[
+                        f"{cfg.bot.COMMAND_PREFIX}help settings set",
+                        f"{cfg.bot.COMMAND_PREFIX}settings set {sugg_keys[0]} <value>",
+                    ],
+                )
+            )
+            return
+
+        try:
+            u_new = PyUser.__pydantic_validator__.validate_assignment(PyUser.model_construct(), key, value)
+        except ValidationError as err:
+            await ctx.send(
+                embed=get_err_embed(
+                    title=f"Invalid setting value `{value}` for key `{key}`",
+                    desc="\n".join(f"- {','.join(f'`{l}`' for l in e['loc'])}: {e['msg']}" for e in err.errors()),
+                    suggested_commands=[
+                        f"{cfg.bot.COMMAND_PREFIX}help settings set",
+                        f"{cfg.bot.COMMAND_PREFIX}settings set {key} <value>",
+                    ],
+                )
+            )
+            return
+
+        v_new = getattr(u_new, key)
+        u, _ue = await fetch_user_info(ctx)
+        print(u.id)
+        await ctx.send(f"{v_new=}")
 
     @settings.command(
         brief="reset one of my settings",
@@ -105,7 +153,6 @@ class SettingsCog(commands.Cog):
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_missing_arg(ctx, error, "settings show")
         await handle_too_many_args(ctx, error, "setting key", "settings show")
         raise error
 

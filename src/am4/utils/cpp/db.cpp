@@ -391,6 +391,10 @@ void pybind_init_db(py::module_& m) {
     )
         .def("_debug_query", &_debug_query, "query"_a);
 
+    py::module_ m_utils = m_db.def_submodule("utils");
+    m_utils.def("jaro_distance", &jaro_distance, "a"_a, "b"_a)
+        .def("jaro_winkler_distance", &jaro_winkler_distance, "a"_a, "b"_a);
+
     py::register_exception<DatabaseException>(m_db, "DatabaseException");
 }
 #endif
