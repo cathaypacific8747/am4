@@ -80,7 +80,9 @@ int main() {
 
         // Airport ap0 = *Airport::search("VHHH").ap;
         // Airport ap1 = *Airport::search("TPE").ap;
-        // Aircraft ac = *Aircraft::search("mc214").ac;
+        // Aircraft ac = *Aircraft::search("74sp").ac;
+        auto test = *Airport::search("id:65824").ap;
+        cout << test.valid << endl;
         // // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
         // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
         // User user = User::Default();

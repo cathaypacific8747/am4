@@ -5,6 +5,7 @@
 #include "include/db.hpp"
 #include "include/airport.hpp"
 #include "include/route.hpp"
+#include "include/util.hpp"
 
 Airport::Airport() : valid(false) {}
 
@@ -21,11 +22,9 @@ Airport::ParseResult Airport::parse(const string& s) {
     } else if (s_upper.substr(0, 9) == "FULLNAME:") {
         return ParseResult(SearchType::FULLNAME, s_upper.substr(9));
     } else if (s_upper.substr(0, 3) == "ID:") {
-        try {
-            std::ignore = std::stoi(s.substr(3));
+        uint16_t id;
+        if (str_to_uint16(s.substr(3), id)) {
             return ParseResult(SearchType::ID, s.substr(3));
-        } catch (const std::invalid_argument&) {
-        } catch (const std::out_of_range&) {
         }
     } else if (s_upper.substr(0, 4) == "ALL:") {
         return ParseResult(SearchType::ALL, s_upper.substr(4));
@@ -53,7 +52,12 @@ Airport::SearchResult Airport::search(const string& s) {
             ap = Database::Client()->get_airport_by_fullname(parse_result.search_str);
             break;
         case SearchType::ID:
-            ap = Database::Client()->get_airport_by_id(static_cast<uint16_t>(std::stoi(parse_result.search_str)));
+            uint16_t id;
+            if (str_to_uint16(parse_result.search_str, id)) {
+                ap = Database::Client()->get_airport_by_id(id);
+            } else {
+                ap = Airport();
+            }
             break;
     }
     return SearchResult(make_shared<Airport>(ap), parse_result);

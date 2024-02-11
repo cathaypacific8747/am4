@@ -30,20 +30,21 @@ class PyUser(BaseModel):
     load: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     income_loss_tol: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     fourx: bool
-    role: Annotated[Literal[
-        "USER",
-        "TRUSTED_USER",
-        "HIGHLY_TRUSTED_USER",
-        "TOP_ALLIANCE_MEMBER",
-        "TOP_ALLIANCE_ADMIN",
-        "HELPER",
-        "MODERATOR",
-        "ADMIN",
-        "SUPERUSER",
-    ], StrToUpper]
+    role: Annotated[
+        Literal[
+            "USER",
+            "TRUSTED_USER",
+            "HIGHLY_TRUSTED_USER",
+            "TOP_ALLIANCE_MEMBER",
+            "TOP_ALLIANCE_ADMIN",
+            "HELPER",
+            "MODERATOR",
+            "ADMIN",
+            "SUPERUSER",
+        ],
+        StrToUpper,
+    ]
     valid: bool
-
-    class Config:
 
 
 pyuser_whitelisted_keys = [

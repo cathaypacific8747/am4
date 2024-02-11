@@ -2,6 +2,7 @@ research/** linguist-vendored
 src/am4/utils/stubs/** linguist-vendored
 src/am4/utils/tests/** linguist-vendored
 src/am4/utils/cpp/include/ext/** linguist-vendored
+src/am4/utils/_official_api/** linguist-vendored
 src/am4/db/pb_migrations/** linguist-vendored
 src/am4/db/pb_data/** linguist-vendored
 src-v2-v3/** linguist-vendored

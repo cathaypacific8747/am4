@@ -1,5 +1,4 @@
 import pytest
-
 from am4.utils.aircraft import Aircraft
 from am4.utils.game import User
 
@@ -17,6 +16,18 @@ def test_aircraft_fail_and_suggest(inp):
     assert not a0.ac.valid
     suggs = Aircraft.suggest(a0.parse_result)
     assert suggs[0].ac.shortname == "b744"
+
+
+@pytest.mark.parametrize("inp", ["74sp", "id:335a"])
+def test_aircraft_stoi_trailing(inp):
+    a0 = Aircraft.search(inp)
+    assert not a0.ac.valid
+
+
+@pytest.mark.parametrize("inp", ["65590", "id:65590"])
+def test_aircraft_stoi_overflow(inp):
+    a0 = Aircraft.search(inp)
+    assert not a0.ac.valid
 
 
 @pytest.mark.parametrize(

@@ -5,6 +5,7 @@
 
 #include "include/db.hpp"
 #include "include/ext/jaro.hpp"
+#include "include/util.hpp"
 
 shared_ptr<Database> Database::default_client = nullptr;
 shared_ptr<Database> Database::Client(const string& home_dir) {
@@ -124,11 +125,10 @@ Airport Database::get_airport_by_fullname(const string& name) {
 }
 
 Airport Database::get_airport_by_all(const string& all) {
-    try {
-        uint16_t id = static_cast<uint16_t>(std::stoi(all));
+    uint16_t id;
+    if (str_to_uint16(all, id)) {
         Airport ap = get_airport_by_id(id);
         if (ap.valid) return ap;
-    } catch (std::invalid_argument&) {
     }
     auto it = std::find_if(std::begin(airports), std::end(airports), [&](const Airport& a) {
         string db_name = a.name;
@@ -277,11 +277,10 @@ Aircraft Database::get_aircraft_by_name(const string& name, uint8_t priority) {
 }
 
 Aircraft Database::get_aircraft_by_all(const string& shortname, uint8_t priority) {
-    try {
-        uint16_t id = static_cast<uint16_t>(std::stoi(shortname));
+    uint16_t id;
+    if (str_to_uint16(shortname, id)) {
         Aircraft ac = get_aircraft_by_id(id, 0);
         if (ac.valid) return ac;
-    } catch (std::invalid_argument&) {
     }
     auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
         string db_name = a.name;

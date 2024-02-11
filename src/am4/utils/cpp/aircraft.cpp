@@ -5,6 +5,7 @@
 #include <string>
 
 #include "include/db.hpp"
+#include "include/util.hpp"
 
 Aircraft::Aircraft() : speed_mod(false), fuel_mod(false), co2_mod(false), fourx_mod(false), valid(false) {}
 
@@ -64,6 +65,7 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
             } catch (const std::out_of_range&) {
             }
         }
+        s_lower = s_lower.substr(0, start);
     }
     if (s_lower.substr(0, 5) == "name:") {
         return Aircraft::ParseResult(
@@ -74,13 +76,11 @@ Aircraft::ParseResult Aircraft::parse(const string& s) {
             Aircraft::SearchType::SHORTNAME, s_lower.substr(10), priority, speed_mod, fuel_mod, co2_mod, fourx_mod
         );
     } else if (s_lower.substr(0, 3) == "id:") {
-        try {
-            std::ignore = std::stoi(s.substr(3));
+        uint16_t id;
+        if (str_to_uint16(s_lower.substr(3), id)) {
             return Aircraft::ParseResult(
-                Aircraft::SearchType::ID, s.substr(3), priority, speed_mod, fuel_mod, co2_mod, fourx_mod
+                Aircraft::SearchType::ID, s_lower.substr(3), priority, speed_mod, fuel_mod, co2_mod, fourx_mod
             );
-        } catch (const std::invalid_argument&) {
-        } catch (const std::out_of_range&) {
         }
     } else if (s_lower.substr(0, 4) == "all:") {
         return Aircraft::ParseResult(
@@ -104,9 +104,12 @@ Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
             ac = Database::Client()->get_aircraft_by_shortname(parse_result.search_str, parse_result.priority);
             break;
         case Aircraft::SearchType::ID:
-            ac = Database::Client()->get_aircraft_by_id(
-                static_cast<uint16_t>(std::stoi(parse_result.search_str)), parse_result.priority
-            );
+            uint16_t id;
+            if (str_to_uint16(parse_result.search_str, id)) {
+                ac = Database::Client()->get_aircraft_by_id(id, parse_result.priority);
+            } else {
+                ac = Aircraft();
+            }
             break;
     }
     ac.speed_mod = parse_result.speed_mod;

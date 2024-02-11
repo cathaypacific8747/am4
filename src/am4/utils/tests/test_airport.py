@@ -1,5 +1,4 @@
 import pytest
-
 from am4.utils.airport import Airport
 
 
@@ -35,3 +34,9 @@ def test_airport_fail_and_suggest(inp):
     assert not a0.ap.valid
     suggs = Airport.suggest(a0.parse_result)
     assert suggs[0].ap.iata == "HKG"
+
+
+@pytest.mark.parametrize("inp", ["65590", "id:65590"])
+def test_airport_stoi_overflow(inp):
+    a0 = Airport.search(inp)
+    assert not a0.ap.valid

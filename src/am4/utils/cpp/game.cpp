@@ -21,7 +21,7 @@ User::User()
       co2_price(120),
       accumulated_count(0),
       load(0.87),
-      income_loss_tol(0.1),
+      income_loss_tol(0.0),
       fourx(false),
       role(User::Role::USER),
       valid(false) {}
