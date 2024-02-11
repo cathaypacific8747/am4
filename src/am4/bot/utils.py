@@ -1,14 +1,17 @@
 import discord
+from am4.utils.game import User
 from discord.ext import commands
 
 from ..config import cfg
 from ..db.client import pb
+from ..db.user import UserExtra
 
 GUIDE_DEV_ROLEID = 646148607636144131
 STAR_ROLEID = 701410528853098497
 
 COLOUR_GENERIC = discord.Colour(0x9FACBD)
 COLOUR_ERROR = discord.Colour(0xCA7575)
+COLOUR_SUCCESS = discord.Colour(0x75CA83)
 
 _SP100 = " "
 _SP050 = " "
@@ -32,9 +35,25 @@ def get_err_embed(
     return emb
 
 
-async def get_user(user: discord.Member | discord.User):
-    game_mode = "REALISM" if discord.utils.get(user.roles, name="Realism") else "EASY"
-    return await pb.users.create_from_discord(user.name, user.nick, game_mode, user.id)
+async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
+    u = ctx.author
+    game_mode = "REALISM" if discord.utils.get(u.roles, name="Realism") else "EASY"
+    user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.nick, game_mode, u.id)
+    if dbstatus == "created":
+        await ctx.send(
+            embed=discord.Embed(
+                title="Your account has been created.",
+                description=(
+                    "You can modify your game mode, reputation and other settings "
+                    f"with the `{cfg.bot.COMMAND_PREFIX}settings` command.\n"
+                    "They will be automatically applied when using the bot's commands.\n\n"
+                    f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
+                    f"Learn more about the settings with `{cfg.bot.COMMAND_PREFIX}help settings`."
+                ),
+                color=COLOUR_SUCCESS,
+            )
+        )
+    return user, user_extra
 
 
 async def handle_too_many_args(ctx: commands.Context, error: commands.CommandError, arg_name: str, cmd: str):
@@ -75,7 +94,7 @@ async def handle_bad_literal(ctx: commands.Context, error: commands.CommandError
     if isinstance(error, commands.BadLiteralArgument):
         pre = ctx.view.buffer[: ctx.view.previous]
         cp = ctx.current_parameter
-        valid_literals = ", ".join([f"`{l}`" for l in error.literals])
+        valid_literals = ", ".join(f"`{l}`" for l in error.literals)
         await ctx.send(
             embed=get_err_embed(
                 title="Provided argument is invalid!",

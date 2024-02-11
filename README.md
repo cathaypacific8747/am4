@@ -54,6 +54,15 @@ cd build
 cmake .. && cmake --build . --target _core_executable && ./_core_executable
 ```
 
+### am4/db
+```sh
+cd src/am4/db
+go mod init am4db && go mod tidy
+go run main.go serve
+CGO_ENABLED=0 go build
+./am4db serve
+```
+
 ### Python bindings
 ```sh
 sudo apt-get install python3-dev

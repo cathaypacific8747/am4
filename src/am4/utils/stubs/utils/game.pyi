@@ -285,7 +285,9 @@ class User:
     def __repr__(self) -> str:
         ...
     def to_dict(self) -> dict:
-        ...
+        """
+        WARNING: dict is passed by reference - will remove added keys!
+        """
     @property
     def id(self) -> str:
         ...

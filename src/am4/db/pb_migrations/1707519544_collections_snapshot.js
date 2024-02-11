@@ -277,10 +277,10 @@ migrate((db) => {
       "options": {
         "allowEmailAuth": false,
         "allowOAuth2Auth": true,
-        "allowUsernameAuth": true,
+        "allowUsernameAuth": false,
         "exceptEmailDomains": null,
         "manageRule": null,
-        "minPasswordLength": 8,
+        "minPasswordLength": 0,
         "onlyEmailDomains": null,
         "onlyVerified": false,
         "requireEmail": false

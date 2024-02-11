@@ -21,7 +21,7 @@ User::User()
       co2_price(120),
       accumulated_count(0),
       load(0.87),
-      income_loss_tol(0.0),
+      income_loss_tol(0.1),
       fourx(false),
       role(User::Role::USER),
       valid(false) {}
@@ -226,27 +226,28 @@ py::dict to_dict(const User &user) {
     );
 }
 
-User from_dict(py::dict d) {
+User from_dict(py::dict &d) {
     User user = User::Default();
-    user.id = d["id"].cast<string>();
-    user.username = d["username"].cast<string>();
-    user.game_id = d["game_id"].cast<uint32_t>();
-    user.game_name = d["game_name"].cast<string>();
-    user.game_mode = gamemode_from_string(d["game_mode"].cast<std::string>());
-    user.discord_id = d["discord_id"].cast<uint64_t>();
-    user.wear_training = d["wear_training"].cast<uint8_t>();
-    user.repair_training = d["repair_training"].cast<uint8_t>();
-    user.l_training = d["l_training"].cast<uint8_t>();
-    user.h_training = d["h_training"].cast<uint8_t>();
-    user.fuel_training = d["fuel_training"].cast<uint8_t>();
-    user.co2_training = d["co2_training"].cast<uint8_t>();
-    user.fuel_price = d["fuel_price"].cast<uint16_t>();
-    user.co2_price = d["co2_price"].cast<uint8_t>();
-    user.accumulated_count = d["accumulated_count"].cast<uint16_t>();
-    user.load = d["load"].cast<double>();
-    user.income_loss_tol = d["income_loss_tol"].cast<double>();
-    user.fourx = d["fourx"].cast<bool>();
-    user.role = role_from_string(d["role"].cast<std::string>());
+    auto p = d.attr("pop");
+    user.id = p("id").cast<string>();
+    user.username = p("username").cast<string>();
+    user.game_id = p("game_id").cast<uint32_t>();
+    user.game_name = p("game_name").cast<string>();
+    user.game_mode = gamemode_from_string(p("game_mode").cast<std::string>());
+    user.discord_id = p("discord_id").cast<uint64_t>();
+    user.wear_training = p("wear_training").cast<uint8_t>();
+    user.repair_training = p("repair_training").cast<uint8_t>();
+    user.l_training = p("l_training").cast<uint8_t>();
+    user.h_training = p("h_training").cast<uint8_t>();
+    user.fuel_training = p("fuel_training").cast<uint8_t>();
+    user.co2_training = p("co2_training").cast<uint8_t>();
+    user.fuel_price = p("fuel_price").cast<uint16_t>();
+    user.co2_price = p("co2_price").cast<uint8_t>();
+    user.accumulated_count = p("accumulated_count").cast<uint16_t>();
+    user.load = p("load").cast<double>();
+    user.income_loss_tol = p("income_loss_tol").cast<double>();
+    user.fourx = p("fourx").cast<bool>();
+    user.role = role_from_string(p("role").cast<std::string>());
     user.valid = true;
     return user;
 }
@@ -284,7 +285,10 @@ void pybind_init_game(py::module_ &m) {
         .def_readwrite("role", &User::role)
         .def_static("Default", &User::Default, "realism"_a = false)
         .def_static("from_dict", &from_dict)
-        .def("to_dict", py::overload_cast<const User &>(&to_dict))
+        .def(
+            "to_dict", py::overload_cast<const User &>(&to_dict),
+            "WARNING: dict is passed by reference - will remove added keys!"
+        )
         .def("__repr__", &User::repr);
 
     py::class_<Campaign> campaign_class(m_game, "Campaign");

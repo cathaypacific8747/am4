@@ -1,11 +1,13 @@
 from typing import Literal
 
 import discord
+from am4.utils.game import User
 from discord.ext import commands
 
 from ...config import cfg
 from ..utils import (
-    get_user,
+    COLOUR_GENERIC,
+    fetch_user_info,
     handle_bad_literal,
     handle_missing_arg,
     handle_too_many_args,
@@ -45,14 +47,30 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def show(self, ctx: commands.Context, key: str = commands.parameter(description="Setting key")):
-        u, ue = await get_user(ctx.author)
-        await ctx.send(str(u.to_dict()))
-        if key == "*":
-            await ctx.send("TODO: show all settings")
-            return
-
-        await ctx.send("TODO: show settings")
+    async def show(self, ctx: commands.Context):
+        u, ue = await fetch_user_info(ctx)
+        e = discord.Embed(
+            title=f"Settings for `@{u.username}`)",
+            description=(
+                f"`        game_mode`: {'Easy' if u.game_mode == User.GameMode.EASY else 'Realism'}\n"
+                f"`          game_id`: {u.game_id}\n"
+                f"`        game_name`: {u.game_name}\n"
+                f"`             load`: {u.load:.2%}\n"
+                f"`  income_loss_tol`: {u.income_loss_tol:.2%}\n"
+                f"`    wear_training`: {u.wear_training}\n"
+                f"`  repair_training`: {u.repair_training}\n"
+                f"`       h_training`: {u.h_training}\n"
+                f"`       l_training`: {u.l_training}\n"
+                f"`     co2_training`: {u.co2_training}\n"
+                f"`    fuel_training`: {u.fuel_training}\n"
+                f"`        co2_price`: {u.co2_price}\n"
+                f"`       fuel_price`: {u.fuel_price}\n"
+                f"`            fourx`: {'Yes' if u.fourx else 'No'}\n"
+                f"`accumulated_count`: {u.accumulated_count}\n"
+            ),
+            color=COLOUR_GENERIC,
+        )
+        await ctx.send(embed=e)
 
     @settings.command(
         brief="set one of my settings",
