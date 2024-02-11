@@ -130,10 +130,11 @@ const string Airport::repr(const Airport& ap) {
 #include "include/binder.hpp"
 
 py::dict to_dict(const Airport& ap) {
-    return py::dict("id"_a = ap.id, "name"_a = ap.name, "fullname"_a = ap.fullname, "country"_a = ap.country,
-                    "continent"_a = ap.continent, "iata"_a = ap.iata, "icao"_a = ap.icao, "lat"_a = ap.lat,
-                    "lng"_a = ap.lng, "rwy"_a = ap.rwy, "market"_a = ap.market, "hub_cost"_a = ap.hub_cost,
-                    "rwy_codes"_a = ap.rwy_codes);
+    return py::dict(
+        "id"_a = ap.id, "name"_a = ap.name, "fullname"_a = ap.fullname, "country"_a = ap.country,
+        "continent"_a = ap.continent, "iata"_a = ap.iata, "icao"_a = ap.icao, "lat"_a = ap.lat, "lng"_a = ap.lng,
+        "rwy"_a = ap.rwy, "market"_a = ap.market, "hub_cost"_a = ap.hub_cost, "rwy_codes"_a = ap.rwy_codes
+    );
 }
 
 void pybind_init_airport(py::module_& m) {

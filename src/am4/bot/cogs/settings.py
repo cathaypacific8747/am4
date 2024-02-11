@@ -54,10 +54,6 @@ class SettingsCog(commands.Cog):
 
         await ctx.send("TODO: show settings")
 
-    @show.error
-    async def show_error(self, ctx: commands.Context, error: commands.CommandError):
-        raise error
-
     @settings.command(
         brief="set one of my settings",
         help=(
@@ -84,21 +80,25 @@ class SettingsCog(commands.Cog):
 
     @settings.error
     async def settings_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_missing_arg(ctx, error, "settings")
         await handle_bad_literal(ctx, error, "settings")
+        await handle_missing_arg(ctx, error, "settings")
         await handle_too_many_args(ctx, error, "action", "settings")
+        raise error
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
         await handle_missing_arg(ctx, error, "settings show")
         await handle_too_many_args(ctx, error, "setting key", "settings show")
+        raise error
 
     @set.error
     async def set_error(self, ctx: commands.Context, error: commands.CommandError):
         await handle_missing_arg(ctx, error, "settings reset")
         await handle_too_many_args(ctx, error, "setting key and value", "settings set")
+        raise error
 
     @reset.error
     async def reset_error(self, ctx: commands.Context, error: commands.CommandError):
         await handle_missing_arg(ctx, error, "settings reset")
         await handle_too_many_args(ctx, error, "setting key", "settings reset")
+        raise error

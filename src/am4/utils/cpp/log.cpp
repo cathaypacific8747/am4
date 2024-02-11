@@ -2,9 +2,17 @@
 #include "include/db.hpp"
 
 // aircraft log - class should first be constructed via pydantic model dumping then (optionally) inserted to the db.
-AllianceLog::Member::Member(uint32_t id, const string& username, const TimePoint& joined, uint32_t flights,
-                            uint32_t contributed, uint32_t daily_contribution, const TimePoint& online, float sv,
-                            uint32_t season)
+AllianceLog::Member::Member(
+    uint32_t id,
+    const string& username,
+    const TimePoint& joined,
+    uint32_t flights,
+    uint32_t contributed,
+    uint32_t daily_contribution,
+    const TimePoint& online,
+    float sv,
+    uint32_t season
+)
     : id(id),
       username(username),
       joined(joined),
@@ -15,8 +23,17 @@ AllianceLog::Member::Member(uint32_t id, const string& username, const TimePoint
       sv(sv),
       season(season) {}
 
-AllianceLog::AllianceLog(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members,
-                         double value, bool ipo, float min_sv, std::vector<AllianceLog::Member> members)
+AllianceLog::AllianceLog(
+    uint32_t id,
+    const string& name,
+    uint32_t rank,
+    uint8_t member_count,
+    uint8_t max_members,
+    double value,
+    bool ipo,
+    float min_sv,
+    std::vector<AllianceLog::Member> members
+)
     : log_id("00000000-0000-0000-0000-000000000000"),
       log_time(TimePoint(std::chrono::seconds(0))),
       id(id),
@@ -49,11 +66,30 @@ UserLog::Award::Award(const TimePoint& ts, const string& award) : ts(ts), award(
 UserLog::AircraftCount::AircraftCount(const string& aircraft, int amount)
     : aircraft(aircraft), amount(amount), parsed_aircraft(Database::Client()->get_aircraft_by_name(aircraft, 0)) {}
 
-UserLog::UserLog(uint32_t id, const string& username, uint16_t level, bool online, float share,
-                 uint32_t shares_available, uint32_t shares_sold, bool ipo, uint16_t fleet_count, uint16_t routes,
-                 const string& alliance, uint8_t achievements, bool game_mode, uint32_t rank, uint8_t reputation,
-                 uint8_t cargo_reputation, const TimePoint& founded, const string& logo, std::vector<Share> share_log,
-                 std::vector<Award> awards, std::vector<AircraftCount> fleet, std::vector<RouteDetail> route_list)
+UserLog::UserLog(
+    uint32_t id,
+    const string& username,
+    uint16_t level,
+    bool online,
+    float share,
+    uint32_t shares_available,
+    uint32_t shares_sold,
+    bool ipo,
+    uint16_t fleet_count,
+    uint16_t routes,
+    const string& alliance,
+    uint8_t achievements,
+    bool game_mode,
+    uint32_t rank,
+    uint8_t reputation,
+    uint8_t cargo_reputation,
+    const TimePoint& founded,
+    const string& logo,
+    std::vector<Share> share_log,
+    std::vector<Award> awards,
+    std::vector<AircraftCount> fleet,
+    std::vector<RouteDetail> route_list
+)
     : id(id),
       username(username),
       level(level),
@@ -85,10 +121,13 @@ void pybind_init_log(py::module_& m) {
 
     py::class_<AllianceLog> alliance_log_class(m_log, "AllianceLog");
     py::class_<AllianceLog::Member>(alliance_log_class, "Member")
-        .def(py::init<uint32_t, const string&, const TimePoint&, uint32_t, uint64_t, uint32_t, const TimePoint&, float,
-                      uint32_t>(),
-             "id"_a, "username"_a, "joined"_a, "flights"_a, "contributed"_a, "daily_contribution"_a, "online"_a, "sv"_a,
-             "season"_a)
+        .def(
+            py::init<
+                uint32_t, const string&, const TimePoint&, uint32_t, uint64_t, uint32_t, const TimePoint&, float,
+                uint32_t>(),
+            "id"_a, "username"_a, "joined"_a, "flights"_a, "contributed"_a, "daily_contribution"_a, "online"_a, "sv"_a,
+            "season"_a
+        )
         .def_readonly("id", &AllianceLog::Member::id)
         .def_readonly("username", &AllianceLog::Member::username)
         .def_readonly("joined", &AllianceLog::Member::joined)
@@ -100,9 +139,12 @@ void pybind_init_log(py::module_& m) {
         .def_readonly("season", &AllianceLog::Member::season);
 
     alliance_log_class
-        .def(py::init<uint32_t, const string&, uint32_t, uint8_t, uint8_t, double, bool, float,
-                      std::vector<AllianceLog::Member>>(),
-             "id"_a, "name"_a, "rank"_a, "member_count"_a, "max_members"_a, "value"_a, "ipo"_a, "min_sv"_a, "members"_a)
+        .def(
+            py::init<
+                uint32_t, const string&, uint32_t, uint8_t, uint8_t, double, bool, float,
+                std::vector<AllianceLog::Member>>(),
+            "id"_a, "name"_a, "rank"_a, "member_count"_a, "max_members"_a, "value"_a, "ipo"_a, "min_sv"_a, "members"_a
+        )
         .def_readonly("log_id", &AllianceLog::log_id)
         .def_readonly("log_time", &AllianceLog::log_time)
         .def_readonly("id", &AllianceLog::id)
@@ -139,13 +181,16 @@ void pybind_init_log(py::module_& m) {
         .def_readonly("arrived", &UserLog::RouteDetail::arrived);
 
     user_log_class
-        .def(py::init<uint32_t, const string&, uint16_t, bool, float, uint32_t, uint32_t, bool, uint16_t, uint16_t,
-                      const string&, uint8_t, bool, uint32_t, uint8_t, uint8_t, const TimePoint&, const string&,
-                      std::vector<UserLog::Share>, std::vector<UserLog::Award>, std::vector<UserLog::AircraftCount>,
-                      std::vector<UserLog::RouteDetail>>(),
-             "id"_a, "username"_a, "level"_a, "online"_a, "share"_a, "shares_available"_a, "shares_sold"_a, "ipo"_a,
-             "fleet_count"_a, "routes"_a, "alliance"_a, "achievements"_a, "game_mode"_a, "rank"_a, "reputation"_a,
-             "cargo_reputation"_a, "founded"_a, "logo"_a, "share_log"_a, "awards"_a, "fleet"_a, "route_list"_a)
+        .def(
+            py::init<
+                uint32_t, const string&, uint16_t, bool, float, uint32_t, uint32_t, bool, uint16_t, uint16_t,
+                const string&, uint8_t, bool, uint32_t, uint8_t, uint8_t, const TimePoint&, const string&,
+                std::vector<UserLog::Share>, std::vector<UserLog::Award>, std::vector<UserLog::AircraftCount>,
+                std::vector<UserLog::RouteDetail>>(),
+            "id"_a, "username"_a, "level"_a, "online"_a, "share"_a, "shares_available"_a, "shares_sold"_a, "ipo"_a,
+            "fleet_count"_a, "routes"_a, "alliance"_a, "achievements"_a, "game_mode"_a, "rank"_a, "reputation"_a,
+            "cargo_reputation"_a, "founded"_a, "logo"_a, "share_log"_a, "awards"_a, "fleet"_a, "route_list"_a
+        )
         .def_readonly("log_id", &UserLog::log_id)
         .def_readonly("log_time", &UserLog::log_time)
         .def_readonly("username", &UserLog::username)

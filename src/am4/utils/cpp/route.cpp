@@ -28,8 +28,10 @@ Route Route::create(const Airport& ap1, const Airport& ap2) {
 inline double Route::calc_distance(double lat1, double lon1, double lat2, double lon2) {
     double dLat = (lat2 - lat1) * M_PI / 180.0;
     double dLon = (lon2 - lon1) * M_PI / 180.0;
-    return 12742 * asin(sqrt(pow(sin(dLat / 2), 2) +
-                             cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * pow(sin(dLon / 2), 2)));
+    return 12742 *
+           asin(
+               sqrt(pow(sin(dLat / 2), 2) + cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * pow(sin(dLon / 2), 2))
+           );
 }
 
 inline double Route::calc_distance(const Airport& ap1, const Airport& ap2) {
@@ -38,8 +40,9 @@ inline double Route::calc_distance(const Airport& ap1, const Airport& ap2) {
 
 // TODO: use one template function for both pax and cargo
 template <bool is_vip>
-inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const AircraftRoute::Options& options,
-                                              const User& user) {
+inline void AircraftRoute::update_pax_details(
+    uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user
+) {
     const Aircraft::PaxConfig::Algorithm config_algorithm =
         std::holds_alternative<std::monostate>(options.config_algorithm)
             ? Aircraft::PaxConfig::Algorithm::AUTO
@@ -51,8 +54,9 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
         tpd = options.trips_per_day;
 
     auto calc_cfg = [&](uint16_t tpd) {
-        return Aircraft::PaxConfig::calc_pax_conf(load_adj_pd / tpd, ac_capacity, this->route.direct_distance,
-                                                  user.game_mode, config_algorithm);
+        return Aircraft::PaxConfig::calc_pax_conf(
+            load_adj_pd / tpd, ac_capacity, this->route.direct_distance, user.game_mode, config_algorithm
+        );
     };
     auto calc_max_rawincome = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& tkt) -> uint32_t {
         return (cfg.y * tkt.y + cfg.j * tkt.j + cfg.f * tkt.f);
@@ -113,8 +117,9 @@ inline void AircraftRoute::update_pax_details(uint16_t ac_capacity, const Aircra
     this->valid = true;
 }
 
-inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const AircraftRoute::Options& options,
-                                                const User& user) {
+inline void AircraftRoute::update_cargo_details(
+    uint32_t ac_capacity, const AircraftRoute::Options& options, const User& user
+) {
     const Aircraft::CargoConfig::Algorithm config_algorithm =
         std::holds_alternative<std::monostate>(options.config_algorithm)
             ? Aircraft::CargoConfig::Algorithm::AUTO
@@ -126,8 +131,9 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
         tpd = options.trips_per_day;
 
     auto calc_conf = [&](uint16_t trips_per_day) {
-        return Aircraft::CargoConfig::calc_cargo_conf(load_adj_cd / user.load / trips_per_day, ac_capacity,
-                                                      user.l_training, user.h_training, config_algorithm);
+        return Aircraft::CargoConfig::calc_cargo_conf(
+            load_adj_cd / user.load / trips_per_day, ac_capacity, user.l_training, user.h_training, config_algorithm
+        );
     };
     auto calc_rawincome = [&](const Aircraft::CargoConfig& cfg, const CargoTicket& tkt) -> double {
         return ((1 + user.l_training / 100.0) * cfg.l * 0.7 * tkt.l + (1 + user.h_training / 100.0) * cfg.h * tkt.h) *
@@ -176,8 +182,13 @@ inline void AircraftRoute::update_cargo_details(uint32_t ac_capacity, const Airc
 }
 
 AircraftRoute::AircraftRoute() : valid(false){};
-AircraftRoute::Options::Options(TPDMode tpd_mode, uint16_t trips_per_day, double max_distance, float max_flight_time,
-                                ConfigAlgorithm config_algorithm)
+AircraftRoute::Options::Options(
+    TPDMode tpd_mode,
+    uint16_t trips_per_day,
+    double max_distance,
+    float max_flight_time,
+    ConfigAlgorithm config_algorithm
+)
     : tpd_mode(tpd_mode),
       trips_per_day(trips_per_day),
       max_distance(max_distance),
@@ -186,8 +197,9 @@ AircraftRoute::Options::Options(TPDMode tpd_mode, uint16_t trips_per_day, double
     if (tpd_mode == AircraftRoute::Options::TPDMode::AUTO && trips_per_day != 1)
         std::cerr << "WARN: trips_per_day is ignored when tpd_mode is AUTO" << std::endl;
 };
-AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const Aircraft& ac,
-                                    const AircraftRoute::Options& options, const User& user) {
+AircraftRoute AircraftRoute::create(
+    const Airport& a0, const Airport& a1, const Aircraft& ac, const AircraftRoute::Options& options, const User& user
+) {
     AircraftRoute acr;
     acr.route = Route::create(a0, a1);
     acr._ac_type = ac.type;
@@ -249,8 +261,9 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
     acr.repair_cost =
         ac.cost / 1000.0 * 0.0075 *
         (1 - 2 * user.repair_training / 100.0);  // each flight adds random [0, 1.5]% wear, each tp decreases wear by 2%
-    acr.profit = (acr.income - acr.fuel * user.fuel_price / 1000.0 - acr.co2 * user.co2_price / 1000.0 -
-                  acr.acheck_cost - acr.repair_cost);
+    acr.profit =
+        (acr.income - acr.fuel * user.fuel_price / 1000.0 - acr.co2 * user.co2_price / 1000.0 - acr.acheck_cost -
+         acr.repair_cost);
     acr.ci = 200;
     acr.contribution = AircraftRoute::calc_contribution(full_distance, user, 200);
 
@@ -261,9 +274,9 @@ AircraftRoute AircraftRoute::create(const Airport& a0, const Airport& a1, const 
 AircraftRoute::Stopover::Stopover() : exists(false) {}
 AircraftRoute::Stopover::Stopover(const Airport& airport, double full_distance)
     : airport(airport), full_distance(full_distance), exists(true) {}
-AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(const Airport& origin, const Airport& destination,
-                                                                    const Aircraft& aircraft,
-                                                                    User::GameMode game_mode) {
+AircraftRoute::Stopover AircraftRoute::Stopover::find_by_efficiency(
+    const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode
+) {
     const auto& db = Database::Client();
     const auto& airports = db->airports;
     const auto& distances = db->distances;
@@ -332,26 +345,34 @@ inline double AircraftRoute::estimate_load(double reputation, double autoprice_r
 }
 
 inline double AircraftRoute::calc_fuel(const Aircraft& ac, double distance, const User& user, uint8_t ci) {
-    return ((1 - user.fuel_training / 100.0) * ceil(distance * 100.0) / 100.0 * (ac.fuel_mod ? 0.9 : 1) * ac.fuel *
-            (ci / 500.0 + 0.6));
+    return (
+        (1 - user.fuel_training / 100.0) * ceil(distance * 100.0) / 100.0 * (ac.fuel_mod ? 0.9 : 1) * ac.fuel *
+        (ci / 500.0 + 0.6)
+    );
 }
 
-inline double AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance,
-                                      const User& user, uint8_t ci) {
-    return ((1 - user.co2_training / 100.0) *
-            (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
-                 ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
-             (cfg.y + cfg.j + cfg.f)) *
-            (ci / 2000.0 + 0.9));
+inline double AircraftRoute::calc_co2(
+    const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user, uint8_t ci
+) {
+    return (
+        (1 - user.co2_training / 100.0) *
+        (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
+             ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
+         (cfg.y + cfg.j + cfg.f)) *
+        (ci / 2000.0 + 0.9)
+    );
 }
 
-inline double AircraftRoute::calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance,
-                                      const User& user, uint8_t ci) {
-    return ((1 - user.co2_training / 100.0) *
-            (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
-                 ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity) +
-             ((cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity)) *
-            (ci / 2000.0 + 0.9));
+inline double AircraftRoute::calc_co2(
+    const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user, uint8_t ci
+) {
+    return (
+        (1 - user.co2_training / 100.0) *
+        (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
+             ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity) +
+         ((cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity)) *
+        (ci / 2000.0 + 0.9)
+    );
 }
 
 inline float AircraftRoute::calc_contribution(double distance, const User& user, uint8_t ci) {
@@ -441,8 +462,9 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
 
 Destination::Destination(const Airport& destination, const AircraftRoute& route)
     : airport(destination), ac_route(route) {}
-std::vector<Destination> find_routes(const Airport& origin, const Aircraft& aircraft,
-                                     const AircraftRoute::Options& options, const User& user) {
+std::vector<Destination> find_routes(
+    const Airport& origin, const Aircraft& aircraft, const AircraftRoute::Options& options, const User& user
+) {
     std::vector<Destination> destinations;
     const auto& db = Database::Client();
 
@@ -455,8 +477,9 @@ std::vector<Destination> find_routes(const Airport& origin, const Aircraft& airc
         if (!ar.valid) continue;
         destinations.emplace_back(ap, ar);
     }
-    std::sort(destinations.begin(), destinations.end(),
-              [](const Destination& a, const Destination& b) { return a.ac_route.profit > b.ac_route.profit; });
+    std::sort(destinations.begin(), destinations.end(), [](const Destination& a, const Destination& b) {
+        return a.ac_route.profit > b.ac_route.profit;
+    });
     return destinations;
 }
 
@@ -464,8 +487,10 @@ std::vector<Destination> find_routes(const Airport& origin, const Aircraft& airc
 #include "include/binder.hpp"
 
 py::dict to_dict(const Route& r) {
-    return py::dict("pax_demand"_a = to_dict(r.pax_demand), "cargo_demand"_a = to_dict(CargoDemand(r.pax_demand)),
-                    "direct_distance"_a = r.direct_distance);
+    return py::dict(
+        "pax_demand"_a = to_dict(r.pax_demand), "cargo_demand"_a = to_dict(CargoDemand(r.pax_demand)),
+        "direct_distance"_a = r.direct_distance
+    );
 }
 
 py::dict to_dict(const AircraftRoute::Stopover& s) {
@@ -495,8 +520,9 @@ py::dict to_dict(const AircraftRoute& ar) {
     d["needs_stopover"] = ar.needs_stopover;
     d["stopover"] = to_dict(ar.stopover);
 
-    if (std::any_of(std::begin(ar.warnings), std::end(ar.warnings),
-                    [](const AircraftRoute::Warning& w) { return w == AircraftRoute::Warning::ERR_NO_STOPOVER; }))
+    if (std::any_of(std::begin(ar.warnings), std::end(ar.warnings), [](const AircraftRoute::Warning& w) {
+            return w == AircraftRoute::Warning::ERR_NO_STOPOVER;
+        }))
         return d;
 
     d["flight_time"] = ar.flight_time;
@@ -560,10 +586,12 @@ void pybind_init_route(py::module_& m) {
         .value("AUTO_MULTIPLE_OF", AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF)
         .value("STRICT", AircraftRoute::Options::TPDMode::STRICT);
     acr_options_class
-        .def(py::init<AircraftRoute::Options::TPDMode, uint16_t, double, double,
-                      AircraftRoute::Options::ConfigAlgorithm>(),
-             py::arg_v("tpd_mode", AircraftRoute::Options::TPDMode::AUTO, "TPDMode.AUTO"), "trips_per_day"_a = 1,
-             "max_distance"_a = MAX_DISTANCE, "max_flight_time"_a = 24.0f, "config_algorithm"_a = std::monostate())
+        .def(
+            py::init<
+                AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm>(),
+            py::arg_v("tpd_mode", AircraftRoute::Options::TPDMode::AUTO, "TPDMode.AUTO"), "trips_per_day"_a = 1,
+            "max_distance"_a = MAX_DISTANCE, "max_flight_time"_a = 24.0f, "config_algorithm"_a = std::monostate()
+        )
         .def_readwrite("tpd_mode", &AircraftRoute::Options::tpd_mode)
         .def_readwrite("trips_per_day", &AircraftRoute::Options::trips_per_day)
         .def_readwrite("max_distance", &AircraftRoute::Options::max_distance)
@@ -574,8 +602,10 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("airport", &AircraftRoute::Stopover::airport)
         .def_readonly("full_distance", &AircraftRoute::Stopover::full_distance)
         .def_readonly("exists", &AircraftRoute::Stopover::exists)
-        .def_static("find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a,
-                    "aircraft"_a, "game_mode"_a)
+        .def_static(
+            "find_by_efficiency", &AircraftRoute::Stopover::find_by_efficiency, "origin"_a, "destination"_a,
+            "aircraft"_a, "game_mode"_a
+        )
         .def("__repr__", &AircraftRoute::Stopover::repr)
         .def("to_dict", py::overload_cast<const AircraftRoute::Stopover&>(&to_dict));
 
@@ -607,23 +637,35 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("stopover", &AircraftRoute::stopover)
         .def_readonly("warnings", &AircraftRoute::warnings)
         .def_readonly("valid", &AircraftRoute::valid)
-        .def_static("create", &AircraftRoute::create, "ap0"_a, "ap1"_a, "ac"_a,
-                    py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
-                    py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"))
-        .def_static("estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06,
-                    "has_stopover"_a = false)
-        .def_static("calc_fuel", &AircraftRoute::calc_fuel, "ac"_a, "distance"_a,
-                    py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"), "ci"_a = 200)
-        .def_static("calc_co2",
-                    py::overload_cast<const Aircraft&, const Aircraft::PaxConfig&, double, const User&, uint8_t>(
-                        &AircraftRoute::calc_co2),
-                    "ac"_a, "cfg"_a, "distance"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
-                    "ci"_a = 200)
-        .def_static("calc_co2",
-                    py::overload_cast<const Aircraft&, const Aircraft::CargoConfig&, double, const User&, uint8_t>(
-                        &AircraftRoute::calc_co2),
-                    "ac"_a, "cfg"_a, "distance"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
-                    "ci"_a = 200)
+        .def_static(
+            "create", &AircraftRoute::create, "ap0"_a, "ap1"_a, "ac"_a,
+            py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
+        )
+        .def_static(
+            "estimate_load", &AircraftRoute::estimate_load, "reputation"_a = 87, "autoprice_ratio"_a = 1.06,
+            "has_stopover"_a = false
+        )
+        .def_static(
+            "calc_fuel", &AircraftRoute::calc_fuel, "ac"_a, "distance"_a,
+            py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"), "ci"_a = 200
+        )
+        .def_static(
+            "calc_co2",
+            py::overload_cast<const Aircraft&, const Aircraft::PaxConfig&, double, const User&, uint8_t>(
+                &AircraftRoute::calc_co2
+            ),
+            "ac"_a, "cfg"_a, "distance"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
+            "ci"_a = 200
+        )
+        .def_static(
+            "calc_co2",
+            py::overload_cast<const Aircraft&, const Aircraft::CargoConfig&, double, const User&, uint8_t>(
+                &AircraftRoute::calc_co2
+            ),
+            "ac"_a, "cfg"_a, "distance"_a, py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"),
+            "ci"_a = 200
+        )
         .def("__repr__", &AircraftRoute::repr)
         .def("to_dict", py::overload_cast<const AircraftRoute&>(&to_dict));
 
@@ -632,8 +674,10 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("ac_route", &Destination::ac_route)
         .def("to_dict", py::overload_cast<const Destination&>(&to_dict));
 
-    m_route.def("find_routes", &find_routes, "ap0"_a, "ac"_a,
-                py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
-                py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"));
+    m_route.def(
+        "find_routes", &find_routes, "ap0"_a, "ac"_a,
+        py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
+        py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
+    );
 }
 #endif

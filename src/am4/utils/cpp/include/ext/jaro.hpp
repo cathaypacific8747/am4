@@ -38,7 +38,7 @@ double jaro_distance(const std::string &a, const std::string &b) {
         // No more common character because we don't have characters in b to test
         // with characters in a.
         if (minIndex >= maxIndex) break;
-        
+
         for (size_t bi = minIndex; bi < maxIndex; ++bi) {
             if (!bMatch[bi] && a[ai] == b[bi]) {
                 // Found some new match.
@@ -50,8 +50,7 @@ double jaro_distance(const std::string &a, const std::string &b) {
         }
     }
 
-    if (matchingCharacters == 0)
-        return 0.0;
+    if (matchingCharacters == 0) return 0.0;
 
     // Calculate character transpositions.
     std::vector<size_t> aPosition(matchingCharacters, 0);
@@ -83,7 +82,8 @@ double jaro_distance(const std::string &a, const std::string &b) {
     return (
         JARO_WEIGHT_STRING_A * static_cast<double>(matchingCharacters) / static_cast<double>(al) +
         JARO_WEIGHT_STRING_B * static_cast<double>(matchingCharacters) / static_cast<double>(bl) +
-        JARO_WEIGHT_TRANSPOSITIONS * (static_cast<double>(matchingCharacters) - static_cast<double>(t) / 2) / static_cast<double>(matchingCharacters)
+        JARO_WEIGHT_TRANSPOSITIONS * (static_cast<double>(matchingCharacters) - static_cast<double>(t) / 2) /
+            static_cast<double>(matchingCharacters)
     );
 }
 
@@ -93,7 +93,8 @@ double jaro_winkler_distance(const std::string &a, const std::string &b) {
     if (distance > JARO_WINKLER_BOOST_THRESHOLD) {
         // Calculate common string prefix.
         int commonPrefix = 0;
-        for (size_t i = 0, indexEnd = std::min(std::min(a.size(), b.size()), JARO_WINKLER_PREFIX_SIZE); i < indexEnd; ++i) {
+        for (size_t i = 0, indexEnd = std::min(std::min(a.size(), b.size()), JARO_WINKLER_PREFIX_SIZE); i < indexEnd;
+             ++i) {
             if (a[i] == b[i]) {
                 ++commonPrefix;
             } else {

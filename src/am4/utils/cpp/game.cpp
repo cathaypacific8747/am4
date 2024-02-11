@@ -222,7 +222,8 @@ py::dict to_dict(const User &user) {
         "l_training"_a = user.l_training, "h_training"_a = user.h_training, "fuel_training"_a = user.fuel_training,
         "co2_training"_a = user.co2_training, "fuel_price"_a = user.fuel_price, "co2_price"_a = user.co2_price,
         "accumulated_count"_a = user.accumulated_count, "load"_a = user.load,
-        "income_loss_tol"_a = user.income_loss_tol, "fourx"_a = user.fourx, "role"_a = to_string(user.role));
+        "income_loss_tol"_a = user.income_loss_tol, "fourx"_a = user.fourx, "role"_a = to_string(user.role)
+    );
 }
 
 User from_dict(py::dict d) {

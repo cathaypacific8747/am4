@@ -20,8 +20,17 @@ struct AllianceLog {
         float sv;
         uint32_t season;
 
-        Member(uint32_t id, const string& username, const TimePoint& joined, uint32_t flights, uint32_t contributed,
-               uint32_t daily_contribution, const TimePoint& online, float sv, uint32_t season);
+        Member(
+            uint32_t id,
+            const string& username,
+            const TimePoint& joined,
+            uint32_t flights,
+            uint32_t contributed,
+            uint32_t daily_contribution,
+            const TimePoint& online,
+            float sv,
+            uint32_t season
+        );
     };
 
     string log_id;
@@ -36,8 +45,17 @@ struct AllianceLog {
     float min_sv;
     std::vector<Member> members;
 
-    AllianceLog(uint32_t id, const string& name, uint32_t rank, uint8_t member_count, uint8_t max_members, double value,
-                bool ipo, float min_sv, std::vector<Member> members);
+    AllianceLog(
+        uint32_t id,
+        const string& name,
+        uint32_t rank,
+        uint8_t member_count,
+        uint8_t max_members,
+        double value,
+        bool ipo,
+        float min_sv,
+        std::vector<Member> members
+    );
     AllianceLog();
 };
 
@@ -98,9 +116,28 @@ struct UserLog {
     std::vector<UserLog::AircraftCount> fleet;
     std::vector<UserLog::RouteDetail> route_list;
 
-    UserLog(uint32_t id, const string& username, uint16_t level, bool online, float share, uint32_t shares_available,
-            uint32_t shares_sold, bool ipo, uint16_t fleet_count, uint16_t routes, const string& alliance,
-            uint8_t achievements, bool game_mode, uint32_t rank, uint8_t reputation, uint8_t cargo_reputation,
-            const TimePoint& founded, const string& logo, std::vector<Share> share_log, std::vector<Award> awards,
-            std::vector<AircraftCount> fleet, std::vector<RouteDetail> route_list);
+    UserLog(
+        uint32_t id,
+        const string& username,
+        uint16_t level,
+        bool online,
+        float share,
+        uint32_t shares_available,
+        uint32_t shares_sold,
+        bool ipo,
+        uint16_t fleet_count,
+        uint16_t routes,
+        const string& alliance,
+        uint8_t achievements,
+        bool game_mode,
+        uint32_t rank,
+        uint8_t reputation,
+        uint8_t cargo_reputation,
+        const TimePoint& founded,
+        const string& logo,
+        std::vector<Share> share_log,
+        std::vector<Award> awards,
+        std::vector<AircraftCount> fleet,
+        std::vector<RouteDetail> route_list
+    );
 };

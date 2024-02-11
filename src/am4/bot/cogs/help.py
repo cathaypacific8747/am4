@@ -78,7 +78,7 @@ class HelpCog(commands.Cog):
         )
         for p in cmd.clean_params.values():
             embed.add_field(
-                name=f"- `{p.name}`{' (optional)' if not p.required else ' (required)'}",
+                name=f"{':small_blue_diamond:' if not p.required else ':small_orange_diamond:'} `{p.name}`",
                 value=d if (d := p.description) is not None else "",
                 inline=True,
             )

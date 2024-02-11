@@ -23,6 +23,11 @@ async def on_ready():
     logger.info(f"am4.utils version {am4utils_version}")
 
 
+@bot.event
+async def on_error(event, *args, **kwargs):
+    logger.exception(f"Error in {event} with args {args} and kwargs {kwargs}")
+
+
 async def start(db_done: asyncio.Event):
     await db_done.wait()
     utils_init()

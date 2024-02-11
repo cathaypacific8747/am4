@@ -78,8 +78,8 @@ async def handle_bad_literal(ctx: commands.Context, error: commands.CommandError
         valid_literals = ", ".join([f"`{l}`" for l in error.literals])
         await ctx.send(
             embed=get_err_embed(
-                title="Bad literal argument!",
-                desc=(f"I expected the `{cp.name}` argument to be one of: {valid_literals}\n"),
+                title="Provided argument is invalid!",
+                desc=(f"I expected the `{cp.name}` to be one of: {valid_literals}\n"),
                 suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}help {cmd}", f"{pre}<{cp.name}>"],
             )
         )

@@ -67,9 +67,10 @@ void Database::populate_internal() {
     uint16_t x = 0, y = 0;
     while (auto chunk = result->Fetch()) {
         for (idx_t j = 0; j < chunk->size(); j++, i++) {
-            pax_demands[i] =
-                PaxDemand(chunk->GetValue(0, j).GetValue<uint16_t>(), chunk->GetValue(1, j).GetValue<uint16_t>(),
-                          chunk->GetValue(2, j).GetValue<uint16_t>());
+            pax_demands[i] = PaxDemand(
+                chunk->GetValue(0, j).GetValue<uint16_t>(), chunk->GetValue(1, j).GetValue<uint16_t>(),
+                chunk->GetValue(2, j).GetValue<uint16_t>()
+            );
             y++;
             if (y == AIRPORT_COUNT) {
                 x++;
@@ -160,13 +161,15 @@ std::vector<Airport::Suggestion> Database::suggest_airport(const string& input, 
 }
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_iata(const string& iata) {
-    return suggest_airport(
-        iata, [](const string& input, const Airport& ap) { return jaro_winkler_distance(input, ap.iata); });
+    return suggest_airport(iata, [](const string& input, const Airport& ap) {
+        return jaro_winkler_distance(input, ap.iata);
+    });
 }
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_icao(const string& icao) {
-    return suggest_airport(
-        icao, [](const string& input, const Airport& ap) { return jaro_winkler_distance(input, ap.icao); });
+    return suggest_airport(icao, [](const string& input, const Airport& ap) {
+        return jaro_winkler_distance(input, ap.icao);
+    });
 }
 
 std::vector<Airport::Suggestion> Database::suggest_airport_by_name(const string& name) {
@@ -191,8 +194,10 @@ std::vector<Airport::Suggestion> Database::suggest_airport_by_all(const string& 
         std::transform(ap_name.begin(), ap_name.end(), ap_name.begin(), ::toupper);
         string ap_fullname = ap_name + ", " + ap.country;
         std::transform(ap_fullname.begin(), ap_fullname.end(), ap_fullname.begin(), ::toupper);
-        return std::max(std::max(jaro_winkler_distance(input, ap.iata), jaro_winkler_distance(input, ap.icao)),
-                        std::max(jaro_winkler_distance(input, ap_name), jaro_winkler_distance(input, ap_fullname)));
+        return std::max(
+            std::max(jaro_winkler_distance(input, ap.iata), jaro_winkler_distance(input, ap.icao)),
+            std::max(jaro_winkler_distance(input, ap_name), jaro_winkler_distance(input, ap_fullname))
+        );
     });
 }
 
@@ -256,8 +261,9 @@ Aircraft Database::get_aircraft_by_id(uint16_t id, uint8_t priority) {
 }
 
 Aircraft Database::get_aircraft_by_shortname(const string& shortname, uint8_t priority) {
-    auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts),
-                           [&](const Aircraft& a) { return a.shortname == shortname && a.priority == priority; });
+    auto it = std::find_if(std::begin(aircrafts), std::end(aircrafts), [&](const Aircraft& a) {
+        return a.shortname == shortname && a.priority == priority;
+    });
     return it == std::end(aircrafts) ? Aircraft() : *it;
 }
 
@@ -307,8 +313,9 @@ std::vector<Aircraft::Suggestion> Database::suggest_aircraft(const string& input
 }
 
 std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_shortname(const string& name) {
-    return suggest_aircraft(
-        name, [](const string& input, const Aircraft& ac) { return jaro_winkler_distance(input, ac.shortname); });
+    return suggest_aircraft(name, [](const string& input, const Aircraft& ac) {
+        return jaro_winkler_distance(input, ac.shortname);
+    });
 }
 
 std::vector<Aircraft::Suggestion> Database::suggest_aircraft_by_name(const string& name) {
@@ -368,8 +375,10 @@ void pybind_init_db(py::module_& m) {
                     for (const string fn : {"airports.parquet", "aircrafts.parquet", "routes.parquet"}) {
                         if (!std::filesystem::exists(hdir + "/data/" + fn)) {
                             std::cout << "WARN: " << fn << " not found, downloading from GitHub..." << std::endl;
-                            urlretrieve("https://github.com/cathaypacific8747/am4bot/releases/latest/download/" + fn,
-                                        hdir + "/data/" + fn);
+                            urlretrieve(
+                                "https://github.com/cathaypacific8747/am4bot/releases/latest/download/" + fn,
+                                hdir + "/data/" + fn
+                            );
                         }
                     }
                     init(hdir);
@@ -378,7 +387,8 @@ void pybind_init_db(py::module_& m) {
                 }
                 py::gil_scoped_release release;
             },
-            "home_dir"_a = py::none())
+            "home_dir"_a = py::none()
+    )
         .def("_debug_query", &_debug_query, "query"_a);
 
     py::register_exception<DatabaseException>(m_db, "DatabaseException");

@@ -40,9 +40,13 @@ struct Aircraft {
         static inline PaxConfig calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity);
         static inline PaxConfig calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity);
 
-        static PaxConfig calc_pax_conf(const PaxDemand& pax_demand, uint16_t capacity, double distance,
-                                       User::GameMode game_mode = User::GameMode::EASY,
-                                       Aircraft::PaxConfig::Algorithm algorithm = Aircraft::PaxConfig::Algorithm::AUTO);
+        static PaxConfig calc_pax_conf(
+            const PaxDemand& pax_demand,
+            uint16_t capacity,
+            double distance,
+            User::GameMode game_mode = User::GameMode::EASY,
+            Aircraft::PaxConfig::Algorithm algorithm = Aircraft::PaxConfig::Algorithm::AUTO
+        );
         static const string repr(const PaxConfig& pax_config);
     };
 
@@ -58,14 +62,20 @@ struct Aircraft {
         bool valid = false;
         Algorithm algorithm;
 
-        static inline CargoConfig calc_l_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0,
-                                              uint8_t h_training = 0);
-        static inline CargoConfig calc_h_conf(const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0,
-                                              uint8_t h_training = 0);
+        static inline CargoConfig calc_l_conf(
+            const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0
+        );
+        static inline CargoConfig calc_h_conf(
+            const CargoDemand& d_pf, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0
+        );
 
         static CargoConfig calc_cargo_conf(
-            const CargoDemand& cargo_demand, uint32_t capacity, uint8_t l_training = 0, uint8_t h_training = 0,
-            Aircraft::CargoConfig::Algorithm algorithm = Aircraft::CargoConfig::Algorithm::AUTO);
+            const CargoDemand& cargo_demand,
+            uint32_t capacity,
+            uint8_t l_training = 0,
+            uint8_t h_training = 0,
+            Aircraft::CargoConfig::Algorithm algorithm = Aircraft::CargoConfig::Algorithm::AUTO
+        );
         static const string repr(const CargoConfig& cargo_config);
     };
 
@@ -115,8 +125,15 @@ struct Aircraft {
         bool co2_mod;
         bool fourx_mod;
 
-        ParseResult(Aircraft::SearchType search_type, const string& search_str, uint8_t priority, bool speed_mod,
-                    bool fuel_mod, bool co2_mod, bool fourx_mod)
+        ParseResult(
+            Aircraft::SearchType search_type,
+            const string& search_str,
+            uint8_t priority,
+            bool speed_mod,
+            bool fuel_mod,
+            bool co2_mod,
+            bool fourx_mod
+        )
             : search_type(search_type),
               search_str(search_str),
               priority(priority),

@@ -5,9 +5,11 @@ PaxDemand::PaxDemand() : y(0), j(0), f(0) {}
 PaxDemand::PaxDemand(uint16_t y, uint16_t j, uint16_t f) : y(y), j(j), f(f) {}
 
 PaxDemand PaxDemand::operator/(double load) const {
-    return PaxDemand(static_cast<uint16_t>(floor(static_cast<double>(y) / load)),
-                     static_cast<uint16_t>(floor(static_cast<double>(j) / load)),
-                     static_cast<uint16_t>(floor(static_cast<double>(f) / load)));
+    return PaxDemand(
+        static_cast<uint16_t>(floor(static_cast<double>(y) / load)),
+        static_cast<uint16_t>(floor(static_cast<double>(j) / load)),
+        static_cast<uint16_t>(floor(static_cast<double>(f) / load))
+    );
 }
 
 CargoDemand::CargoDemand() : l(0), h(0) {}
@@ -16,8 +18,10 @@ CargoDemand::CargoDemand(const PaxDemand& pax_demand)
     : l(static_cast<uint32_t>(round(pax_demand.y / 2.0) * 1000)), h(pax_demand.j * 1000) {}
 
 CargoDemand CargoDemand::operator/(double load) const {
-    return CargoDemand(static_cast<uint32_t>(floor(static_cast<double>(l) / load)),
-                       static_cast<uint32_t>(floor(static_cast<double>(h) / load)));
+    return CargoDemand(
+        static_cast<uint32_t>(floor(static_cast<double>(l) / load)),
+        static_cast<uint32_t>(floor(static_cast<double>(h) / load))
+    );
 }
 
 const string PaxDemand::repr(const PaxDemand& demand) {

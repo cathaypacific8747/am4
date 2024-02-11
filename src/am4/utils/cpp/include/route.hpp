@@ -43,8 +43,13 @@ struct AircraftRoute {
         float max_flight_time;
         ConfigAlgorithm config_algorithm;
 
-        Options(TPDMode tpd_mode = TPDMode::AUTO, uint16_t trips_per_day = 1, double max_distance = MAX_DISTANCE,
-                float max_flight_time = 24.0f, ConfigAlgorithm config_algorithm = std::monostate());
+        Options(
+            TPDMode tpd_mode = TPDMode::AUTO,
+            uint16_t trips_per_day = 1,
+            double max_distance = MAX_DISTANCE,
+            float max_flight_time = 24.0f,
+            ConfigAlgorithm config_algorithm = std::monostate()
+        );
     };
     Route route;
     Aircraft::Type _ac_type;
@@ -69,8 +74,9 @@ struct AircraftRoute {
 
         Stopover();
         Stopover(const Airport& airport, double full_distance);
-        static Stopover find_by_efficiency(const Airport& origin, const Airport& destination, const Aircraft& aircraft,
-                                           User::GameMode game_mode);
+        static Stopover find_by_efficiency(
+            const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode
+        );
         // static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const Aircraft&
         // aircraft, double target_distance, User::GameMode game_mode);
         const static string repr(const Stopover& s);
@@ -91,21 +97,40 @@ struct AircraftRoute {
     bool valid;
 
     AircraftRoute();
-    static AircraftRoute create(const Airport& a0, const Airport& a1, const Aircraft& ac,
-                                const Options& options = Options(), const User& user = User::Default());
+    static AircraftRoute create(
+        const Airport& a0,
+        const Airport& a1,
+        const Aircraft& ac,
+        const Options& options = Options(),
+        const User& user = User::Default()
+    );
 
     template <bool is_vip>
     inline void update_pax_details(uint16_t ac_capacity, const AircraftRoute::Options& options, const User& user);
     inline void update_cargo_details(uint32_t ac_capacity, const AircraftRoute::Options& options, const User& user);
 
-    static inline double estimate_load(double reputation = 87, double autoprice_ratio = 1.06,
-                                       bool has_stopover = false);  // 1.06 just to trigger the autoprice branch
-    static inline double calc_fuel(const Aircraft& ac, double distance, const User& user = User::Default(),
-                                   uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance,
-                                  const User& user = User::Default(), uint8_t ci = 200);
-    static inline double calc_co2(const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance,
-                                  const User& user = User::Default(), uint8_t ci = 200);
+    static inline double estimate_load(
+        double reputation = 87,
+        double autoprice_ratio = 1.06,
+        bool has_stopover = false
+    );  // 1.06 just to trigger the autoprice branch
+    static inline double calc_fuel(
+        const Aircraft& ac, double distance, const User& user = User::Default(), uint8_t ci = 200
+    );
+    static inline double calc_co2(
+        const Aircraft& ac,
+        const Aircraft::PaxConfig& cfg,
+        double distance,
+        const User& user = User::Default(),
+        uint8_t ci = 200
+    );
+    static inline double calc_co2(
+        const Aircraft& ac,
+        const Aircraft::CargoConfig& cfg,
+        double distance,
+        const User& user = User::Default(),
+        uint8_t ci = 200
+    );
     static inline float calc_contribution(double distance, const User& user = User::Default(), uint8_t ci = 200);
     static const string repr(const AircraftRoute& acr);
 };
@@ -117,6 +142,9 @@ struct Destination {
     Destination(const Airport& destination, const AircraftRoute& route);
 };
 
-vector<Destination> find_routes(const Airport& origin, const Aircraft& aircraft,
-                                const AircraftRoute::Options& options = AircraftRoute::Options(),
-                                const User& user = User::Default());
+vector<Destination> find_routes(
+    const Airport& origin,
+    const Aircraft& aircraft,
+    const AircraftRoute::Options& options = AircraftRoute::Options(),
+    const User& user = User::Default()
+);

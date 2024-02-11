@@ -35,7 +35,7 @@ class AirportCog(commands.Cog):
                     f"**Base Hub Cost**: ${a.hub_cost}\n"
                     f"**   Full Name**: {a.fullname}\n"
                     f"**  Continent**: {a.continent}\n"
-                    f"**   Runways**: {a.rwy_codes}\n"
+                    f"**   Runways**: {','.join(f'`{r}`' for r in a.rwy_codes.split('|'))}\n"
                     f"**      ID**: {a.id}\n"
                 ),
                 color=COLOUR_GENERIC,

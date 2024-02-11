@@ -8,7 +8,7 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 - [x] core calculations rewritten in C++ for bettter performance ([`src/am4/utils`](./src/am4/utils))
 - [ ] api written in Python ([`src/am4/api (under construction)`](./src/am4/api/))
 - [ ] discord bot written in Python ([`src/am4/bot (under construction)`](./src/am4/bot/))
-- [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4web (under construction)`](./src/am4/web/)to be developed)
+- [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4/web (under construction)`](./src/am4/web/)to be developed)
 
 ![overview](src/am4/bot/assets/img/overview.drawio.svg)
 
