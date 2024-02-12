@@ -1,12 +1,12 @@
-# ![logo](src/am4/bot/assets/img/logo-small.png) am4bot
+# ![logo](src/am4/bot/assets/img/logo-small.png) am4
 
-[![](https://dcbadge.vercel.app/api/server/4tVQHtf?style=flat)](https://discord.gg/4tVQHtf) [![CI](https://github.com/cathaypacific8747/am4bot/actions/workflows/ci.yml/badge.svg)](https://github.com/cathaypacific8747/am4bot/actions/workflows/ci.yml)
+[![](https://dcbadge.vercel.app/api/server/4tVQHtf?style=flat)](https://discord.gg/4tVQHtf) [![CI](https://github.com/cathaypacific8747/am4/actions/workflows/ci.yml/badge.svg)](https://github.com/cathaypacific8747/am4/actions/workflows/ci.yml)
 
 A discord bot for the game [Airline Manager 4](airlinemanager.com), used on our [server](https://discord.gg/4tVQHtf).
 
 Our bot is currently running legacy code under [`src-old`](./src-old/) and is being rewritten completely:
 - [x] core calculations rewritten in C++ for bettter performance ([`src/am4/utils`](./src/am4/utils))
-- [ ] api written in Python ([`src/am4/api (under construction)`](./src/am4/api/))
+- [x] api written in Python ([`src/am4/api (under construction)`](./src/am4/api/))
 - [ ] discord bot written in Python ([`src/am4/bot (under construction)`](./src/am4/bot/))
 - [ ] [`am4help.com`](https://am4help.com/) utilising this codebase ([`src/am4/web (under construction)`](./src/am4/web/)to be developed)
 
@@ -14,12 +14,20 @@ Our bot is currently running legacy code under [`src-old`](./src-old/) and is be
 
 
 ## Installation
-Clone the repo and in the root directory:
+Make sure docker is installed.
 ```sh
-python3 -m virtualenv .venv
-source .venv/bin/activate
-pip install ".[api,bot]"
-python3 -m src.am4 --help
+docker build -t am4 .
+docker run -d -p 8002:8002 -p 8090:8090 --name am4-dev am4
+# sudo docker exec -it am4-dev bash
+```
+To run the bot instead:
+```sh
+docker run -d -p 8002:8002 -p 8090:8090 --name am4-dev am4 tail -f /dev/null
+mv config.example.json config.json
+# edit config.json
+docker cp config.json am4-dev:/app/config.json
+docker exec am4-dev python3 -m src.am4 cfg set config.json
+docker exec -d am4-dev python3 -m src.am4 start api,bot
 ```
 
 ## Features

@@ -7,6 +7,7 @@ from io import BytesIO
 import httpx
 from loguru import logger
 
+from ..config import cfg
 from .client import pb
 
 PB_VERSION = "0.21.1"
@@ -28,13 +29,30 @@ def ensure_pb_exists():
     os.chmod(str(base_path / "pocketbase"), 0o755)
 
 
+async def _create_admin():
+    args = [str(base_path / "pocketbase"), "admin", "create", cfg.db.PB_EMAIL, cfg.db.PB_PASSWORD]
+    process = await asyncio.create_subprocess_exec(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    while True:
+        line = await process.stdout.readline()
+        if not line:
+            break
+        data = line.decode().strip()
+        if "Successfully created new admin" in data:
+            logger.success(data)
+        else:
+            logger.info(data)
+
+
 async def start(db_done: asyncio.Event):
     ensure_pb_exists()
-    logger.info("Starting PocketBase...")
+    logger.info(f"Starting PocketBase at {cfg.db.PB_HOST}...")
+    args = [str(base_path / "pocketbase"), "serve", f"--http={cfg.db.PB_HOST}"]
     process = await asyncio.create_subprocess_exec(
-        str(base_path / "pocketbase"),
-        "serve",
-        # "--dev",
+        *args,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )
@@ -46,6 +64,7 @@ async def start(db_done: asyncio.Event):
         data = line.decode().strip()
         if "Server started" in data:
             logger.success(data)
+            await _create_admin()
             await pb._login_admin()
             db_done.set()
         elif "Error" in data:

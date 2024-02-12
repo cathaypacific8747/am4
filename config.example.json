@@ -11,7 +11,10 @@
         "HELPER_ROLEID": 0
     },
     "db": {
-        "PB_EMAIL": "admin@localhost",
-        "PB_PASSWORD": "am4"
+        "PB_EMAIL": "admin@am4help.com",
+        "PB_PASSWORD": "admin@am4help.com"
+    },
+    "api": {
+        "HOST": "0.0.0.0"
     }
 }

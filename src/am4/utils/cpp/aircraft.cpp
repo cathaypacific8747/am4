@@ -113,13 +113,22 @@ Aircraft::SearchResult Aircraft::search(const string& s, const User& user) {
             break;
     }
     ac.speed_mod = parse_result.speed_mod;
-    if (ac.speed_mod) ac.speed *= 1.1f;
+    if (ac.speed_mod) {
+        ac.speed *= 1.1f;
+        ac.cost *= 1.07f;
+    };
 
     ac.fuel_mod = parse_result.fuel_mod;
-    if (ac.fuel_mod) ac.fuel *= 0.9f;
+    if (ac.fuel_mod) {
+        ac.fuel *= 0.9f;
+        ac.cost *= 1.10f;
+    };
 
     ac.co2_mod = parse_result.co2_mod;
-    if (ac.co2_mod) ac.co2 *= 0.9f;
+    if (ac.co2_mod) {
+        ac.co2 *= 0.9f;
+        ac.cost *= 1.05f;
+    };
 
     ac.fourx_mod = parse_result.fourx_mod || user.fourx;
     if (ac.fourx_mod) ac.speed *= 4.0f;

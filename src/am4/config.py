@@ -7,15 +7,16 @@ _cfg_internal_fp = Path(__file__).parent / ".config.json"
 
 
 class ConfigDB(BaseModel):
+    PB_HOST: str = "0.0.0.0:8090"
     PB_ENDPOINT: str = "http://127.0.0.1:8090/api/"
-    PB_EMAIL: str = "admin@localhost"
-    PB_PASSWORD: str = "am4"
+    PB_EMAIL: str = "admin@am4help.com"
+    PB_PASSWORD: str = "admin@am4help.com"
 
 
 class ConfigAPI(BaseModel):
-    HOST: str = "127.0.0.1"
+    HOST: str = "0.0.0.0"
     PORT: int = 8002
-    RELOAD: bool = True
+    RELOAD: bool = False
 
 
 class ConfigBot(BaseModel):

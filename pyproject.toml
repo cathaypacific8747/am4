@@ -29,6 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
 ]
 dependencies = [
+    "rich>=13.7.0",
     "httpx>=0.26.0",
     "pydantic>=2.6.1",
     "loguru>=0.7.2",

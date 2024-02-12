@@ -45,7 +45,7 @@ class AircraftCog(commands.Cog):
                 title=f"{a.manufacturer} {a.name} (`{a.shortname}`, {a.type.name.split('.')[-1]})",
                 description=(
                     f"**   Engine**: {a.ename}{modifiers} (id: {a.eid})\n"
-                    f"**    Speed**: {a.speed:,.3f} km/h (rank: {a.priority+1})\n"
+                    f"**    Speed**: {a.speed:,.2f} km/h (rank: {a.priority+1})\n"
                     f"**     Fuel**: {a.fuel:.3f} lbs/km\n"
                     f"**     CO2**: {a.co2:.3f} kg/pax/km\n"
                     f"**     Cost**: ${a.cost:,}\n"

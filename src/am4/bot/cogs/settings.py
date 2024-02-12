@@ -50,13 +50,8 @@ class SettingsCog(commands.Cog):
         pass
 
     @settings.command(
-        brief="show all or one of my settings",
-        help=(
-            "Show all settings, or a specific setting given a *setting key*, examples:```php\n"
-            f"{cfg.bot.COMMAND_PREFIX}settings show *\n"
-            f"{cfg.bot.COMMAND_PREFIX}settings show userid\n"
-            "```"
-        ),
+        brief="show all of my settings",
+        help=("Show all settings, example:```php\n" f"{cfg.bot.COMMAND_PREFIX}settings show\n" "```"),
         ignore_extra=False,
     )
     async def show(self, ctx: commands.Context):
@@ -81,6 +76,10 @@ class SettingsCog(commands.Cog):
                 f"`accumulated_count`: {u.accumulated_count}\n"
             ),
             color=COLOUR_GENERIC,
+        )
+        e.add_field(
+            name="To modify a setting, use",
+            value=f"```php\n{cfg.bot.COMMAND_PREFIX}settings set <setting key> <value>\n```",
         )
         await ctx.send(embed=e)
 

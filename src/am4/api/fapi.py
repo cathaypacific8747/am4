@@ -36,7 +36,7 @@ app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
     description="""A collection of calculators and tools for Airline Manager 4, aimed to facilitate statistical analyses and promote the development of third-party tools. This version is primarily rewritten in C++ for performance, in particular, route finding.
 
-**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues on our [AM4Tools Discord server](https://discord.gg/4tVQHtf), or ping me at @cathayexpress if you encounter critical issues such as 500 Internal Server Error. This project is open source - feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4bot).
+**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues on our [AM4Tools Discord server](https://discord.gg/4tVQHtf), or ping me at @cathayexpress if you encounter critical issues such as 500 Internal Server Error. This project is open source - feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4).
 
 # Key features
 - Fuzzy airport and aircraft search
@@ -200,7 +200,7 @@ async def ac_route_find_routes(
 server = Server(
     Config(
         app,
-        host="127.0.0.1",
+        host=cfg.api.HOST,
         port=cfg.api.PORT,
         reload=cfg.api.RELOAD,
         server_header=False,

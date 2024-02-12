@@ -375,7 +375,7 @@ void pybind_init_db(py::module_& m) {
                         if (!std::filesystem::exists(hdir + "/data/" + fn)) {
                             std::cout << "WARN: " << fn << " not found, downloading from GitHub..." << std::endl;
                             urlretrieve(
-                                "https://github.com/cathaypacific8747/am4bot/releases/latest/download/" + fn,
+                                "https://github.com/cathaypacific8747/am4/releases/latest/download/" + fn,
                                 hdir + "/data/" + fn
                             );
                         }

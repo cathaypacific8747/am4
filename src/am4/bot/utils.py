@@ -1,5 +1,6 @@
 import discord
 from am4.utils.game import User
+from discord import AllowedMentions
 from discord.ext import commands
 
 from ..config import cfg
@@ -37,34 +38,40 @@ def get_err_embed(
 
 async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     u = ctx.author
-    local_is_realism = discord.utils.get(u.roles, name="Realism") is not None
-    user, user_extra, dbstatus = await pb.users.get_from_discord(
-        u.name, u.nick, "REALISM" if local_is_realism else "EASY", u.id
-    )
+    r_role = discord.utils.get(u.roles, name="Realism")
+    e_role = discord.utils.get(u.roles, name="Easy")
+    gm_target = "Realism" if r_role is not None else "Easy"
+    role_id = r_role.id if r_role is not None else e_role.id if e_role is not None else None
+
+    user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.nick, gm_target.upper(), u.id)
     if dbstatus == "created":
+        gm_reason = f" because of your <@&{role_id}> role" if role_id is not None else ""
         await ctx.send(
             embed=discord.Embed(
                 title="Your account has been created.",
                 description=(
-                    "You can modify your game mode, reputation and other settings "
-                    f"with the `{cfg.bot.COMMAND_PREFIX}settings` command.\n"
-                    "They will be automatically applied when using the bot's commands.\n\n"
+                    f"Your game mode is now `{gm_target}`{gm_reason}.\n\n"
                     f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
-                    f"Learn more about the settings with `{cfg.bot.COMMAND_PREFIX}help settings`."
+                    f"Need help with settings? Try `{cfg.bot.COMMAND_PREFIX}help settings`."
                 ),
                 color=COLOUR_SUCCESS,
-            )
+            ),
+            allowed_mentions=AllowedMentions.none(),
         )
-    if local_is_realism and user.game_mode == User.GameMode.EASY:
+    if (r_role is not None and user.game_mode == User.GameMode.EASY) or (
+        e_role is not None and user.game_mode == User.GameMode.REALISM
+    ):
+        gm_user = "Realism" if user.game_mode == User.GameMode.REALISM else "Easy"
         await ctx.send(
             embed=get_err_embed(
-                title="You are in the wrong game mode!",
+                title="Mismatched game mode!",
                 desc=(
-                    "I detected the `Realism` role on your account, but your settings indicate"
-                    " that you are in the Easy game mode.\n"
+                    f"I detected the <@&{role_id}> role on your account, but your settings indicate "
+                    f"that you are in the `{gm_user}` game mode.\n"
                 ),
-                suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism"],
-            )
+                suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}settings set game_mode {gm_target}"],
+            ),
+            allowed_mentions=AllowedMentions.none(),
         )
     return user, user_extra
 
