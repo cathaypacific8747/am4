@@ -2,9 +2,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "py: run main.py",
+            "label": "py: start api",
             "type": "shell",
-            "command": "${command:python.interpreterPath} main.py"
+            "command": "${command:python.interpreterPath} -m src.am4 start api",
+            "problemMatcher": []
+        },
+        {
+            "label": "py: start api+discord bot",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} -m src.am4 start api,bot",
+            "problemMatcher": []
         },
         {
             "label": "py: uninstall",
@@ -39,6 +46,6 @@
             "label": "py: test",
             "type": "shell",
             "command": "${command:python.interpreterPath} -m pytest"
-        },
+        }
     ]
 }
