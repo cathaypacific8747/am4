@@ -43,6 +43,8 @@ async def _create_admin():
         data = line.decode().strip()
         if "Successfully created new admin" in data:
             logger.success(data)
+        elif "UNIQUE constraint failed" in data:
+            logger.info("admin already exists, creation skipped")
         else:
             logger.info(data)
 
@@ -70,3 +72,5 @@ async def start(db_done: asyncio.Event):
         elif "Error" in data:
             logger.error(data)
             break
+        else:
+            logger.debug(data)

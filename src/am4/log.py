@@ -20,9 +20,7 @@ class InterceptHandler(logging.Handler):
             frame = frame.f_back
             depth += 1
 
-        logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
 def setup_logging():
@@ -35,6 +33,9 @@ def setup_logging():
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
+
+    logging.getLogger("discord").setLevel(logging.INFO)
+    logging.getLogger("httpcore").setLevel(logging.INFO)
 
     # configure loguru
     logger.configure(

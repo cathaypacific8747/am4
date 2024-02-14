@@ -1,6 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("POST", "/api/_core/users/from_discord", (c) => {
+routerAdd("POST", "/api/_discord/users/from_discord", (c) => {
     // attempt to retrieve the user, if it doesn't exist, create it.
     const data = new DynamicModel({
         username: "",
@@ -48,6 +48,24 @@ routerAdd("POST", "/api/_core/users/from_discord", (c) => {
     // , $apis.requireAdminAuth()
 )
 
-onModelAfterUpdate((e) => {
-    console.log("user updated...", e.model.get("email"))
-}, "users")
+routerAdd("PUT", "/api/_discord/users/edit_setting", (c) => {
+    // WARN: data validation should be performed on python's end.
+    const data = new DynamicModel({
+        userid: "",
+        update: {}
+    });
+    c.bind(data);
+
+    const record = $app.dao().findRecordById("users", data.userid);
+    record.load(data.update);
+    $app.dao().saveRecord(record);
+
+    return c.json(200, { "message": "updated" })
+}
+    , $apis.activityLogger($app)
+    // , $apis.requireAdminAuth()
+)
+
+// onModelAfterUpdate((e) => {
+//     console.log("user updated...", e.model.get("email"))
+// }, "users")

@@ -1,7 +1,14 @@
+import heapq
+from typing import Callable
+
 import discord
+from am4.utils.aircraft import Aircraft
+from am4.utils.airport import Airport
+from am4.utils.db.utils import jaro_winkler_distance
 from am4.utils.game import User
 from discord import AllowedMentions
 from discord.ext import commands
+from discord.ext.commands.view import StringView
 
 from ..config import cfg
 from ..db.client import pb
@@ -76,50 +83,159 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     return user, user_extra
 
 
-async def handle_too_many_args(ctx: commands.Context, error: commands.CommandError, arg_name: str, cmd: str):
-    if isinstance(error, commands.TooManyArguments):
-        pre = ctx.view.buffer[: ctx.view.previous]
-        rest = ctx.view.buffer[ctx.view.index :]
-        await ctx.send(
+class AircraftNotFoundError(commands.BadArgument):
+    def __init__(self, acsr: Aircraft.SearchResult):
+        super().__init__("Aircraft not found!")
+        self.acsr = acsr
+
+
+def get_aircraft(query: str) -> Aircraft.SearchResult:
+    acsr = Aircraft.search(query)
+    if not acsr.ac.valid:
+        raise AircraftNotFoundError(acsr)
+    return acsr
+
+
+class AirportNotFoundError(commands.BadArgument):
+    def __init__(self, apsr: Airport.SearchResult):
+        super().__init__("Airport not found!")
+        self.apsr = apsr
+
+
+def get_airport(query: str) -> Airport.SearchResult:
+    acsr = Airport.search(query)
+    if not acsr.ap.valid:
+        raise AirportNotFoundError(acsr)
+    return acsr
+
+
+def get_err_tb(v: StringView) -> str:
+    highlight = " ▔▔▔?" if (wordlen := v.index - v.previous) < 1 else "▔" * wordlen
+    return f"```php\n{v.buffer}\n{' ' * v.previous}{highlight}\n```"
+
+
+class CustomErrHandler:
+    def __init__(self, ctx: commands.Context, error: commands.CommandError):
+        self.ctx = ctx
+        self.error = error
+
+        self.err_tb = get_err_tb(self.ctx.view)
+
+        self.handled = False
+
+    def raise_for_unhandled(self):
+        if not self.handled:
+            raise self.error
+
+    async def invalid_aircraft(self, get_cmd_suggs: Callable[[list[Aircraft.Suggestion]], list[str]]):
+        if not isinstance(self.error, AircraftNotFoundError):
+            return
+        acsr = self.error.acsr
+        suggs = Aircraft.suggest(acsr.parse_result)
+
+        extra = f" using search mode `{st}`" if (st := acsr.parse_result.search_type) != Aircraft.SearchType.ALL else ""
+        embed = discord.Embed(
+            title=f"Aircraft `{self.ctx.current_argument}` not found{extra}!",
+            description=self.err_tb
+            + ("You might also want to check the engine modifiers." if "[" in self.ctx.current_argument else ""),
+            color=COLOUR_ERROR,
+        )
+        cmds = "\n".join(get_cmd_suggs(suggs))
+        if suggs:
+            embed.add_field(
+                name="Did you mean:",
+                value="\n".join(f"- `{a.ac.shortname}` ({a.ac.name})" for a in suggs),
+                inline=False,
+            )
+            embed.add_field(name="Suggested commands:", value=f"```php\n{cmds}\n```", inline=False)
+        await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def invalid_airport(self, get_cmd_suggs: Callable[[list[Airport.Suggestion]], list[str]]):
+        if not isinstance(self.error, AirportNotFoundError):
+            return
+        apsr = self.error.apsr
+        suggs = Airport.suggest(apsr.parse_result)
+
+        extra = f" using search mode `{st}`" if (st := apsr.parse_result.search_type) != Airport.SearchType.ALL else ""
+        embed = discord.Embed(
+            title=f"Airport `{self.ctx.current_argument}` not found{extra}!",
+            description=self.err_tb,
+            color=COLOUR_ERROR,
+        )
+        cmds = "\n".join(get_cmd_suggs(suggs))
+        if suggs:
+            embed.add_field(
+                name="Did you mean:",
+                value="\n".join(f"- `{a.ap.iata}` / `{a.ap.icao}` ({a.ap.name}, {a.ap.country})" for a in suggs),
+                inline=False,
+            )
+            embed.add_field(name="Suggested commands:", value=f"```php\n{cmds}\n```", inline=False)
+
+        await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def too_many_args(self, arg_name: str, cmd: str):
+        if not isinstance(self.error, commands.TooManyArguments):
+            return
+        v = self.ctx.view
+        # override
+        highlight = "▔" * len(v.buffer[v.index + 1 :])
+        err_loc = f"```php\n{v.buffer}\n{' ' * (v.index+1)}{highlight}\n```"
+
+        cmds = [f"{cfg.bot.COMMAND_PREFIX}help {cmd}", f"{v.buffer[: v.index]}"]
+        if a := self.ctx.current_argument:
+            cmds.append(f'{v.buffer[: v.previous]}"{a}{v.buffer[v.index:]}"')
+
+        await self.ctx.send(
             embed=get_err_embed(
                 title="Too many arguments!",
                 desc=(
-                    f"I interpreted the {arg_name} to be `{ctx.current_argument}` and "
-                    f'saw the rest (`{rest}`) as invalid.\nTry wrapping your {arg_name} in double quotes (`"`).'
+                    f"{err_loc}Tip: If you are trying to use spaces in the {arg_name},"
+                    f' wrap it in double quotes (`"`).'
                 ),
-                suggested_commands=[
-                    f"{cfg.bot.COMMAND_PREFIX}help {cmd}",
-                    f'{pre}"{ctx.current_argument}{rest}"',
-                ],
+                suggested_commands=cmds,
             )
         )
-        return
+        self.handled = True
 
-
-async def handle_missing_arg(ctx: commands.Context, error: commands.CommandError, cmd: str):
-    if isinstance(error, commands.MissingRequiredArgument):
-        pre = ctx.view.buffer[: ctx.view.previous]
-        cp = ctx.current_parameter
-        await ctx.send(
+    async def missing_arg(self, cmd: str):
+        if not isinstance(self.error, commands.MissingRequiredArgument):
+            return
+        pre = self.ctx.view.buffer[: self.ctx.view.previous]
+        cp = self.ctx.current_parameter
+        await self.ctx.send(
             embed=get_err_embed(
                 title="Missing required argument!",
-                desc=(f"I expected the `{cp.name}` argument.\n"),
+                desc=(f"{self.err_tb}I expected the `{cp.name}` argument.\n"),
                 suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}help {cmd}", f"{pre} <{cp.name}>"],
             )
         )
-        return
+        self.handled = True
 
+    async def bad_literal(self, get_cmd_suggs: Callable[[list[str]], list[str]]):
+        if not isinstance(self.error, commands.BadLiteralArgument):
+            return
 
-async def handle_bad_literal(ctx: commands.Context, error: commands.CommandError, cmd: str):
-    if isinstance(error, commands.BadLiteralArgument):
-        pre = ctx.view.buffer[: ctx.view.previous]
-        cp = ctx.current_parameter
-        valid_literals = ", ".join(f"`{l}`" for l in error.literals)
-        await ctx.send(
-            embed=get_err_embed(
-                title="Provided argument is invalid!",
-                desc=(f"I expected the `{cp.name}` to be one of: {valid_literals}\n"),
-                suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}help {cmd}", f"{pre}<{cp.name}>"],
-            )
+        valid_literals = ", ".join(f"`{l}`" for l in self.error.literals)
+        top_keys = []
+        for k in self.error.literals:
+            heapq.heappush(top_keys, (jaro_winkler_distance(self.error.argument, k), k))
+        suggs = [k for _, k in heapq.nlargest(3, top_keys)]
+
+        cp = self.ctx.current_parameter
+        embed = discord.Embed(
+            title=f"Provided argument `{self.ctx.current_argument}` is invalid.",
+            description=f"{self.err_tb}Here, the `{cp.name}` must be one of: {valid_literals}.",
+            color=COLOUR_ERROR,
         )
-        return
+        cmds = "\n".join(get_cmd_suggs(suggs))
+        if suggs:
+            embed.add_field(
+                name="Did you mean:",
+                value="\n".join(f"- `{k}`" for k in suggs),
+                inline=False,
+            )
+            embed.add_field(name="Suggested commands:", value=f"```php\n{cmds}\n```", inline=False)
+        await self.ctx.send(embed=embed)
+        self.handled = True

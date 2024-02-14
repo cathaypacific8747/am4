@@ -33,7 +33,7 @@ class UserAPI(BaseService):
     ) -> tuple[User, UserExtra, DBMessageUser]:
         resp: dict = (
             await self.client.post(
-                "_core/users/from_discord",
+                "_discord/users/from_discord",
                 json={
                     "username": username,
                     "game_name": game_name,
@@ -46,3 +46,9 @@ class UserAPI(BaseService):
         u = User.from_dict(data)
         ue = UserExtra.model_validate(data)
         return u, ue, resp.get("message")
+
+    async def update_setting(self, userid: str, key: str, value: str) -> str:
+        resp: dict = (
+            await self.client.put("_discord/users/edit_setting", json={"userid": userid, "update": {key: value}})
+        ).json()
+        return resp.get("message")

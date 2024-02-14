@@ -82,6 +82,6 @@ class HelpCog(commands.Cog):
                 value=d if (d := p.description) is not None else "",
                 inline=True,
             )
-        if cmd.help is not None:
-            embed.add_field(name="Description", value=cmd.help, inline=False)
+        if h := cmd.help or cmd.brief:
+            embed.add_field(name="Description", value=h, inline=False)
         await ctx.send(embed=embed)

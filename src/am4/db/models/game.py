@@ -14,7 +14,7 @@ StrPctToFloat = BeforeValidator(
 class PyUser(BaseModel):
     id: str
     username: str
-    game_id: Annotated[int, Field(ge=0)]
+    game_id: Annotated[int, Field(gt=0)]
     game_name: str
     game_mode: Annotated[Literal["EASY", "REALISM"], StrToUpper]
     discord_id: Annotated[int, Field(ge=0)]
@@ -47,7 +47,7 @@ class PyUser(BaseModel):
     valid: bool
 
 
-pyuser_whitelisted_keys = [
+PyUserWhitelistedKeys = Literal[
     "game_id",
     "game_name",
     "game_mode",

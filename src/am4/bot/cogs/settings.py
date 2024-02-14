@@ -1,29 +1,14 @@
-import heapq
-from typing import Literal
+from typing import Callable, Literal
 
 import discord
-from am4.utils.db.utils import jaro_winkler_distance
 from am4.utils.game import User
 from discord.ext import commands
 from pydantic import ValidationError
 
 from ...config import cfg
-from ...db.models.game import PyUser, pyuser_whitelisted_keys
-from ..utils import (
-    COLOUR_GENERIC,
-    fetch_user_info,
-    get_err_embed,
-    handle_bad_literal,
-    handle_missing_arg,
-    handle_too_many_args,
-)
-
-
-def suggest_setting_keys(k_input: str) -> list[str]:
-    top_keys = []
-    for k in pyuser_whitelisted_keys:
-        heapq.heappush(top_keys, (jaro_winkler_distance(k_input, k), k))
-    return [k for _, k in heapq.nlargest(3, top_keys)]
+from ...db.client import pb
+from ...db.models.game import PyUser, PyUserWhitelistedKeys
+from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, CustomErrHandler, fetch_user_info, get_err_embed
 
 
 class SettingsCog(commands.Cog):
@@ -78,8 +63,8 @@ class SettingsCog(commands.Cog):
             color=COLOUR_GENERIC,
         )
         e.add_field(
-            name="To modify a setting, use",
-            value=f"```php\n{cfg.bot.COMMAND_PREFIX}settings set <setting key> <value>\n```",
+            name="To learn more about each, use",
+            value=f"```php\n{cfg.bot.COMMAND_PREFIX}help settings\n```",
         )
         await ctx.send(embed=e)
 
@@ -92,25 +77,7 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def set(self, ctx: commands.Context, key: str, value: str | int | float | bool):
-        # check whether key is whitelisted, and value conforms to pydantic, if so, update db.
-        if key not in pyuser_whitelisted_keys:
-            sugg_keys = suggest_setting_keys(key)
-            await ctx.send(
-                embed=get_err_embed(
-                    title=f"Setting key `{key}` is invalid.",
-                    desc=(
-                        "The provided setting key is not valid. Did you mean:\n"
-                        + "\n".join(f"- `{k}`" for k in sugg_keys)
-                    ),
-                    suggested_commands=[
-                        f"{cfg.bot.COMMAND_PREFIX}help settings set",
-                        f"{cfg.bot.COMMAND_PREFIX}settings set {sugg_keys[0]} <value>",
-                    ],
-                )
-            )
-            return
-
+    async def set(self, ctx: commands.Context, key: PyUserWhitelistedKeys, value: str | int | float | bool):
         try:
             u_new = PyUser.__pydantic_validator__.validate_assignment(PyUser.model_construct(), key, value)
         except ValidationError as err:
@@ -128,8 +95,20 @@ class SettingsCog(commands.Cog):
 
         v_new = getattr(u_new, key)
         u, _ue = await fetch_user_info(ctx)
-        print(u.id)
-        await ctx.send(f"{v_new=}")
+        v_old = getattr(u, key)
+        dbstatus = await pb.users.update_setting(u.id, key, v_new)
+
+        if dbstatus == "updated":
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Success",
+                    description=(
+                        f"The setting `{key}` has been updated from `{v_old:>1}` to `{v_new:>1}`.\n\n"
+                        f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
+                    ),
+                    color=COLOUR_SUCCESS,
+                ),
+            )
 
     @settings.command(
         brief="reset one of my settings",
@@ -140,29 +119,72 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def reset(self, ctx: commands.Context, key: str):
-        await ctx.send(f"TODO: Reset setting {key}")
+    async def reset(self, ctx: commands.Context, key: PyUserWhitelistedKeys):
+        u, _ue = await fetch_user_info(ctx)
+        v_old = getattr(u, key)
+        u_new = User.Default(realism=u.game_mode == User.GameMode.REALISM)
+        v_new = getattr(u_new, key)
+        dbstatus = await pb.users.update_setting(u.id, key, v_new)
+
+        if dbstatus == "updated":
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Success",
+                    description=(
+                        f"The setting `{key}` has been reset from `{v_old:>1}` back to `{v_new:>1}`.\n\n"
+                        f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
+                    ),
+                    color=COLOUR_SUCCESS,
+                ),
+            )
 
     @settings.error
     async def settings_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_bad_literal(ctx, error, "settings")
-        await handle_missing_arg(ctx, error, "settings")
-        await handle_too_many_args(ctx, error, "action", "settings")
-        raise error
+        h = CustomErrHandler(ctx, error)
+
+        def get_cmd_suggs(suggs: list[str]):
+            return [
+                f"{cfg.bot.COMMAND_PREFIX}help settings",
+                f"{cfg.bot.COMMAND_PREFIX}settings {suggs[0]}",
+            ]
+
+        await h.bad_literal(get_cmd_suggs)
+        await h.missing_arg("settings")
+        await h.too_many_args("action", "settings")
+        h.raise_for_unhandled()
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_too_many_args(ctx, error, "setting key", "settings show")
-        raise error
+        h = CustomErrHandler(ctx, error)
+        await h.too_many_args("action", "settings show")
+        h.raise_for_unhandled()
 
     @set.error
     async def set_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_missing_arg(ctx, error, "settings reset")
-        await handle_too_many_args(ctx, error, "setting key and value", "settings set")
-        raise error
+        h = CustomErrHandler(ctx, error)
+
+        def get_cmd_suggs(suggs: list[str]):
+            return [
+                f"{cfg.bot.COMMAND_PREFIX}help settings set",
+                f"{cfg.bot.COMMAND_PREFIX}settings set {suggs[0]} <value>",
+            ]
+
+        await h.bad_literal(get_cmd_suggs)
+        await h.missing_arg("settings set")
+        await h.too_many_args("key/value", "settings set")
+        h.raise_for_unhandled()
 
     @reset.error
     async def reset_error(self, ctx: commands.Context, error: commands.CommandError):
-        await handle_missing_arg(ctx, error, "settings reset")
-        await handle_too_many_args(ctx, error, "setting key", "settings reset")
-        raise error
+        h = CustomErrHandler(ctx, error)
+
+        def get_cmd_suggs(suggs: list[str]):
+            return [
+                f"{cfg.bot.COMMAND_PREFIX}help settings reset",
+                f"{cfg.bot.COMMAND_PREFIX}settings reset {suggs[0]}",
+            ]
+
+        await h.bad_literal(get_cmd_suggs)
+        await h.missing_arg("settings reset")
+        await h.too_many_args("key", "settings reset")
+        h.raise_for_unhandled()
