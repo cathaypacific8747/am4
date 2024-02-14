@@ -77,11 +77,12 @@ class HelpCog(commands.Cog):
             title=f"`{cfg.bot.COMMAND_PREFIX}{cmd.qualified_name} {cmd.signature}`", colour=COLOUR_GENERIC
         )
         for p in cmd.clean_params.values():
+            name = ":small_blue_diamond: `{}` (Optional)" if not p.required else ":small_orange_diamond: `{}`"
             embed.add_field(
-                name=f"{':small_blue_diamond:' if not p.required else ':small_orange_diamond:'} `{p.name}`",
+                name=name.format(p.name),
                 value=d if (d := p.description) is not None else "",
                 inline=True,
             )
         if h := cmd.help or cmd.brief:
-            embed.add_field(name="Description", value=h, inline=False)
+            embed.add_field(name="Details", value=h, inline=False)
         await ctx.send(embed=embed)

@@ -1,10 +1,13 @@
 import discord
 from am4.utils.airport import Airport
 from discord.ext import commands
+from discord.ext.commands.view import StringView
 
 from ...common import HELP_AP_ARG0
 from ...config import cfg
-from ..utils import COLOUR_GENERIC, CustomErrHandler, get_airport
+from ..converters import AirportCvtr
+from ..errors import CustomErrHandler
+from ..utils import COLOUR_GENERIC
 
 
 class AirportCog(commands.Cog):
@@ -22,9 +25,12 @@ class AirportCog(commands.Cog):
         ignore_extra=False,
     )
     @commands.guild_only()
-    async def airport(self, ctx: commands.Context, query: str = commands.parameter(description=HELP_AP_ARG0)):
-        apsr = get_airport(query)
-        a = apsr.ap
+    async def airport(
+        self,
+        ctx: commands.Context,
+        ap_query: Airport.SearchResult = commands.parameter(converter=AirportCvtr, description=HELP_AP_ARG0),
+    ):
+        a = ap_query.ap
         e = discord.Embed(
             title=f"{a.name}, {a.country} (`{a.iata}` / `{a.icao}`)",
             description=(
@@ -45,13 +51,7 @@ class AirportCog(commands.Cog):
     async def airport_error(self, ctx: commands.Context, error: commands.CommandError):
         h = CustomErrHandler(ctx, error)
 
-        def get_cmd_suggs(suggs: list[Airport.Suggestion]):
-            return [
-                f"{cfg.bot.COMMAND_PREFIX}help airport",
-                f"{cfg.bot.COMMAND_PREFIX}airport {suggs[0].ap.iata.lower()}",
-            ]
-
-        await h.invalid_airport(get_cmd_suggs)
+        await h.invalid_airport("airport")
         await h.missing_arg("airport")
-        await h.too_many_args("query", "airport")
+        await h.too_many_args("ap_query", "airport")
         h.raise_for_unhandled()

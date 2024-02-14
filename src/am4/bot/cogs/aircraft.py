@@ -4,7 +4,9 @@ from discord.ext import commands
 
 from ...common import HELP_AC_ARG0
 from ...config import cfg
-from ..utils import COLOUR_GENERIC, CustomErrHandler, get_aircraft
+from ..converters import AircraftCvtr
+from ..errors import CustomErrHandler
+from ..utils import COLOUR_GENERIC
 
 
 class AircraftCog(commands.Cog):
@@ -23,10 +25,13 @@ class AircraftCog(commands.Cog):
         ignore_extra=False,
     )
     @commands.guild_only()
-    async def aircraft(self, ctx: commands.Context, query: str = commands.parameter(description=HELP_AC_ARG0)):
-        ac = get_aircraft(query)
-        a = ac.ac
-        apr = ac.parse_result
+    async def aircraft(
+        self,
+        ctx: commands.Context,
+        ac_query: Aircraft.SearchResult = commands.parameter(converter=AircraftCvtr, description=HELP_AC_ARG0),
+    ):
+        a = ac_query.ac
+        apr = ac_query.parse_result
         modifiers = "".join(
             name
             for name, set_ in zip(
@@ -66,13 +71,7 @@ class AircraftCog(commands.Cog):
     async def aircraft_error(self, ctx: commands.Context, error: commands.CommandError):
         h = CustomErrHandler(ctx, error)
 
-        def get_cmd_suggs(suggs: list[Aircraft.Suggestion]):
-            return [
-                f"{cfg.bot.COMMAND_PREFIX}help aircraft",
-                f"{cfg.bot.COMMAND_PREFIX}aircraft {suggs[0].ac.shortname}",
-            ]
-
-        await h.invalid_aircraft(get_cmd_suggs)
+        await h.invalid_aircraft("aircraft")
         await h.missing_arg("aircraft")
-        await h.too_many_args("query", "aircraft")
+        await h.too_many_args("ac_query", "aircraft")
         h.raise_for_unhandled()

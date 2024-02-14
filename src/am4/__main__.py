@@ -34,6 +34,7 @@ Tasks = Literal["api", "bot"]
 @app.command(help="start components, separated by commas. e.g. `am4 start api,bot`")
 def start(components: Annotated[Optional[str], typer.Argument()] = None):
     components = [] if components is None else components.split(",")
+    # from .bot import start as start_bot
     from .db import start as start_db
     from .log import setup_logging
 

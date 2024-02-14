@@ -1,4 +1,4 @@
-from typing import Callable, Literal
+from typing import Literal
 
 import discord
 from am4.utils.game import User
@@ -8,7 +8,8 @@ from pydantic import ValidationError
 from ...config import cfg
 from ...db.client import pb
 from ...db.models.game import PyUser, PyUserWhitelistedKeys
-from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, CustomErrHandler, fetch_user_info, get_err_embed
+from ..errors import CustomErrHandler
+from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, fetch_user_info, get_err_embed
 
 
 class SettingsCog(commands.Cog):
