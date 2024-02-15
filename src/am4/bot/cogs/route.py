@@ -1,15 +1,16 @@
 import discord
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
-from am4.utils.route import Route
+from am4.utils.demand import CargoDemand
+from am4.utils.route import AircraftRoute, Route
 from discord.ext import commands
 from discord.ext.commands.view import StringView
 
 from ...common import HELP_AC_ARG0, HELP_AP_ARG0
 from ...config import cfg
-from ..converters import AircraftCvtr, AirportCvtr
+from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, TPDCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_GENERIC
+from ..utils import COLOUR_GENERIC, IF, IH, IJ, IL, IY
 
 
 class RouteCog(commands.Cog):
@@ -31,31 +32,43 @@ class RouteCog(commands.Cog):
     async def route(
         self,
         ctx: commands.Context,
-        # origin_ap: AirportCvtr = commands.parameter(description=HELP_AP_ARG0),
-        # destination_ap: AirportCvtr = commands.parameter(description="Same as above"),
         ap0_query: Airport.SearchResult = commands.parameter(converter=AirportCvtr, description=HELP_AP_ARG0),
         ap1_query: Airport.SearchResult = commands.parameter(converter=AirportCvtr, description="Same as above"),
         ac_query: Aircraft.SearchResult | None = commands.parameter(
             converter=AircraftCvtr, default=None, description=HELP_AC_ARG0
         ),
+        trips_per_day: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
+            converter=TPDCvtr,
+            default=TPDCvtr._default,
+            displayed_default="AUTO",
+            description="Trips per day and mode, ! = strict mode, multiple of by default, auto when not provided.",
+        ),
+        config_algorithm: Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm = commands.parameter(
+            converter=CfgAlgCvtr,
+            default=Aircraft.PaxConfig.Algorithm.AUTO,
+            displayed_default="AUTO",
+            description="Config algorithm (case insensitive)",
+        ),
     ):
-        r = Route.create(ap0_query.ap, ap1_query.ap)
-        await ctx.send(str(r.to_dict()))
-        # e = discord.Embed(
-        #     title=f"{a.name}, {a.country} (`{a.iata}` / `{a.icao}`)",
-        #     description=(
-        #         f"**    Market**: {a.market}%\n"
-        #         f"**     Length**: {a.rwy} ft\n"
-        #         f"**    Coords**: {a.lat}, {a.lng}\n"
-        #         f"**Base Hub Cost**: ${a.hub_cost}\n"
-        #         f"**   Full Name**: {a.fullname}\n"
-        #         f"**  Continent**: {a.continent}\n"
-        #         f"**   Runways**: {','.join(f'`{r}`' for r in a.rwy_codes.split('|'))}\n"
-        #         f"**      ID**: {a.id}\n"
-        #     ),
-        #     color=COLOUR_GENERIC,
-        # )
-        # await ctx.send(embed=e)
+        if ac_query is None:
+            r = Route.create(ap0_query.ap, ap1_query.ap)
+            cargo_demand = CargoDemand(r.pax_demand)
+            embed = discord.Embed(
+                title=(
+                    f"`╔ {ap0_query.ap.iata} `{ap0_query.ap.name}, {ap0_query.ap.country}\n"
+                    f"`╚ {ap1_query.ap.iata} `{ap1_query.ap.name}, {ap1_query.ap.country}"
+                ),
+                description=(
+                    f"** Demand**: {IY}`{r.pax_demand.y}` {IJ}`{r.pax_demand.j}` {IF}`{r.pax_demand.f}`\n"
+                    f"**     **: {IL}`{cargo_demand.l}` {IH}`{cargo_demand.h}`\n"
+                    f"**Distance**: {r.direct_distance:.3f} km (direct)"
+                ),
+                colour=COLOUR_GENERIC,
+            )
+            await ctx.send(embed=embed)
+        else:
+            # todo: swap default paxconfig.auto -> cargoconfig.auto
+            await ctx.send(str(trips_per_day))
 
     @route.error
     async def route_error(self, ctx: commands.Context, error: commands.CommandError):

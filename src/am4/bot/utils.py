@@ -1,6 +1,4 @@
 import discord
-from am4.utils.aircraft import Aircraft
-from am4.utils.airport import Airport
 from am4.utils.game import User
 from discord import AllowedMentions
 from discord.ext import commands
@@ -8,7 +6,7 @@ from discord.ext import commands
 from ..config import cfg
 from ..db.client import pb
 from ..db.user import UserExtra
-from .errors import AircraftNotFoundError, AirportNotFoundError, get_err_embed
+from .errors import get_err_embed
 
 GUIDE_DEV_ROLEID = 646148607636144131
 STAR_ROLEID = 701410528853098497
@@ -16,6 +14,12 @@ STAR_ROLEID = 701410528853098497
 COLOUR_GENERIC = discord.Colour(0x9FACBD)
 COLOUR_ERROR = discord.Colour(0xCA7575)
 COLOUR_SUCCESS = discord.Colour(0x75CA83)
+
+IY = "<:economy:701335275896307742>"
+IJ = "<:business:701335275669946431>"
+IF = "<:first:701335275938381824>"
+IL = "<:large:701335275690786817>"
+IH = "<:heavy:701335275799969833>"
 
 _SP100 = " "
 _SP050 = " "

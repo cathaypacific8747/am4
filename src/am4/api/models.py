@@ -6,7 +6,15 @@ from am4.utils.route import AircraftRoute
 from fastapi import HTTPException, Query
 from pydantic import BaseModel, Field
 
-from ..common import HELP_AC_ARG0, HELP_AP_ARG0
+from ..common import (
+    HELP_AC_ARG0,
+    HELP_ACRO_CFG,
+    HELP_ACRO_MAXDIST,
+    HELP_ACRO_MAXFT,
+    HELP_ACRO_TPD,
+    HELP_ACRO_TPD_MODE,
+    HELP_AP_ARG0,
+)
 from ..db.models.aircraft import PyAircraft, PyAircraftSuggestion
 from ..db.models.airport import PyAirport, PyAirportSuggestion
 from ..db.models.game import PyUser
@@ -102,29 +110,23 @@ class FAPIReqACROptions:
         self,
         config_algorithm: Annotated[
             PyACROptionsConfigAlgorithm,
-            Query(
-                description="[Optional] **Aircraft configuration algorithm**: one of `AUTO`, `FJY`, `FYJ`, `JFY`, `JYF`, `YFJ`, `YJF` (pax/vip aircraft), or `AUTO`, `L`, `H` (cargo aircraft). If not specified, `AUTO` is used, which selects the best order for that distance class."
-            ),
+            Query(description=HELP_ACRO_CFG),
         ] = None,
         max_distance: Annotated[
             PyACROptionsMaxDistance,
-            Query(description="[Optional] **Maximum route distance (km)** - defaults to 6371π if not specified."),
+            Query(description=HELP_ACRO_MAXDIST),
         ] = None,
         max_flight_time: Annotated[
             PyACROptionsMaxFlightTime,
-            Query(description="[Optional] **Maximum flight time (h)** - defaults to 24 if not specified."),
+            Query(description=HELP_ACRO_MAXFT),
         ] = None,
         tpd_mode: Annotated[
             PyACROptionsTPDMode,
-            Query(
-                description="[Optional] **Trips per day mode**: one of `AUTO`, `AUTO_MULTIPLE_OF`, `STRICT`. If not specified, `AUTO` is used, which finds the optimal trips_per_day through brute-forice."
-            ),
+            Query(description=HELP_ACRO_TPD_MODE),
         ] = None,
         trips_per_day: Annotated[
             PyACROptionsTripsPerDay,
-            Query(
-                description="[Optional] **Trips per day**: defaults to 1. Note that this parameter is only respected when tpd_mode is set to `AUTO_MULTIPLE_OF` or `STRICT`. When `tpd_mode=AUTO`, it throws an error."
-            ),
+            Query(description=HELP_ACRO_TPD),
         ] = None,
     ):
         self.config_algorithm = config_algorithm
