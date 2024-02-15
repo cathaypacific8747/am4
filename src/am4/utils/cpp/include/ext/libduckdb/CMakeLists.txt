@@ -1,6 +1,6 @@
 include(FetchContent)
 
-set(DUCKDB_VERSION "0.9.2")
+set(DUCKDB_VERSION "0.10.0")
 
 string(REGEX MATCH "(arm64|aarch64)" IS_ARM "${CMAKE_SYSTEM_PROCESSOR}")
 

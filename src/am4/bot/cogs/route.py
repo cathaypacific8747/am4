@@ -72,9 +72,11 @@ class RouteCog(commands.Cog):
 
     @route.error
     async def route_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
-
-        await h.invalid_airport("route")
-        await h.missing_arg("route")
-        await h.too_many_args("argument", "route")
+        h = CustomErrHandler(ctx, error, "route")
+        await h.invalid_airport()
+        await h.invalid_aircraft()
+        await h.invalid_tpd()
+        await h.invalid_cfg_alg()
+        await h.missing_arg()
+        await h.too_many_args("argument")
         h.raise_for_unhandled()

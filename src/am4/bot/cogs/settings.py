@@ -3,13 +3,13 @@ from typing import Literal
 import discord
 from am4.utils.game import User
 from discord.ext import commands
-from pydantic import ValidationError
 
 from ...config import cfg
 from ...db.client import pb
-from ...db.models.game import PyUser, PyUserWhitelistedKeys
+from ...db.models.game import PyUserWhitelistedKeys
+from ..converters import SettingValueCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, fetch_user_info, get_err_embed
+from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, fetch_user_info
 
 
 class SettingsCog(commands.Cog):
@@ -78,33 +78,17 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def set(self, ctx: commands.Context, key: PyUserWhitelistedKeys, value: str | int | float | bool):
-        try:
-            u_new = PyUser.__pydantic_validator__.validate_assignment(PyUser.model_construct(), key, value)
-        except ValidationError as err:
-            await ctx.send(
-                embed=get_err_embed(
-                    title=f"Invalid setting value `{value}` for key `{key}`",
-                    desc="\n".join(f"- {','.join(f'`{l}`' for l in e['loc'])}: {e['msg']}" for e in err.errors()),
-                    suggested_commands=[
-                        f"{cfg.bot.COMMAND_PREFIX}help settings set",
-                        f"{cfg.bot.COMMAND_PREFIX}settings set {key} <value>",
-                    ],
-                )
-            )
-            return
-
-        v_new = getattr(u_new, key)
+    async def set(self, ctx: commands.Context, key: PyUserWhitelistedKeys, value: SettingValueCvtr):
         u, _ue = await fetch_user_info(ctx)
-        v_old = getattr(u, key)
-        dbstatus = await pb.users.update_setting(u.id, key, v_new)
+        v_old = u.to_dict().get(key)
+        dbstatus = await pb.users.update_setting(u.id, key, value)
 
         if dbstatus == "updated":
             await ctx.send(
                 embed=discord.Embed(
                     title="Success",
                     description=(
-                        f"The setting `{key}` has been updated from `{v_old:>1}` to `{v_new:>1}`.\n\n"
+                        f"The setting `{key}` has been updated from `{v_old:>1}` to `{value:>1}`.\n\n"
                         f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
                     ),
                     color=COLOUR_SUCCESS,
@@ -125,6 +109,8 @@ class SettingsCog(commands.Cog):
         v_old = getattr(u, key)
         u_new = User.Default(realism=u.game_mode == User.GameMode.REALISM)
         v_new = getattr(u_new, key)
+        if key == "game_name":
+            v_new = ctx.author.nick
         dbstatus = await pb.users.update_setting(u.id, key, v_new)
 
         if dbstatus == "updated":
@@ -141,7 +127,7 @@ class SettingsCog(commands.Cog):
 
     @settings.error
     async def settings_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
+        h = CustomErrHandler(ctx, error, "settings")
 
         def get_cmd_suggs(suggs: list[str]):
             return [
@@ -150,19 +136,19 @@ class SettingsCog(commands.Cog):
             ]
 
         await h.bad_literal(get_cmd_suggs)
-        await h.missing_arg("settings")
-        await h.too_many_args("action", "settings")
+        await h.missing_arg()
+        await h.too_many_args("action")
         h.raise_for_unhandled()
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
-        await h.too_many_args("action", "settings show")
+        h = CustomErrHandler(ctx, error, "settings show")
+        await h.too_many_args("action")
         h.raise_for_unhandled()
 
     @set.error
     async def set_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
+        h = CustomErrHandler(ctx, error, "settings set")
 
         def get_cmd_suggs(suggs: list[str]):
             return [
@@ -171,13 +157,14 @@ class SettingsCog(commands.Cog):
             ]
 
         await h.bad_literal(get_cmd_suggs)
-        await h.missing_arg("settings set")
-        await h.too_many_args("key/value", "settings set")
+        await h.invalid_setting_value()
+        await h.missing_arg()
+        await h.too_many_args("key/value")
         h.raise_for_unhandled()
 
     @reset.error
     async def reset_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
+        h = CustomErrHandler(ctx, error, "settings reset")
 
         def get_cmd_suggs(suggs: list[str]):
             return [
@@ -186,6 +173,6 @@ class SettingsCog(commands.Cog):
             ]
 
         await h.bad_literal(get_cmd_suggs)
-        await h.missing_arg("settings reset")
-        await h.too_many_args("key", "settings reset")
+        await h.missing_arg()
+        await h.too_many_args("key")
         h.raise_for_unhandled()

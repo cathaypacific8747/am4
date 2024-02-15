@@ -6,7 +6,7 @@ from discord.ext import commands
 from ..config import cfg
 from ..db.client import pb
 from ..db.user import UserExtra
-from .errors import get_err_embed
+from .errors import CustomErrHandler
 
 GUIDE_DEV_ROLEID = 646148607636144131
 STAR_ROLEID = 701410528853098497
@@ -57,15 +57,14 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
         e_role is not None and user.game_mode == User.GameMode.REALISM
     ):
         gm_user = "Realism" if user.game_mode == User.GameMode.REALISM else "Easy"
-        await ctx.send(
-            embed=get_err_embed(
-                title="Mismatched game mode!",
-                desc=(
-                    f"I detected the <@&{role_id}> role on your account, but your settings indicate "
-                    f"that you are in the `{gm_user}` game mode.\n"
-                ),
-                suggested_commands=[f"{cfg.bot.COMMAND_PREFIX}settings set game_mode {gm_target}"],
+        h = CustomErrHandler(ctx)
+        embed = h._get_err_embed(
+            title="Mismatched game mode!",
+            description=(
+                f"I detected the <@&{role_id}> role on your account, but your settings indicate "
+                f"that you are in the `{gm_user}` game mode.\n"
             ),
-            allowed_mentions=AllowedMentions.none(),
+            sugg_cmd_override=[f"{cfg.bot.COMMAND_PREFIX}settings set game_mode {gm_target}"],
         )
+        await ctx.send(embed=embed, allowed_mentions=AllowedMentions.none())
     return user, user_extra

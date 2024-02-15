@@ -69,9 +69,9 @@ class AircraftCog(commands.Cog):
 
     @aircraft.error
     async def aircraft_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
+        h = CustomErrHandler(ctx, error, "aircraft")
 
-        await h.invalid_aircraft("aircraft")
-        await h.missing_arg("aircraft")
-        await h.too_many_args("ac_query", "aircraft")
+        await h.invalid_aircraft()
+        await h.missing_arg()
+        await h.too_many_args("ac_query")
         h.raise_for_unhandled()

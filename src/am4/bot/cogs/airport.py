@@ -49,9 +49,9 @@ class AirportCog(commands.Cog):
 
     @airport.error
     async def airport_error(self, ctx: commands.Context, error: commands.CommandError):
-        h = CustomErrHandler(ctx, error)
+        h = CustomErrHandler(ctx, error, "airport")
 
-        await h.invalid_airport("airport")
-        await h.missing_arg("airport")
-        await h.too_many_args("ap_query", "airport")
+        await h.invalid_airport()
+        await h.missing_arg()
+        await h.too_many_args("ap_query")
         h.raise_for_unhandled()

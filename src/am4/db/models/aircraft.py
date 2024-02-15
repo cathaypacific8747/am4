@@ -24,7 +24,8 @@ class PyCargoConfig(BaseModel):
     algorithm: PyCargoConfigAlgorithm
 
 
-PyConfigAlgorithm = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF", "L", "H"]
+PyConfigAlgorithmPax = Literal["AUTO", "FJY", "FYJ", "JFY", "JYF", "YFJ", "YJF"]
+PyConfigAlgorithmCargo = Literal["AUTO", "L", "H"]
 
 
 class PyAircraft(BaseModel):
