@@ -51,7 +51,7 @@ class AircraftCog(commands.Cog):
                 f"**   Engine**: {a.ename}{modifiers} (id: {a.eid})\n"
                 f"**    Speed**: {a.speed:,.2f} km/h (rank: {a.priority+1})\n"
                 f"**     Fuel**: {a.fuel:.3f} lbs/km\n"
-                f"**     CO2**: {a.co2:.3f} kg/pax/km\n"
+                f"**      CO₂**: {a.co2:.3f} kg/pax/km\n"
                 f"**     Cost**: ${a.cost:,}\n"
                 f"**   Capacity**: {a.capacity:,} {'lbs' if a.type == Aircraft.Type.CARGO else 'pax'}\n"
                 f"**   Runway**: {a.rwy:,} m\n"

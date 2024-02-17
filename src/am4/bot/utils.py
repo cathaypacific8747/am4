@@ -1,5 +1,8 @@
 import discord
+from am4.utils.aircraft import Aircraft
+from am4.utils.demand import CargoDemand, PaxDemand
 from am4.utils.game import User
+from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
 from discord import AllowedMentions
 from discord.ext import commands
 
@@ -20,6 +23,21 @@ IJ = "<:business:701335275669946431>"
 IF = "<:first:701335275938381824>"
 IL = "<:large:701335275690786817>"
 IH = "<:heavy:701335275799969833>"
+
+HELP_TPD = (
+    "**How many departures per day, per aircraft**\n"
+    "Multiple aircraft can be assigned the same route to minimise waste in demand.\n"
+    "To force 1 aircraft per route, add `!` at the end."
+    "For example, `3!` assumes you depart one aircraft three times in a day.\n"
+    "If not provided (default `AUTO`), the bot will attempt to maximise it."
+)
+HELP_CFG_ALG = (
+    "**Configuration Algorithm**\n"
+    f"{','.join(f'`{c}`' for c in Aircraft.PaxConfig.Algorithm.__members__)} for pax\n"
+    f"{','.join(f'`{c}`' for c in Aircraft.CargoConfig.Algorithm.__members__)} for cargo\n"
+    "The best algorithm is picked automatically depending on the route distance.\n"
+    "`YJF` here denotes the order of priority when filling seats."
+)
 
 _SP100 = " "
 _SP050 = " "
@@ -68,3 +86,22 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
         )
         await ctx.send(embed=embed, allowed_mentions=AllowedMentions.none())
     return user, user_extra
+
+
+def format_demand(pax_demand: PaxDemand, as_cargo: bool = False) -> str:
+    if as_cargo:
+        cargo_demand = CargoDemand(pax_demand)
+        return f"{IL}`{cargo_demand.l:<7}` {IH}`{cargo_demand.h:<7}`"
+    return f"{IY}`{pax_demand.y:<4}` {IJ}`{pax_demand.j:<5}` {IF}`{pax_demand.f:<5}"
+
+
+def format_config(cfg: Aircraft.PaxConfig | Aircraft.CargoConfig) -> str:
+    if isinstance(cfg, Aircraft.CargoConfig):
+        return f"{IL}`{cfg.l:<7}` {IH}`{cfg.h:<7}`"
+    return f"{IY}`{cfg.y:<4}` {IJ}`{cfg.j:<5}` {IF}`{cfg.f:<5}"
+
+
+def format_ticket(ticket: PaxTicket | CargoTicket | VIPTicket) -> str:
+    if isinstance(ticket, CargoTicket):
+        return f"{IL}`{ticket.l:<7}` {IH}`{ticket.h:<7}`"
+    return f"{IY}`{ticket.y:<4}` {IJ}`{ticket.j:<5}` {IF}`{ticket.f:<5}"

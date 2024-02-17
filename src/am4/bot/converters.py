@@ -68,7 +68,7 @@ class SettingValueCvtr(commands.Converter):
 
 
 class TPDCvtr(commands.Converter):
-    _default = (None, AircraftRoute.Options.TPDMode.AUTO)
+    _default = (1, AircraftRoute.Options.TPDMode.AUTO)
 
     async def convert(self, ctx: commands.Context, tpdo: str) -> tuple[int | None, AircraftRoute.Options.TPDMode]:
         if tpdo is None or (tpd := tpdo.strip().lower()) == "auto":
