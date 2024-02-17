@@ -7,15 +7,13 @@ from discord.ext import commands
 from ...config import cfg
 from ...db.client import pb
 from ...db.models.game import PyUserWhitelistedKeys
+from ..cog import BaseCog
 from ..converters import SettingValueCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, fetch_user_info
+from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, HELP_SETTING_KEY, fetch_user_info
 
 
-class SettingsCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
+class SettingsCog(BaseCog):
     @commands.group(
         brief="Show, set or reset my settings",
         help=(
@@ -64,8 +62,13 @@ class SettingsCog(commands.Cog):
             color=COLOUR_GENERIC,
         )
         e.add_field(
-            name="To learn more about each, use",
-            value=f"```php\n{cfg.bot.COMMAND_PREFIX}help settings\n```",
+            name="Suggested commands:",
+            value=(
+                "```php\n"
+                f"{cfg.bot.COMMAND_PREFIX}help settings\n"
+                f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism\n"
+                f"{cfg.bot.COMMAND_PREFIX}settings set training max\n```"
+            ),
         )
         await ctx.send(embed=e)
 
@@ -73,24 +76,32 @@ class SettingsCog(commands.Cog):
         brief="set one of my settings",
         help=(
             "Set a specific setting given a *setting key* and a *value*, examples:```php\n"
-            f"{cfg.bot.COMMAND_PREFIX}settings set xxx yyy\n"
+            f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism\n"
+            "```For convenience, you can set training to max by running:```php\n"
+            f"{cfg.bot.COMMAND_PREFIX}settings set training max\n"
             "```"
         ),
         ignore_extra=False,
     )
-    async def set(self, ctx: commands.Context, key: PyUserWhitelistedKeys, value: SettingValueCvtr):
+    async def set(
+        self,
+        ctx: commands.Context,
+        key: Literal[PyUserWhitelistedKeys, "training"] = commands.parameter(description=HELP_SETTING_KEY),
+        value: str = commands.parameter(converter=SettingValueCvtr, description="The setting value"),
+    ):
         u, _ue = await fetch_user_info(ctx)
-        v_old = u.to_dict().get(key)
         dbstatus = await pb.users.update_setting(u.id, key, value)
-
         if dbstatus == "updated":
+            if key == "training":
+                description = f"The training settings have been updated to {value:>1}.\n\n"
+            else:
+                v_old = u.to_dict().get(key, "---")
+                description = f"The setting `{key}` has been updated from `{v_old:>1}` to `{value:>1}`.\n\n"
+
             await ctx.send(
                 embed=discord.Embed(
                     title="Success",
-                    description=(
-                        f"The setting `{key}` has been updated from `{v_old:>1}` to `{value:>1}`.\n\n"
-                        f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
-                    ),
+                    description=f"{description}To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n",
                     color=COLOUR_SUCCESS,
                 ),
             )
@@ -104,13 +115,17 @@ class SettingsCog(commands.Cog):
         ),
         ignore_extra=False,
     )
-    async def reset(self, ctx: commands.Context, key: PyUserWhitelistedKeys):
+    async def reset(
+        self,
+        ctx: commands.Context,
+        key: PyUserWhitelistedKeys = commands.parameter(description=HELP_SETTING_KEY),
+    ):
         u, _ue = await fetch_user_info(ctx)
         v_old = getattr(u, key)
         u_new = User.Default(realism=u.game_mode == User.GameMode.REALISM)
         v_new = getattr(u_new, key)
         if key == "game_name":
-            v_new = ctx.author.nick
+            v_new = ctx.author.display_name
         dbstatus = await pb.users.update_setting(u.id, key, v_new)
 
         if dbstatus == "updated":

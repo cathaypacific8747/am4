@@ -6,6 +6,20 @@ from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
 from discord import AllowedMentions
 from discord.ext import commands
 
+from ..common import (
+    HELP_U_ACCUMULATED_COUNT,
+    HELP_U_CO2_PRICE,
+    HELP_U_CO2_TRAINING,
+    HELP_U_FOURX,
+    HELP_U_FUEL_PRICE,
+    HELP_U_FUEL_TRAINING,
+    HELP_U_H_TRAINING,
+    HELP_U_INCOME_LOSS_TOL,
+    HELP_U_L_TRAINING,
+    HELP_U_LOAD,
+    HELP_U_REPAIR_TRAINING,
+    HELP_U_WEAR_TRAINING,
+)
 from ..config import cfg
 from ..db.client import pb
 from ..db.user import UserExtra
@@ -27,16 +41,24 @@ IH = "<:heavy:701335275799969833>"
 HELP_TPD = (
     "**How many departures per day, per aircraft**\n"
     "Multiple aircraft can be assigned the same route to minimise waste in demand.\n"
-    "To force 1 aircraft per route, add `!` at the end."
+    "To force 1 aircraft per route, add `!` at the end. "
     "For example, `3!` assumes you depart one aircraft three times in a day.\n"
     "If not provided (default `AUTO`), the bot will attempt to maximise it."
 )
 HELP_CFG_ALG = (
     "**Configuration Algorithm**\n"
-    f"{','.join(f'`{c}`' for c in Aircraft.PaxConfig.Algorithm.__members__)} for pax\n"
-    f"{','.join(f'`{c}`' for c in Aircraft.CargoConfig.Algorithm.__members__)} for cargo\n"
+    f"- {','.join(f'`{c}`' for c in Aircraft.PaxConfig.Algorithm.__members__)} (pax)\n"
+    f"- {','.join(f'`{c}`' for c in Aircraft.CargoConfig.Algorithm.__members__)} (cargo)\n"
     "The best algorithm is picked automatically depending on the route distance.\n"
     "`YJF` here denotes the order of priority when filling seats."
+)
+
+
+HELP_SETTING_KEY = (
+    "**The setting key** - some important ones are:\n"
+    f"- `fourx`: {HELP_U_FOURX}\n"
+    f"- `income_loss_tol`: {HELP_U_INCOME_LOSS_TOL}\n"
+    f"- `load`: {HELP_U_LOAD}\n"
 )
 
 _SP100 = " "

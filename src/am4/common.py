@@ -25,3 +25,30 @@ HELP_ACRO_TPD = (
     "[Optional] **Trips per day**: defaults to 1. Note that this parameter is only respected when tpd_mode is set "
     "to `AUTO_MULTIPLE_OF` or `STRICT`. When `tpd_mode=AUTO`, it throws an error."
 )
+HELP_U_WEAR_TRAINING = "**Wear training** (default: `0`)"
+HELP_U_REPAIR_TRAINING = "**Repair training** (default: `0`)"
+HELP_U_L_TRAINING = "**L training** (default: `0`)"
+HELP_U_H_TRAINING = "**H training** (default: `0`)"
+HELP_U_FUEL_TRAINING = "**Fuel training** (default: `0`)"
+HELP_U_CO2_TRAINING = "**CO2 training** (default: `0`)"
+HELP_U_FUEL_PRICE = "**Fuel price** (default: `700`)"
+HELP_U_CO2_PRICE = "**CO2 price** (default: `120`)"
+HELP_U_ACCUMULATED_COUNT = "**Accumulated fleet count**, used for marketing cost estimation (default: `0`)"
+HELP_U_FOURX = (
+    "**4x** (default: `false`).\n"
+    "*Note*: if this is set in the aircraft options (e.g. `a388[x]`), it'll take precendence"
+)
+HELP_U_INCOME_LOSS_TOL = (
+    "**Income loss tolerance** (default: `0.0`)\n"
+    "During end-game, hub availability becomes an issue and you might want to cram in more aircraft per route, "
+    "even if that means losing some income.\nThe algorithm will perform the cramming for you, and stop *immediately* if"
+    "the income drops below the maximum.\n"
+    "But that'll mean wasting lots of precious demand. If you set this to, say `0.1`, the income per flight will be 90%"
+    "of the max, but in exchange you can cram in more aircraft per hub and thus more demand.\n"
+    "**Recommended: set this to `0.1` for end-game players**"
+)
+HELP_U_LOAD = (
+    "**Assumed aircraft load** (default: `0.87`)\n\n"
+    "`0.87` means 87% of the aircraft is filled: demand will be 'virtually' inflated by 1/0.87 = +14.9%.\n"
+    "*Note*: you can assume this to be roughly equivalent to the reputation."
+)

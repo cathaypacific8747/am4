@@ -4,13 +4,11 @@ from discord.ext import commands
 from discord.mentions import AllowedMentions
 
 from ...config import cfg
+from ..cog import BaseCog
 from ..utils import COLOUR_ERROR, COLOUR_GENERIC
 
 
-class HelpCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
+class HelpCog(BaseCog):
     @commands.command(brief="Shows information about our bot", ignore_extra=False)
     async def botinfo(self, ctx: commands.Context):
         await ctx.send(

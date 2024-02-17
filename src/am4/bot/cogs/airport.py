@@ -5,15 +5,13 @@ from discord.ext.commands.view import StringView
 
 from ...common import HELP_AP_ARG0
 from ...config import cfg
+from ..cog import BaseCog
 from ..converters import AirportCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC
 
 
-class AirportCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
+class AirportCog(BaseCog):
     @commands.command(
         brief="Finds an airport",
         help=(

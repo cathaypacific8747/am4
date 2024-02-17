@@ -12,7 +12,7 @@ from pydantic_core import PydanticCustomError, ValidationError
 from ..config import cfg
 
 COLOUR_ERROR = discord.Colour(0xCA7575)
-Suggestions = list[tuple[Annotated[str, "displayed value"], Annotated[str, "full Description"]]]
+Suggestions = list[tuple[Annotated[str, "displayed value in command sugg"], Annotated[str, "full description"]]]
 
 
 class AircraftNotFoundError(commands.BadArgument):
@@ -30,6 +30,7 @@ class AirportNotFoundError(commands.BadArgument):
 class ValidationErrorBase(commands.BadArgument):
     def __init__(self, err: ValidationError | PydanticCustomError):
         super().__init__()
+        self.err = err
         if isinstance(err, ValidationError):
             self.msg = "\n".join(f'`{",".join(e["loc"])}`: {e["msg"]}' for e in err.errors())
         elif isinstance(err, PydanticCustomError):
@@ -47,6 +48,10 @@ class TPDValidationError(ValidationErrorBase):
 
 
 class CfgAlgValidationError(ValidationErrorBase):
+    pass
+
+
+class ConstraintValidationError(ValidationErrorBase):
     pass
 
 
@@ -157,6 +162,24 @@ class CustomErrHandler:
             title="Invalid configuration algorithm!",
             description=f"{self.err_tb}\n{self.error.msg}".strip(),
             suggs=[("AUTO", "")],
+        )
+        await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def invalid_constraint(self):
+        if not isinstance(self.error, ConstraintValidationError):
+            return
+        as_time = self.error.err.errors()[0]["type"] == "time_delta_parsing"
+        extra = (
+            "**Tip**: I'm assuming the constraint is by time: correct it using `HH:MM`."
+            if as_time
+            else "**Tip**: I'm assuming the constraint is by distance: if you'd like to use time instead, use `HH:MM`."
+        )
+        suggs = [("08:00", "")] if as_time else [("08:00", ""), ("15000", "")]
+        embed = self._get_err_embed(
+            title="Invalid constraint!",
+            description=f"{self.err_tb}\n{self.error.msg}\n{extra}".strip(),
+            suggs=suggs,
         )
         await self.ctx.send(embed=embed)
         self.handled = True

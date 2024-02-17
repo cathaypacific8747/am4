@@ -4,15 +4,13 @@ from discord.ext import commands
 
 from ...common import HELP_AC_ARG0
 from ...config import cfg
+from ..cog import BaseCog
 from ..converters import AircraftCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC
 
 
-class AircraftCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
+class AircraftCog(BaseCog):
     @commands.command(
         brief="Finds an aircraft",
         help=(

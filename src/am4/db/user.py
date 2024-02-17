@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Literal
 
@@ -35,7 +36,7 @@ class UserAPI(BaseService):
             await self.client.post(
                 "_discord/users/from_discord",
                 json={
-                    "username": username,
+                    "username": re.sub(r"\W", "", username) + "-" + str(discord_id)[-8:],
                     "game_name": game_name,
                     "game_mode": game_mode,
                     "discord_id": discord_id,
@@ -48,7 +49,21 @@ class UserAPI(BaseService):
         return u, ue, resp.get("message")
 
     async def update_setting(self, userid: str, key: str, value: str) -> str:
+        if key == "training":
+            update = {
+                "wear_training": 5,
+                "repair_training": 5,
+                "l_training": 6,
+                "h_training": 6,
+                "fuel_training": 3,
+                "co2_training": 5,
+            }
+            if value == "min":
+                update = {k: 0 for k in update}
+        else:
+            update = {key: value}
+
         resp: dict = (
-            await self.client.put("_discord/users/edit_setting", json={"userid": userid, "update": {key: value}})
+            await self.client.put("_discord/users/edit_setting", json={"userid": userid, "update": update})
         ).json()
         return resp.get("message")

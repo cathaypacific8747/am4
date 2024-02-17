@@ -14,6 +14,18 @@ from ..common import (
     HELP_ACRO_TPD,
     HELP_ACRO_TPD_MODE,
     HELP_AP_ARG0,
+    HELP_U_ACCUMULATED_COUNT,
+    HELP_U_CO2_PRICE,
+    HELP_U_CO2_TRAINING,
+    HELP_U_FOURX,
+    HELP_U_FUEL_PRICE,
+    HELP_U_FUEL_TRAINING,
+    HELP_U_H_TRAINING,
+    HELP_U_INCOME_LOSS_TOL,
+    HELP_U_L_TRAINING,
+    HELP_U_LOAD,
+    HELP_U_REPAIR_TRAINING,
+    HELP_U_WEAR_TRAINING,
 )
 from ..db.models.aircraft import PyAircraft, PyAircraftSuggestion
 from ..db.models.airport import PyAirport, PyAirportSuggestion
@@ -202,7 +214,7 @@ class FAPIReqUser:
         wear_training: Annotated[
             int,
             Query(
-                description="[Optional] **Wear training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_WEAR_TRAINING}",
                 ge=0,
                 le=5,
             ),
@@ -210,7 +222,7 @@ class FAPIReqUser:
         repair_training: Annotated[
             int,
             Query(
-                description="[Optional] **Repair training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_REPAIR_TRAINING}",
                 ge=0,
                 le=5,
             ),
@@ -218,7 +230,7 @@ class FAPIReqUser:
         l_training: Annotated[
             int,
             Query(
-                description="[Optional] **L training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_L_TRAINING}",
                 ge=0,
                 le=6,
             ),
@@ -226,7 +238,7 @@ class FAPIReqUser:
         h_training: Annotated[
             int,
             Query(
-                description="[Optional] **H training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_H_TRAINING}",
                 ge=0,
                 le=6,
             ),
@@ -234,7 +246,7 @@ class FAPIReqUser:
         fuel_training: Annotated[
             int,
             Query(
-                description="[Optional] **Fuel training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_FUEL_TRAINING}",
                 ge=0,
                 le=3,
             ),
@@ -242,7 +254,7 @@ class FAPIReqUser:
         co2_training: Annotated[
             int,
             Query(
-                description="[Optional] **CO2 training** - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_CO2_TRAINING}",
                 ge=0,
                 le=5,
             ),
@@ -250,7 +262,7 @@ class FAPIReqUser:
         fuel_price: Annotated[
             int,
             Query(
-                description="[Optional] **Fuel price** - defaults to `700` if not specified.",
+                description=f"[Optional] {HELP_U_FUEL_PRICE}",
                 ge=0,
                 le=3000,
             ),
@@ -258,7 +270,7 @@ class FAPIReqUser:
         co2_price: Annotated[
             int,
             Query(
-                description="[Optional] **CO2 price** - defaults to `120` if not specified.",
+                description=f"[Optional] {HELP_U_CO2_PRICE}",
                 ge=0,
                 le=200,
             ),
@@ -266,21 +278,19 @@ class FAPIReqUser:
         accumulated_count: Annotated[
             int,
             Query(
-                description="[Optional] **Accumulated fleet count**, used for marketing cost estimation - defaults to `0` if not specified.",
+                description=f"[Optional] {HELP_U_ACCUMULATED_COUNT}",
                 ge=0,
                 le=65535,
             ),
         ] = None,
         fourx: Annotated[
             bool,
-            Query(
-                description="[Optional] **4x** - defaults to `false` if not specified. *Note*: if this is set in the aircraft options (e.g. `a388[x]`), it will take precendence."
-            ),
+            Query(description=f"[Optional] {HELP_U_FOURX}"),
         ] = None,
         income_loss_tol: Annotated[
             float,
             Query(
-                description="[Optional] **Income loss tolerance** - defaults to `0.0` if not specified. During end-game, hub availability becomes an issue and you might want to cram in more aircraft per route, even if that means losing some income. By default, the algorithm will stop increasing the trips/day as soon as the income drops below the maximum: setting this to `0.2` means that it'll continue inflating until the income is 80% of the max before moving onto the next candidate. Raising this value often yields much better income per hub.",
+                description=f"[Optional] {HELP_U_INCOME_LOSS_TOL}",
                 ge=0,
                 le=1,
             ),
@@ -288,7 +298,7 @@ class FAPIReqUser:
         load: Annotated[
             float,
             Query(
-                description="[Optional] **Assumed aircraft load** - defaults to `0.87` if not specified (meaning 87% passenger filled: demand will be 'virtually' inflated by 1/0.87 = +14.9%.)",
+                description=f"[Optional] {HELP_U_LOAD}",
                 gt=0,
                 le=1,
             ),

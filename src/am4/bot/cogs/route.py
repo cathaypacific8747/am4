@@ -1,15 +1,14 @@
 import math
 import time
-from typing import Literal
 
 import discord
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.route import AircraftRoute, Route
 from discord.ext import commands
-from discord.ext.commands.view import StringView
 
 from ...config import cfg
+from ..cog import BaseCog
 from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, TPDCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC, HELP_CFG_ALG, HELP_TPD, fetch_user_info, format_config, format_demand, format_ticket
@@ -19,10 +18,30 @@ HELP_AP_ARG1 = "**Destination airport query**\nLearn more using `$help airport`.
 HELP_AC_ARG0 = "**Aircraft query**\nLearn more about how to customise engine/modifiers using `$help aircraft`."
 
 
-class RouteCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+def format_additional(
+    income: float,
+    fuel: float,
+    fuel_price: float,
+    co2: float,
+    co2_price: float,
+    acheck_cost: float,
+    repair_cost: float,
+    profit: float,
+    contribution: float,
+    ci: float,
+):
+    return (
+        f"**   Income**: $ {income:,.0f}\n"
+        f"**  -    Fuel**: $ {fuel*fuel_price/1000:,.0f} ({fuel:,.0f} lbs)\n"
+        f"**  -     CO₂**: $ {co2*co2_price/1000:,.0f} ({co2:,.0f} quotas)\n"
+        f"**  - Acheck**: $ {acheck_cost:,.0f}\n"
+        f"**  -   Repair**: $ {repair_cost:,.0f}\n"
+        f"**  =   Profit**: $ {profit:,.0f}\n"
+        f"**  Contrib**: $ {contribution:.2f} (CI={ci})\n"
+    )
 
+
+class RouteCog(BaseCog):
     @commands.command(
         brief="Finds information about a route",
         help=(
@@ -94,13 +113,6 @@ class RouteCog(commands.Cog):
             f"**  Config**: {format_config(acr.config)}`\n"
             f"**   Tickets**: {format_ticket(acr.ticket)}`\n"
             f"** Distance**: {distance_f}\n"
-            f"**   Income**: $ {acr.income:,.0f}\n"
-            f"**  -    Fuel**: $ {acr.fuel*u.fuel_price/1000:,.0f} ({acr.fuel:,.0f} lbs)\n"
-            f"**  -     CO₂**: $ {acr.co2*u.co2_price/1000:,.0f} ({acr.co2:,.0f} quotas)\n"
-            f"**  - Acheck**: $ {acr.acheck_cost:,.0f}\n"
-            f"**  -   Repair**: $ {acr.repair_cost:,.0f}\n"
-            f"**  =   Profit**: $ {acr.profit:,.0f}\n"
-            f"**  Contrib**: $ {acr.contribution:.2f} (CI={acr.ci})\n"
         )
         embed = discord.Embed(
             title=(
@@ -109,6 +121,37 @@ class RouteCog(commands.Cog):
             ),
             description=description,
             colour=COLOUR_GENERIC,
+        )
+        embed.add_field(
+            name="Per Trip",
+            value=format_additional(
+                income=acr.income,
+                fuel=acr.fuel,
+                fuel_price=u.fuel_price,
+                co2=acr.co2,
+                co2_price=u.co2_price,
+                acheck_cost=acr.acheck_cost,
+                repair_cost=acr.repair_cost,
+                profit=acr.profit,
+                contribution=acr.contribution,
+                ci=acr.ci,
+            ),
+        )
+        mul = acr.trips_per_day / ac_needed
+        embed.add_field(
+            name="Per Day, Per Aircraft",
+            value=format_additional(
+                income=acr.income * mul,
+                fuel=acr.fuel * mul,
+                fuel_price=u.fuel_price,
+                co2=acr.co2 * mul,
+                co2_price=u.co2_price,
+                acheck_cost=acr.acheck_cost * mul,
+                repair_cost=acr.repair_cost * mul,
+                profit=acr.profit * mul,
+                contribution=acr.contribution * mul,
+                ci=acr.ci,
+            ),
         )
         await ctx.send(embed=embed)
 

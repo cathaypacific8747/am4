@@ -1,10 +1,11 @@
-from typing import Any
+from datetime import timedelta
+from typing import Annotated, Any, Literal
 
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.route import AircraftRoute
 from discord.ext import commands
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_core import ValidationError
 
 from ..db.models.aircraft import PyConfigAlgorithmCargo, PyConfigAlgorithmPax
@@ -19,6 +20,7 @@ from .errors import (
     AircraftNotFoundError,
     AirportNotFoundError,
     CfgAlgValidationError,
+    ConstraintValidationError,
     SettingValueValidationError,
     TPDValidationError,
 )
@@ -45,10 +47,14 @@ class AircraftCvtr(commands.Converter):
 class _ACROptions(BaseModel):
     algorithm_pax: PyConfigAlgorithmPax
     algorithm_cargo: PyConfigAlgorithmCargo
-    __max_distance: PyACROptionsMaxDistance
-    __max_flight_time: PyACROptionsMaxFlightTime
+    max_distance: PyACROptionsMaxDistance
+    max_flight_time: Annotated[timedelta, Field(ge=0, lt=72 * 3600)]
     __tpd_mode: PyACROptionsTPDMode
     trips_per_day: PyACROptionsTripsPerDay
+
+
+class _SettingKeyCustom(BaseModel):
+    training: Literal["max", "min"]
 
 
 def acro_cast(k: str, v: Any) -> _ACROptions:
@@ -57,10 +63,10 @@ def acro_cast(k: str, v: Any) -> _ACROptions:
 
 class SettingValueCvtr(commands.Converter):
     async def convert(self, ctx: commands.Context, value: Any) -> Any:
-        key = ctx.args[-1]
-        print(ctx.args)
+        key = ctx.args[-1]  # TODO: this is a hack, find a better way to get the key!
+        model = _SettingKeyCustom if key == "training" else PyUser
         try:
-            u_new = PyUser.__pydantic_validator__.validate_assignment(PyUser.model_construct(), key, value)
+            u_new = model.__pydantic_validator__.validate_assignment(model.model_construct(), key, value)
         except ValidationError as err:
             raise SettingValueValidationError(err)
         v_new = getattr(u_new, key)
@@ -99,3 +105,21 @@ class CfgAlgCvtr(commands.Converter):
             if ac.ac.type == Aircraft.Type.CARGO
             else Aircraft.PaxConfig.Algorithm.__members__.get(alg_parsed)
         )
+
+
+class ConstraintCvtr(commands.Converter):
+    _default = (20015.086, None)
+
+    def to_flight_time(self, constraint: str) -> float | None:
+        try:
+            time_parsed = acro_cast("max_flight_time", constraint).max_flight_time
+            return time_parsed.total_seconds() / 3600
+        except ValidationError as e:
+            raise ConstraintValidationError(e)
+
+    async def convert(self, ctx: commands.Context, constraint: str) -> tuple[float | None, float | None]:
+        try:
+            dist_parsed = acro_cast("max_distance", constraint).max_distance
+            return dist_parsed, None
+        except ValidationError:
+            return None, self.to_flight_time(constraint)
