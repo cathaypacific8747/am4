@@ -228,12 +228,13 @@ const string Aircraft::repr(const Aircraft& ac) {
     return result;
 }
 
-// test
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
-    config.j = std::min(d_pf.j, static_cast<uint16_t>((capacity - config.f * 3) / 2));
-    config.y = static_cast<uint16_t>(capacity - config.f * 3 - config.j * 2);
+    capacity -= config.f * 3;
+    config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
+    capacity -= config.j * 2;
+    config.y = capacity;
     config.valid = config.y < d_pf.y;
     config.algorithm = PaxConfig::Algorithm::FJY;
     return config;
@@ -242,8 +243,10 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_fjy_conf(const PaxDemand& d_pf, ui
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
-    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity - config.f * 3));
-    config.j = static_cast<uint16_t>((capacity - config.f * 3 - config.y) / 2);
+    capacity -= config.f * 3;
+    config.y = std::min(d_pf.y, capacity);
+    capacity -= config.y;
+    config.j = static_cast<uint16_t>(capacity / 2);
     config.valid = config.j < d_pf.j;
     config.algorithm = PaxConfig::Algorithm::FYJ;
     return config;
@@ -252,8 +255,10 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_fyj_conf(const PaxDemand& d_pf, ui
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
-    config.f = std::min(d_pf.f, static_cast<uint16_t>((capacity - config.j * 2) / 3));
-    config.y = static_cast<uint16_t>(capacity - config.j * 2 - config.f * 3);
+    capacity -= config.j * 2;
+    config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
+    capacity -= config.f * 3;
+    config.y = capacity;
     config.valid = config.y < d_pf.y;
     config.algorithm = PaxConfig::Algorithm::JFY;
     return config;
@@ -262,8 +267,10 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_jfy_conf(const PaxDemand& d_pf, ui
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
     config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
-    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity - config.j * 2));
-    config.f = static_cast<uint16_t>(capacity - config.y - config.j * 2);
+    capacity -= config.j * 2;
+    config.y = std::min(d_pf.y, capacity);
+    capacity -= config.y;
+    config.f = static_cast<uint16_t>(capacity / 3);
     config.valid = config.f < d_pf.f;
     config.algorithm = PaxConfig::Algorithm::JYF;
     return config;
@@ -271,9 +278,11 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_jyf_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity));
-    config.f = std::min(d_pf.f, static_cast<uint16_t>((capacity - config.y) / 3));
-    config.j = static_cast<uint16_t>((capacity - config.y - config.f * 3) / 2);
+    config.y = std::min(d_pf.y, capacity);
+    capacity -= config.y;
+    config.f = std::min(d_pf.f, static_cast<uint16_t>(capacity / 3));
+    capacity -= config.f * 3;
+    config.j = static_cast<uint16_t>(capacity / 2);
     config.valid = config.j < d_pf.j;
     config.algorithm = PaxConfig::Algorithm::YFJ;
     return config;
@@ -281,9 +290,11 @@ Aircraft::PaxConfig Aircraft::PaxConfig::calc_yfj_conf(const PaxDemand& d_pf, ui
 
 Aircraft::PaxConfig Aircraft::PaxConfig::calc_yjf_conf(const PaxDemand& d_pf, uint16_t capacity) {
     PaxConfig config;
-    config.y = std::min(d_pf.y, static_cast<uint16_t>(capacity));
-    config.j = std::min(d_pf.j, static_cast<uint16_t>((capacity - config.y) / 2));
-    config.f = static_cast<uint16_t>(capacity - config.y - config.j * 2);
+    config.y = std::min(d_pf.y, capacity);
+    capacity -= config.y;
+    config.j = std::min(d_pf.j, static_cast<uint16_t>(capacity / 2));
+    capacity -= config.j * 2;
+    config.f = static_cast<uint16_t>(capacity / 3);
     config.valid = config.f < d_pf.f;
     config.algorithm = PaxConfig::Algorithm::YJF;
     return config;

@@ -37,6 +37,7 @@ HELP_AP = "**Origin airport query**\nLearn more using `$help airport`."
 HELP_AC = "**Aircraft query**\nLearn more about how to customise engine/modifiers using `$help aircraft`."
 HELP_CONSTRAINT = (
     "**Constraint**\n"
+    "- when not specified or given `AUTO`, the bot will optimise for maximum profit per day per aircraft\n"
     "- by default, the constraint is the distance in kilometres (e.g. `16000` will return routes < 16,000km)\n"
     "- to constrain by flight time instead, use the `HH:MM` or "
     "[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601#Durations) syntax"
@@ -70,7 +71,7 @@ class RoutesCog(BaseCog):
         constraint: tuple[float | None, float | None] = commands.parameter(
             converter=ConstraintCvtr,
             default=ConstraintCvtr._default,
-            displayed_default="20015",
+            displayed_default="AUTO",
             description=HELP_CONSTRAINT,
         ),
         trips_per_day: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
@@ -78,7 +79,7 @@ class RoutesCog(BaseCog):
         ),
         config_algorithm: Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm = commands.parameter(
             converter=CfgAlgCvtr,
-            default=Aircraft.PaxConfig.Algorithm.AUTO,
+            default=CfgAlgCvtr._default,
             displayed_default="AUTO",
             description=HELP_CFG_ALG,
         ),
@@ -99,9 +100,12 @@ class RoutesCog(BaseCog):
                 if v is not None
             }
         )
+        # HACK: we rely on "AUTO" or empty to signal C++ to optimise for $/d/ac
+        by = "per_d_per_ac" if max_distance is None and max_flight_time is None else "per_t_per_ac"
+
         u, _ue = await fetch_user_info(ctx)
         t_start = time.time()
-        destinations = await self.get_routes(ap_query.ap, ac_query.ac, options, u)
+        destinations = await self.get_routes(ap_query.ap, ac_query.ac, options, u, by)
         t_end = time.time()
         embed = discord.Embed(
             title=format_ap_short(ap_query.ap, mode=0),
@@ -134,7 +138,7 @@ class RoutesCog(BaseCog):
                     f"**Demand**: {format_demand(acr.route.pax_demand, is_cargo)}\n"
                     f"**Config**: {format_config(acr.config)}\n"
                     f"**Tickets**: {format_ticket(acr.ticket)}\n"
-                    f"**Details**: {distance_f} ({flight_time_f}), {details_f}, {acr.contribution:.2f} c/f\n"
+                    f"**Details**: {distance_f} ({flight_time_f}), {details_f}, {acr.contribution:.1f} c/f\n"
                     f"**Profit**: $ {acr.profit:,.0f}/t/ac, $ {acr.profit * acr.trips_per_day / ac_needed:,.0f}/d/ac\n"
                 ),
                 inline=False,

@@ -146,5 +146,6 @@ vector<Destination> find_routes(
     const Airport& origin,
     const Aircraft& aircraft,
     const AircraftRoute::Options& options = AircraftRoute::Options(),
-    const User& user = User::Default()
+    const User& user = User::Default(),
+    const std::string by = "per_t_per_ac"
 );

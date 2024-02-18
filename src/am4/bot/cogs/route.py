@@ -77,7 +77,7 @@ class RouteCog(BaseCog):
         ),
         config_algorithm: Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm = commands.parameter(
             converter=CfgAlgCvtr,
-            default=Aircraft.PaxConfig.Algorithm.AUTO,
+            default=CfgAlgCvtr._default,
             displayed_default="AUTO",
             description=HELP_CFG_ALG,
         ),

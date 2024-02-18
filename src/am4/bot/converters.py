@@ -106,9 +106,18 @@ class CfgAlgCvtr(commands.Converter):
             else Aircraft.PaxConfig.Algorithm.__members__.get(alg_parsed)
         )
 
+    @staticmethod
+    async def _default(ctx: commands.Context) -> Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm:
+        ac: Aircraft.SearchResult = next(a for a in ctx.args if isinstance(a, Aircraft.SearchResult))
+        return (
+            Aircraft.CargoConfig.Algorithm.AUTO
+            if ac.ac.type == Aircraft.Type.CARGO
+            else Aircraft.PaxConfig.Algorithm.AUTO
+        )
+
 
 class ConstraintCvtr(commands.Converter):
-    _default = (20015.086, None)
+    _default = (None, None)
 
     def to_flight_time(self, constraint: str) -> float | None:
         try:
@@ -118,6 +127,8 @@ class ConstraintCvtr(commands.Converter):
             raise ConstraintValidationError(e)
 
     async def convert(self, ctx: commands.Context, constraint: str) -> tuple[float | None, float | None]:
+        if constraint.lower() in ["auto"]:
+            return self._default
         try:
             dist_parsed = acro_cast("max_distance", constraint).max_distance
             return dist_parsed, None

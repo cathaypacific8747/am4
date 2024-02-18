@@ -43,7 +43,7 @@ def test_default_user():
     assert u.co2_price == 120
     assert u.load == 0.87
     assert u.accumulated_count == 0
-    assert u.income_loss_tol == 0.0
+    assert u.income_loss_tol == 0.02
     assert u.fourx is False
     assert u.role == User.Role.USER
     # assert u.get_password() == ""

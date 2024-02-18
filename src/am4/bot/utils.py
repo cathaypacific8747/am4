@@ -124,7 +124,7 @@ def format_config(cfg: Aircraft.PaxConfig | Aircraft.CargoConfig) -> str:
 
 def format_ticket(ticket: PaxTicket | CargoTicket | VIPTicket) -> str:
     if isinstance(ticket, CargoTicket):
-        return f"{IL}`{ticket.l:<7}` {IH}`{ticket.h:<7}`"
+        return f"{IL}`{ticket.l:<7.2f}` {IH}`{ticket.h:<7.2f}`"
     return f"{IY}`{ticket.y:<4}` {IJ}`{ticket.j:<5}` {IF}`{ticket.f:<5}`"
 
 

@@ -1,5 +1,4 @@
 import pytest
-
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand
@@ -97,6 +96,7 @@ def test_route_with_aircraft_auto():
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
     user = User.Default()
 
+    user.income_loss_tol = 0
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 0
     assert r.config.j == 1
@@ -125,6 +125,7 @@ def test_route_with_aircraft_auto_multiple_of():
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=2)
     user = User.Default()
 
+    user.income_loss_tol = 0
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 0
     assert r.config.j == 1
@@ -185,6 +186,7 @@ def test_cargo_route_with_aircraft_auto():
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
     user = User.Default()
 
+    user.income_loss_tol = 0
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.l == 100
     assert r.config.h == 0

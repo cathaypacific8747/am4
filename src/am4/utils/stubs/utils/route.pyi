@@ -228,5 +228,5 @@ class Route:
     @property
     def valid(self) -> bool:
         ...
-def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> list[Destination]:
+def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default(), by: str = 'per_t_per_ac') -> list[Destination]:
     ...

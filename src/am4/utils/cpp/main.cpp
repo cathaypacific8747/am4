@@ -78,23 +78,24 @@ int main() {
         init(executable_path);  // 1.3s
         // const auto& db = Database::Client();
 
-        // Airport ap0 = *Airport::search("VHHH").ap;
-        // Airport ap1 = *Airport::search("TPE").ap;
-        // Aircraft ac = *Aircraft::search("74sp").ac;
-        auto test = *Airport::search("id:65824").ap;
-        cout << test.valid << endl;
-        // // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF, 5);
-        // User user = User::Default();
+        Airport ap0 = *Airport::search("VHHH").ap;
+        Airport ap1 = *Airport::search("TPE").ap;
+        Aircraft ac = *Aircraft::search("mc214").ac;
+        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
+        auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO);
+        User user = User::Default();
 
-        // auto timer = Timer();
+        auto timer = Timer();
         // __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
+        auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
+        // auto rs = find_routes(ap0, ac, options, user);
+        // std::cout << "rs.size(): " << rs.size() << std::endl;
         // for (int i = 0; i < 1000; i++) {
-        //     std::ignore = find_routes(ap0, ac, options, User::Default());
+        //     std::ignore = find_routes(ap0, ac, options, user);
         // }
         // __itt_task_end(domain);
-        // timer.stop();
-        getchar();
+        timer.stop();
+        // getchar();
 
     } catch (DatabaseException& e) {
         cerr << "DatabaseException: " << e.what() << endl;
