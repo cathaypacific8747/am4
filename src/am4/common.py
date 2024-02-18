@@ -41,10 +41,10 @@ HELP_U_FOURX = (
 HELP_U_INCOME_LOSS_TOL = (
     "**Income loss tolerance** (default: `0.0`)\n"
     "During end-game, hub availability becomes an issue and you might want to cram in more aircraft per route, "
-    "even if that means losing some income.\nThe algorithm will perform the cramming for you, and stop *immediately* if"
-    "the income drops below the maximum.\n"
+    "even if that means losing some income.\nThe algorithm will perform the cramming for you, "
+    "and stop *immediately* if the income drops below the maximum.\n"
     "But that'll mean wasting lots of precious demand. If you set this to, say `0.1`, the income per flight will be 90%"
-    "of the max, but in exchange you can cram in more aircraft per hub and thus more demand.\n"
+    "of the max, but in exchange you can cram in more aircraft per hub and gain more income.\n"
     "**Recommended: set this to `0.1` for end-game players**"
 )
 HELP_U_LOAD = (

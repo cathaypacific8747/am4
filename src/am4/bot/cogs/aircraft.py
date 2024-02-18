@@ -7,7 +7,7 @@ from ...config import cfg
 from ..cog import BaseCog
 from ..converters import AircraftCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_GENERIC
+from ..utils import COLOUR_GENERIC, format_modifiers
 
 
 class AircraftCog(BaseCog):
@@ -29,14 +29,6 @@ class AircraftCog(BaseCog):
         ac_query: Aircraft.SearchResult = commands.parameter(converter=AircraftCvtr, description=HELP_AC_ARG0),
     ):
         a = ac_query.ac
-        apr = ac_query.parse_result
-        modifiers = "".join(
-            name
-            for name, set_ in zip(
-                ["+SPD", "-FUEL", "-CO2", "+4X"], [apr.speed_mod, apr.fuel_mod, apr.co2_mod, apr.fourx_mod]
-            )
-            if set_
-        )
         personnel = ", ".join(
             f"{c} {name}{'s' if c > 1 else ''}"
             for c, name in zip(
@@ -46,7 +38,7 @@ class AircraftCog(BaseCog):
         e = discord.Embed(
             title=f"{a.manufacturer} {a.name} (`{a.shortname}`, {a.type.name.split('.')[-1]})",
             description=(
-                f"**   Engine**: {a.ename}{modifiers} (id: {a.eid})\n"
+                f"**   Engine**: {a.ename}{format_modifiers(a)} (id: {a.eid})\n"
                 f"**    Speed**: {a.speed:,.2f} km/h (rank: {a.priority+1})\n"
                 f"**     Fuel**: {a.fuel:.3f} lbs/km\n"
                 f"**      CO₂**: {a.co2:.3f} kg/pax/km\n"

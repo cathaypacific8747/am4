@@ -11,7 +11,16 @@ from ...config import cfg
 from ..cog import BaseCog
 from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, TPDCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_GENERIC, HELP_CFG_ALG, HELP_TPD, fetch_user_info, format_config, format_demand, format_ticket
+from ..utils import (
+    COLOUR_GENERIC,
+    HELP_CFG_ALG,
+    HELP_TPD,
+    fetch_user_info,
+    format_ap_short,
+    format_config,
+    format_demand,
+    format_ticket,
+)
 
 HELP_AP_ARG0 = "**Origin airport query**\nLearn more using `$help airport`."
 HELP_AP_ARG1 = "**Destination airport query**\nLearn more using `$help airport`."
@@ -76,13 +85,10 @@ class RouteCog(BaseCog):
         if ac_query is None:
             r = Route.create(ap0_query.ap, ap1_query.ap)
             embed = discord.Embed(
-                title=(
-                    f"`╔ {ap0_query.ap.iata} `{ap0_query.ap.name}, {ap0_query.ap.country}\n"
-                    f"`╚ {ap1_query.ap.iata} `{ap1_query.ap.name}, {ap1_query.ap.country}"
-                ),
+                title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{format_ap_short(ap0_query.ap, mode=2)}",
                 description=(
-                    f"** Demand**: {format_demand(r.pax_demand)}`\n"
-                    f"**     ** {format_demand(r.pax_demand, as_cargo=True)}`\n"
+                    f"** Demand**: {format_demand(r.pax_demand)}\n"
+                    f"**     ** {format_demand(r.pax_demand, as_cargo=True)}\n"
                     f"**Distance**: {r.direct_distance:.3f} km (direct)"
                 ),
                 colour=COLOUR_GENERIC,
@@ -98,7 +104,7 @@ class RouteCog(BaseCog):
         acr = AircraftRoute.create(ap0_query.ap, ap1_query.ap, ac_query.ac, options, u)
 
         sa = acr.stopover.airport
-        stopover_f = f"`╠ {sa.iata} `{sa.name}, {sa.country}\n" if acr.stopover.exists else ""
+        stopover_f = f"{format_ap_short(sa, mode=1)}\n" if acr.stopover.exists else ""
         distance_f = (
             f"{acr.stopover.full_distance:.3f} km (+{acr.stopover.full_distance-acr.route.direct_distance:.3f} km)"
             if acr.stopover.exists
@@ -109,16 +115,13 @@ class RouteCog(BaseCog):
         description = (
             f"**Flight Time**: {flight_time_f} ({acr.flight_time:.3f} hr)\n"
             f"**  Schedule**: {acr.trips_per_day:.0f} total trips/day: {ac_needed} A/C needed\n"
-            f"**  Demand**: {format_demand(acr.route.pax_demand, is_cargo)}`\n"
-            f"**  Config**: {format_config(acr.config)}`\n"
-            f"**   Tickets**: {format_ticket(acr.ticket)}`\n"
+            f"**  Demand**: {format_demand(acr.route.pax_demand, is_cargo)}\n"
+            f"**  Config**: {format_config(acr.config)}\n"
+            f"**   Tickets**: {format_ticket(acr.ticket)}\n"
             f"** Distance**: {distance_f}\n"
         )
         embed = discord.Embed(
-            title=(
-                f"`╔ {ap0_query.ap.iata} `{ap0_query.ap.name}, {ap0_query.ap.country}\n{stopover_f}"
-                f"`╚ {ap1_query.ap.iata} `{ap1_query.ap.name}, {ap1_query.ap.country}\n"
-            ),
+            title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{stopover_f}{format_ap_short(ap1_query.ap, mode=2)}",
             description=description,
             colour=COLOUR_GENERIC,
         )

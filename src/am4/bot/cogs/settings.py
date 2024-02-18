@@ -93,7 +93,7 @@ class SettingsCog(BaseCog):
         dbstatus = await pb.users.update_setting(u.id, key, value)
         if dbstatus == "updated":
             if key == "training":
-                description = f"The training settings have been updated to {value:>1}.\n\n"
+                description = f"All training values have been updated to {value:>1}.\n\n"
             else:
                 v_old = u.to_dict().get(key, "---")
                 description = f"The setting `{key}` has been updated from `{v_old:>1}` to `{value:>1}`.\n\n"

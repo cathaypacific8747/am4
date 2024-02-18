@@ -677,7 +677,7 @@ void pybind_init_route(py::module_& m) {
     m_route.def(
         "find_routes", &find_routes, "ap0"_a, "ac"_a,
         py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
-        py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
+        py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"), py::call_guard<py::gil_scoped_release>()
     );
 }
 #endif

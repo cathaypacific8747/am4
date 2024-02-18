@@ -36,6 +36,8 @@ def setup_logging():
 
     logging.getLogger("discord").setLevel(logging.INFO)
     logging.getLogger("httpcore").setLevel(logging.INFO)
+    logging.getLogger("matplotlib").setLevel(logging.INFO)
+    logging.getLogger("PIL").setLevel(logging.INFO)
 
     # configure loguru
     logger.configure(

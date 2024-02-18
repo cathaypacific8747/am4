@@ -1,5 +1,8 @@
+from typing import Literal
+
 import discord
 from am4.utils.aircraft import Aircraft
+from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand, PaxDemand
 from am4.utils.game import User
 from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
@@ -7,18 +10,9 @@ from discord import AllowedMentions
 from discord.ext import commands
 
 from ..common import (
-    HELP_U_ACCUMULATED_COUNT,
-    HELP_U_CO2_PRICE,
-    HELP_U_CO2_TRAINING,
     HELP_U_FOURX,
-    HELP_U_FUEL_PRICE,
-    HELP_U_FUEL_TRAINING,
-    HELP_U_H_TRAINING,
     HELP_U_INCOME_LOSS_TOL,
-    HELP_U_L_TRAINING,
     HELP_U_LOAD,
-    HELP_U_REPAIR_TRAINING,
-    HELP_U_WEAR_TRAINING,
 )
 from ..config import cfg
 from ..db.client import pb
@@ -31,6 +25,8 @@ STAR_ROLEID = 701410528853098497
 COLOUR_GENERIC = discord.Colour(0x9FACBD)
 COLOUR_ERROR = discord.Colour(0xCA7575)
 COLOUR_SUCCESS = discord.Colour(0x75CA83)
+COLOUR_REALISM = discord.Colour(0x277ECD)
+COLOUR_EASY = discord.Colour(0x1A7939)
 
 IY = "<:economy:701335275896307742>"
 IJ = "<:business:701335275669946431>"
@@ -52,8 +48,6 @@ HELP_CFG_ALG = (
     "The best algorithm is picked automatically depending on the route distance.\n"
     "`YJF` here denotes the order of priority when filling seats."
 )
-
-
 HELP_SETTING_KEY = (
     "**The setting key** - some important ones are:\n"
     f"- `fourx`: {HELP_U_FOURX}\n"
@@ -110,20 +104,35 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     return user, user_extra
 
 
+def format_ap_short(ap: Airport, mode: Literal[0, 1, 2]) -> str:
+    indicator = "┏" if mode == 0 else "┣" if mode == 1 else "┗"
+    return f"`{indicator} {ap.iata}` {ap.name}, {ap.country}"
+
+
 def format_demand(pax_demand: PaxDemand, as_cargo: bool = False) -> str:
     if as_cargo:
         cargo_demand = CargoDemand(pax_demand)
         return f"{IL}`{cargo_demand.l:<7}` {IH}`{cargo_demand.h:<7}`"
-    return f"{IY}`{pax_demand.y:<4}` {IJ}`{pax_demand.j:<5}` {IF}`{pax_demand.f:<5}"
+    return f"{IY}`{pax_demand.y:<4}` {IJ}`{pax_demand.j:<5}` {IF}`{pax_demand.f:<5}`"
 
 
 def format_config(cfg: Aircraft.PaxConfig | Aircraft.CargoConfig) -> str:
     if isinstance(cfg, Aircraft.CargoConfig):
         return f"{IL}`{cfg.l:<7}` {IH}`{cfg.h:<7}`"
-    return f"{IY}`{cfg.y:<4}` {IJ}`{cfg.j:<5}` {IF}`{cfg.f:<5}"
+    return f"{IY}`{cfg.y:<4}` {IJ}`{cfg.j:<5}` {IF}`{cfg.f:<5}`"
 
 
 def format_ticket(ticket: PaxTicket | CargoTicket | VIPTicket) -> str:
     if isinstance(ticket, CargoTicket):
         return f"{IL}`{ticket.l:<7}` {IH}`{ticket.h:<7}`"
-    return f"{IY}`{ticket.y:<4}` {IJ}`{ticket.j:<5}` {IF}`{ticket.f:<5}"
+    return f"{IY}`{ticket.y:<4}` {IJ}`{ticket.j:<5}` {IF}`{ticket.f:<5}`"
+
+
+def format_modifiers(apr: Aircraft):
+    return "".join(
+        name
+        for name, set_ in zip(
+            ["+SPD", "-FUEL", "-CO2", "+4X"], [apr.speed_mod, apr.fuel_mod, apr.co2_mod, apr.fourx_mod]
+        )
+        if set_
+    )
