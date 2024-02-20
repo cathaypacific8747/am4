@@ -54,6 +54,7 @@ class PyACRoute(BaseModel):
     repair_cost: Optional[float] = None
     profit: Optional[float] = None
     flight_time: Optional[float] = None
+    ac_needed: Optional[int] = None
     needs_stopover: Optional[bool] = None
     profit: Optional[float] = None
     contribution: Optional[float] = None

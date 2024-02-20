@@ -1,5 +1,4 @@
 import math
-import time
 
 import discord
 from am4.utils.aircraft import Aircraft
@@ -12,6 +11,7 @@ from ..cog import BaseCog
 from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, TPDCvtr
 from ..errors import CustomErrHandler
 from ..utils import (
+    COLOUR_ERROR,
     COLOUR_GENERIC,
     HELP_CFG_ALG,
     HELP_TPD,
@@ -19,7 +19,9 @@ from ..utils import (
     format_ap_short,
     format_config,
     format_demand,
+    format_flight_time,
     format_ticket,
+    format_warning,
 )
 
 HELP_AP_ARG0 = "**Origin airport query**\nLearn more using `$help airport`."
@@ -84,15 +86,7 @@ class RouteCog(BaseCog):
     ):
         if ac_query is None:
             r = Route.create(ap0_query.ap, ap1_query.ap)
-            embed = discord.Embed(
-                title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{format_ap_short(ap0_query.ap, mode=2)}",
-                description=(
-                    f"** Demand**: {format_demand(r.pax_demand)}\n"
-                    f"**     ** {format_demand(r.pax_demand, as_cargo=True)}\n"
-                    f"**Distance**: {r.direct_distance:.3f} km (direct)"
-                ),
-                colour=COLOUR_GENERIC,
-            )
+            embed = self.get_basic_route_embed(ap0_query, ap1_query, r)
             await ctx.send(embed=embed)
             return
         is_cargo = ac_query.ac.type == Aircraft.Type.CARGO
@@ -102,6 +96,15 @@ class RouteCog(BaseCog):
         u, _ue = await fetch_user_info(ctx)
 
         acr = AircraftRoute.create(ap0_query.ap, ap1_query.ap, ac_query.ac, options, u)
+        if not acr.valid:
+            embed_w = discord.Embed(
+                title="Error: Invalid Route.",
+                description="\n".join(f"- {format_warning(w)}" for w in acr.warnings),
+                colour=COLOUR_ERROR,
+            )
+            embed = self.get_basic_route_embed(ap0_query, ap1_query, acr.route)
+            await ctx.send(embeds=[embed_w, embed])
+            return
 
         sa = acr.stopover.airport
         stopover_f = f"{format_ap_short(sa, mode=1)}\n" if acr.stopover.exists else ""
@@ -110,11 +113,9 @@ class RouteCog(BaseCog):
             if acr.stopover.exists
             else f"{acr.route.direct_distance:.3f} km (direct)"
         )
-        flight_time_f = time.strftime("%H:%M:%S", time.gmtime(acr.flight_time * 3600))
-        ac_needed = math.ceil(acr.trips_per_day * acr.flight_time / 24)
         description = (
-            f"**Flight Time**: {flight_time_f} ({acr.flight_time:.3f} hr)\n"
-            f"**  Schedule**: {acr.trips_per_day:.0f} total trips/day: {ac_needed} A/C needed\n"
+            f"**Flight Time**: {format_flight_time(acr.flight_time)} ({acr.flight_time:.3f} hr)\n"
+            f"**  Schedule**: {acr.trips_per_day:.0f} total trips/day: {acr.ac_needed} A/C needed\n"
             f"**  Demand**: {format_demand(acr.route.pax_demand, is_cargo)}\n"
             f"**  Config**: {format_config(acr.config)}\n"
             f"**   Tickets**: {format_ticket(acr.ticket)}\n"
@@ -140,7 +141,7 @@ class RouteCog(BaseCog):
                 ci=acr.ci,
             ),
         )
-        mul = acr.trips_per_day / ac_needed
+        mul = acr.trips_per_day / acr.ac_needed
         embed.add_field(
             name="Per Day, Per Aircraft",
             value=format_additional(
@@ -157,6 +158,19 @@ class RouteCog(BaseCog):
             ),
         )
         await ctx.send(embed=embed)
+
+    def get_basic_route_embed(self, ap0_query: Airport.SearchResult, ap1_query: Airport.SearchResult, r: Route):
+        embed = discord.Embed(
+            title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{format_ap_short(ap1_query.ap, mode=2)}",
+            description=(
+                f"** Demand**: {format_demand(r.pax_demand)}\n"
+                f"**     ** {format_demand(r.pax_demand, as_cargo=True)}\n"
+                f"**Distance**: {r.direct_distance:.3f} km (direct)"
+            ),
+            colour=COLOUR_GENERIC,
+        )
+
+        return embed
 
     @route.error
     async def route_error(self, ctx: commands.Context, error: commands.CommandError):

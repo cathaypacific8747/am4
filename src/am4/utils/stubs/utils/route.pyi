@@ -8,6 +8,43 @@ import typing
 __all__ = ['AircraftRoute', 'Destination', 'Route', 'find_routes']
 class AircraftRoute:
     class Options:
+        class SortBy:
+            """
+            Members:
+            
+              PER_TRIP
+            
+              PER_AC_PER_DAY
+            """
+            PER_AC_PER_DAY: typing.ClassVar[AircraftRoute.Options.SortBy]  # value = <SortBy.PER_AC_PER_DAY: 1>
+            PER_TRIP: typing.ClassVar[AircraftRoute.Options.SortBy]  # value = <SortBy.PER_TRIP: 0>
+            __members__: typing.ClassVar[dict[str, AircraftRoute.Options.SortBy]]  # value = {'PER_TRIP': <SortBy.PER_TRIP: 0>, 'PER_AC_PER_DAY': <SortBy.PER_AC_PER_DAY: 1>}
+            def __eq__(self, other: typing.Any) -> bool:
+                ...
+            def __getstate__(self) -> int:
+                ...
+            def __hash__(self) -> int:
+                ...
+            def __index__(self) -> int:
+                ...
+            def __init__(self, value: int) -> None:
+                ...
+            def __int__(self) -> int:
+                ...
+            def __ne__(self, other: typing.Any) -> bool:
+                ...
+            def __repr__(self) -> str:
+                ...
+            def __setstate__(self, state: int) -> None:
+                ...
+            def __str__(self) -> str:
+                ...
+            @property
+            def name(self) -> str:
+                ...
+            @property
+            def value(self) -> int:
+                ...
         class TPDMode:
             """
             Members:
@@ -51,9 +88,10 @@ class AircraftRoute:
         config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm
         max_distance: float
         max_flight_time: float
+        sort_by: AircraftRoute.Options.SortBy
         tpd_mode: AircraftRoute.Options.TPDMode
         trips_per_day: int
-        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24.0, config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm = None) -> None:
+        def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24.0, config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm = None, sort_by: AircraftRoute.Options.SortBy = SortBy.PER_TRIP) -> None:
             ...
     class Stopover:
         @staticmethod
@@ -149,6 +187,9 @@ class AircraftRoute:
     def to_dict(self) -> dict:
         ...
     @property
+    def ac_needed(self) -> int:
+        ...
+    @property
     def acheck_cost(self) -> float:
         ...
     @property
@@ -228,5 +269,5 @@ class Route:
     @property
     def valid(self) -> bool:
         ...
-def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default(), by: str = 'per_t_per_ac') -> list[Destination]:
+def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> list[Destination]:
     ...

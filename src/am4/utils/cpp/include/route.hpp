@@ -32,8 +32,10 @@ struct Route {
 };
 
 struct AircraftRoute {
+    // TODO: decouple the options specific to the route finding to somewhere else
     struct Options {
         enum class TPDMode { AUTO = 0, AUTO_MULTIPLE_OF = 1, STRICT = 2 };
+        enum class SortBy { PER_TRIP = 0, PER_AC_PER_DAY = 1 };
         using ConfigAlgorithm =
             std::variant<std::monostate, Aircraft::PaxConfig::Algorithm, Aircraft::CargoConfig::Algorithm>;
 
@@ -42,13 +44,15 @@ struct AircraftRoute {
         double max_distance;
         float max_flight_time;
         ConfigAlgorithm config_algorithm;
+        SortBy sort_by;
 
         Options(
             TPDMode tpd_mode = TPDMode::AUTO,
             uint16_t trips_per_day = 1,
             double max_distance = MAX_DISTANCE,
             float max_flight_time = 24.0f,
-            ConfigAlgorithm config_algorithm = std::monostate()
+            ConfigAlgorithm config_algorithm = std::monostate(),
+            SortBy sort_by = SortBy::PER_TRIP
         );
     };
     Route route;
@@ -64,6 +68,7 @@ struct AircraftRoute {
     double repair_cost;
     double profit;
     float flight_time;
+    uint16_t ac_needed;
     uint8_t ci;
     float contribution;
     bool needs_stopover;
@@ -77,8 +82,8 @@ struct AircraftRoute {
         static Stopover find_by_efficiency(
             const Airport& origin, const Airport& destination, const Aircraft& aircraft, User::GameMode game_mode
         );
-        // static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const Aircraft&
-        // aircraft, double target_distance, User::GameMode game_mode);
+        // static Stopover find_by_target_distance(const Airport& origin, const Airport& destination, const
+        // Aircraft& aircraft, double target_distance, User::GameMode game_mode);
         const static string repr(const Stopover& s);
     };
 
@@ -146,6 +151,5 @@ vector<Destination> find_routes(
     const Airport& origin,
     const Aircraft& aircraft,
     const AircraftRoute::Options& options = AircraftRoute::Options(),
-    const User& user = User::Default(),
-    const std::string by = "per_t_per_ac"
+    const User& user = User::Default()
 );

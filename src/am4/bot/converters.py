@@ -68,6 +68,8 @@ class SettingValueCvtr(commands.Converter):
         try:
             u_new = model.__pydantic_validator__.validate_assignment(model.model_construct(), key, value)
         except ValidationError as err:
+            if key == "load":
+                err.errors()[0]["msg"] += " Load factor is a percentage: if you want to set say 87%, use `87%`."
             raise SettingValueValidationError(err)
         v_new = getattr(u_new, key)
         return v_new
@@ -108,7 +110,11 @@ class CfgAlgCvtr(commands.Converter):
 
     @staticmethod
     async def _default(ctx: commands.Context) -> Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm:
-        ac: Aircraft.SearchResult = next(a for a in ctx.args if isinstance(a, Aircraft.SearchResult))
+        try:
+            ac: Aircraft.SearchResult = next(a for a in ctx.args if isinstance(a, Aircraft.SearchResult))
+        except StopIteration:
+            # just to handle empty aircraft slots
+            return Aircraft.PaxConfig.Algorithm.AUTO
         return (
             Aircraft.CargoConfig.Algorithm.AUTO
             if ac.ac.type == Aircraft.Type.CARGO
@@ -127,7 +133,7 @@ class ConstraintCvtr(commands.Converter):
             raise ConstraintValidationError(e)
 
     async def convert(self, ctx: commands.Context, constraint: str) -> tuple[float | None, float | None]:
-        if constraint.lower() in ["auto"]:
+        if constraint.strip().lower() == "none":
             return self._default
         try:
             dist_parsed = acro_cast("max_distance", constraint).max_distance

@@ -26,7 +26,7 @@ routerAdd("POST", "/api/_discord/users/from_discord", (c) => {
             co2_price: 120,
             accumulated_count: 0,
             load: 0.87,
-            income_loss_tol: 0.1,
+            income_loss_tol: 0.02,
             fourx: false,
             role: "USER",
             verified: true,

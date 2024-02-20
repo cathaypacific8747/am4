@@ -1,3 +1,4 @@
+import time
 from typing import Literal
 
 import discord
@@ -5,6 +6,7 @@ from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand, PaxDemand
 from am4.utils.game import User
+from am4.utils.route import AircraftRoute
 from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
 from discord import AllowedMentions
 from discord.ext import commands
@@ -24,6 +26,7 @@ STAR_ROLEID = 701410528853098497
 
 COLOUR_GENERIC = discord.Colour(0x9FACBD)
 COLOUR_ERROR = discord.Colour(0xCA7575)
+COLOUR_WARNING = discord.Colour(0xFFA94F)
 COLOUR_SUCCESS = discord.Colour(0x75CA83)
 COLOUR_REALISM = discord.Colour(0x277ECD)
 COLOUR_EASY = discord.Colour(0x1A7939)
@@ -35,11 +38,10 @@ IL = "<:large:701335275690786817>"
 IH = "<:heavy:701335275799969833>"
 
 HELP_TPD = (
-    "**How many departures per day, per aircraft**\n"
-    "Multiple aircraft can be assigned the same route to minimise waste in demand.\n"
-    "To force 1 aircraft per route, add `!` at the end. "
-    "For example, `3!` assumes you depart one aircraft three times in a day.\n"
-    "If not provided (default `AUTO`), the bot will attempt to maximise it."
+    "**Minimal number of departures per day, per aircraft**\n"
+    "- if not provided or set to `AUTO`, the bot will attempt to maximise it.\n"
+    "- if you provide a number, the bot will try to assign more aircraft to the same route to avoid wasting demand.\n"
+    "  - to disable the cramming, append a `!` at the end (not recommended)."
 )
 HELP_CFG_ALG = (
     "**Configuration Algorithm**\n"
@@ -104,6 +106,12 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     return user, user_extra
 
 
+def format_flight_time(t: float, short: bool = False) -> str:
+    d, hrs = divmod(t * 3600, 86400)
+    fs = "%H:%M" if short else "%H:%M:%S"
+    return (f"{int(d)}D" if d else "") + time.strftime(fs, time.gmtime(hrs))
+
+
 def format_ap_short(ap: Airport, mode: Literal[0, 1, 2]) -> str:
     indicator = "┏" if mode == 0 else "┣" if mode == 1 else "┗"
     return f"`{indicator} {ap.iata}` {ap.name}, {ap.country}"
@@ -136,3 +144,22 @@ def format_modifiers(apr: Aircraft):
         )
         if set_
     )
+
+
+def format_warning(w: AircraftRoute.Warning):
+    if w == AircraftRoute.Warning.ERR_NO_STOPOVER:
+        return "No stopovers are possible"
+    elif w == AircraftRoute.Warning.ERR_INSUFFICIENT_DEMAND:
+        return "Insufficient demand"
+    elif w == AircraftRoute.Warning.ERR_DISTANCE_TOO_SHORT:
+        return "Distance too short"
+    elif w == AircraftRoute.Warning.ERR_DISTANCE_TOO_LONG:
+        return "Distance too long"
+    elif w == AircraftRoute.Warning.ERR_RWY_TOO_SHORT:
+        return "Runway too short"
+    elif w == AircraftRoute.Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED:
+        return "Flight time above specified limit"
+    elif w == AircraftRoute.Warning.REDUCED_CONTRIBUTION:
+        return "Reduced contribution"
+    elif w == AircraftRoute.Warning.ERR_DISTANCE_ABOVE_SPECIFIED:
+        return "Distance above specified limit"

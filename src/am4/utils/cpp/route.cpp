@@ -49,13 +49,14 @@ void tpd_sweep(
     std::function<uint32_t(const Cfg&, const Tkt&)> calc_max_income,
     AircraftRoute* ar
 ) {
+    const double tpd_per_ac = floor(24. / ar->flight_time);
     double max_income = calc_max_income(cfg, tkt);
+    ar->ticket = tkt;
     if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
-        ar->ticket = tkt;
         ar->config = cfg;
-        ar->max_income = 0;  // we don't know whether higher tpds will yield higher income - this part is handled by
-                             // AircraftRoute::update_max_income()
+        ar->max_income = max_income;
         ar->income = max_income * user.load;
+        ar->ac_needed = static_cast<uint16_t>(ceil(static_cast<double>(tpd) / tpd_per_ac));
         ar->trips_per_day = options.trips_per_day;
         ar->valid = true;
         return;
@@ -67,7 +68,6 @@ void tpd_sweep(
 
     double max_income_bnd = max_income * (1 - user.income_loss_tol);
 
-    const double tpd_per_ac = floor(24. / ar->flight_time);
     double c_score = max_income * tpd / ceil(static_cast<double>(tpd) / tpd_per_ac);  // = total income / ac needed
     const uint16_t incr =
         options.tpd_mode == AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF ? options.trips_per_day : 1;
@@ -85,8 +85,6 @@ void tpd_sweep(
         // disallow if income/ac/day is less than max.
         const double i_score =
             i_max_income * static_cast<double>(i_tpd) / ceil(static_cast<double>(i_tpd) / tpd_per_ac);
-        // std::cout << i_tpd << "," << i_max_income << "," << i_score << ","
-        //           << (i_score < c_score * 0.98 ? "" : "***") << std::endl;
         if (i_score < c_score * 0.98) continue;  // TODO: make this a user-configurable parameter
 
         // update candidate
@@ -97,10 +95,10 @@ void tpd_sweep(
 
         if (i_max_income > max_income) max_income = i_max_income;  // unlikely as first tpd is likely already max
     }
-    ar->max_income = max_income * user.load;
-    ar->ticket = tkt;
     ar->config = cfg;
+    ar->max_income = max_income;
     ar->income = max_income * user.load;
+    ar->ac_needed = ceil(static_cast<double>(tpd) / tpd_per_ac);
     ar->trips_per_day = tpd;
     ar->valid = true;
 }
@@ -125,10 +123,6 @@ inline void AircraftRoute::update_pax_details(
             load_adj_pd / tpd, ac_capacity, this->route.direct_distance, user.game_mode, config_algorithm
         );
     };
-    auto calc_max_income = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& tkt) -> uint32_t {
-        return (cfg.y * tkt.y + cfg.j * tkt.j + cfg.f * tkt.f);
-    };
-
     // first, calculate the configuration and ticket price for the supplied trips per day
     Aircraft::PaxConfig cfg = calc_cfg(tpd);
     if (!cfg.valid) {
@@ -136,6 +130,10 @@ inline void AircraftRoute::update_pax_details(
         this->valid = false;
         return;
     }
+
+    auto calc_max_income = [&](const Aircraft::PaxConfig& cfg, const PaxTicket& tkt) -> uint32_t {
+        return (cfg.y * tkt.y + cfg.j * tkt.j + cfg.f * tkt.f);
+    };
     const PaxTicket tkt = [&]() {
         if constexpr (is_vip)
             return static_cast<PaxTicket>(VIPTicket::from_optimal(this->route.direct_distance));
@@ -185,13 +183,15 @@ AircraftRoute::Options::Options(
     uint16_t trips_per_day,
     double max_distance,
     float max_flight_time,
-    ConfigAlgorithm config_algorithm
+    ConfigAlgorithm config_algorithm,
+    SortBy sort_by
 )
     : tpd_mode(tpd_mode),
       trips_per_day(trips_per_day),
       max_distance(max_distance),
       max_flight_time(max_flight_time),
-      config_algorithm(config_algorithm) {
+      config_algorithm(config_algorithm),
+      sort_by(sort_by) {
     if (tpd_mode == AircraftRoute::Options::TPDMode::AUTO && trips_per_day != 1)
         std::cerr << "WARN: trips_per_day is ignored when tpd_mode is AUTO" << std::endl;
 };
@@ -460,13 +460,8 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
 Destination::Destination(const Airport& destination, const AircraftRoute& route)
     : airport(destination), ac_route(route) {}
 std::vector<Destination> find_routes(
-    const Airport& origin,
-    const Aircraft& aircraft,
-    const AircraftRoute::Options& options,
-    const User& user,
-    const std::string by
+    const Airport& origin, const Aircraft& aircraft, const AircraftRoute::Options& options, const User& user
 ) {
-    std::cout << by << std::endl;
     std::vector<Destination> destinations;
     const auto& db = Database::Client();
 
@@ -479,9 +474,13 @@ std::vector<Destination> find_routes(
         if (!ar.valid) continue;
         destinations.emplace_back(ap, ar);
     }
-    std::sort(destinations.begin(), destinations.end(), [](const Destination& a, const Destination& b) {
-        return a.ac_route.profit > b.ac_route.profit;
-    });
+    auto cmp = options.sort_by == AircraftRoute::Options::SortBy::PER_TRIP
+                   ? [](const Destination& a, const Destination& b) { return a.ac_route.profit > b.ac_route.profit; }
+                   : [](const Destination& a, const Destination& b) {
+                         return a.ac_route.profit * a.ac_route.trips_per_day / a.ac_route.ac_needed >
+                                b.ac_route.profit * b.ac_route.trips_per_day / b.ac_route.ac_needed;
+                     };
+    std::sort(destinations.begin(), destinations.end(), cmp);
     return destinations;
 }
 
@@ -536,6 +535,7 @@ py::dict to_dict(const AircraftRoute& ar) {
         return d;
 
     d["trips_per_day"] = ar.trips_per_day;
+    d["ac_needed"] = ar.ac_needed;
 
     switch (ar._ac_type) {
         case Aircraft::Type::PAX:
@@ -587,18 +587,24 @@ void pybind_init_route(py::module_& m) {
         .value("AUTO", AircraftRoute::Options::TPDMode::AUTO)
         .value("AUTO_MULTIPLE_OF", AircraftRoute::Options::TPDMode::AUTO_MULTIPLE_OF)
         .value("STRICT", AircraftRoute::Options::TPDMode::STRICT);
+    py::enum_<AircraftRoute::Options::SortBy>(acr_options_class, "SortBy")
+        .value("PER_TRIP", AircraftRoute::Options::SortBy::PER_TRIP)
+        .value("PER_AC_PER_DAY", AircraftRoute::Options::SortBy::PER_AC_PER_DAY);
     acr_options_class
         .def(
             py::init<
-                AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm>(),
+                AircraftRoute::Options::TPDMode, uint16_t, double, double, AircraftRoute::Options::ConfigAlgorithm,
+                AircraftRoute::Options::SortBy>(),
             py::arg_v("tpd_mode", AircraftRoute::Options::TPDMode::AUTO, "TPDMode.AUTO"), "trips_per_day"_a = 1,
-            "max_distance"_a = MAX_DISTANCE, "max_flight_time"_a = 24.0f, "config_algorithm"_a = std::monostate()
+            "max_distance"_a = MAX_DISTANCE, "max_flight_time"_a = 24.0f, "config_algorithm"_a = std::monostate(),
+            py::arg_v("sort_by", AircraftRoute::Options::SortBy::PER_TRIP, "SortBy.PER_TRIP")
         )
         .def_readwrite("tpd_mode", &AircraftRoute::Options::tpd_mode)
         .def_readwrite("trips_per_day", &AircraftRoute::Options::trips_per_day)
         .def_readwrite("max_distance", &AircraftRoute::Options::max_distance)
         .def_readwrite("max_flight_time", &AircraftRoute::Options::max_flight_time)
-        .def_readwrite("config_algorithm", &AircraftRoute::Options::config_algorithm);
+        .def_readwrite("config_algorithm", &AircraftRoute::Options::config_algorithm)
+        .def_readwrite("sort_by", &AircraftRoute::Options::sort_by);
 
     py::class_<AircraftRoute::Stopover>(acr_class, "Stopover")
         .def_readonly("airport", &AircraftRoute::Stopover::airport)
@@ -633,6 +639,7 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("repair_cost", &AircraftRoute::repair_cost)
         .def_readonly("profit", &AircraftRoute::profit)
         .def_readonly("flight_time", &AircraftRoute::flight_time)
+        .def_readonly("ac_needed", &AircraftRoute::ac_needed)
         .def_readonly("ci", &AircraftRoute::ci)
         .def_readonly("contribution", &AircraftRoute::contribution)
         .def_readonly("needs_stopover", &AircraftRoute::needs_stopover)
@@ -679,8 +686,7 @@ void pybind_init_route(py::module_& m) {
     m_route.def(
         "find_routes", &find_routes, "ap0"_a, "ac"_a,
         py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
-        py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"), "by"_a = "per_t_per_ac",
-        py::call_guard<py::gil_scoped_release>()
+        py::arg_v("user", User::Default(), "am4.utils.game.User.Default()"), py::call_guard<py::gil_scoped_release>()
     );
 }
 #endif
