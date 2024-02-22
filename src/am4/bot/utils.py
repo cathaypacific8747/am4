@@ -38,7 +38,7 @@ IL = "<:large:701335275690786817>"
 IH = "<:heavy:701335275799969833>"
 
 HELP_TPD = (
-    "**Minimal number of departures per day, per aircraft**\n"
+    "**Number of departures per day, per aircraft**\n"
     "- if not provided or set to `AUTO`, the bot will attempt to maximise it.\n"
     "- if you provide a number, the bot will try to assign more aircraft to the same route to avoid wasting demand.\n"
     "  - to disable the cramming, append a `!` at the end (not recommended)."
@@ -163,3 +163,7 @@ def format_warning(w: AircraftRoute.Warning):
         return "Reduced contribution"
     elif w == AircraftRoute.Warning.ERR_DISTANCE_ABOVE_SPECIFIED:
         return "Distance above specified limit"
+    elif w == AircraftRoute.Warning.ERR_TRIPS_PER_DAY_TOO_HIGH:
+        return "Trips per day per aircraft is too high"
+    else:
+        return "Unknown reason"

@@ -27,7 +27,7 @@ assert_equal_property_names(Route, PyRoute)
 PyACROptionsConfigAlgorithm = Literal[PyConfigAlgorithmPax, PyConfigAlgorithmCargo]
 PyACROptionsMaxDistance = Annotated[float, Field(ge=0, lt=65536)]
 PyACROptionsMaxFlightTime = Annotated[float, Field(ge=0, lt=72)]
-PyACROptionsTPDMode = Literal["AUTO", "AUTO_MULTIPLE_OF", "STRICT"]
+PyACROptionsTPDMode = Literal["AUTO", "STRICT_ALLOW_MULTIPLE_AC", "STRICT"]
 PyACROptionsTripsPerDay = Annotated[int, Field(ge=1, lt=65536)]
 
 

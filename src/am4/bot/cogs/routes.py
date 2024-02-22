@@ -26,7 +26,6 @@ from ..utils import (
     format_config,
     format_demand,
     format_flight_time,
-    format_modifiers,
     format_ticket,
 )
 
@@ -60,11 +59,12 @@ class RoutesCog(BaseCog):
         help=(
             "The simplest way to get started is:```php\n"
             f"{cfg.bot.COMMAND_PREFIX}routes hkg a388\n"
-            "```means: find the best routes departing `HKG` using `A380-800` (by highest profit per day per A/C).\n"
-            "But as you may notice, the suggested routes may require you to *depart extremely frequently*. "
+            "```means: find the best routes departing `HKG` using `A380-800` (by highest profit per trip).\n"
+            "But this does not guarantee the best profit *per day*. "
             "Say you would like to follow a schedule of departing 2x per day instead: ```php\n"
             f"{cfg.bot.COMMAND_PREFIX}routes hkg a388 12:00 2\n"
-            "```means: also limit max flight time to 12:00 and have at least 2 departures per day per aircraft"
+            "```means: limit max flight time to 12hrs and have at least 2 departures per day per aircraft"
+            " (by highest profit per ac per day)."
         ),
         ignore_extra=False,
     )
@@ -94,6 +94,7 @@ class RoutesCog(BaseCog):
         tpd, tpd_mode = trips_per_day
         max_distance, max_flight_time = constraint
         cons_set = constraint != ConstraintCvtr._default
+        tpd_set = trips_per_day != TPDCvtr._default
         options = AircraftRoute.Options(
             **{
                 k: v
@@ -116,34 +117,53 @@ class RoutesCog(BaseCog):
         # if the tpd is not provided, show generic warning of low tpd
         # otherwise, check if the constraint's equivalent flight time and tpd multiply to be <24.
         if cons_set:
+            # TODO: handle ranges!
             cons_eq_t = max_distance / ac_query.ac.speed if max_distance is not None else max_flight_time
+            cons_eq_f = ("equivalent to " if max_distance else "") + f"max `{cons_eq_t:.2f}` hr"
             sugg_cons_t, sugg_tpd = 24 / tpd, math.floor(24 / cons_eq_t)
-            if cons_eq_t * tpd > 24:
-                cons_eq_f = ("equivalent to " if max_distance else "") + f"{cons_eq_t:.2f} hr"
+            if (t_ttl := cons_eq_t * tpd) > 24 and tpd_set:
                 await ctx.send(
                     embed=discord.Embed(
-                        title="Warning: Overconstrained!",
+                        title="Warning: Over-constrained!",
                         description=(
-                            f"The constraint you have provided ({cons_eq_f}) means that one aircraft can fly "
-                            f"at most {sugg_tpd:.0f} trips per day.\n"
-                            f"More than one aircraft will be needed to satisfy the `{tpd}` trips per day per aircraft "
-                            "you supplied, and will likely result in **poor profit per day per aircraft**.\n\n"
-                            f"To fix this, reduce your trips per day per aircraft to `{sugg_tpd:.0f}`, or "
+                            f"You have provided a constraint ({cons_eq_f}) and trips per day per A/C (`{tpd}`).\n"
+                            f"But it is impossible to fly `{t_ttl:.2f}` hr in a day.\n"
+                            f"I'll still respect your choice of `{tpd}` trips per day per A/C, but do note that the "
+                            "suggested routes **may require you to depart very frequently**.\n\n"
+                            f"To fix this, reduce your trips per day per A/C to `{sugg_tpd:.0f}`, or "
                             f"reduce your constraint to `{format_flight_time(sugg_cons_t, short=True)}` "
                             f"(`{ac_query.ac.speed * sugg_cons_t:.0f}` km)."
                         ),
                         color=COLOUR_WARNING,
                     )
                 )
-
-            if trips_per_day == TPDCvtr._default:
+            elif t_ttl < 24 * 0.9 and tpd_set:
+                sugg_tpd_f = f"increase your trips per day per A/C to `{sugg_tpd:.0f}`, or " if sugg_tpd != tpd else ""
                 await ctx.send(
                     embed=discord.Embed(
-                        title="Warning: suboptimal routes incoming!",
+                        title="Warning: Under-constrained!",
                         description=(
-                            "You did not set the trips per day per aircraft.\nThe bot will likely choose little"
-                            "trips per day, and result in **poor profit per day per aircraft**.\n\n"
-                            f"To fix this, specify the trips per day per aircraft (recommended: `{sugg_tpd}`)"
+                            f"You have provided a constraint ({cons_eq_f}) and trips per day per A/C (`{tpd}`), "
+                            f"meaning the average aircraft flies `{t_ttl:.2f}` hr in a day.\n"
+                            "The profit per day per aircraft will be lower than the theoretical optimum.\n\n"
+                            f"To fix this, {sugg_tpd_f}"
+                            f"increase your constraint to `{format_flight_time(sugg_cons_t, short=True)}` "
+                            f"(`{ac_query.ac.speed * sugg_cons_t:.0f}` km)."
+                        ),
+                        color=COLOUR_WARNING,
+                    )
+                )
+
+            if not tpd_set:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title="Warning: Very short routes incoming!",
+                        description=(
+                            f"You have set a constraint ({cons_eq_f}), but did not set the trips per day per A/C.\n\n"
+                            "I'll be sorting the routes by *max profit per day per A/C*, which will very likely "
+                            "to be **extremely short routes**. You may not actually be able to depart that frequently, "
+                            f"so I'd suggest you to specify the trips per day per aircraft (recommended: `{sugg_tpd}`)."
+                            f"\n\nTip: Look at the tradeoff in the bottom right graph."
                         ),
                         color=COLOUR_WARNING,
                     )
@@ -189,9 +209,10 @@ class RoutesCog(BaseCog):
                 "There are no profitable routes found. Try relaxing the constraints or reducing the trips per day."
             )
 
+        sorted_by = ", sorted by $ " + ("per ac per day" if cons_set else "per trip")
         embed.set_footer(
             text=(
-                f"{len(destinations)} routes found in {(t_end-t_start)*1000:.2f} ms\n"
+                f"{len(destinations)} routes found in {(t_end-t_start)*1000:.2f} ms{sorted_by}\n"
                 f"10 ac: $ {sum(profits[:10]):,.0f}/d, 30 ac: $ {sum(profits[:30]):,.0f}/d\n"
             ),
         )

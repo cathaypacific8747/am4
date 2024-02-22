@@ -34,13 +34,13 @@ struct Route {
 struct AircraftRoute {
     // TODO: decouple the options specific to the route finding to somewhere else
     struct Options {
-        enum class TPDMode { AUTO = 0, AUTO_MULTIPLE_OF = 1, STRICT = 2 };
+        enum class TPDMode { AUTO = 0, STRICT_ALLOW_MULTIPLE_AC = 1, STRICT = 2 };
         enum class SortBy { PER_TRIP = 0, PER_AC_PER_DAY = 1 };
         using ConfigAlgorithm =
             std::variant<std::monostate, Aircraft::PaxConfig::Algorithm, Aircraft::CargoConfig::Algorithm>;
 
         TPDMode tpd_mode;
-        uint16_t trips_per_day;
+        uint16_t trips_per_day_per_ac;
         double max_distance;
         float max_flight_time;
         ConfigAlgorithm config_algorithm;
@@ -48,7 +48,7 @@ struct AircraftRoute {
 
         Options(
             TPDMode tpd_mode = TPDMode::AUTO,
-            uint16_t trips_per_day = 1,
+            uint16_t trips_per_day_per_ac = 1,
             double max_distance = MAX_DISTANCE,
             float max_flight_time = 24.0f,
             ConfigAlgorithm config_algorithm = std::monostate(),
@@ -96,7 +96,8 @@ struct AircraftRoute {
         REDUCED_CONTRIBUTION,
         ERR_NO_STOPOVER,
         ERR_FLIGHT_TIME_ABOVE_SPECIFIED,
-        ERR_INSUFFICIENT_DEMAND
+        ERR_INSUFFICIENT_DEMAND,
+        ERR_TRIPS_PER_DAY_TOO_HIGH,
     };
     vector<Warning> warnings;
     bool valid;

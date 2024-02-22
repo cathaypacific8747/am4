@@ -26,7 +26,7 @@ def test_route_with_aircraft():
     ap0 = Airport.search("VHHH").ap
     ap1 = Airport.search("LHR").ap
     ac = Aircraft.search("b744").ac
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day_per_ac=1)
     r0 = AircraftRoute.create(ap0, ap1, ac, options)
     assert r0.ticket.y == 4422
     assert r0.ticket.j == 8923
@@ -64,7 +64,7 @@ def test_route_with_vip_aircraft():
     ap1 = Airport.search("LHR").ap
     ac = Aircraft.search("a32vip").ac
 
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day_per_ac=1)
     r = AircraftRoute.create(ap0, ap1, ac, options)
     assert r.ticket.y == 8580
     assert r.ticket.j == 17342
@@ -76,7 +76,7 @@ def test_route_with_cargo_aircraft():
     ap1 = Airport.search("LHR").ap
     ac = Aircraft.search("b744f").ac
 
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day_per_ac=1)
     r0 = AircraftRoute.create(ap0, ap1, ac, options)
     assert r0.ticket.l == pytest.approx(10.98)
     assert r0.ticket.h == pytest.approx(7.47)
@@ -96,33 +96,20 @@ def test_route_with_aircraft_auto():
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
     user = User.Default()
 
-    user.income_loss_tol = 0
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 0
-    assert r.config.j == 1
-    assert r.config.f == 76
-    assert r.trips_per_day == 5
-
-    user.income_loss_tol = 0.08  # allow 8% income loss
-    r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.y == 10
-    assert r.config.j == 50
-    assert r.config.f == 40
-    assert r.trips_per_day == 11
-
-    user.income_loss_tol = 1  # allow 100% income loss
-    r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.y == 69
-    assert r.config.j == 37
-    assert r.config.f == 29
-    assert r.trips_per_day == 15
+    assert r.config.j == 43
+    assert r.config.f == 48
+    assert r.trips_per_day == 9
 
 
-def test_route_with_aircraft_auto_multiple_of():
+def test_route_with_aircraft_strict_allow_multiple_ac():
     ap0 = Airport.search("VHHH").ap
     ap1 = Airport.search("TPE").ap
     ac = Aircraft.search("mc214").ac
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=2)
+    options = AircraftRoute.Options(
+        tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC, trips_per_day_per_ac=2
+    )
     user = User.Default()
 
     user.income_loss_tol = 0
@@ -139,7 +126,7 @@ def test_route_with_aircraft_auto_multiple_of():
     assert r.config.f == 31
     assert r.trips_per_day == 14
 
-    options.trips_per_day = 3
+    options.trips_per_day_per_ac = 3
     user.income_loss_tol = 0
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 0
@@ -159,7 +146,7 @@ def test_cargo_route_with_aircraft():
     ap0 = Airport.search("VHHH").ap
     ap1 = Airport.search("LHR").ap
     ac = Aircraft.search("b744f").ac
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=1)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day_per_ac=1)
 
     r = AircraftRoute.create(ap0, ap1, ac, options)
     cargo_demand = CargoDemand(r.route.pax_demand)
@@ -186,18 +173,6 @@ def test_cargo_route_with_aircraft_auto():
     options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO)
     user = User.Default()
 
-    user.income_loss_tol = 0
-    r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.l == 100
-    assert r.config.h == 0
-    assert r.trips_per_day == 22
-
-    user.income_loss_tol = 0.08  # allow 8% income loss
-    r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.l == 71
-    assert r.config.h == 29
-    assert r.trips_per_day == 32
-
     user.income_loss_tol = 1  # allow 100% income loss
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.l == 63
@@ -205,11 +180,13 @@ def test_cargo_route_with_aircraft_auto():
     assert r.trips_per_day == 36
 
 
-def test_cargo_route_with_aircraft_auto_multiple_of():
+def test_cargo_route_with_aircraft_strict_allow_multiple_ac():
     ap0 = Airport.search("VHHH").ap
     ap1 = Airport.search("TPE").ap
     ac = Aircraft.search("b722f").ac
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF, trips_per_day=5)
+    options = AircraftRoute.Options(
+        tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC, trips_per_day_per_ac=5
+    )
     user = User.Default()
 
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
@@ -309,13 +286,13 @@ def test_route_flight_time_above_specified():
     assert AircraftRoute.Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED in r.warnings
 
 
-def test_route_insufficient_demand():
+def test_route_trips_per_day_too_high():
     ap0 = Airport.search("VHHH").ap
     ap1 = Airport.search("LHR").ap
     ac = Aircraft.search("b744").ac
-    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day=100)
+    options = AircraftRoute.Options(tpd_mode=AircraftRoute.Options.TPDMode.STRICT, trips_per_day_per_ac=100)
     r = AircraftRoute.create(ap0, ap1, ac, options)
-    assert AircraftRoute.Warning.ERR_INSUFFICIENT_DEMAND in r.warnings
+    assert AircraftRoute.Warning.ERR_TRIPS_PER_DAY_TOO_HIGH in r.warnings
 
 
 def test_find_routes():

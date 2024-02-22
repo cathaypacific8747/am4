@@ -3,13 +3,12 @@ import csv
 import os
 import time
 
-from tqdm import tqdm
-
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db import init
 from am4.utils.game import User
 from am4.utils.route import AircraftRoute, Destination, find_routes
+from tqdm import tqdm
 
 init()
 
@@ -27,7 +26,7 @@ ac = Aircraft.search("a388[s,f,c]")
 options = AircraftRoute.Options(
     max_distance=6000,
     # max_distance=8000,
-    tpd_mode=AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF,
+    tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC,
     trips_per_day=5,
 )
 user = User.Default()

@@ -194,7 +194,7 @@ class FAPIReqACROptions:
                     detail=[
                         {
                             "loc": ["query", "trips_per_day"],
-                            "msg": f"Trips per day cannot be specified when `tpd_mode` is `AUTO`: {kw} `AUTO_MULTIPLE_OF` or `STRICT` instead",
+                            "msg": f"Trips per day cannot be specified when `tpd_mode` is `AUTO`: {kw} `STRICT_ALLOW_MULTIPLE_AC` or `STRICT` instead",
                             "type": "value_error",
                         }
                     ],

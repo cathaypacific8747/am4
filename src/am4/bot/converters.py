@@ -85,7 +85,9 @@ class TPDCvtr(commands.Converter):
         try:
             return (
                 acro_cast("trips_per_day", tpd[:-1] if strict else tpd).trips_per_day,
-                AircraftRoute.Options.TPDMode.STRICT if strict else AircraftRoute.Options.TPDMode.AUTO_MULTIPLE_OF,
+                AircraftRoute.Options.TPDMode.STRICT
+                if strict
+                else AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC,
             )
         except ValidationError as e:
             raise TPDValidationError(e)
