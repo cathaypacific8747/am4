@@ -12,9 +12,8 @@ from ..db.models.aircraft import PyConfigAlgorithmCargo, PyConfigAlgorithmPax
 from ..db.models.game import PyUser
 from ..db.models.route import (
     PyACROptionsMaxDistance,
-    PyACROptionsMaxFlightTime,
     PyACROptionsTPDMode,
-    PyACROptionsTripsPerDay,
+    PyACROptionsTripsPerDayPerAC,
 )
 from .errors import (
     AircraftNotFoundError,
@@ -50,7 +49,7 @@ class _ACROptions(BaseModel):
     max_distance: PyACROptionsMaxDistance
     max_flight_time: Annotated[timedelta, Field(ge=0, lt=72 * 3600)]
     __tpd_mode: PyACROptionsTPDMode
-    trips_per_day: PyACROptionsTripsPerDay
+    trips_per_day_per_ac: PyACROptionsTripsPerDayPerAC
 
 
 class _SettingKeyCustom(BaseModel):
@@ -84,7 +83,7 @@ class TPDCvtr(commands.Converter):
         strict = tpd.endswith("!")
         try:
             return (
-                acro_cast("trips_per_day", tpd[:-1] if strict else tpd).trips_per_day,
+                acro_cast("trips_per_day_per_ac", tpd[:-1] if strict else tpd).trips_per_day_per_ac,
                 AircraftRoute.Options.TPDMode.STRICT
                 if strict
                 else AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC,

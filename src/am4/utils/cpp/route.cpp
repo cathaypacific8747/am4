@@ -53,7 +53,7 @@ void tpd_sweep(
         tpdpa = std::min(floor(24. / static_cast<double>(ar->flight_time)), floor(est_max_tpd()));
     }
     Cfg cfg = calc_cfg(tpdpa);
-    if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT && !cfg.valid) {
+    if (options.tpd_mode != AircraftRoute::Options::TPDMode::AUTO && !cfg.valid) {
         ar->valid = false;
         return;
     }
@@ -72,8 +72,8 @@ void tpd_sweep(
         ar->config = cfg;
         ar->max_income = max_income;
         ar->income = max_income * user.load;
-        ar->ac_needed = 1;
-        ar->trips_per_day = tpdpa;
+        ar->num_ac = 1;
+        ar->trips_per_day_per_ac = tpdpa;
         ar->valid = true;
         return;
     }
@@ -104,8 +104,8 @@ void tpd_sweep(
     ar->config = cfg;
     ar->max_income = max_income;
     ar->income = max_income * user.load;
-    ar->ac_needed = num_ac;
-    ar->trips_per_day = tpdpa * num_ac;
+    ar->num_ac = num_ac;
+    ar->trips_per_day_per_ac = tpdpa;
     ar->valid = true;
 }
 
@@ -478,8 +478,8 @@ std::vector<Destination> find_routes(
     auto cmp = options.sort_by == AircraftRoute::Options::SortBy::PER_TRIP
                    ? [](const Destination& a, const Destination& b) { return a.ac_route.profit > b.ac_route.profit; }
                    : [](const Destination& a, const Destination& b) {
-                         return a.ac_route.profit * a.ac_route.trips_per_day / a.ac_route.ac_needed >
-                                b.ac_route.profit * b.ac_route.trips_per_day / b.ac_route.ac_needed;
+                         return a.ac_route.profit * a.ac_route.trips_per_day_per_ac / a.ac_route.num_ac >
+                                b.ac_route.profit * b.ac_route.trips_per_day_per_ac / b.ac_route.num_ac;
                      };
     std::sort(destinations.begin(), destinations.end(), cmp);
     return destinations;
@@ -535,8 +535,8 @@ py::dict to_dict(const AircraftRoute& ar) {
         }))
         return d;
 
-    d["trips_per_day"] = ar.trips_per_day;
-    d["ac_needed"] = ar.ac_needed;
+    d["trips_per_day_per_ac"] = ar.trips_per_day_per_ac;
+    d["num_ac"] = ar.num_ac;
 
     switch (ar._ac_type) {
         case Aircraft::Type::PAX:
@@ -632,7 +632,7 @@ void pybind_init_route(py::module_& m) {
     acr_class.def_readonly("route", &AircraftRoute::route)
         .def_readonly("config", &AircraftRoute::config)
         .def_readonly("ticket", &AircraftRoute::ticket)
-        .def_readonly("trips_per_day", &AircraftRoute::trips_per_day)
+        .def_readonly("trips_per_day_per_ac", &AircraftRoute::trips_per_day_per_ac)
         .def_readonly("max_income", &AircraftRoute::max_income)
         .def_readonly("income", &AircraftRoute::income)
         .def_readonly("fuel", &AircraftRoute::fuel)
@@ -641,7 +641,7 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("repair_cost", &AircraftRoute::repair_cost)
         .def_readonly("profit", &AircraftRoute::profit)
         .def_readonly("flight_time", &AircraftRoute::flight_time)
-        .def_readonly("ac_needed", &AircraftRoute::ac_needed)
+        .def_readonly("num_ac", &AircraftRoute::num_ac)
         .def_readonly("ci", &AircraftRoute::ci)
         .def_readonly("contribution", &AircraftRoute::contribution)
         .def_readonly("needs_stopover", &AircraftRoute::needs_stopover)

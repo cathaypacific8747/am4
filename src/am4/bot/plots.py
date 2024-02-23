@@ -42,7 +42,6 @@ class MPLMap:
         destinations: list[Destination],
         origin_lng: float,
         origin_lat: float,
-        sort_by: AircraftRoute.Options.SortBy,
     ) -> io.BytesIO:
         fig, ax, ax2 = pickle.loads(self.template)
         fig: Figure
@@ -54,14 +53,11 @@ class MPLMap:
         lats, lngs, profits, ac_needs = [], [], [], []
         for d in destinations:
             dists.append(d.ac_route.route.direct_distance)
-            tpdpacs.append(d.ac_route.trips_per_day / d.ac_route.ac_needed)
+            tpdpacs.append(d.ac_route.trips_per_day_per_ac)
             lats.append(d.airport.lat)
             lngs.append(d.airport.lng)
-            profits.append(
-                # d.ac_route.profit if per_trip else d.ac_route.profit * d.ac_route.trips_per_day / d.ac_route.ac_needed
-                d.ac_route.profit * d.ac_route.trips_per_day / d.ac_route.ac_needed
-            )
-            ac_needs.append(d.ac_route.ac_needed)
+            profits.append(d.ac_route.profit * d.ac_route.trips_per_day_per_ac)
+            ac_needs.append(d.ac_route.num_ac)
         ax.scatter(*self.transformer.transform(lats, lngs), c=profits, s=0.5, cmap=self.cmap)
         ax.plot(*self.transformer.transform([origin_lat], [origin_lng]), "ro", markersize=3)
 
@@ -87,7 +83,6 @@ class MPLMap:
         ax2.set_ylabel("profit, $/d/ac")
 
         # for tpd in
-
         buf = io.BytesIO()
         fig.savefig(buf, format="jpg")
         buf.seek(0)

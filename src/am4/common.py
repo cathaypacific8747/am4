@@ -19,7 +19,7 @@ HELP_ACRO_MAXDIST = "[Optional] **Maximum route distance (km)** - defaults to 63
 HELP_ACRO_MAXFT = "[Optional] **Maximum flight time (h)** - defaults to 24 if not specified."
 HELP_ACRO_TPD_MODE = (
     "[Optional] **Trips per day mode**: one of `AUTO`, `STRICT_ALLOW_MULTIPLE_AC`, `STRICT`. If not specified, "
-    "`AUTO` is used, which finds the optimal trips_per_day through brute-force."
+    "`AUTO` is used, which uses the highest trips per day possible and brute forces for the best `num_ac`."
 )
 HELP_ACRO_TPD = (
     "[Optional] **Trips per day**: defaults to 1. Note that this parameter is only respected when tpd_mode is set "

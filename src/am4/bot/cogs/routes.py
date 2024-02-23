@@ -80,7 +80,7 @@ class RoutesCog(BaseCog):
             displayed_default="NONE",
             description=HELP_CONSTRAINT,
         ),
-        trips_per_day: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
+        trips_per_day_per_ac: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
             converter=TPDCvtr, default=TPDCvtr._default, displayed_default="AUTO", description=HELP_TPD
         ),
         config_algorithm: Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm = commands.parameter(
@@ -91,15 +91,15 @@ class RoutesCog(BaseCog):
         ),
     ):
         is_cargo = ac_query.ac.type == Aircraft.Type.CARGO
-        tpd, tpd_mode = trips_per_day
+        tpd, tpd_mode = trips_per_day_per_ac
         max_distance, max_flight_time = constraint
         cons_set = constraint != ConstraintCvtr._default
-        tpd_set = trips_per_day != TPDCvtr._default
+        tpd_set = trips_per_day_per_ac != TPDCvtr._default
         options = AircraftRoute.Options(
             **{
                 k: v
                 for k, v in {
-                    "trips_per_day": tpd,
+                    "trips_per_day_per_ac": tpd,
                     "tpd_mode": tpd_mode,
                     "config_algorithm": config_algorithm,
                     "max_distance": max_distance,
@@ -181,8 +181,8 @@ class RoutesCog(BaseCog):
         for i, d in enumerate(destinations):
             acr = d.ac_route
 
-            profit_per_day_per_ac = acr.profit * acr.trips_per_day / acr.ac_needed
-            for _ in range(acr.ac_needed):
+            profit_per_day_per_ac = acr.profit * acr.trips_per_day_per_ac
+            for _ in range(acr.num_ac):
                 profits.append(profit_per_day_per_ac)
             if i > 2:
                 continue
@@ -190,8 +190,8 @@ class RoutesCog(BaseCog):
             stopover_f = f"{format_ap_short(acr.stopover.airport, mode=1)}\n" if acr.stopover.exists else ""
             distance_f = f"{acr.stopover.full_distance if acr.stopover.exists else acr.route.direct_distance:.0f} km"
             flight_time_f = format_flight_time(acr.flight_time)
-            details_f = f"{acr.trips_per_day} t/d, {acr.ac_needed} ac"
-            if acr.ac_needed > 1:
+            details_f = f"{acr.trips_per_day_per_ac} t/d/ac × {acr.num_ac} ac"
+            if acr.num_ac > 1:
                 details_f = f"**__{details_f}__**"
             embed.add_field(
                 name=f"{stopover_f}{format_ap_short(d.airport, mode=2)}",
@@ -220,7 +220,7 @@ class RoutesCog(BaseCog):
         if not destinations:
             return
 
-        im = mpl_map.plot_destinations(destinations, ap_query.ap.lng, ap_query.ap.lat, options.sort_by)
+        im = mpl_map.plot_destinations(destinations, ap_query.ap.lng, ap_query.ap.lat)
         file = discord.File(im, filename="routes.png")
         embed.set_image(url="attachment://routes.png")
         await msg.edit(embed=embed, attachments=[file])

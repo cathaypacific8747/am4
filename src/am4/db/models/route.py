@@ -28,7 +28,7 @@ PyACROptionsConfigAlgorithm = Literal[PyConfigAlgorithmPax, PyConfigAlgorithmCar
 PyACROptionsMaxDistance = Annotated[float, Field(ge=0, lt=65536)]
 PyACROptionsMaxFlightTime = Annotated[float, Field(ge=0, lt=72)]
 PyACROptionsTPDMode = Literal["AUTO", "STRICT_ALLOW_MULTIPLE_AC", "STRICT"]
-PyACROptionsTripsPerDay = Annotated[int, Field(ge=1, lt=65536)]
+PyACROptionsTripsPerDayPerAC = Annotated[int, Field(ge=1, lt=65536)]
 
 
 class PyACRouteStopover(BaseModel):
@@ -44,7 +44,7 @@ class PyACRouteStopoverNonExistent(BaseModel):
 class PyACRoute(BaseModel):
     route: PyRoute
     config: Optional[PyPaxConfig | PyCargoConfig] = None
-    trips_per_day: Optional[int] = None
+    trips_per_day_per_ac: Optional[int] = None
     ticket: Optional[PyPaxTicket | PyCargoTicket | PyVIPTicket] = None
     max_income: Optional[float] = None
     income: Optional[float] = None
@@ -54,7 +54,7 @@ class PyACRoute(BaseModel):
     repair_cost: Optional[float] = None
     profit: Optional[float] = None
     flight_time: Optional[float] = None
-    ac_needed: Optional[int] = None
+    num_ac: Optional[int] = None
     needs_stopover: Optional[bool] = None
     profit: Optional[float] = None
     contribution: Optional[float] = None

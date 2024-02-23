@@ -43,8 +43,8 @@ def format_additional(
 ):
     return (
         f"**   Income**: $ {income:,.0f}\n"
-        f"**  -    Fuel**: $ {fuel*fuel_price/1000:,.0f} ({fuel:,.0f} lbs)\n"
-        f"**  -     CO₂**: $ {co2*co2_price/1000:,.0f} ({co2:,.0f} quotas)\n"
+        f"**  -    Fuel**: $ {fuel*fuel_price/1000:,.0f} ({fuel:,.0f} lb)\n"
+        f"**  -     CO₂**: $ {co2*co2_price/1000:,.0f} ({co2:,.0f} q)\n"
         f"**  - Acheck**: $ {acheck_cost:,.0f}\n"
         f"**  -   Repair**: $ {repair_cost:,.0f}\n"
         f"**  =   Profit**: $ {profit:,.0f}\n"
@@ -74,7 +74,7 @@ class RouteCog(BaseCog):
         ac_query: Aircraft.SearchResult | None = commands.parameter(
             converter=AircraftCvtr, default=None, description=HELP_AC_ARG0
         ),
-        trips_per_day: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
+        trips_per_day_per_ac: tuple[int | None, AircraftRoute.Options.TPDMode] = commands.parameter(
             converter=TPDCvtr, default=TPDCvtr._default, displayed_default="AUTO", description=HELP_TPD
         ),
         config_algorithm: Aircraft.PaxConfig.Algorithm | Aircraft.CargoConfig.Algorithm = commands.parameter(
@@ -90,9 +90,9 @@ class RouteCog(BaseCog):
             await ctx.send(embed=embed)
             return
         is_cargo = ac_query.ac.type == Aircraft.Type.CARGO
-        tpd, tpd_mode = trips_per_day
+        tpd, tpd_mode = trips_per_day_per_ac
 
-        options = AircraftRoute.Options(trips_per_day=tpd, tpd_mode=tpd_mode, config_algorithm=config_algorithm)
+        options = AircraftRoute.Options(trips_per_day_per_ac=tpd, tpd_mode=tpd_mode, config_algorithm=config_algorithm)
         u, _ue = await fetch_user_info(ctx)
 
         acr = AircraftRoute.create(ap0_query.ap, ap1_query.ap, ac_query.ac, options, u)
@@ -115,7 +115,7 @@ class RouteCog(BaseCog):
         )
         description = (
             f"**Flight Time**: {format_flight_time(acr.flight_time)} ({acr.flight_time:.3f} hr)\n"
-            f"**  Schedule**: {acr.trips_per_day:.0f} total trips/day: {acr.ac_needed} A/C needed\n"
+            f"**  Schedule**: {acr.trips_per_day_per_ac:.0f} trips/day/ac × {acr.num_ac} A/C needed\n"
             f"**  Demand**: {format_demand(acr.route.pax_demand, is_cargo)}\n"
             f"**  Config**: {format_config(acr.config)}\n"
             f"**   Tickets**: {format_ticket(acr.ticket)}\n"
@@ -141,7 +141,7 @@ class RouteCog(BaseCog):
                 ci=acr.ci,
             ),
         )
-        mul = acr.trips_per_day / acr.ac_needed
+        mul = acr.trips_per_day_per_ac
         embed.add_field(
             name="Per Day, Per Aircraft",
             value=format_additional(

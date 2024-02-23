@@ -100,7 +100,7 @@ def test_route_with_aircraft_auto():
     assert r.config.y == 0
     assert r.config.j == 43
     assert r.config.f == 48
-    assert r.trips_per_day == 9
+    assert r.trips_per_day_per_ac == 9
 
 
 def test_route_with_aircraft_strict_allow_multiple_ac():
@@ -117,14 +117,16 @@ def test_route_with_aircraft_strict_allow_multiple_ac():
     assert r.config.y == 0
     assert r.config.j == 1
     assert r.config.f == 76
-    assert r.trips_per_day == 4
+    assert r.trips_per_day_per_ac == 2
+    assert r.num_ac == 2
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 59
     assert r.config.j == 39
     assert r.config.f == 31
-    assert r.trips_per_day == 14
+    assert r.trips_per_day_per_ac == 2
+    assert r.num_ac == 7
 
     options.trips_per_day_per_ac = 3
     user.income_loss_tol = 0
@@ -132,14 +134,16 @@ def test_route_with_aircraft_strict_allow_multiple_ac():
     assert r.config.y == 0
     assert r.config.j == 1
     assert r.config.f == 76
-    assert r.trips_per_day == 3
+    assert r.trips_per_day_per_ac == 3
+    assert r.num_ac == 1
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.y == 69
     assert r.config.j == 37
     assert r.config.f == 29
-    assert r.trips_per_day == 15
+    assert r.trips_per_day_per_ac == 3
+    assert r.num_ac == 5
 
 
 def test_cargo_route_with_aircraft():
@@ -177,7 +181,7 @@ def test_cargo_route_with_aircraft_auto():
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.l == 63
     assert r.config.h == 37
-    assert r.trips_per_day == 36
+    assert r.trips_per_day_per_ac == 36
 
 
 def test_cargo_route_with_aircraft_strict_allow_multiple_ac():
@@ -192,13 +196,15 @@ def test_cargo_route_with_aircraft_strict_allow_multiple_ac():
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.l == 100
     assert r.config.h == 0
-    assert r.trips_per_day == 20
+    assert r.trips_per_day_per_ac == 5
+    assert r.num_ac == 4
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
     assert r.config.l == 65
     assert r.config.h == 35
-    assert r.trips_per_day == 35
+    assert r.trips_per_day_per_ac == 5
+    assert r.num_ac == 7
 
 
 def test_route_stopover():

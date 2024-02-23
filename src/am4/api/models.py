@@ -35,7 +35,7 @@ from ..db.models.route import (
     PyACROptionsMaxDistance,
     PyACROptionsMaxFlightTime,
     PyACROptionsTPDMode,
-    PyACROptionsTripsPerDay,
+    PyACROptionsTripsPerDayPerAC,
     PyACRoute,
     PyRoute,
 )
@@ -137,8 +137,8 @@ class FAPIReqACROptions:
             PyACROptionsTPDMode,
             Query(description=HELP_ACRO_TPD_MODE),
         ] = None,
-        trips_per_day: Annotated[
-            PyACROptionsTripsPerDay,
+        trips_per_day_per_ac: Annotated[
+            PyACROptionsTripsPerDayPerAC,
             Query(description=HELP_ACRO_TPD),
         ] = None,
     ):
@@ -146,7 +146,7 @@ class FAPIReqACROptions:
         self.max_distance = max_distance
         self.max_flight_time = max_flight_time
         self.tpd_mode = tpd_mode
-        self.trips_per_day = trips_per_day
+        self.trips_per_day_per_ac = trips_per_day_per_ac
 
     def to_core(self, ac_type: Aircraft.Type) -> AircraftRoute.Options:
         opt = {}
@@ -186,20 +186,20 @@ class FAPIReqACROptions:
                     ],
                 )
             opt["tpd_mode"] = tpdm
-        if self.trips_per_day is not None:
+        if self.trips_per_day_per_ac is not None:
             if opt.get("tpd_mode") == AircraftRoute.Options.TPDMode.AUTO or self.tpd_mode is None:
                 kw = "explicitly specify" if self.tpd_mode is None else "use"
                 raise HTTPException(
                     status_code=422,
                     detail=[
                         {
-                            "loc": ["query", "trips_per_day"],
+                            "loc": ["query", "trips_per_day_per_ac"],
                             "msg": f"Trips per day cannot be specified when `tpd_mode` is `AUTO`: {kw} `STRICT_ALLOW_MULTIPLE_AC` or `STRICT` instead",
                             "type": "value_error",
                         }
                     ],
                 )
-            opt["trips_per_day"] = self.trips_per_day
+            opt["trips_per_day_per_ac"] = self.trips_per_day_per_ac
         return AircraftRoute.Options(**opt)
 
 

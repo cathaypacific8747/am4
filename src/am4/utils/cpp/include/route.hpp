@@ -58,7 +58,7 @@ struct AircraftRoute {
     Route route;
     Aircraft::Type _ac_type;
     Aircraft::Config config;
-    uint16_t trips_per_day;
+    uint16_t trips_per_day_per_ac;
     Ticket ticket;
     double max_income;  // the highest possible load adjusted max income for all values of tpd: 0 means unknown.
     double income;      // the current load adjusted income based on the selected tpd
@@ -68,7 +68,7 @@ struct AircraftRoute {
     double repair_cost;
     double profit;
     float flight_time;
-    uint16_t ac_needed;
+    uint16_t num_ac;
     uint8_t ci;
     float contribution;
     bool needs_stopover;

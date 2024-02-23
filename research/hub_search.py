@@ -27,7 +27,7 @@ options = AircraftRoute.Options(
     max_distance=6000,
     # max_distance=8000,
     tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC,
-    trips_per_day=5,
+    trips_per_day_per_ac=5,
 )
 user = User.Default()
 user.wear_training = 5
@@ -65,7 +65,7 @@ for ap, dests in all_dest.items():
                 "jd",
                 "fd",
                 "dist",
-                "trips_per_day",
+                "trips_per_day_per_ac",
                 "yc",
                 "jc",
                 "fc",
@@ -79,8 +79,8 @@ for ap, dests in all_dest.items():
             d: Destination
             if d.ac_route.route.direct_distance > 5500:
                 count += 1
-                score += d.ac_route.trips_per_day * d.ac_route.route.direct_distance
-                income += d.ac_route.trips_per_day * d.ac_route.profit
+                score += d.ac_route.trips_per_day_per_ac * d.ac_route.route.direct_distance
+                income += d.ac_route.trips_per_day_per_ac * d.ac_route.profit
                 acr: AircraftRoute = d.ac_route
                 writer.writerow(
                     [
@@ -91,7 +91,7 @@ for ap, dests in all_dest.items():
                         acr.route.pax_demand.j,
                         acr.route.pax_demand.f,
                         acr.route.direct_distance,
-                        acr.trips_per_day,
+                        acr.trips_per_day_per_ac,
                         acr.config.y,
                         acr.config.j,
                         acr.config.f,

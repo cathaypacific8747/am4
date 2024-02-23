@@ -190,9 +190,6 @@ class AircraftRoute:
     def to_dict(self) -> dict:
         ...
     @property
-    def ac_needed(self) -> int:
-        ...
-    @property
     def acheck_cost(self) -> float:
         ...
     @property
@@ -223,6 +220,9 @@ class AircraftRoute:
     def needs_stopover(self) -> bool:
         ...
     @property
+    def num_ac(self) -> int:
+        ...
+    @property
     def profit(self) -> float:
         ...
     @property
@@ -238,7 +238,7 @@ class AircraftRoute:
     def ticket(self) -> am4.utils.ticket.PaxTicket | am4.utils.ticket.CargoTicket | am4.utils.ticket.VIPTicket:
         ...
     @property
-    def trips_per_day(self) -> int:
+    def trips_per_day_per_ac(self) -> int:
         ...
     @property
     def valid(self) -> bool:

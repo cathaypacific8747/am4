@@ -92,7 +92,7 @@ int main() {
         cout << "cfg: " << c.y << "," << c.j << "," << c.f << " | " << c.valid << endl;
         auto d = r.route.pax_demand;
         cout << "dem: " << d.y << "," << d.j << "," << d.f << endl;
-        cout << "tpd: " << r.trips_per_day << endl;
+        cout << "tpd: " << r.trips_per_day_per_ac << endl;
         // auto rs = find_routes(ap0, ac, options, user);
         // std::cout << "rs.size(): " << rs.size() << std::endl;
         // for (int i = 0; i < 1000; i++) {
