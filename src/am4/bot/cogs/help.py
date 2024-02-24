@@ -13,10 +13,12 @@ class HelpCog(BaseCog):
     async def botinfo(self, ctx: commands.Context):
         await ctx.send(
             (
-                f"**AM4 ACDB Bot** (coreutils v{am4utils_version})\n"
-                "Made by <@697804580456759397> and <@243007616714801157>\n"
-                "Database and profit formula by <@663796476257763370>\n"
-                "Join our main server: https://discord.gg/4tVQHtf\n"
+                "# AM4Help.com discord bot\n"
+                f"- coreutils version: `{am4utils_version}`\n"
+                "- Made by <@697804580456759397>, <@243007616714801157> and <@663796476257763370>\n"
+                "- If you need any help, feel free to ask on our support server: https://discord.gg/4tVQHtf\n"
+                "- The code is open-source on GitHub at https://github.com/cathaypacific8747/am4 - "
+                "feel free to open an issue and/or PR!"
             ),
             allowed_mentions=AllowedMentions.none(),
         )

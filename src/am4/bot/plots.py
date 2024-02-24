@@ -31,7 +31,15 @@ class MPLMap:
         font_path = Path(__file__).parent / "assets" / "font" / "B612-Regular.ttf"
         fm.fontManager.addfont(font_path)
         prop = fm.FontProperties(fname=font_path)
-        plt.rcParams.update({"font.family": prop.get_name()})
+        plt.rcParams.update(
+            {
+                "font.family": prop.get_name(),
+                "axes.facecolor": "#16171a",
+                "savefig.facecolor": "#1f2024",
+                "legend.fontsize": 10 * 0.9,
+                "legend.handlelength": 2 * 0.9,
+            }
+        )
 
         fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 5), layout="tight")
         ax3 = ax2.twiny()

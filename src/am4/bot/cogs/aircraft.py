@@ -64,4 +64,4 @@ class AircraftCog(BaseCog):
         await h.invalid_aircraft()
         await h.missing_arg()
         await h.too_many_args("ac_query")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()

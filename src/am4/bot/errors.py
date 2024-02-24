@@ -1,4 +1,6 @@
 import heapq
+import io
+import traceback
 from typing import Annotated, Callable
 
 import discord
@@ -8,8 +10,11 @@ from am4.utils.db.utils import jaro_winkler_distance
 from discord.ext import commands
 from discord.ext.commands.view import StringView
 from pydantic_core import PydanticCustomError, ValidationError
+from rich import inspect
+from rich.console import Console
 
 from ..config import cfg
+from .channels import channels
 
 COLOUR_ERROR = discord.Colour(0xCA7575)
 Suggestions = list[tuple[Annotated[str, "displayed value in command sugg"], Annotated[str, "full description"]]]
@@ -55,6 +60,10 @@ class ConstraintValidationError(ValidationErrorBase):
     pass
 
 
+class PriceValidationError(ValidationErrorBase):
+    pass
+
+
 def get_err_tb(v: StringView) -> str:
     highlight = " ▔▔▔?" if (wordlen := v.index - v.previous) < 1 else ("▔" * wordlen + "↖")
     return f"```php\n{v.buffer}\n{' ' * v.previous}{highlight}\n```"
@@ -72,8 +81,27 @@ class CustomErrHandler:
 
         self.handled = False
 
-    def raise_for_unhandled(self):
+    async def raise_for_unhandled(self):
         if not self.handled:
+            await self.ctx.send(
+                embed=discord.Embed(
+                    title="An error occurred!",
+                    description=(
+                        "Oops! Something real bad happened and I don't know how to handle it.\n"
+                        "This incident has been reported to our developers."
+                    ),
+                    colour=COLOUR_ERROR,
+                )
+            )
+            buf = io.StringIO()
+            console = Console(file=buf)
+            console.print_exception(show_locals=True)
+            inspect(self.ctx, console=console)
+            buf.seek(0)
+            await channels.debug.send(
+                f"`{self.ctx.message.content}` by {self.ctx.author.mention}: {self.ctx.message.jump_url}",
+                file=discord.File(buf, filename="error.log"),
+            )
             raise self.error
 
     def _get_err_embed(
@@ -180,6 +208,16 @@ class CustomErrHandler:
             title="Invalid constraint!",
             description=f"{self.err_tb}\n{self.error.msg}\n{extra}".strip(),
             suggs=suggs,
+        )
+        await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def invalid_price(self):
+        if not isinstance(self.error, PriceValidationError):
+            return
+        embed = self._get_err_embed(
+            title="Invalid price!",
+            description=f"{self.err_tb}\n{self.error.msg}".strip(),
         )
         await self.ctx.send(embed=embed)
         self.handled = True

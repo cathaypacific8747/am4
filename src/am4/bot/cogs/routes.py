@@ -7,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 import discord
 import orjson
 import pyarrow as pa
-import pyarrow.parquet as pq
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.game import User
@@ -157,12 +156,12 @@ class RoutesCog(BaseCog):
         help=(
             "The simplest way to get started is:```php\n"
             f"{cfg.bot.COMMAND_PREFIX}routes hkg a388\n"
-            "```means: find the best routes departing `HKG` using `A380-800` (by highest profit per trip).\n"
-            "But this does not guarantee the best profit *per day*. "
-            "Say you would like to follow a schedule of departing 2x per day instead: ```php\n"
-            f"{cfg.bot.COMMAND_PREFIX}routes hkg a388 12:00 2\n"
-            "```means: limit max flight time to 12hrs and have at least 2 departures per day per aircraft"
-            " (by highest profit per ac per day)."
+            "```means: find the best routes departing `HKG` using `A380-800` (sort by highest profit *per trip*)."
+            "But this **does not guarantee the best profit *per day***.\n"
+            "Say you would like to follow a schedule of departing 3x per day instead: ```php\n"
+            f"{cfg.bot.COMMAND_PREFIX}routes hkg a388 none 3\n"
+            "```means: no constraints, find routes as long as I can depart it 3x per day "
+            "(sort by highest profit *per aircraft per day*)\n"
         ),
         ignore_extra=False,
     )
@@ -351,4 +350,4 @@ class RoutesCog(BaseCog):
         await h.invalid_constraint()
         await h.missing_arg()
         await h.too_many_args("argument")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()

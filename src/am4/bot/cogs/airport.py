@@ -51,4 +51,4 @@ class AirportCog(BaseCog):
         await h.invalid_airport()
         await h.missing_arg()
         await h.too_many_args("ap_query")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()

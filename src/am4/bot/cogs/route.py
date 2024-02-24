@@ -180,4 +180,4 @@ class RouteCog(BaseCog):
         await h.invalid_cfg_alg()
         await h.missing_arg()
         await h.too_many_args("argument")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()

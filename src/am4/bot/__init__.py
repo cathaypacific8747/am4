@@ -7,9 +7,11 @@ from discord.ext.commands import Bot
 from loguru import logger
 
 from ..config import cfg
+from .channels import channels
 from .cogs.aircraft import AircraftCog
 from .cogs.airport import AirportCog
 from .cogs.help import HelpCog
+from .cogs.price import PriceCog
 from .cogs.route import RouteCog
 from .cogs.routes import RoutesCog
 from .cogs.settings import SettingsCog
@@ -21,6 +23,7 @@ bot = Bot(command_prefix=cfg.bot.COMMAND_PREFIX, intents=intents, help_command=N
 
 @bot.event
 async def on_ready():
+    await channels.init(bot)
     logger.info(f'logged in as {bot.user} on {", ".join([g.name for g in bot.guilds])}')
     logger.info(f"am4.utils version {am4utils_version}")
 
@@ -39,4 +42,5 @@ async def start(db_done: asyncio.Event):
     await bot.add_cog(AircraftCog(bot))
     await bot.add_cog(RouteCog(bot))
     await bot.add_cog(RoutesCog(bot))
+    await bot.add_cog(PriceCog(bot))
     await bot.start(cfg.bot.DISCORD_TOKEN)

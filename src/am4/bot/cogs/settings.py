@@ -154,13 +154,13 @@ class SettingsCog(BaseCog):
         await h.bad_literal(get_cmd_suggs)
         await h.missing_arg()
         await h.too_many_args("action")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
         h = CustomErrHandler(ctx, error, "settings show")
         await h.too_many_args("action")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()
 
     @set.error
     async def set_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -176,7 +176,7 @@ class SettingsCog(BaseCog):
         await h.invalid_setting_value()
         await h.missing_arg()
         await h.too_many_args("key/value")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()
 
     @reset.error
     async def reset_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -191,4 +191,4 @@ class SettingsCog(BaseCog):
         await h.bad_literal(get_cmd_suggs)
         await h.missing_arg()
         await h.too_many_args("key")
-        h.raise_for_unhandled()
+        await h.raise_for_unhandled()

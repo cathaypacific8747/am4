@@ -6,7 +6,7 @@ from am4.utils.airport import Airport
 from am4.utils.route import AircraftRoute
 from discord.ext import commands
 from pydantic import BaseModel, Field
-from pydantic_core import ValidationError
+from pydantic_core import PydanticCustomError, ValidationError
 
 from ..db.models.aircraft import PyConfigAlgorithmCargo, PyConfigAlgorithmPax
 from ..db.models.game import PyUser
@@ -20,6 +20,7 @@ from .errors import (
     AirportNotFoundError,
     CfgAlgValidationError,
     ConstraintValidationError,
+    PriceValidationError,
     SettingValueValidationError,
     TPDValidationError,
 )
@@ -141,3 +142,43 @@ class ConstraintCvtr(commands.Converter):
             return dist_parsed, None
         except ValidationError:
             return None, self.to_flight_time(constraint)
+
+
+class _Price(BaseModel):
+    fuel: Annotated[float, Field(gt=0, le=900)]
+    co2: Annotated[float, Field(gt=0, le=140)]
+
+
+class PriceCvtr(commands.Converter):
+    async def convert(self, ctx: commands.Context, price: str | None) -> tuple[Literal["Fuel", "CO₂"], float] | None:
+        if price is None:
+            return None
+        if len(price) < 2:
+            raise PriceValidationError(
+                PydanticCustomError(
+                    "missing_price",
+                    "Cannot find the price type or value.",
+                )
+            )
+        allowed = {
+            "f": "fuel",
+            "c": "co2",
+        }
+        k, v = allowed.get(price[0].lower(), None), price[1:]
+        if k is None:
+            raise PriceValidationError(
+                PydanticCustomError(
+                    "invalid_price_type",
+                    "The price type `{price_type}` is invalid. Start with `f` for fuel or `c` for CO₂.",
+                    {"price_type": price[0].lower()},
+                )
+            )
+        try:
+            v_new = _Price.__pydantic_validator__.validate_assignment(_Price.model_construct(), k, v)
+        except ValidationError as e:
+            raise PriceValidationError(e)
+        k_formatted = {
+            "fuel": "Fuel",
+            "co2": "CO₂",
+        }
+        return k_formatted.get(k), getattr(v_new, k)
