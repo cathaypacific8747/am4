@@ -3,6 +3,7 @@ import asyncio
 import discord
 from am4.utils import __version__ as am4utils_version
 from am4.utils.db import init as utils_init
+from discord.ext import commands
 from discord.ext.commands import Bot
 from loguru import logger
 
@@ -15,6 +16,7 @@ from .cogs.price import PriceCog
 from .cogs.route import RouteCog
 from .cogs.routes import RoutesCog
 from .cogs.settings import SettingsCog
+from .utils import COLOUR_ERROR
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -29,8 +31,15 @@ async def on_ready():
 
 
 @bot.event
-async def on_error(event, *args, **kwargs):
-    logger.exception(f"Error in {event} with args {args} and kwargs {kwargs}")
+async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send(
+            embed=discord.Embed(
+                title="Command not found!",
+                description=f"Please check `{cfg.bot.COMMAND_PREFIX}help` for more information.",
+                colour=COLOUR_ERROR,
+            )
+        )
 
 
 async def start(db_done: asyncio.Event):

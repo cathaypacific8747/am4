@@ -27,6 +27,7 @@ class ConfigBot(BaseModel):
     BOTSPAM_CHANNELID: int
     PRICEALERT_CHANNELID: int
     PRICEALERT_ROLEID: int
+    PRICEALERTBAN_ROLEID: int
     MODERATOR_ROLEID: int
     HELPER_ROLEID: int
 

@@ -32,11 +32,13 @@ class UserAPI(BaseService):
     async def get_from_discord(
         self, username: str, game_name: str, game_mode: Literal["EASY", "REALISM"], discord_id: int
     ) -> tuple[User, UserExtra, DBMessageUser]:
+        # ^[\w][\w\.\-]*$
+        username_sanitized = re.sub(r"(^[^A-Za-z0-9]|[^A-Za-z0-9_.])", "0", username)
         resp: dict = (
             await self.client.post(
                 "_discord/users/from_discord",
                 json={
-                    "username": re.sub(r"\W", "", username) + "-" + str(discord_id)[-8:],
+                    "username": username_sanitized + "-" + str(discord_id)[-8:],
                     "game_name": game_name,
                     "game_mode": game_mode,
                     "discord_id": discord_id,

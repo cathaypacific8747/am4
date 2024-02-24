@@ -44,7 +44,7 @@ class AircraftCog(BaseCog):
                 f"**      CO₂**: {a.co2:.3f} kg/pax/km\n"
                 f"**     Cost**: ${a.cost:,}\n"
                 f"**   Capacity**: {a.capacity:,} {'lbs' if a.type == Aircraft.Type.CARGO else 'pax'}\n"
-                f"**   Runway**: {a.rwy:,} m\n"
+                f"**   Runway**: {a.rwy:,} ft\n"
                 f"**  Check cost**: ${a.check_cost:,}\n"
                 f"**   Range**: {a.range:,} km\n"
                 f"**Maintenance**: {a.maint:,} hr\n"

@@ -80,6 +80,8 @@ class SettingsCog(BaseCog):
             f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism\n"
             "```For convenience, you can set training to max by running:```php\n"
             f"{cfg.bot.COMMAND_PREFIX}settings set training max\n"
+            "```You may also set your load with:```php\n"
+            f"{cfg.bot.COMMAND_PREFIX}settings set load 87%\n"
             "```"
         ),
         ignore_extra=False,

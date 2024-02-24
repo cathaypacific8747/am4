@@ -1,0 +1,11 @@
+misc
+web
+routes
+routes.csv
+nn/routes.csv
+nn/nn_selfself.py
+server/*.json
+server/*.parquet
+server/settings
+server/users*
+server/.*.py

@@ -42,6 +42,16 @@ class PriceCog(BaseCog):
         price_0: ParsedPrice = commands.parameter(description=HELP_FUEL, converter=PriceCvtr),
         price_1: ParsedPrice | None = commands.parameter(description=HELP_FUEL, converter=PriceCvtr, default=None),
     ):
+        for r in ctx.author.roles:
+            if r.id == cfg.bot.PRICEALERTBAN_ROLEID:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title="You are not allowed to send price alerts.",
+                        description="If you think this is a mistake, contact a moderator.",
+                        colour=COLOUR_ERROR,
+                    )
+                )
+                return
         t_now = time.time()
         t_start = t_now - t_now % 1800
         t_expiry_f = f"<t:{int(t_start+1800)}:R>"
