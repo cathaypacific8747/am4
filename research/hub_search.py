@@ -7,7 +7,7 @@ from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db import init
 from am4.utils.game import User
-from am4.utils.route import AircraftRoute, Destination, find_routes
+from am4.utils.route import AircraftRoute, Destination, RoutesSearch
 from tqdm import tqdm
 
 init()
@@ -42,8 +42,8 @@ user.income_loss_tol = 0.9
 start = time.time()
 all_dest = {}
 for ap in tqdm(list(all_airports())):
-    destinations = find_routes(ap, ac.ac, options, user)
-    all_dest[ap] = destinations
+    rs = RoutesSearch(ap, ac.ac, options, user)
+    all_dest[ap] = rs.get()
 print(f"took {time.time() - start}s")
 
 # %%

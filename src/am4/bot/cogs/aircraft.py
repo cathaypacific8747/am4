@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from ...common import HELP_AC_ARG0
 from ...config import cfg
-from ..cog import BaseCog
+from ..base import BaseCog
 from ..converters import AircraftCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC, format_modifiers

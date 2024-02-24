@@ -3,7 +3,7 @@ from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand
 from am4.utils.game import User
-from am4.utils.route import AircraftRoute, Route, find_routes
+from am4.utils.route import AircraftRoute, Route, RoutesSearch
 
 
 def test_route():
@@ -304,7 +304,7 @@ def test_route_trips_per_day_too_high():
 def test_find_routes():
     ap0 = Airport.search("VHHH").ap
     ac = Aircraft.search("mc214").ac
-    dests = find_routes(ap0, ac)
+    dests = RoutesSearch(ap0, ac).get()
     assert len(dests) == 2248
     assert dests[0].airport.iata == "ZND"
     assert dests[0].ac_route.route.direct_distance == pytest.approx(10909.51)

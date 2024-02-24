@@ -36,6 +36,8 @@ IJ = "<:business:701335275669946431>"
 IF = "<:first:701335275938381824>"
 IL = "<:large:701335275690786817>"
 IH = "<:heavy:701335275799969833>"
+ICSV = "<:csv:1210823880172904448>"
+IJSON = "<:json:1210823838334586880>"
 
 HELP_TPD = (
     "**Number of departures per day, per aircraft**\n"
@@ -106,6 +108,10 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     return user, user_extra
 
 
+def get_user_colour(user: User) -> discord.Colour:
+    return COLOUR_REALISM if user.game_mode == User.GameMode.REALISM else COLOUR_EASY
+
+
 def format_flight_time(t: float, short: bool = False) -> str:
     d, hrs = divmod(t * 3600, 86400)
     fs = "%H:%M" if short else "%H:%M:%S"
@@ -167,3 +173,12 @@ def format_warning(w: AircraftRoute.Warning):
         return "Trips per day per aircraft is too high"
     else:
         return "Unknown reason"
+
+
+def format_num(num: float, *_pos) -> str:
+    num = float(f"{num:.3g}")
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    return f"{num:.{magnitude}f}".rstrip("0").rstrip(".") + ["", "K", "M", "B", "T"][magnitude]

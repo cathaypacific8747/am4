@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.mentions import AllowedMentions
 
 from ...config import cfg
-from ..cog import BaseCog
+from ..base import BaseCog
 from ..utils import COLOUR_ERROR, COLOUR_GENERIC
 
 

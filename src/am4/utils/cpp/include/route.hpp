@@ -148,9 +148,24 @@ struct Destination {
     Destination(const Airport& destination, const AircraftRoute& route);
 };
 
-vector<Destination> find_routes(
-    const Airport& origin,
-    const Aircraft& aircraft,
-    const AircraftRoute::Options& options = AircraftRoute::Options(),
-    const User& user = User::Default()
-);
+class RoutesSearch {
+   public:
+    Airport origin;
+    Aircraft aircraft;
+    AircraftRoute::Options options;
+    User user;
+
+    RoutesSearch(
+        const Airport& origin,
+        const Aircraft& aircraft,
+        const AircraftRoute::Options& options = AircraftRoute::Options(),
+        const User& user = User::Default()
+    )
+        : origin(origin), aircraft(aircraft), options(options), user(user) {
+        if (options.max_distance > aircraft.range * 2) {
+            this->options.max_distance = aircraft.range * 2;
+        }
+    }
+
+    vector<Destination> get() const;
+};

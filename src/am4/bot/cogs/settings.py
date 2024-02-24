@@ -7,7 +7,7 @@ from discord.ext import commands
 from ...config import cfg
 from ...db.client import pb
 from ...db.models.game import PyUserWhitelistedKeys
-from ..cog import BaseCog
+from ..base import BaseCog
 from ..converters import SettingValueCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC, COLOUR_SUCCESS, HELP_SETTING_KEY, fetch_user_info
@@ -67,6 +67,7 @@ class SettingsCog(BaseCog):
                 "```php\n"
                 f"{cfg.bot.COMMAND_PREFIX}help settings\n"
                 f"{cfg.bot.COMMAND_PREFIX}settings set game_mode realism\n"
+                f"{cfg.bot.COMMAND_PREFIX}settings set load 87%\n"
                 f"{cfg.bot.COMMAND_PREFIX}settings set training max\n```"
             ),
         )

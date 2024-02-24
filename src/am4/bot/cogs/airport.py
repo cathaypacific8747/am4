@@ -1,11 +1,10 @@
 import discord
 from am4.utils.airport import Airport
 from discord.ext import commands
-from discord.ext.commands.view import StringView
 
 from ...common import HELP_AP_ARG0
 from ...config import cfg
-from ..cog import BaseCog
+from ..base import BaseCog
 from ..converters import AirportCvtr
 from ..errors import CustomErrHandler
 from ..utils import COLOUR_GENERIC

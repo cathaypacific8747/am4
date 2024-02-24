@@ -5,7 +5,7 @@ import am4.utils.demand
 import am4.utils.game
 import am4.utils.ticket
 import typing
-__all__ = ['AircraftRoute', 'Destination', 'Route', 'find_routes']
+__all__ = ['AircraftRoute', 'Destination', 'Route', 'RoutesSearch']
 class AircraftRoute:
     class Options:
         class SortBy:
@@ -272,5 +272,10 @@ class Route:
     @property
     def valid(self) -> bool:
         ...
-def find_routes(ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> list[Destination]:
-    ...
+class RoutesSearch:
+    def __init__(self, ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> None:
+        ...
+    def _get_columns(self, arg0: list[Destination]) -> dict[str, list]:
+        ...
+    def get(self) -> list[Destination]:
+        ...

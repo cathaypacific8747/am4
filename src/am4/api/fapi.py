@@ -5,7 +5,7 @@ from typing import Annotated
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db import init as utils_init
-from am4.utils.route import AircraftRoute, Route, find_routes
+from am4.utils.route import AircraftRoute, Route, RoutesSearch
 from fastapi import Depends, FastAPI
 from fastapi.responses import ORJSONResponse
 from uvicorn import Config, Server
@@ -188,11 +188,11 @@ async def ac_route_find_routes(
     if not acsr.ac.valid:
         return construct_acnf_response("ac", Aircraft.suggest(acsr.parse_result))
 
-    destinations = find_routes(apsr0.ap, acsr.ac, options.to_core(acsr.ac.type), user.to_core())
+    rs = RoutesSearch(apsr0.ap, acsr.ac, options.to_core(acsr.ac.type), user.to_core())
     return ORJSONResponse(
         content={
             "status": "success",
-            "destinations": [destination.to_dict() for destination in destinations],
+            "destinations": [destination.to_dict() for destination in rs.get()],
         }
     )
 

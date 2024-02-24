@@ -1,5 +1,3 @@
-import math
-
 import discord
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
@@ -7,7 +5,7 @@ from am4.utils.route import AircraftRoute, Route
 from discord.ext import commands
 
 from ...config import cfg
-from ..cog import BaseCog
+from ..base import BaseCog
 from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, TPDCvtr
 from ..errors import CustomErrHandler
 from ..utils import (
@@ -22,6 +20,7 @@ from ..utils import (
     format_flight_time,
     format_ticket,
     format_warning,
+    get_user_colour,
 )
 
 HELP_AP_ARG0 = "**Origin airport query**\nLearn more using `$help airport`."
@@ -124,7 +123,7 @@ class RouteCog(BaseCog):
         embed = discord.Embed(
             title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{stopover_f}{format_ap_short(ap1_query.ap, mode=2)}",
             description=description,
-            colour=COLOUR_GENERIC,
+            colour=get_user_colour(u),
         )
         embed.add_field(
             name="Per Trip",
