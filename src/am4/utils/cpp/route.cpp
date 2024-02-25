@@ -128,9 +128,9 @@ inline void AircraftRoute::update_pax_details(
         );
     };
 
-    const PaxTicket tkt = [&]() {
+    const auto tkt = [&]() {
         if constexpr (is_vip)
-            return static_cast<PaxTicket>(VIPTicket::from_optimal(this->route.direct_distance));
+            return VIPTicket::from_optimal(this->route.direct_distance);
         else
             return PaxTicket::from_optimal(this->route.direct_distance, user.game_mode);
     }();
@@ -475,8 +475,8 @@ std::vector<Destination> RoutesSearch::get() const {
     auto cmp = this->options.sort_by == AircraftRoute::Options::SortBy::PER_TRIP
                    ? [](const Destination& a, const Destination& b) { return a.ac_route.profit > b.ac_route.profit; }
                    : [](const Destination& a, const Destination& b) {
-                         return a.ac_route.profit * a.ac_route.trips_per_day_per_ac * a.ac_route.num_ac >
-                                b.ac_route.profit * b.ac_route.trips_per_day_per_ac * b.ac_route.num_ac;
+                         return a.ac_route.profit * a.ac_route.trips_per_day_per_ac >
+                                b.ac_route.profit * b.ac_route.trips_per_day_per_ac;
                      };
     std::sort(destinations.begin(), destinations.end(), cmp);
     return destinations;

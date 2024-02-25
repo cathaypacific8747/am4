@@ -310,5 +310,19 @@ def test_find_routes():
     assert dests[0].ac_route.route.direct_distance == pytest.approx(10909.51)
 
 
+def test_export_routes_vip():
+    ap0 = Airport.search("CAN").ap
+    ac = Aircraft.search("a32vip[sfc]").ac
+    options = AircraftRoute.Options(
+        tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC, trips_per_day_per_ac=2
+    )
+    rs = RoutesSearch(ap0, ac, options)
+    dests = rs.get()
+    assert len(dests) > 10
+    cols = rs._get_columns(dests)
+    assert len(list(cols.values())[0]) == len(dests)
+    assert len(cols) == 34
+
+
 def test_load():
     assert AircraftRoute.estimate_load() == pytest.approx(0.7867845)

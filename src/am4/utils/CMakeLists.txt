@@ -30,7 +30,7 @@ add_subdirectory(cpp/include/ext/libduckdb)
 
 # ## python bindings
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/Lib/site-packages/pybind11/share/cmake/pybind11")
+find_package(pybind11 CONFIG REQUIRED HINTS "${Python_SITELIB}/pybind11/share/cmake/pybind11" "${CMAKE_SOURCE_DIR}/../../.venv/lib/site-packages/pybind11/share/cmake/pybind11")
 
 message("[DEBUG]\n\
     project version  ${SKBUILD_PROJECT_VERSION}\n\

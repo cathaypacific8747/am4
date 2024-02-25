@@ -21,6 +21,7 @@
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::get;
 using std::string;
 
 #ifdef VERSION_INFO
@@ -78,26 +79,24 @@ int main() {
         init(executable_path);  // 1.3s
         // const auto& db = Database::Client();
 
-        Airport ap0 = *Airport::search("VHHH").ap;
-        Airport ap1 = *Airport::search("TPE").ap;
-        Aircraft ac = *Aircraft::search("mc214").ac;
-        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT, 1);
-        auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO);
+        Airport ap0 = *Airport::search("SIN").ap;
+        // Airport ap1 = *Airport::search("TPE").ap;
+        Aircraft ac = *Aircraft::search("a32vip").ac;
+        auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT_ALLOW_MULTIPLE_AC, 2);
+        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO);
         User user = User::Default();
 
         auto timer = Timer();
         // __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-        auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
-        auto c = std::get<Aircraft::PaxConfig>(r.config);
-        cout << "cfg: " << c.y << "," << c.j << "," << c.f << " | " << c.valid << endl;
-        auto d = r.route.pax_demand;
-        cout << "dem: " << d.y << "," << d.j << "," << d.f << endl;
-        cout << "tpd: " << r.trips_per_day_per_ac << endl;
-        // auto rs = find_routes(ap0, ac, options, user);
-        // std::cout << "rs.size(): " << rs.size() << std::endl;
-        // for (int i = 0; i < 1000; i++) {
-        //     std::ignore = find_routes(ap0, ac, options, user);
-        // }
+        // auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
+        // auto c = std::get<Aircraft::PaxConfig>(r.config);
+        // cout << "cfg: " << c.y << "," << c.j << "," << c.f << " | " << c.valid << endl;
+        // auto d = r.route.pax_demand;
+        // cout << "dem: " << d.y << "," << d.j << "," << d.f << endl;
+        // cout << "tpd: " << r.trips_per_day_per_ac << endl;
+        auto rs = RoutesSearch(ap0, ac, options, user);
+        auto results = rs.get();
+        std::cout << "results.size(): " << results.size() << std::endl;
         // __itt_task_end(domain);
         timer.stop();
         // getchar();

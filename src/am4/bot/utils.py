@@ -76,7 +76,7 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     gm_target = "Realism" if r_role is not None else "Easy"
     role_id = r_role.id if r_role is not None else e_role.id if e_role is not None else None
 
-    user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.nick, gm_target.upper(), u.id)
+    user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.display_name, gm_target.upper(), u.id)
     if dbstatus == "created":
         gm_reason = f" because of your <@&{role_id}> role" if role_id is not None else ""
         await ctx.send(
