@@ -7,3 +7,4 @@ src/am4/db/pb_data/** linguist-vendored
 misc/demand-research/** linguist-vendored
 misc/old-versions/v1/** linguist-vendored
 misc/scripts/** linguist-vendored
+*.pyx linguist-language=Cython
