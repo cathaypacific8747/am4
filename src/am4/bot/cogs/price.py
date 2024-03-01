@@ -111,7 +111,7 @@ class PriceCog(BaseCog):
         msg = await channels.price_alert.send(
             content=f"{prices_f}. (Sent by {ctx.author.mention}) <@&{cfg.bot.PRICEALERT_ROLEID}>"
         )
-        await msg.edit(content=None, embed=embed)
+        # await msg.edit(content=None, embed=embed)
         await send_update_success(msg.jump_url)
 
     @price.error
