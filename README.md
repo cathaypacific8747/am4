@@ -21,7 +21,7 @@ The weekly leaderboards and alliances are highly competitive arenas which requir
 ## Usage
 The easiest way to get started is [Docker](https://docs.docker.com/get-docker/).
 
-Clone the repository and run:
+Clone the repository and run inside:
 ```sh
 docker build -t am4 .
 docker run -d -p 8002:8002 -p 8090:8090 --name am4-dev am4

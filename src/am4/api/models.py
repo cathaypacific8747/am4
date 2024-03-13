@@ -345,6 +345,6 @@ class FAPIReqUser:
         if (ilt := self.income_loss_tol) is not None:
             user.income_loss_tol = ilt
         if (load := self.load) is not None:
-            user.set_load(load)
+            user.load = load
 
         return user
