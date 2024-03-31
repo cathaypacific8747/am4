@@ -27,7 +27,7 @@ def convert_routes():
 
 def convert_airports():
     table = csv.read_csv(
-        "web/airports.csv",
+        "../private/web/airports.csv",
     )
     # id,name,fullname,country,continent,iata,icao,lat,lng,rwy,market,hub_cost,rwy_codes
     table = table.cast(
@@ -54,9 +54,10 @@ def convert_airports():
 
 def convert_aircrafts():
     table = csv.read_csv(
-        "../private/aircrafts.new.csv",
+        "../private/web/aircrafts.new.csv",
     )
     # id,shortname,manufacturer,name,type,priority,eid,ename,speed,fuel,co2,cost,capacity,rwy,check_cost,range,ceil,maint,pilots,crew,engineers,technicians,img,wingspan,length
+    print(table.schema)
     table = table.cast(
         pa.schema(
             [
