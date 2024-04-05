@@ -342,7 +342,7 @@ inline double AircraftRoute::estimate_load(double reputation, double autoprice_r
 
 inline double AircraftRoute::calc_fuel(const Aircraft& ac, double distance, const User& user, uint8_t ci) {
     return (
-        (1 - user.fuel_training / 100.0) * ceil(distance * 100.0) / 100.0 * (ac.fuel_mod ? 0.9 : 1) * ac.fuel *
+        (1 - user.fuel_training / 100.0) * ceil(distance * 100.0) / 100.0 * ac.fuel *  // (ac.fuel_mod ? 0.9 : 1)
         (ci / 500.0 + 0.6)
     );
 }
@@ -352,7 +352,7 @@ inline double AircraftRoute::calc_co2(
 ) {
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
+        (ceil(distance * 100.0) / 100.0 * ac.co2 *  // (ac.co2_mod ? 0.9 : 1)
              ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
          (cfg.y + cfg.j + cfg.f)) *
         (ci / 2000.0 + 0.9)
@@ -364,7 +364,7 @@ inline double AircraftRoute::calc_co2(
 ) {
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * (ac.co2_mod ? 0.9 : 1) * ac.co2 *
+        (ceil(distance * 100.0) / 100.0 * ac.co2 *  // (ac.co2_mod ? 0.9 : 1)
              ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity) +
          ((cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity)) *
         (ci / 2000.0 + 0.9)
