@@ -257,6 +257,14 @@ class Destination:
         ...
 class Route:
     @staticmethod
+    @typing.overload
+    def calc_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        ...
+    @staticmethod
+    @typing.overload
+    def calc_distance(a0: am4.utils.airport.Airport, a1: am4.utils.airport.Airport) -> float:
+        ...
+    @staticmethod
     def create(ap0: am4.utils.airport.Airport, ap1: am4.utils.airport.Airport) -> Route:
         ...
     def __repr__(self) -> str:

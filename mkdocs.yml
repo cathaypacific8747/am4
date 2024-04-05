@@ -1,0 +1,148 @@
+site_name: am4
+site_description: Discord bot and various utilities for the game Airline Manager 4.
+repo_name: cathaypacific8747/am4
+repo_url: https://github.com/cathaypacific8747/am4
+site_url: https://cathaypacific8747.github.io/am4/
+nav:
+  - Home: 'index.md'
+  - Development:
+    - Quickstart: 'development/quickstart.md'
+    - Core: 'development/core.md'
+    - Web API: 'development/web-api.md'
+    - Discord Bot: 'development/discord-bot.md'
+  - Formulae: 'formulae.md'
+  - API Reference:
+    - Core:
+      - Aircraft: 'api/utils/aircraft.md'
+      - Airport: 'api/utils/airport.md'
+      - Demand: 'api/utils/demand.md'
+      - Route: 'api/utils/route.md'
+      - Ticket: 'api/utils/ticket.md'
+      - Game: 'api/utils/game.md'
+    - Web API: 'api/web-api.md'
+    - Database: 'api/db.md'
+    - Bot: 'api/bot.md'
+
+theme:
+  name: material
+  features:
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate 
+    - navigation.expand
+    - navigation.footer
+  palette: 
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - social
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src/am4/utils/stubs, src/am4]
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://discordpy.readthedocs.io/en/latest/objects.inv
+            # - https://docs.pydantic.dev/objects.inv
+            - https://fastapi.tiangolo.com/objects.inv
+          options:
+            inherited_members: true
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            unwrap_annotated: true
+            merge_init_into_class: true
+            docstring_section_style: table
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: false
+            summary: true
+            show_submodules: true
+            docstring_style: sphinx
+            find_stubs_package: true
+
+            filters:
+              - "!__name__"
+              - "!__module__"
+              - "!__all__"
+              # pybind enums
+              - "!__members__"
+              - "!__repr__"
+              - "!__eq__"
+              - "!__getstate__"
+              - "!__hash__"
+              - "!__index__"
+              - "!__int__"
+              - "!__ne__"
+              - "!__setstate__"
+              - "!__str__"
+      enable_inventory: true
+
+markdown_extensions:
+- abbr
+- attr_list
+- admonition
+- footnotes
+- md_in_html
+- pymdownx.blocks.admonition
+- pymdownx.blocks.details
+- pymdownx.blocks.tab:
+    alternate_style: true
+    slugify: !!python/object/apply:pymdownx.slugs.slugify
+      kwds:
+        case: lower
+- pymdownx.details
+- pymdownx.tilde
+- pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+- pymdownx.highlight:
+    pygments_lang_class: true
+- pymdownx.magiclink
+- pymdownx.snippets
+- pymdownx.superfences
+- pymdownx.tabbed:
+    alternate_style: true
+    slugify: !!python/object/apply:pymdownx.slugs.slugify
+      kwds:
+        case: lower
+- pymdownx.tasklist:
+    custom_checkbox: true
+- toc:
+    permalink: "¤"
+- pymdownx.arithmatex:
+    generic: true
+
+extra_javascript:
+  - assets/js/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
+
+extra_css:
+  - assets/css/main.css
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/4tVQHtf
+      name: Airline Manager 4 Discord
+    - icon: fontawesome/brands/github
+      link: https://github.com/cathaypacific8747/am4
+      name: Source code
