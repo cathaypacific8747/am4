@@ -8,3 +8,6 @@ To start it, use:
 ```sh
 python3 -m src.am4 start api
 ```
+it should be running on `http://localhost:8002` and look like this:
+
+![](../assets/img/api.png)

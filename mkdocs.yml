@@ -10,6 +10,8 @@ nav:
     - Core: 'development/core.md'
     - Web API: 'development/web-api.md'
     - Discord Bot: 'development/discord-bot.md'
+  - Guide:
+    - Configuration: 'guides/configuration.md'
   - Formulae: 'formulae.md'
   - API Reference:
     - Core:

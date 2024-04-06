@@ -18,11 +18,11 @@ Confidence: <span class="c-good">100%</span> ($R^2 = 1$)
 ### Pax
 #### <span class="easy">Easy</span>
 $$
-\begin{matrix}
-\$_\text{Y} = 0.4d+170 \\
-\$_\text{J} = 0.8d+560 \\
-\$_\text{F} = 1.2d+1200 \\
-\end{matrix}
+\begin{align*}
+\$_\text{Y} &= 0.4d+170 \\
+\$_\text{J} &= 0.8d+560 \\
+\$_\text{F} &= 1.2d+1200 \\
+\end{align*}
 $$
 
 where:
@@ -33,11 +33,11 @@ where:
 
 #### <span class="realism">Realism</span>
 $$
-\begin{matrix}
-\$_\text{Y} = 0.3d+150 \\
-\$_\text{J} = 0.6d+500 \\
-\$_\text{F} = 0.9d+1000 \\
-\end{matrix}
+\begin{align*}
+\$_\text{Y} &= 0.3d+150 \\
+\$_\text{J} &= 0.6d+500 \\
+\$_\text{F} &= 0.9d+1000 \\
+\end{align*}
 $$
 
 where:
@@ -50,11 +50,11 @@ where:
 Found: 22 Jul 2021 (Cathay Express)
 
 $$
-\begin{matrix}
-\$_\text{Y} = 1.7489(0.4d+170) \\
-\$_\text{J} = 1.7489(0.8d+560) \\
-\$_\text{F} = 1.7489(1.2d+1200) \\
-\end{matrix}
+\begin{align*}
+\$_\text{Y} &= 1.7489(0.4d+170) \\
+\$_\text{J} &= 1.7489(0.8d+560) \\
+\$_\text{F} &= 1.7489(1.2d+1200) \\
+\end{align*}
 $$
 
 where:
@@ -69,10 +69,10 @@ Found: 10 Mar 2020 (Cathay Express)
 #### <span class="easy">Easy</span>
 
 $$
-\begin{matrix}
-\$_\text{L} = 0.0948283724581252d + 85.2045432642377000 \\
-\$_\text{H} = 0.0689663577640275d + 28.2981124272893000 \\
-\end{matrix}
+\begin{align*}
+\$_\text{L} &= 0.0948283724581252d + 85.2045432642377000 \\
+\$_\text{H} &= 0.0689663577640275d + 28.2981124272893000 \\
+\end{align*}
 $$
 
 where:
@@ -83,10 +83,10 @@ where:
 #### <span class="realism">Realism</span>
 
 $$
-\begin{matrix}
-\$_\text{L} = 0.0776321822039374d + 85.0567600367807000 \\
-\$_\text{H} = 0.0517742799409248d + 24.6369915396414000 \\
-\end{matrix}
+\begin{align*}
+\$_\text{L} &= 0.0776321822039374d + 85.0567600367807000 \\
+\$_\text{H} &= 0.0517742799409248d + 24.6369915396414000 \\
+\end{align*}
 $$
 
 where:
@@ -298,13 +298,13 @@ where:
 Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
 
 $$
-\begin{matrix}
-C_{1} = (2625T + 4500)n_p \\
-C_{2} = (3937.5T + 6750)n_p \\
-C_{3} = (4987.5T + 8550)n_p \\
-C_{4} = (6037.5T + 10350)n_p \\
-C_{\text{eco}} = 8270n_p \\
-\end{matrix}
+\begin{align*}
+C_{1} &= (2625T + 4500)n_p \\
+C_{2} &= (3937.5T + 6750)n_p \\
+C_{3} &= (4987.5T + 8550)n_p \\
+C_{4} &= (6037.5T + 10350)n_p \\
+C_{\text{eco}} &= 8270n_p \\
+\end{align*}
 $$
 
 where:
@@ -423,6 +423,62 @@ where:
 - $C$: the total equivalent cargo capacity of the aircraft (lbs)
 - $CI$: cost index (0-200)
 
+### Best Configuration
+
+Developed: 2019 (AM4 Community, Cathay Express)
+
+See [guides/configuration](guides/configuration.md)
+
+**Input:**
+
+- Seat classes: $S = \{s_1, s_2, \ldots, s_n\}$
+- Units of capacity: $c_1, c_2, \ldots, c_n$
+- Demand: $d_1, d_2, \ldots, d_n$
+- Flights per day: $f$
+- Capacity: $C$
+
+**Output**:
+
+- Optimal seat configuration: $\text{seats} = (\text{seats}_1, \text{seats}_2, \ldots, \text{seats}_n)$
+
+**Algorithm:**
+
+1. $C_{\text{remaining}} \leftarrow C$.
+2. **for** $i \leftarrow 1$ **to** $n$:
+    - $\text{seats}_i \leftarrow \left\lfloor\frac{d_i}{f}\right\rfloor$.
+    - **if** $\text{seats}_i \times c_i \leq C_{\text{remaining}}$:
+        - $C_{\text{remaining}} \leftarrow C_{\text{remaining}} - \text{seats}_i \times c_i$.
+    - **else**:
+        - $\text{seats}_i \leftarrow \left\lfloor\frac{C_{\text{remaining}}}{c_i}\right\rfloor$.
+        - $C_{\text{remaining}} \leftarrow 0$.
+3. **return** $\text{seats} = (\text{seats}_1, \text{seats}_2, \ldots, \text{seats}_n)$.
+
+#### Pax seat ordering
+
+Assuming the use of 1.1x, 1.08x, and 1.06x multipliers from the autoprice ticket prices.
+
+|                     Game Mode                     | Distance Range (km) | Best Seat Class Order |
+|---------------------------------------------------|---------------------|-----------------------|
+| <span class="easy">Easy</span> {:rowspan=4}       | < 14425             | F>J>Y                 |
+                                                    | 14425 - 14812.5     | F>Y>J                 |
+                                                    | 14812.5 - 15200     | Y>F>J                 |
+                                                    | > 15200             | Y>J>F                 |
+| <span class="realism">Realism</span> {:rowspan=4} | < 13888.89          | F>J>Y                 |
+                                                    | 13888.89 - 15694.44 | J>F>Y                 |
+                                                    | 15694.44 - 17500    | J>Y>F                 |
+                                                    | > 17500             | Y>J>F                 |
+
+#### Cargo seat ordering
+
+Assuming the use of 1.1x and 1.08x multipliers from the autoprice ticket prices.
+
+|                     Game Mode                     | Distance Range (km) | Best Seat Class Order |
+|---------------------------------------------------|---------------------|-----------------------|
+| <span class="easy">Easy</span> {:rowspan=2}       | <23908              | L>H                   |
+                                                    | >23908              | H>L                   |
+| <span class="realism">Realism</span>              | all                 | L>H                   |
+
+
 ## Airport
 
 ### Hub Cost
@@ -456,11 +512,11 @@ Confidence: <span class="c-good">100%</span> ($R^2 = 1$)
 Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
 
 $$
-\begin{matrix}
-T_{\text{regular}} = 500n_l + 2000 \\
-T_{\text{highend}} = 700n_l + 3600 \\
-T_{\text{exclusive}} = 900n_l + 7200 \\
-\end{matrix}
+\begin{align*}
+T_{\text{regular}} &= 500n_l + 2000 \\
+T_{\text{highend}} &= 700n_l + 3600 \\
+T_{\text{exclusive}} &= 900n_l + 7200 \\
+\end{align*}
 $$
 
 where:
@@ -477,11 +533,11 @@ Confidence: <span class="c-moderate">75%</span> (Lounge fee is lower for airline
 Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
 
 $$
-\begin{matrix}
-C_{\text{regular}} = 1500000n_l + 37500000 \\
-C_{\text{highend}} = 5000000n_l + 125000000 \\
-C_{\text{exclusive}} = 15000000n_l + 375000000 \\
-\end{matrix}
+\begin{align*}
+C_{\text{regular}} &= 1500000n_l + 37500000 \\
+C_{\text{highend}} &= 5000000n_l + 125000000 \\
+C_{\text{exclusive}} &= 15000000n_l + 375000000 \\
+\end{align*}
 $$
 
 where:
