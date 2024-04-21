@@ -11,6 +11,7 @@ nav:
     - Web API: 'development/web-api.md'
     - Discord Bot: 'development/discord-bot.md'
   - Guide:
+    - Preface: 'guides/preface.md'
     - Configuration: 'guides/configuration.md'
   - Formulae: 'formulae.md'
   - API Reference:

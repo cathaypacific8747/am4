@@ -533,7 +533,7 @@ The ticket price $\$$ also increase when distance $d$ increases. The autoprice m
     2. Step 1: Fill in large $l$ first.
     3. Step 2: Fill the remaining with $h$.
 
-You may be interested in the [Bounded knapsack problem](https://en.wikipedia.org/wiki/Knapsack_problem) and [Genetic algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm).
+The aforementioned approach is a *greedy bang-for-buck heuristic* solution for the rod cutting problem. The optimal solution has exponentially many partitions - you may be interested in the [Bounded knapsack problem](https://en.wikipedia.org/wiki/Knapsack_problem) and [Genetic algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm).
 
 ## TLDR
 
