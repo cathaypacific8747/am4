@@ -10,4 +10,7 @@
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "cmake.configureOnOpen": true,
+    "python.analysis.extraPaths": [
+        "./docs/assets/scripts"
+    ],
 }

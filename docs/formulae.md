@@ -108,16 +108,17 @@ Updated: 13 Apr 2021
 
 API: [utils.route.AircraftRoute.contribution][]
 
-??? warning "SPOILERS: Click to show it"
+??? warning "SPOILERS: Click to reveal"
 
-    $$\$_\text{C} = \min\left( k\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right) \pm 16\%$$
+    $$\$_\text{C} = \min\left( kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right) \pm 16\%$$
 
     where:
 
-    - $k$ is a constant based on the **direct** distance[^2] of the route $d$:
+    - $d$ is the **direct** distance[^2] of the route
+    - $k$ is a function of $d$:
 
         $$
-        k = \begin{cases}
+        k(d) = \begin{cases}
             0.0064 & \text{if } d < 6000 \\
             0.0032 & \text{if } 6000 < d < 10000 \\
             0.0048 & \text{if } d > 10000 \\        
@@ -140,6 +141,34 @@ API: [utils.route.AircraftRoute.contribution][]
 
         Confidence: <span class="c-moderate">80%</span>
 
+#### Optimal pure-contribution strategy
+
+Developed: 14 Apr 2021 (Cathay Express)
+
+Check out the guides for a detailed introduction on the concepts required to derive this!
+
+??? warning "SPOILERS: Click to reveal"
+
+    ⚠️ Globally optimal iff $d<6000$!
+
+    **Input**:
+    
+    - original aircraft speed $v$
+    - target flight time after CI $T'$
+
+    **Output**:
+    
+    - optimal route distance $d$
+    - optimal CI
+    - contribution per hour $\frac{\$_{\text{CI}}}{T'}$
+
+    **Algorithm**:
+
+    - choose aircraft with largest $v$ to ensure global optimality.
+    - $d = \frac{27vT'}{40}$
+    - `assert` $d<6000$, reduce $T'$ or $v$ otherwise.
+    - $\text{CI} = \frac{2000d}{7vT'}-\frac{600}{7}$
+    - $\frac{\$_{\text{CI}}}{T'}=\min(\frac{729}{560}kv, \frac{102.6v}{d})$
 
 ### Season
 
@@ -327,8 +356,8 @@ $$
 \mathbb{E}(\text{load}) \approx \begin{cases} 
 0.0085855R, & \text{if } \alpha > 1 \land s \\
 0.0090435R, & \text{if } \alpha > 1 \land \lnot s \\
-(0.0090312R - 1)(\alpha + 1), & \text{if } \alpha \leq 1 \land s \\
-(0.0095265R - 1)(\alpha + 1), & \text{if } \alpha \leq 1 \land \lnot s \\
+1 + \alpha(0.0090312R - 1), & \text{if } \alpha \leq 1 \land s \\
+1 + \alpha(0.0095265R - 1), & \text{if } \alpha \leq 1 \land \lnot s \\
 \end{cases}
 $$
 
@@ -368,6 +397,31 @@ where:
 - $C$: capacity of the aircraft
 ___
 
+### CI
+
+Found: 2019 (AM4 Community)
+
+$$
+v = u(0.0035\times \text{CI} + 0.3)
+$$
+
+where:
+
+- $v$: new speed
+- $u$: original speed
+- $\text{CI}$: CI, 0-200.
+
+Alternative Expression (useful for optimisation):
+
+$$
+\text{CI} = \frac{2000d}{7uT'}-\frac{600}{7}
+$$
+
+where:
+
+- $d$: route distance
+- $u$: original speed
+- $T'$: target flight time after applying CI
 
 ### Fuel Consumption
 

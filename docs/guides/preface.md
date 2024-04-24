@@ -1,11 +1,28 @@
-I still remember the typical morning in my middle school classroom in 2017. My eyes would fixate on the clock, counting down the seconds until the bell would ring at 10:41:18. Recess time meant it was time to open AM2, click the depart button, and strategise which aircraft to purchase. My friend, with a share value of \$620, ranking around 200 at the time, never revealed his secrets. I was determined to surpass him, meticulously crafting an Excel sheet to organize my planes and routes.
+I still remember the typical morning in my middle school classroom in 2017. My eyes would fixate on the clock, counting down the seconds until the bell would ring at 10:41:18. Recess time meant it was time to open AM2, click the depart button, and strategise which aircraft to purchase. I always managed my planes in Excel - learning and piecing together the `VLOOKUP`, `MATCH`, `INDEX` functions were always the fun puzzle to solve.
 
-I had a lot of fun learning and piecing together the `VLOOKUP`, `MATCH`, `INDEX` functions. It helped me immensely, and the rush of excitement when I finally overtook him was unforgettable, but I never quite felt a sense of pride.
+AM2 had a very simple game loop: routing to a specific set of airports will guarantee maximum profit. The game guides had very *formulaic* steps to help you grow - it felt like following an instruction manual and replicating it. Worse yet, your airline's growth would eventually reach a plateau and clicking the depart button felt like the annoying daily chore. AM3 was similarly uneventful and I lost interest quickly.
 
-AM2 had a very simple game loop: routing to a specific set of airports will guarantee maximum profit. The game guides had very formulaic steps to help you grow - it felt like following an instruction manual and replicating it. Your growth would eventually reach a plateau and clicking the depart button felt like the annoying daily chore. AM3 was similarly uneventful and I lost interest quickly.
+Fast forward Christmas 2019, I found myself competing with my friend in AM4. The game mechanics were a breath of fresh air: progressing in the game felt a lot like an explorer trekking through uncharted territory. *Everything*, ranging from stopover finding to optimal hubs and alliance contribution, was a mystery waiting to be solved.
 
-Fast forward Christmas 2019, I found myself competing with my friend in AM4 again. The game mechanics were a breath of fresh air: progressing in the game felt a lot like an explorer trekking through uncharted territory. *Everything*, ranging from stopover finding to optimal hubs and alliance contribution, was a mystery waiting to be solved.
+I had been developing a stopover finder directly in Excel - I still remember first publishing it to the community and being amazed by the sheer amount of positivity from everyone. It inspired me to build more ambitious things, am4help, am4bot... AM4 was the sole reason I found my interest in programming and data analysis.
 
-At the time, each aircraft had a maximum range and you can effectively double it using stopovers, but there was no better method that to extrapolate the destination with intuition. I developed and shared an Excel spreadsheet that helped players to do this automatically. I was amazed by the sheer amount of positivity and support from everyone in the community.
+Though I've stopped playing since 2022 to focus on my journey in university, looking back, AM4 is much more than a simple game: the mathematical / programming concepts you learn are really interesting and satisfying! I hope to inspire technically inclined players to develop their own algorithms and explore concepts beyond the classroom :)
 
-Through the successes and setbacks, inaccuracies and complaints, AM4 sparked my interest in programming and data analysis. Although I've stopped playing since 2022 to focus on my journey in university, I'd like to share the guides we wrote for our alliance back in 2020-21. I hope to inspire technically inclined players to develop their own algorithms and explore concepts beyond the classroom :)
+# Structure
+
+The guides written here are mostly written for our alliance back in 2020-21 (ranked #1 for multiple months). **They are technical by nature and can be mathematically demanding**. However, I've tried to simplify them - each guide will *roughly* have three levels:
+
+- Easy (<8th grade)
+- Intermediate (9-10th grade)
+- Advanced (>10th grade)
+
+Some concepts we will explore:
+
+- finding and exploiting formulae in the game: regression and derivatives
+- how to allocate seats to aircraft
+
+Parts still under revision:
+
+- basic intro to the game
+- route searching and optimisation
+- hub searching

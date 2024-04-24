@@ -10,4 +10,7 @@ The weekly leaderboards and alliances are highly competitive arenas which requir
 - [x] a Python discord bot for our community ([`src/am4/bot`](https://github.com/cathaypacific8747/am4/tree/master/src/am4/bot/))
 - [ ] [`am4help.com`](https://am4help.com/): a SolidJS frontend calling the API (under construction, [`src/am4/web`](https://github.com/cathaypacific8747/am4/tree/master/src/am4/web/))
 
-![overview](assets/img/overview.drawio.svg)
+<figure markdown="span">
+    ![overview](assets/img/overview.drawio.svg)
+</figure>
+
