@@ -110,15 +110,24 @@ API: [utils.route.AircraftRoute.contribution][]
 
 ??? warning "SPOILERS: Click to reveal"
 
-    $$\$_\text{C} = \min\left( kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right) \pm 16\%$$
+    $$\$_\text{C} = \min\left(k_\text{gm}kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right) \pm 16\%$$
 
     where:
 
     - $d$ is the **direct** distance[^2] of the route
+    - $k_\text{gm}$ is a multiplier based on game mode:
+        
+        $$
+        k_\text{gm} = \begin{cases}
+            1.5 & \text{if realism} \\
+            1 & \text{if easy}
+        \end{cases}
+        $$
+
     - $k$ is a function of $d$:
 
         $$
-        k(d) = \begin{cases}
+        k = \begin{cases}
             0.0064 & \text{if } d < 6000 \\
             0.0032 & \text{if } 6000 < d < 10000 \\
             0.0048 & \text{if } d > 10000 \\        
@@ -141,7 +150,7 @@ API: [utils.route.AircraftRoute.contribution][]
 
         Confidence: <span class="c-moderate">80%</span>
 
-#### Optimal pure-contribution strategy
+<!-- #### Optimal pure-contribution strategy
 
 Developed: 14 Apr 2021 (Cathay Express)
 
@@ -168,7 +177,7 @@ Check out the guides for a detailed introduction on the concepts required to der
     - $d = \frac{27vT'}{40}$
     - `assert` $d<6000$, reduce $T'$ or $v$ otherwise.
     - $\text{CI} = \frac{2000d}{7vT'}-\frac{600}{7}$
-    - $\frac{\$_{\text{CI}}}{T'}=\min(\frac{729}{560}kv, \frac{102.6v}{d})$
+    - $\frac{\$_{\text{CI}}}{T'}=\min(\frac{729}{560}k_\text{gm}kv, \frac{102.6v}{d})$ -->
 
 ### Season
 

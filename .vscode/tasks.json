@@ -30,7 +30,7 @@
         {
             "label": "py: install",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m pip install --verbose \".\" --config-settings=cmake.define.COPY_DATA=1"
+            "command": "${command:python.interpreterPath} -m pip install --verbose \".[dev,bot,api,docs]\" --config-settings=cmake.define.COPY_DATA=1"
         },
         {
             "label": "py: reinstall",

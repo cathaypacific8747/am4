@@ -467,17 +467,23 @@ Again, our goal is to express the objective function $J$ with inputs $d$, $v$, $
 
     $$
     \begin{equation}
-    \$_\text{C} = \min\left( kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right)
+    \$_\text{C} = \min\left( k_\text{gm}kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right)
     \end{equation}
     $$
 
     $$
     \begin{equation}
-    k(d) = \begin{cases}
+    \begin{align*}
+    k_\text{gm} &= \begin{cases}
+        1.5 & \text{if realism} \\
+        1 & \text{if easy}
+    \end{cases} \\
+    k &= \begin{cases}
         0.0064 & \text{if } d < 6000 \\
         0.0032 & \text{if } 6000 < d < 10000 \\
         0.0048 & \text{if } d > 10000 \\        
     \end{cases}
+    \end{align*}
     \end{equation}
     $$
 
@@ -493,17 +499,19 @@ Again, our goal is to express the objective function $J$ with inputs $d$, $v$, $
 
     $$
     \begin{align*}
-    J(d, v, T') &= \min\left(\frac{kd}{T'}\left(3 - \frac{\text{CI}}{100}\right), \frac{152}{T'} \right) \\
-    &= \min\left(\frac{kd}{T'}\left(\frac{27}{7} - \frac{20d}{7vT'}\right), \frac{152}{T'} \right) \\
-    &= \min\left(\frac{27kd}{7T'} - \frac{20kd^2}{7vT'^2}, \frac{152}{T'} \right)
+    J(d, v, T') &= \min\left(\frac{k_\text{gm}kd}{T'}\left(3 - \frac{\text{CI}}{100}\right), \frac{152}{T'} \right) \\
+    &= \min\left(\frac{k_\text{gm}kd}{T'}\left(\frac{27}{7} - \frac{20d}{7vT'}\right), \frac{152}{T'} \right) \\
+    &= \min\left(\frac{27k_\text{gm}kd}{7T'} - \frac{20k_\text{gm}kd^2}{7vT'^2}, \frac{152}{T'} \right)
     \end{align*}
     $$
+
+    For the remainder the guide, I will assume easy mode, with $k_{\text{gm}}=1$.
 
 Great! Now we $J$ as a single **multivariable function** with 3 variables.
 
 We want to understand the relationships between variables, and plotting is always a great way to understand things. Unfortunately, we cannot quite visualise everything at once because we don't have 4 dimensions!
 
-But if we *hold* any one variable constant, $J$ now has 2 independent variables ("inputs") and one dependent variable ("output"). For instance, when we have three inputs $(d, v, T')$, we choose to hold $d=6000$ as a constant, then $(v, T')$ are the two remaining inputs. Now, set $v$ as the x-axis, $T'$ as the y-axis - and compute $J$ for *every single combination* and colour it: 
+But if we *freeze* any one variable constant, $J$ now has 2 independent variables ("inputs") and one dependent variable ("output"). For instance, when we have three inputs $(d, v, T')$, we choose to freeze $d=6000$ as a constant, then $(v, T')$ are the two remaining inputs. Now, set $v$ as the x-axis, $T'$ as the y-axis - and compute $J$ for *every single combination* and colour it: 
 
 <figure markdown="span">
   ![objective function](../assets/img/contribution-per-hr-contour.svg)
@@ -533,11 +541,11 @@ You can view the middle plot on [Desmos 3D](https://www.desmos.com/3d/3c13b7df43
     - Middle Plot, constant $v$:
         - choose distances less than 6000km
         - *along some linear line, they all have equally good contribution per hour*
-    - Right plot, constant $T$ for a 12hr departure schedule:
+    - Right plot, constant $T$ for a 12hr departure schedule and $v=1200$:
         - when $d<6000$, greater distances perform better.
         - when $d>10000$, greater distances perform poorer.
     
-    I'm being quite ambiguous here: we will see later how to know "when it's too short" or how to calculate the "linear line"
+    I'm being quite ambiguous here: we will see later how to know "when it's too short" or how to calculate the "linear line".
 
 Now, we want to know **what is the equation that gives me the darkest blue region**?
 
@@ -555,24 +563,30 @@ $$
 
 When $\nabla J=\left[\begin{array}{c}0 \\ 0 \\ 0\end{array}\right]$, it means we should stop moving because it holds the position of the plateau - the **critical point**.
 
-The $\frac{\partial J}{\partial d}$, $\frac{\partial J}{\partial v}$ and $\frac{\partial J}{\partial T'}$ are the **partial derivatives** of $J$. Setting them equal to zero gives us the equation for the critical point.
+The $\frac{\partial J}{\partial d}$, $\frac{\partial J}{\partial v}$ and $\frac{\partial J}{\partial T'}$ are the **partial derivatives** of $J$. Setting them all equal to zero gives us the critical point.
 
 
 ### Partial Derivatives
 
-Finding partial derivatives of $J$ is effectively tge same as the ordinary derivatives, but you *hold* all but one variable fixed.
+Finding partial derivatives of $J$ is effectively the same as the ordinary derivatives, but you *freeze* all but one variable fixed.
 
-Let's take a slice from the leftmost plot, now two variables $d$ and $v$ are fixed:
+#### Case 1: Optimal $T'$
+
+To find the optimal time, we need to freeze $d$ and $v$ to "collapse" it to a single-variable function. We can do so by taking the leftmost plot (which already froze $d=6000$) then freezing $v=1730.85$ (taking a slice with grey line):
 
 <figure markdown="span">
   ![objective function cut](../assets/img/contribution-per-hr-speed-cut.svg)
 </figure>
 
-Effectively, the plot on the right is $J(d=6000, v=1000, T')$, a single variable function.
+The green line here indicates the optimal time that maximises $J$: our goal is to find this value.
+
+The plot on the right represents $J(d=6000, v=1730.85, T')$, a single variable function.
 
 Remember earlier in our concept check, we said "shorter flight time will yield higher contribution per hour, *but if it is too short, it'll get worse*"? Indeed, it increases up until some point $T'_\text{optimal}$ then drops dramatically: this point can be found with partial derivatives.
 
-!!! note "Example: Find the value of $T'_\text{optimal}$ when $J$ is maximised, using $\frac{\partial J}{\partial T'}=0, d=6000, v=1000$ and verify it with the plot."
+!!! note "Example: For an A388 with speed mod ($v=1730.85$) and $d=6000$, find the optimal target flight time $T'_\text{optimal}$ that maximises $J$. Verify your answer on the plot."
+
+    We would like to evaluate the location at which $\frac{\partial J}{\partial T'}=0$.
 
     Recall $J$:
 
@@ -580,7 +594,7 @@ Remember earlier in our concept check, we said "shorter flight time will yield h
     J = \min\left(\frac{27kd}{7}T'^{-1} - \frac{20kd^2}{7v}T'^{-2}, 152T'^{-1} \right)
     $$
 
-    Treat $d, v, k$ here as numbers and differentiate with respect to $T'$ (recall $\frac{d}{dT'}(T'^n) = nT'^{n-1}$):
+    Treat $d, v, k$ here as numbers and differentiate with respect to $T'$, using $\frac{d}{dT'}(T'^n) = nT'^{n-1}$:
 
     $$
     \frac{\partial J}{\partial T'} = \min\left(-\frac{27kd}{7T'^2} + \frac{40kd^2}{7vT'^3}, -\frac{152}{T'^2} \right)
@@ -592,67 +606,66 @@ Remember earlier in our concept check, we said "shorter flight time will yield h
     \begin{align*}
     \frac{27kd}{7T'^2} &= \frac{40kd^2}{7vT'^3} \\
     27 &= \frac{40d}{vT'} \\
-    T' &= \frac{40d}{27v} = \frac{40 \cdot 6000}{27 \cdot 1000} = 8.\overline{8}
+    T' &= \frac{40d}{27v} = \frac{40 \cdot 6000}{27 \cdot 1730.85} = 5.135
     \end{align*}
     $$
 
-    Substituting into $J$:
+    This gives us the time at which the contribution is maximised[^1]. It indeed matches with the green vertical line! We can also evaluate $J$ at this point:
 
     $$
     \begin{align*}
-    J &= \min\left(\frac{27 \cdot 0.0064 \cdot 6000}{7}\left(\frac{27}{240}\right) - \frac{20 \cdot 0.0064 \cdot 6000^2}{7 \cdot 1000}\left(\frac{27}{240}\right)^2, 152\left(\frac{27}{240}\right) \right) \\
-    J &= \min\left(\frac{1458}{175}, 17.1\right) = 8.331426...
+    J(T'_\text{optimal}) &= \min\left(\frac{27kd}{7}\cdot\frac{27v}{40d} - \frac{20kd^2}{7v}\cdot\frac{27^2v^2}{40^2d^2}, 152\cdot\frac{27v}{40d} \right) \\
+    &= \min\left(\frac{729}{560}kv, \frac{102.6v}{d} \right) \\
+    &= \min\left(\frac{729 \cdot 0.0064 \cdot 1730.85}{560}, 29.588\right) = 14.420
     \end{align*}
     $$
+    
+    Indeed, this also matches the plot!
+    
 
-    We should expect $T'=8.89$hr to be the optimal target flight time, yielding $\$8.33$/hr contribution. Indeed it matches the graph!
-
-    Side note: to check this is the *maximum*, check that $\frac{\partial^2 J}{\partial T'^2}<0$.
-
-As we have found above, $J$ is optimal* when $T' = \frac{40d}{27v}$. What a beautiful, simple equation!
-
-If we substitute it back into $J$, we get:
+We now reach a very useful equation:
 
 $$
-\begin{align*}
-J_\text{optimal} &= \min\left(\frac{27kd}{7}\cdot\frac{27v}{40d} - \frac{20kd^2}{7v}\cdot\frac{27^2v^2}{40^2d^2}, 152\cdot\frac{27v}{40d} \right) \\
-&= \min\left(\frac{729}{560}kv, \frac{102.6v}{d} \right)
-\end{align*}
+T'_{\text{optimal}} = \frac{40d}{27v} \\
 $$
 
-!!! warning "*Important note on optimality"
-    
-    The equation gives us **locally optimal** results, not **globally optimal**.
+This gives us the optimal* time, given some distance $d$ and original aircraft speed $v$. The contribution per hour at this time is also:
 
-    **We** still control distance $d$ and speed $v$: we need to make sure they are optimal as well!
+$$
+J(T'_\text{optimal}) = \min\left(\frac{729}{560}kv, \frac{102.6v}{d} \right)
+$$
 
-    Take a look at $J_{\text{optimal}}$ again: it is *still* a function of $k$ and $v$.
+!!! warning "Important note on optimality"
 
-    Intuitively, if we had chosen the good'ol Cessna 172, it is always going to underperform the Concorde simply because it has a lower $v$. It also implies, that 4X players *always* have a 4X contribution. Technically, the partial derivative $\frac{\partial J_{\text{optimal}}}{\partial v} = 1$, meaning that faster aircraft *always* results in a constant increase in $J$.
-    
-    Similarly, $k$ is a piecewise function based on the distance $d$ that gives us a constant: it is maximal (0.0064) when $d<6000$. 
+    By optimal, I mean *locally* optimal.
 
-Therefore, **globally optimal contribution requires $d$<6000km and aircraft that are as fast as possible.**
+    If we had just arbitrarily chosen $d=6000$ and $v=1000$, we cannot guarantee that the contribution is the absolute max!
 
-!!! note "Example: An A380-800 has original speed $v=1049$ and we would like to depart 3 times a day ($T'=8$) for max contribution per hour. What is the associated distance, CI and associated contribution?"
+    If we can prove $d$ and $v$ is indeed optimal, using this equation will give us *globally optimal* contribution. We do that by also evaluating partial derivatives with respect to $v$ and $d$.
 
-    Distance: $d=\frac{27vT'}{40} = 5664.6$ km. This is less than 6000km, so it is globally optimal.
+I can now find all optimal times $T'_{\text{optimal}}$ at all speeds $v$ and plot them with a green line:
 
-    CI: $\text{CI}=\frac{2000d}{7vT'} - \frac{600}{7} = 107.14$.
+<figure markdown="span">
+  ![objective function cut multiple](../assets/img/contribution-per-hr-speed-cut-multiple.svg)
+</figure>
 
-    Daily Contribution: $24J = 24\min\left(\frac{729}{560}kv, \frac{102.6v}{d} \right) = \$8.73966 \cdot 24 = \$209.75$
+Notice that this line is the "ridge" of our mountain that maximises $J$! If we also make regularly spaced cuts along the speed $v$, we can clearly see that the green dots correspond to the locally optimal $T'_{\text{optimal}}$ in that cut.
 
-    In practice, we would've chosen an A380-800 with the speed upgrade, without a question.
+#### Case 2: Optimal $d$
 
-!!! tip "Note: Finding global maxima"
-    
-    We have covered how to use partial derivatives to find critical points. But, they are not necessarily the *global optimum*.
+coming soon™ ;)
 
-    Recall in single variable calculus, for a function $f(x)$ defined in the interval $x \in [a, b]$ we'd need to check the endpoints $f(a)$ and $f(b)$ as well. Similarly, in multivariable calculus, we need to check the boundary values of the domain.
+#### Case 3: Optimal $v$
 
-    Additionally, finding $\nabla J$ is not enough. We also need to check the [Hessian matrix](https://en.wikipedia.org/wiki/Hessian_matrix) to determine if the critical point is a local maximum, minimum, or saddle point.
+coming soon™ ;)
 
-??? question "Exercise 10: What is the optimal CI to achieve maximum contribution *per hour*? Assume we are flying distances less than 6000 km. (Tip: Notice that the objective function is different because we now take CI as the input.)"
+### Interesting Properties
+
+<!-- Recall in single variable calculus, for a function $f(x)$ defined in the interval $x \in [a, b]$ we'd need to check the endpoints $f(a)$ and $f(b)$ as well. Similarly, in multivariable calculus, we need to check the boundary values of the domain. -->
+
+<!-- Additionally, finding $\nabla J$ is not enough. We also need to check the [Hessian matrix](https://en.wikipedia.org/wiki/Hessian_matrix) to determine if the critical point is a local maximum, minimum, or saddle point. -->
+
+??? question "Exercise 10: What is the optimal CI to achieve maximum contribution *per hour*? Assume we are flying distances less than 6000km. (Tip: Notice that the objective function is different because we now take CI as the input.)"
     
     Recall the [contribution formula](../formulae.md#contribution) is:
 
@@ -688,9 +701,11 @@ Therefore, **globally optimal contribution requires $d$<6000km and aircraft that
     \end{align*}
     $$
 
-    Interestingly, a CI of 107 is guaranteed to be the *local optimum*, regardless of aircraft speed! In the particular case where $d<6000$, it is the global optima because $k$ is the largest. But we need to be more careful for $d>6000$: it is possible to get a   better contribution if we had chosen $d=6000$.
+    Interestingly, a CI of 107 is guaranteed to be the *local optimum*, regardless of aircraft speed! In the particular case where $d<6000$, it is the global optima because $k$ is the largest. But we need to be more careful for $d>6000$: it is possible to get a better contribution if we had chosen $d=6000$.
 
-!!! question "Exercise 11: Some players like a hybrid contribution-profit strategy: say $k_c = 0.4$ means 40% profit, 60% contribution. Formulate an objective function and comment on the optimal strategy."
+### Mixed Strategies
+
+!!! question "Exercise 11: Reducing CI obviously increases contribution, but decreases profit. Some players like to choose a hybrid contribution-profit strategy: say $k_c = 0.4$ means 40% profit, 60% contribution. Formulate an objective function and comment on the optimal strategy."
 
     coming soon™ ;)
 
@@ -700,6 +715,8 @@ Therefore, **globally optimal contribution requires $d$<6000km and aircraft that
 - identify all IVs, DVs and Combine equations into a single objective function $J$.
 - contour plots are helpful to visualise combinations of variables.
 - gradient $\nabla J$ is the direction of steepest ascent, solving for zero corresponds to critical points
-- partial derivatives hold all but one variable constant.
+- partial derivatives freeze all but one variable constant.
 - if $f(x, y)$ and $x(t), y(t)$, $\frac{dz}{dt}=\frac{\partial z}{\partial x}\frac{dx}{dt}+\frac{\partial z}{\partial y}\frac{dy}{dt}$, forming a tree.
 - evaluate the nature of critical points with Hessian and check boundaries for global maxima.
+
+[^1]: Technically, we should also check that $\frac{\partial^2 J}{\partial T'^2}<0$ to verify that it is indeed concaving downwards, and is thus the maximum.
