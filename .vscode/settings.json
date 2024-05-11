@@ -13,4 +13,5 @@
     "python.analysis.extraPaths": [
         "./docs/assets/scripts"
     ],
+    "editor.formatOnSave": true
 }

@@ -1,7 +1,6 @@
 import time
 from typing import Literal
 
-import cmocean
 import discord
 from discord.ext import commands
 
@@ -19,7 +18,6 @@ ParsedPrice = tuple[Literal["Fuel", "CO₂"], float]
 class PriceCog(BaseCog):
     def __init__(self, bot: commands.Bot):
         super().__init__(bot)
-        self.cmap = cmocean.tools.crop_by_percent(cmocean.cm.dense_r, 50, which="min")
 
     @commands.command(
         brief=f"Reports a price to <#{cfg.bot.PRICEALERT_CHANNELID}>",
@@ -69,31 +67,35 @@ class PriceCog(BaseCog):
             mul, vmin, vmax = bounds[k]
             s = 1 - (v - vmin) / (vmax - vmin)
             score += max(min(s, 1), 0) * mul
-        embed = discord.Embed(
-            title=f"{prices_f}",
-            description=f"Sent by {ctx.author.mention}, expiry: {t_expiry_f}",
-            colour=discord.Colour.from_rgb(*[int(x * 255) for x in self.cmap(score)[:3]]),
-        )
-        contact_f = f"If there was a mistake, contact a <@&{cfg.bot.HELPER_ROLEID}> or <@&{cfg.bot.MODERATOR_ROLEID}>."
 
         async def send_update_success(jump_url: str, is_edit: bool = False):
+            desc = f"{jump_url}\n> {prices_f}."
+            if not is_edit:
+                desc += (
+                    f"\n\nIf there was a mistake, send the `{cfg.bot.COMMAND_PREFIX}price` command again"
+                    f"**within 60 seconds** to update it. Otherwise, contact one of our <@&{cfg.bot.HELPER_ROLEID}>"
+                    f"or <@&{cfg.bot.MODERATOR_ROLEID}>."
+                )
             await ctx.send(
                 embed=discord.Embed(
                     title=f"Price alert {'updated' if is_edit else 'sent'}!",
-                    description=f"{jump_url}\n> {prices_f}." + ("" if is_edit else f"\n\n{contact_f}"),
+                    description=desc,
                     colour=COLOUR_SUCCESS,
                 )
             )
 
         # if the the price is already sent, error if the user is not a mod, otherwise edit it
         async for msg in channels.price_alert.history(limit=1):
-            if msg.created_at.timestamp() > t_start:
+            if (t_now := msg.created_at.timestamp()) > t_start:
                 for r in ctx.author.roles:
-                    if r.id == cfg.bot.MODERATOR_ROLEID or r.id == cfg.bot.HELPER_ROLEID:
-                        embed.description = msg.embeds[0].description.replace(
-                            ", expiry", f", updated by {ctx.author.mention}, expiry"
+                    if r.id in [cfg.bot.MODERATOR_ROLEID, cfg.bot.HELPER_ROLEID] or t_now - t_start < 60:
+                        old_senders = msg.content.split(". (Sent by ")[0].split(") ")[1]
+                        await msg.edit(
+                            content=(
+                                f"{prices_f}. ({old_senders}, Updated by {ctx.author.mention}) "
+                                f"<@&{cfg.bot.PRICEALERT_ROLEID}>"
+                            )
                         )
-                        await msg.edit(content=None, embed=embed)
                         await send_update_success(msg.jump_url)
                         return
                 embed = discord.Embed(
@@ -111,7 +113,6 @@ class PriceCog(BaseCog):
         msg = await channels.price_alert.send(
             content=f"{prices_f}. (Sent by {ctx.author.mention}) <@&{cfg.bot.PRICEALERT_ROLEID}>"
         )
-        # await msg.edit(content=None, embed=embed)
         await send_update_success(msg.jump_url)
 
     @price.error
