@@ -302,34 +302,42 @@ where:
 
 Confidence: <span class="c-moderate">90%</span> ($R^2 = 0.985, 0.999$)
 
-Found: 1 June 2023 (Cathay Express)
+=== "Attempt 2"
 
-API Reference: [utils.demand.PaxDemand][], [utils.demand.CargoDemand][]
+    A new effort is launched to find the demand formula.
 
-The demand is a uniformly distributed random variable:
+    See [guides](./guides/demand.md).
 
-$$
-\mathbb{E}(D_{i,j}) = \begin{cases}
-    0.0033164(k_i+k_j) + 119.41009 & \text{if capital} \\
-    0.0016346(k_i+k_j) + 243.24880 & \text{otherwise}
-\end{cases}
-$$
+=== "Attempt 1"
 
-where:
+    Found: 1 June 2023 (Cathay Express)
 
-- $\mathbb{E}(D_{i, j})$: expected demand of the route from airport $i$ to airport $j$, that is, the mean demand of routes with the same total tier value.
-- $k$: tier value of the airport. See the [hub cost](#hub-cost) section for more details.
+    API Reference: [utils.demand.PaxDemand][], [utils.demand.CargoDemand][]
+
+    The demand is a uniformly distributed random variable:
+
+    $$
+    \mathbb{E}(D_{i,j}) = \begin{cases}
+        0.0033164(k_i+k_j) + 119.41009 & \text{if capital} \\
+        0.0016346(k_i+k_j) + 243.24880 & \text{otherwise}
+    \end{cases}
+    $$
+
+    where:
+
+    - $\mathbb{E}(D_{i, j})$: expected demand of the route from airport $i$ to airport $j$, that is, the mean demand of routes with the same total tier value.
+    - $k$: tier value of the airport. See the [hub cost](#hub-cost) section for more details.
 
 
-!!! note
-    The true demand of the route is calculated by **adding a random offset** to the mean demand.
-    This random offset is uniformly distributed and cannot be meaningfully predicted without knowing the seed of the PRNG.
+    !!! note
+        The true demand of the route is calculated by **adding a random offset** to the mean demand.
+        This random offset is uniformly distributed and cannot be meaningfully predicted without knowing the seed of the PRNG.
 
-    Psuedocode: `offset = PRNG(seed=hash(airport1, airport2)).next()` and `hash` is commutative.
+        Psuedocode: `offset = PRNG(seed=hash(airport1, airport2)).next()` and `hash` is commutative.
 
-    See [GitHub](https://github.com/cathaypacific8747/am4/tree/master/misc/demand-research) for attempts to uncover it.
+        See [GitHub](https://github.com/cathaypacific8747/am4/tree/master/docs/assets/scripts/demand-research/old) for attempts to uncover it.
 
-    In practice, we store this in a giant hashtable.
+        In practice, we store this in a giant hashtable.
 
 
 ### Marketing Campaign
@@ -520,26 +528,26 @@ See [guides/configuration](guides/configuration.md)
 
 Assuming the use of 1.1x, 1.08x, and 1.06x multipliers from the autoprice ticket prices.
 
-|                     Game Mode                     | Distance Range (km) | Best Seat Class Order |
-|---------------------------------------------------|---------------------|-----------------------|
+| Game Mode                                         | Distance Range (km) | Best Seat Class Order |
+| ------------------------------------------------- | ------------------- | --------------------- |
 | <span class="easy">Easy</span> {:rowspan=4}       | < 14425             | F>J>Y                 |
-                                                    | 14425 - 14812.5     | F>Y>J                 |
-                                                    | 14812.5 - 15200     | Y>F>J                 |
-                                                    | > 15200             | Y>J>F                 |
+| 14425 - 14812.5                                   | F>Y>J               |
+| 14812.5 - 15200                                   | Y>F>J               |
+| > 15200                                           | Y>J>F               |
 | <span class="realism">Realism</span> {:rowspan=4} | < 13888.89          | F>J>Y                 |
-                                                    | 13888.89 - 15694.44 | J>F>Y                 |
-                                                    | 15694.44 - 17500    | J>Y>F                 |
-                                                    | > 17500             | Y>J>F                 |
+| 13888.89 - 15694.44                               | J>F>Y               |
+| 15694.44 - 17500                                  | J>Y>F               |
+| > 17500                                           | Y>J>F               |
 
 #### Cargo seat ordering
 
 Assuming the use of 1.1x and 1.08x multipliers from the autoprice ticket prices.
 
-|                     Game Mode                     | Distance Range (km) | Best Seat Class Order |
-|---------------------------------------------------|---------------------|-----------------------|
-| <span class="easy">Easy</span> {:rowspan=2}       | <23908              | L>H                   |
-                                                    | >23908              | H>L                   |
-| <span class="realism">Realism</span>              | all                 | L>H                   |
+| Game Mode                                   | Distance Range (km) | Best Seat Class Order |
+| ------------------------------------------- | ------------------- | --------------------- |
+| <span class="easy">Easy</span> {:rowspan=2} | <23908              | L>H                   |
+| >23908                                      | H>L                 |
+| <span class="realism">Realism</span>        | all                 | L>H                   |
 
 
 ## Airport
@@ -630,7 +638,7 @@ Found*: 21 Jan 2022 (Cathay Express)
 
 Updated: 25 Jan 2022 (Cathay Express, reduced by \~50%)
 
-See [GitHub](https://github.com/cathaypacific8747/am4/tree/master/misc/hangar-research) for raw data.
+See [GitHub](https://github.com/cathaypacific8747/am4/tree/master/docs/assets/scripts/hangar-research/main.py) for raw data.
 
 ![Hangar Expansion](./assets/img/hangar-10.svg){: .center}
 

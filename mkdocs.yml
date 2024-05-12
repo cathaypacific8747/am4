@@ -12,8 +12,10 @@ nav:
     - Discord Bot: 'development/discord-bot.md'
   - Guide:
     - Preface: 'guides/preface.md'
-    - Formulae Hunting: 'guides/formulae.md'
+    - Mathematical Modelling: 'guides/modelling.md'
     - Aircraft Configuration: 'guides/configuration.md'
+    - Contribution Strategy: 'guides/contribution.md'
+    - Demand: 'guides/demand.md'
   - Formulae: 'formulae.md'
   - API Reference:
     - Core:
@@ -97,6 +99,9 @@ plugins:
               - "!__setstate__"
               - "!__str__"
       enable_inventory: true
+  - exclude:
+      glob:
+        - docs/assets/scripts/demand-research/old*
 
 markdown_extensions:
 - abbr

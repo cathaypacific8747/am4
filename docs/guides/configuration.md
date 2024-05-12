@@ -17,6 +17,9 @@ Reading time: ~15 minutes.
 
 Skip to [TLDR](#tldr) for a quick summary.
 
+!!! example "Experimental"
+    This guide is a preview and not finalised!
+
 ## Easy
 
 Let's simplify the problem:
@@ -152,11 +155,11 @@ As you may imagine, we can generalise this algorithm to three classes (pax aircr
 
 In AM4, the key point to remember is that **one seat can use up multiple "units" of the aircraft capacity**.
 
-|Seat Class|Capacity|
-|-|-|
-|$y$|1 unit|
-|$j$|2 units|
-|$f$|3 units|
+| Seat Class | Capacity |
+| ---------- | -------- |
+| $y$        | 1 unit   |
+| $j$        | 2 units  |
+| $f$        | 3 units  |
 
 !!! abstract "Example"
     Consider a plane with 2 economy $y$, 2 business $j$, and 3 first class $f$ seats.
@@ -462,10 +465,10 @@ Here is the initial plan:
 
 Cargo is has a similar mechanic to pax aircraft:
 
-|Cargo Class|Capacity|
-|-|-|
-|Large, $l$|$\frac{10}{7}$ units|
-|Heavy, $h$|1 unit|
+| Cargo Class | Capacity             |
+| ----------- | -------------------- |
+| Large, $l$  | $\frac{10}{7}$ units |
+| Heavy, $h$  | 1 unit               |
 
 For example, a cargo aircraft with 100000 lbs capacity with 100% large cargo can only take $100000\times0.7 = 70000$ lbs. The formula for [cargo ticket prices](../formulae.md#cargo) in easy mode are:
 
@@ -531,34 +534,34 @@ For a given (seat class, units of capacity, demand) pair and initial capacity:
 !!! abstract "Example: TGPY-UTDD. A380 (capacity 600), YJF configuration."
     Demand: 1779Y, 395J, 198F, 6 flights per day.
 
-    |Seat Class|Seats|Seats to fill|
-    |-|-|-|
-    |Y|$\left\lfloor\frac{1779}{6}\right\rfloor = 296$|$600-296 = 304$|
-    |J|$\left\lfloor\frac{395}{6}\right\rfloor = 65$|$305-65\times2 = 174$|
-    |F|$\left\lfloor\frac{198}{6}\right\rfloor = 33$|$174-33\times3 = 75$|
-    |:material-alert: We used up all demand but there are 75 empty seats. Insufficient demand! {: colspan=3} |
+    | Seat Class                                                                                              | Seats                                           | Seats to fill         |
+    | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------- |
+    | Y                                                                                                       | $\left\lfloor\frac{1779}{6}\right\rfloor = 296$ | $600-296 = 304$       |
+    | J                                                                                                       | $\left\lfloor\frac{395}{6}\right\rfloor = 65$   | $305-65\times2 = 174$ |
+    | F                                                                                                       | $\left\lfloor\frac{198}{6}\right\rfloor = 33$   | $174-33\times3 = 75$  |
+    | :material-alert: We used up all demand but there are 75 empty seats. Insufficient demand! {: colspan=3} |
 
     What about 5 flights per day?
 
-    |Seat Class|Seats|Seats to fill|
-    |-|-|-|
-    |Y|$\left\lfloor\frac{1779}{5}\right\rfloor = 355$|$600-355 = 245$|
-    |J|$\left\lfloor\frac{395}{5}\right\rfloor = 79$|$245-79\times2 = 87$|
-    |F|$\left\lfloor\frac{198}{5}\right\rfloor = 39$|$87-39\times3 = -30$|
-    |:simple-ticktick: There are more demand than there are seats to fill. So, fill the remaining seats from J. {: colspan=3} |
-    |F\*|$\frac{87}{3}=29$|0|
+    | Seat Class                                                                                                               | Seats                                           | Seats to fill        |
+    | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | -------------------- |
+    | Y                                                                                                                        | $\left\lfloor\frac{1779}{5}\right\rfloor = 355$ | $600-355 = 245$      |
+    | J                                                                                                                        | $\left\lfloor\frac{395}{5}\right\rfloor = 79$   | $245-79\times2 = 87$ |
+    | F                                                                                                                        | $\left\lfloor\frac{198}{5}\right\rfloor = 39$   | $87-39\times3 = -30$ |
+    | :simple-ticktick: There are more demand than there are seats to fill. So, fill the remaining seats from J. {: colspan=3} |
+    | F\*                                                                                                                      | $\frac{87}{3}=29$                               | 0                    |
 
     (Y, J, F*) is the optimal configuration: 355Y, 79J, 29F.
 
     And 3 flights per day?
 
-    |Seat Class|Seats|Seats to fill|
-    |-|-|-|
-    |Y|$\left\lfloor\frac{1779}{3}\right\rfloor = 593$|$600-593 = 7$|
-    |J|$\left\lfloor\frac{395}{3}\right\rfloor = 131$|$7-131\times2 = -255$|
-    |:simple-ticktick: There are more demand than there are seats to fill. So, fill the remaining seats from Y. {: colspan=3} |
-    |J\*|$\frac{7}{2}=3$|0|
-    |F\*|0|0|
+    | Seat Class                                                                                                               | Seats                                           | Seats to fill         |
+    | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | --------------------- |
+    | Y                                                                                                                        | $\left\lfloor\frac{1779}{3}\right\rfloor = 593$ | $600-593 = 7$         |
+    | J                                                                                                                        | $\left\lfloor\frac{395}{3}\right\rfloor = 131$  | $7-131\times2 = -255$ |
+    | :simple-ticktick: There are more demand than there are seats to fill. So, fill the remaining seats from Y. {: colspan=3} |
+    | J\*                                                                                                                      | $\frac{7}{2}=3$                                 | 0                     |
+    | F\*                                                                                                                      | 0                                               | 0                     |
 
     (Y, J\*, F\*) is the optimal configuration: 593Y, 3J, 0F.
 
