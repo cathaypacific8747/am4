@@ -88,15 +88,13 @@ int main() {
 
         auto timer = Timer();
         // __itt_task_begin(domain, __itt_null, __itt_null, handle_main);
-        // auto r = AircraftRoute::create(ap0, ap1, ac, options, user);
-        // auto c = std::get<Aircraft::PaxConfig>(r.config);
-        // cout << "cfg: " << c.y << "," << c.j << "," << c.f << " | " << c.valid << endl;
-        // auto d = r.route.pax_demand;
-        // cout << "dem: " << d.y << "," << d.j << "," << d.f << endl;
-        // cout << "tpd: " << r.trips_per_day_per_ac << endl;
-        auto rs = RoutesSearch(ap0, ac, options, user);
-        auto results = rs.get();
-        std::cout << "results.size(): " << results.size() << std::endl;
+        // auto rs = RoutesSearch(ap0, ac, options, user);
+        // auto results = rs.get();
+        // std::cout << "results.size(): " << results.size() << std::endl;
+        auto a = Airport::search("vhhx");
+        for (int i = 0; i < 1000; i++) {
+            std::ignore = Airport::suggest(a.parse_result);
+        }
         // __itt_task_end(domain);
         timer.stop();
         // getchar();

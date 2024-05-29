@@ -7,6 +7,7 @@ name = "am4"
 version = "0.2.0"
 dependencies = [
  "csv",
+ "jaro_winkler",
  "serde",
 ]
 
@@ -43,6 +44,12 @@ name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
+
+[[package]]
+name = "jaro_winkler"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "966903d6b75c207539d45eef272e66e68542640adc142f15e9c9623f76f36b5f"
 
 [[package]]
 name = "memchr"
