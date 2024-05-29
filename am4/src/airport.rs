@@ -8,7 +8,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::string::String;
 
-use super::utils::Suggestion;
+use crate::utils::Suggestion;
 
 const COUNT: usize = 3907;
 const MAX_SUGGESTIONS: usize = 5;
