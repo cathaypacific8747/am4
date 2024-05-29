@@ -79,6 +79,7 @@ research = [
     "torch",
     "wandb",
     "scikit-learn",
+    "shapely",
 ]
 
 [tool.pytest.ini_options]
