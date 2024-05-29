@@ -50,6 +50,7 @@ def convert_airports():
         )
     )
     pq.write_table(table, "airports.parquet")
+    csv.write_csv(table, "airports.csv")
 
 
 def convert_aircrafts():
@@ -90,9 +91,10 @@ def convert_aircrafts():
         )
     )
     pq.write_table(table, "aircrafts.parquet")
+    csv.write_csv(table, "aircrafts.csv")
 
 
 if __name__ == "__main__":
     # convert_routes()
-    # convert_airports()
+    convert_airports()
     convert_aircrafts()

@@ -13,5 +13,6 @@
     "python.analysis.extraPaths": [
         "./docs/assets/scripts"
     ],
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "rust-analyzer.lens.enable": false,
 }

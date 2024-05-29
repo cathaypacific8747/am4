@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["am4", "am4-cli"]
