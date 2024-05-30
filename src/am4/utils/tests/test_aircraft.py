@@ -1,4 +1,5 @@
 import pytest
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.game import User
 

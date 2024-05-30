@@ -30,26 +30,22 @@ pub struct AircraftRouteOptions {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default)]
 pub enum TPDMode {
+    #[default]
     Auto,
     StrictAllowMultipleAc,
     Strict,
 }
 
-impl Default for TPDMode {
-    fn default() -> Self {
-        TPDMode::Auto
-    }
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default)]
 pub enum SortBy {
+    #[default]
     PerTrip,
     PerAcPerDay,
 }
 
-impl Default for SortBy {
-    fn default() -> Self {
-        SortBy::PerTrip
-    }
-}
+

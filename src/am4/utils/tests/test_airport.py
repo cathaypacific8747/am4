@@ -1,4 +1,5 @@
 import pytest
+
 from am4.utils.airport import Airport
 
 
@@ -23,7 +24,7 @@ def test_airport_search(inp):
 @pytest.mark.parametrize(
     "inp",
     [
-        "" "VHHX  ",
+        "VHHX  ",
         "iata:hkgA",
         "icao:VHHx",
         "name:hng kong",

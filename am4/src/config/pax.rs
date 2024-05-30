@@ -24,13 +24,13 @@ impl PaxConfig {
     fn calc_fjy_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let f = std::cmp::min(d_pf.f, (remaining_capacity / 3) as u16);
+        let f = std::cmp::min(d_pf.f, remaining_capacity / 3);
         remaining_capacity -= (f * 3) as u16;
 
-        let j = std::cmp::min(d_pf.j, (remaining_capacity / 2) as u16);
+        let j = std::cmp::min(d_pf.j, remaining_capacity / 2);
         remaining_capacity -= (j * 2) as u16;
 
-        let y = remaining_capacity as u16;
+        let y = remaining_capacity;
 
         if y < d_pf.y {
             Some(PaxConfig {
@@ -47,13 +47,13 @@ impl PaxConfig {
     fn calc_fyj_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let f = std::cmp::min(d_pf.f, (remaining_capacity / 3) as u16);
+        let f = std::cmp::min(d_pf.f, remaining_capacity / 3);
         remaining_capacity -= (f * 3) as u16;
 
-        let y = std::cmp::min(d_pf.y, remaining_capacity as u16);
+        let y = std::cmp::min(d_pf.y, remaining_capacity);
         remaining_capacity -= y as u16;
 
-        let j = (remaining_capacity / 2) as u16;
+        let j = remaining_capacity / 2;
 
         if j < d_pf.j {
             Some(PaxConfig {
@@ -70,13 +70,13 @@ impl PaxConfig {
     fn calc_jfy_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let j = std::cmp::min(d_pf.j, (remaining_capacity / 2) as u16);
+        let j = std::cmp::min(d_pf.j, remaining_capacity / 2);
         remaining_capacity -= (j * 2) as u16;
 
-        let f = std::cmp::min(d_pf.f, (remaining_capacity / 3) as u16);
+        let f = std::cmp::min(d_pf.f, remaining_capacity / 3);
         remaining_capacity -= (f * 3) as u16;
 
-        let y = remaining_capacity as u16;
+        let y = remaining_capacity;
 
         if y < d_pf.y {
             Some(PaxConfig {
@@ -93,13 +93,13 @@ impl PaxConfig {
     fn calc_jyf_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let j = std::cmp::min(d_pf.j, (remaining_capacity / 2) as u16);
+        let j = std::cmp::min(d_pf.j, remaining_capacity / 2);
         remaining_capacity -= (j * 2) as u16;
 
-        let y = std::cmp::min(d_pf.y, remaining_capacity as u16);
+        let y = std::cmp::min(d_pf.y, remaining_capacity);
         remaining_capacity -= y as u16;
 
-        let f = (remaining_capacity / 3) as u16;
+        let f = remaining_capacity / 3;
 
         if f < d_pf.f {
             Some(PaxConfig {
@@ -116,13 +116,13 @@ impl PaxConfig {
     fn calc_yfj_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let y = std::cmp::min(d_pf.y, remaining_capacity as u16);
+        let y = std::cmp::min(d_pf.y, remaining_capacity);
         remaining_capacity -= y as u16;
 
-        let f = std::cmp::min(d_pf.f, (remaining_capacity / 3) as u16);
+        let f = std::cmp::min(d_pf.f, remaining_capacity / 3);
         remaining_capacity -= (f * 3) as u16;
 
-        let j = (remaining_capacity / 2) as u16;
+        let j = remaining_capacity / 2;
 
         if j < d_pf.j {
             Some(PaxConfig {
@@ -139,13 +139,13 @@ impl PaxConfig {
     fn calc_yjf_conf(d_pf: &PaxDemand, capacity: u16) -> Option<Self> {
         let mut remaining_capacity = capacity;
 
-        let y = std::cmp::min(d_pf.y, remaining_capacity as u16);
+        let y = std::cmp::min(d_pf.y, remaining_capacity);
         remaining_capacity -= y as u16;
 
-        let j = std::cmp::min(d_pf.j, (remaining_capacity / 2) as u16);
+        let j = std::cmp::min(d_pf.j, remaining_capacity / 2);
         remaining_capacity -= (j * 2) as u16;
 
-        let f = (remaining_capacity / 3) as u16;
+        let f = remaining_capacity / 3;
 
         if f < d_pf.f {
             Some(PaxConfig {

@@ -1,16 +1,15 @@
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::fmt;
 use std::fs::File;
 use std::rc::Rc;
 use std::str::FromStr;
 
-// use crate::user::User;
 use crate::utils::Suggestion;
 use jaro_winkler::jaro_winkler;
 use std::collections::BinaryHeap;
+use thiserror::Error;
 
-const COUNT: usize = 282;
+const COUNT: usize = 331;
 const MAX_SUGGESTIONS: usize = 5;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
@@ -25,16 +24,33 @@ impl FromStr for AircraftType {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "pax" => Ok(Self::Pax),
-            "cargo" => Ok(Self::Cargo),
-            "vip" => Ok(Self::Vip),
+        match s.to_uppercase().as_str() {
+            "PAX" => Ok(Self::Pax),
+            "CARGO" => Ok(Self::Cargo),
+            "VIP" => Ok(Self::Vip),
             _ => Err(Error::InvalidAircraftType),
         }
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+pub struct Id(u16);
+
+impl FromStr for Id {
+    type Err = Error;
+
+    fn from_str(id: &str) -> Result<Self, Self::Err> {
+        id.parse::<u16>().map(Self).map_err(Error::InvalidID)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+pub struct ShortName(String);
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+pub struct Name(String);
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
 pub struct Priority(u8);
 
 impl FromStr for Priority {
@@ -49,10 +65,10 @@ impl FromStr for Priority {
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct Aircraft {
-    pub id: u16,
-    pub shortname: String,
+    pub id: Id,
+    pub shortname: ShortName,
     pub manufacturer: String,
-    pub name: String,
+    pub name: Name,
     #[serde(rename = "type")]
     pub ac_type: AircraftType,
     pub priority: Priority,
@@ -101,60 +117,11 @@ impl Default for Modifiers {
 }
 
 #[derive(Debug)]
-pub struct CustomAircraft {
-    pub aircraft: Rc<Aircraft>,
-    pub modifiers: Modifiers,
-}
-
-impl CustomAircraft {
-    pub fn new(aircraft: Rc<Aircraft>) -> Self {
-        Self {
-            aircraft,
-            modifiers: Modifiers::default(),
-        }
-    }
-
-    pub fn with_modifiers(&self, modifiers: Modifiers) -> Self {
-        let mut ac = self.get_new_aircraft(&modifiers.priority); // deep copy
-        if !self.modifiers.speed_mod && modifiers.speed_mod {
-            ac.speed *= 1.1;
-            ac.cost = (ac.cost as f32 * 1.07).ceil() as u32;
-        }
-        if !self.modifiers.fuel_mod && modifiers.fuel_mod {
-            ac.fuel *= 0.9;
-            ac.cost = (ac.cost as f32 * 1.10).ceil() as u32;
-        }
-        if !self.modifiers.co2_mod && modifiers.co2_mod {
-            ac.co2 *= 0.9;
-            ac.cost = (ac.cost as f32 * 1.05).ceil() as u32;
-        }
-        if !self.modifiers.fourx_mod && modifiers.fourx_mod {
-            ac.speed *= 4.0;
-        }
-        if !self.modifiers.easy_boost && modifiers.easy_boost {
-            ac.speed *= 1.5;
-        }
-        Self {
-            aircraft: ac.into(),
-            modifiers,
-        }
-    }
-
-    fn get_new_aircraft(&self, priority: &Priority) -> Aircraft {
-        if self.aircraft.priority == *priority {
-            (*self.aircraft).clone()
-        } else {
-            unimplemented!("updating engine type not yet implemented");
-        }
-    }
-}
-
-#[derive(Debug)]
 pub enum QueryKey {
     ALL(String),
-    ID(u16),
-    SHORTNAME(String),
-    NAME(String),
+    ID(Id),
+    SHORTNAME(ShortName),
+    NAME(Name),
 }
 
 #[derive(Debug)]
@@ -163,8 +130,10 @@ pub struct QueryCtx {
     pub modifiers: Modifiers,
 }
 
-impl QueryKey {
-    fn from_str(s: &str) -> Result<QueryCtx, Error> {
+impl FromStr for QueryCtx {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<QueryCtx, Self::Err> {
         let mut mods = Modifiers::default();
 
         let s = if let Some(idx) = s.find('[') {
@@ -193,45 +162,45 @@ impl QueryKey {
             s.trim()
         };
 
-        match s.to_uppercase().split_once(":") {
+        match s.to_uppercase().split_once(':') {
             None => Ok(QueryCtx {
                 key: QueryKey::ALL(s.to_string()),
                 modifiers: mods,
             }),
             Some((k, v)) => match k {
                 "SHORTNAME" => Ok(QueryCtx {
-                    key: QueryKey::SHORTNAME(v.to_string()),
+                    key: QueryKey::SHORTNAME(ShortName(v.to_string())),
                     modifiers: mods,
                 }),
                 "NAME" => Ok(QueryCtx {
-                    key: QueryKey::NAME(v.to_string()),
+                    key: QueryKey::NAME(Name(v.to_string())),
                     modifiers: mods,
                 }),
-                "ID" => u16::from_str(v)
-                    .map_err(Error::InvalidID)
-                    .map(|id| QueryCtx {
-                        key: QueryKey::ID(id),
-                        modifiers: mods,
-                    }),
+                "ID" => Id::from_str(v).map(|id| QueryCtx {
+                    key: QueryKey::ID(id),
+                    modifiers: mods,
+                }),
                 _ => Err(Error::InvalidQueryType),
             },
         }
     }
 }
 
-// TODO: hashmap<column name, hashmap<engine priority, Aircraft>>
-#[derive(Debug, Clone)]
-pub struct Aircrafts {
-    by_id: HashMap<u16, Rc<Aircraft>>,
-    by_shortname: HashMap<String, Rc<Aircraft>>,
-    by_name: HashMap<String, Rc<Aircraft>>,
-}
+pub type AircraftVariants = HashMap<Priority, Rc<Aircraft>>;
 
 // TODO: implement IntoIterator returning by_id
+#[derive(Debug, Clone)]
+pub struct Aircrafts {
+    pub by_id: HashMap<Id, AircraftVariants>,
+    pub by_shortname: HashMap<ShortName, AircraftVariants>,
+    pub by_name: HashMap<Name, AircraftVariants>,
+}
+
 impl Aircrafts {
     pub fn from_csv(file_path: &str) -> Result<Self, csv::Error> {
         let file = File::open(file_path)?;
         let mut rdr = csv::Reader::from_reader(file);
+
         let mut aircrafts = Self {
             by_id: HashMap::with_capacity(COUNT),
             by_shortname: HashMap::with_capacity(COUNT),
@@ -247,35 +216,110 @@ impl Aircrafts {
     }
 
     fn add_aircraft(&mut self, aircraft: Aircraft) {
+        // TODO: HashMap<*, Rc<RefCell<AircraftVariants>>> looks ugly...
+        //        id ---> AircraftVariants[priority] ---> Aircraft
+        // shortname --/
+        //      name -/
         let ac = Rc::new(aircraft);
 
-        self.by_id.insert(ac.id, Rc::clone(&ac));
+        self.by_id
+            .entry(ac.id.clone())
+            .or_default()
+            .insert(ac.priority.clone(), Rc::clone(&ac));
+
         self.by_shortname
-            .insert(ac.shortname.to_uppercase(), Rc::clone(&ac));
-        self.by_name.insert(ac.name.to_lowercase(), Rc::clone(&ac));
-    }
+            .entry(ShortName(ac.shortname.0.to_uppercase()))
+            .or_default()
+            .insert(ac.priority.clone(), Rc::clone(&ac));
 
-    pub fn search(&self, s: &str) -> Result<CustomAircraft, Error> {
-        let ctx = QueryKey::from_str(s)?;
-        let result = match ctx.key {
-            QueryKey::ALL(s) => self.search_all(&s),
-            QueryKey::ID(id) => self.by_id.get(&id),
-            QueryKey::SHORTNAME(sn) => self.by_shortname.get(&sn.to_uppercase()),
-            QueryKey::NAME(name) => self.by_name.get(&name.to_lowercase()),
-        };
-        result
-            .map(|ac| CustomAircraft::new(Rc::clone(ac)).with_modifiers(ctx.modifiers))
-            .ok_or(Error::NotFound)
+        self.by_name
+            .entry(Name(ac.name.0.to_uppercase()))
+            .or_default()
+            .insert(ac.priority.clone(), Rc::clone(&ac));
     }
+}
 
-    fn search_all(&self, s: &str) -> Option<&Rc<Aircraft>> {
-        if let Ok(id) = u16::from_str(s) {
-            self.by_id.get(&id)
-        } else if let Some(ac) = self.by_shortname.get(&s.to_uppercase()) {
-            Some(ac)
-        } else {
-            self.by_name.get(&s.to_lowercase())
+#[derive(Debug)]
+pub struct CustomAircraft {
+    pub aircraft: Rc<Aircraft>,
+    pub modifiers: Modifiers,
+}
+
+impl CustomAircraft {
+    pub fn new(aircraft: Rc<Aircraft>, modifiers: Modifiers) -> Self {
+        let mut mulspd: f32 = 1.0;
+        let mut mulfuel: f32 = 1.0;
+        let mut mulco2: f32 = 1.0;
+        let mut mulcost: f32 = 1.0;
+
+        if modifiers.speed_mod {
+            mulspd *= 1.1;
+            mulcost *= 1.07;
         }
+        if modifiers.fuel_mod {
+            mulfuel *= 0.9;
+            mulcost *= 1.10;
+        }
+        if modifiers.co2_mod {
+            mulco2 *= 0.9;
+            mulcost *= 1.05;
+        }
+        if modifiers.fourx_mod {
+            mulspd *= 4.0;
+        }
+        if modifiers.easy_boost {
+            mulspd *= 1.5;
+        }
+
+        let ac = if mulspd == 1.0 && mulfuel == 1.0 && mulco2 == 1.0 && mulcost == 1.0 {
+            aircraft
+        } else {
+            let mut cloned = (*aircraft).clone();
+            cloned.speed *= mulspd;
+            cloned.fuel *= mulfuel;
+            cloned.co2 *= mulco2;
+            cloned.cost = (cloned.cost as f32 * mulcost).ceil() as u32;
+            Rc::new(cloned)
+        };
+
+        Self {
+            aircraft: ac,
+            modifiers,
+        }
+    }
+}
+
+impl Aircrafts {
+    pub fn search(&self, s: &str) -> Result<CustomAircraft, Error> {
+        let ctx = QueryCtx::from_str(s)?;
+
+        let ac = self.search_variants_(&ctx)?;
+        ac.get(&ctx.modifiers.priority)
+            .map(|ac| CustomAircraft::new(Rc::clone(ac), ctx.modifiers))
+            .ok_or(Error::AircraftPriorityNotFound)
+    }
+
+    pub fn search_variants(&self, s: &str) -> Result<&AircraftVariants, Error> {
+        let ctx = QueryCtx::from_str(s)?;
+        self.search_variants_(&ctx)
+    }
+
+    fn search_variants_(&self, ctx: &QueryCtx) -> Result<&AircraftVariants, Error> {
+        match &ctx.key {
+            QueryKey::ALL(s) => {
+                if let Ok(id) = Id::from_str(s) {
+                    self.by_id.get(&id)
+                } else if let Some(ac) = self.by_shortname.get(&ShortName(s.to_uppercase())) {
+                    Some(ac)
+                } else {
+                    self.by_name.get(&Name(s.to_uppercase()))
+                }
+            }
+            QueryKey::ID(id) => self.by_id.get(id),
+            QueryKey::SHORTNAME(sn) => self.by_shortname.get(sn),
+            QueryKey::NAME(name) => self.by_name.get(name),
+        }
+        .ok_or(Error::AircraftNotFound)
     }
 }
 
@@ -289,14 +333,12 @@ fn queue_suggestions(
             item: Rc::clone(aircraft),
             similarity,
         });
-    } else {
-        if similarity > heap.peek().unwrap().similarity {
-            heap.pop();
-            heap.push(Suggestion::<Rc<Aircraft>> {
-                item: Rc::clone(aircraft),
-                similarity,
-            });
-        }
+    } else if similarity > heap.peek().unwrap().similarity {
+        heap.pop();
+        heap.push(Suggestion::<Rc<Aircraft>> {
+            item: Rc::clone(aircraft),
+            similarity,
+        });
     }
 }
 
@@ -306,35 +348,35 @@ impl Aircrafts {
 
         let mut heap = BinaryHeap::with_capacity(MAX_SUGGESTIONS);
 
-        for (k, aircraft) in self.by_shortname.iter() {
-            queue_suggestions(&mut heap, aircraft, jaro_winkler(k, &su));
+        for (k, ac_variants) in &self.by_shortname {
+            if let Some(aircraft) = ac_variants.values().next() {
+                queue_suggestions(&mut heap, aircraft, jaro_winkler(&k.0, &su));
+            }
         }
-        for (k, aircraft) in self.by_name.iter() {
-            queue_suggestions(&mut heap, aircraft, jaro_winkler(k, &su));
+        for (k, ac_variants) in &self.by_name {
+            if let Some(aircraft) = ac_variants.values().next() {
+                queue_suggestions(&mut heap, aircraft, jaro_winkler(&k.0, &su));
+            }
         }
+
         heap.into_sorted_vec()
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
-    InvalidID(std::num::ParseIntError),
+    #[error("Invalid aircraft ID: {0}")]
+    InvalidID(#[source] std::num::ParseIntError),
+    #[error("Invalid query type")]
     InvalidQueryType,
-    NotFound,
+    #[error("Aircraft not found")]
+    AircraftNotFound,
+    #[error("Aircraft priority not found")]
+    AircraftPriorityNotFound,
+    #[error("Invalid aircraft type")]
     InvalidAircraftType,
-    InvalidEnginePriority(std::num::ParseIntError),
+    #[error("Invalid engine priority: {0}")]
+    InvalidEnginePriority(#[source] std::num::ParseIntError),
+    #[error("Invalid modifier: {0}")]
     InvalidModifier(String),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::InvalidID(e) => write!(f, "Invalid aircraft ID: {}", e),
-            Error::InvalidQueryType => write!(f, "Invalid query type"),
-            Error::NotFound => write!(f, "Aircraft not found"),
-            Error::InvalidAircraftType => write!(f, "Invalid aircraft type"),
-            Error::InvalidEnginePriority(e) => write!(f, "Invalid engine priority: {}", e),
-            Error::InvalidModifier(e) => write!(f, "Invalid modifier: {}", e),
-        }
-    }
 }
