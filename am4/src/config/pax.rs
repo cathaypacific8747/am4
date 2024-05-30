@@ -1,6 +1,7 @@
 use crate::demand::pax::PaxDemand;
 use crate::user::GameMode;
 
+#[derive(Debug)]
 pub struct PaxConfig {
     pub y: u16,
     pub j: u16,
@@ -8,6 +9,7 @@ pub struct PaxConfig {
     pub algorithm: PaxConfigAlgorithm,
 }
 
+#[derive(Debug)]
 pub enum PaxConfigAlgorithm {
     Auto,
     Fjy,

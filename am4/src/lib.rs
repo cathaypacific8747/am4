@@ -10,7 +10,7 @@ pub mod ticket;
 pub mod user;
 
 // stage 3
-// pub mod aircraft;
+pub mod aircraft;
 
 // stage 4
-// pub mod routes;
+pub mod route;

@@ -91,6 +91,14 @@ def convert_aircrafts():
         )
     )
     pq.write_table(table, "aircrafts.parquet")
+
+    # for serde
+    type_mapping = {0: "pax", 1: "cargo", 2: "vip"}
+    type_array = pa.array(
+        [type_mapping[i] if i in type_mapping else None for i in table.column("type").to_pylist()], type=pa.string()
+    )
+    table = table.remove_column(table.schema.get_field_index("type"))
+    table = table.add_column(4, "type", type_array)
     csv.write_csv(table, "aircrafts.csv")
 
 

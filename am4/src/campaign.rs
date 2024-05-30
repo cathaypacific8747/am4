@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Airline {
     C4_4HR,
     C4_8HR,
@@ -33,7 +33,7 @@ impl Default for Airline {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Eco {
     C4Hr,
     C8Hr,
@@ -68,19 +68,19 @@ impl Campaign {
 
     pub fn estimate_pax_reputation(&self, base_reputation: f64) -> f64 {
         let mut reputation = base_reputation;
-        reputation += self._estimate_airline_reputation(self.pax_activated.clone());
-        reputation += self._estimate_eco_reputation(self.eco_activated.clone());
+        reputation += self.estimate_airline_reputation(self.pax_activated);
+        reputation += self.estimate_eco_reputation(self.eco_activated);
         reputation
     }
 
     pub fn estimate_cargo_reputation(&self, base_reputation: f64) -> f64 {
         let mut reputation = base_reputation;
-        reputation += self._estimate_airline_reputation(self.cargo_activated.clone());
-        reputation += self._estimate_eco_reputation(self.eco_activated.clone());
+        reputation += self.estimate_airline_reputation(self.cargo_activated);
+        reputation += self.estimate_eco_reputation(self.eco_activated);
         reputation
     }
 
-    fn _estimate_airline_reputation(&self, airline: Airline) -> f64 {
+    fn estimate_airline_reputation(&self, airline: Airline) -> f64 {
         match airline {
             Airline::C4_4HR
             | Airline::C4_8HR
@@ -110,15 +110,15 @@ impl Campaign {
         }
     }
 
-    fn _estimate_eco_reputation(&self, eco: Eco) -> f64 {
+    fn estimate_eco_reputation(&self, eco: Eco) -> f64 {
         match eco {
             Eco::C4Hr | Eco::C8Hr | Eco::C12Hr | Eco::C16Hr | Eco::C20Hr | Eco::C24Hr => 10.0,
             Eco::None => 0.0,
         }
     }
 
-    fn _set(&mut self, s: &str) -> bool {
-        match s.to_uppercase().as_str() {
+    fn set(&mut self, s: &str) -> bool {
+        match s.to_ascii_uppercase().as_str() {
             "C1" => {
                 self.pax_activated = Airline::C1_24HR;
                 self.cargo_activated = Airline::C1_24HR;
@@ -149,16 +149,16 @@ impl Campaign {
 
     pub fn parse(s: &str) -> Self {
         let mut campaign = Self::default();
-        let s_upper = s.to_uppercase().replace(' ', "");
+        let s_upper = s.replace(' ', "");
         if s_upper.is_empty() {
             return campaign;
         }
 
         if let Some(pos) = s_upper.find(',') {
-            campaign._set(&s_upper[..pos]);
-            campaign._set(&s_upper[pos + 1..]);
+            campaign.set(&s_upper[..pos]);
+            campaign.set(&s_upper[pos + 1..]);
         } else {
-            campaign._set(&s_upper);
+            campaign.set(&s_upper);
         }
         campaign
     }

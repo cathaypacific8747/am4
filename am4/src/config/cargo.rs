@@ -1,12 +1,14 @@
 use crate::demand::cargo::CargoDemand;
 use crate::demand::pax::PaxDemand;
 
+#[derive(Debug)]
 pub struct CargoConfig {
     pub l: u8,
     pub h: u8,
     pub algorithm: CargoConfigAlgorithm,
 }
 
+#[derive(Debug)]
 pub enum CargoConfigAlgorithm {
     Auto,
     L,

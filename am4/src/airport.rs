@@ -59,19 +59,19 @@ impl FromStr for Id {
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct Airport {
-    id: Id,
-    name: Name,
-    fullname: String,
-    country: String,
-    continent: String,
-    iata: Iata,
-    icao: Icao,
-    lat: f64,
-    lng: f64,
-    rwy: u16,
-    market: u8,
-    hub_cost: u32,
-    rwy_codes: String,
+    pub id: Id,
+    pub name: Name,
+    pub fullname: String,
+    pub country: String,
+    pub continent: String,
+    pub iata: Iata,
+    pub icao: Icao,
+    pub lat: f64,
+    pub lng: f64,
+    pub rwy: u16,
+    pub market: u8,
+    pub hub_cost: u32,
+    pub rwy_codes: String,
 }
 
 #[derive(Debug)]
@@ -100,10 +100,10 @@ impl QueryKey {
 
 #[derive(Debug, Clone)]
 pub struct Airports {
-    by_iata: HashMap<Iata, Rc<Airport>>,
-    by_icao: HashMap<Icao, Rc<Airport>>,
-    by_id: HashMap<Id, Rc<Airport>>,
-    by_name: HashMap<Name, Rc<Airport>>,
+    pub by_iata: HashMap<Iata, Rc<Airport>>,
+    pub by_icao: HashMap<Icao, Rc<Airport>>,
+    pub by_id: HashMap<Id, Rc<Airport>>,
+    pub by_name: HashMap<Name, Rc<Airport>>,
 }
 
 impl Airports {
