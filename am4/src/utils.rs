@@ -1,4 +1,6 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::BinaryHeap};
+
+pub const MAX_SUGGESTIONS: usize = 5; // TODO: make this configurable
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Suggestion<T> {
@@ -20,8 +22,15 @@ impl<T: PartialEq> PartialOrd for Suggestion<T> {
     }
 }
 
-/// converts raw database value into a key
-/// note: this is not hashing but a preprocessing step
-pub trait Preprocess {
-    fn preprocess(&self) -> Self;
+pub fn queue_suggestions<'a, T: PartialEq>(
+    heap: &mut BinaryHeap<Suggestion<&'a T>>,
+    item: &'a T,
+    similarity: f64,
+) {
+    if heap.len() < MAX_SUGGESTIONS {
+        heap.push(Suggestion { item, similarity });
+    } else if similarity > heap.peek().unwrap().similarity {
+        heap.pop();
+        heap.push(Suggestion { item, similarity });
+    }
 }

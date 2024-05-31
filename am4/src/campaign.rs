@@ -33,7 +33,7 @@ impl Default for Airline {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Eco {
     C4Hr,
     C8Hr,

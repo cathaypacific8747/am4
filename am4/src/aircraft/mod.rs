@@ -13,7 +13,7 @@ pub struct Aircraft {
     pub name: Name,
     #[serde(rename = "type")]
     pub ac_type: AircraftType,
-    pub priority: Priority,
+    pub priority: EnginePriority,
     pub eid: u16,
     pub ename: String,
     pub speed: f32,
@@ -49,37 +49,37 @@ impl FromStr for Id {
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
-pub struct ShortName(String);
+pub struct ShortName(pub String);
 
 impl FromStr for ShortName {
     type Err = AircraftError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.len() {
-            1..=10 => Ok(Self(s.to_string())),
+            1..=20 => Ok(Self(s.to_string())), // actual max 11, but not invalidating because we want fuzzy search to not be too strict
             _ => Err(AircraftError::InvalidShortName),
         }
     }
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
-pub struct Name(String);
+pub struct Name(pub String);
 
 impl FromStr for Name {
     type Err = AircraftError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.len() {
-            1..=20 => Ok(Self(s.to_string())),
+            1..=40 => Ok(Self(s.to_string())), // actual max 28
             _ => Err(AircraftError::InvalidName),
         }
     }
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
-pub struct Priority(u8);
+pub struct EnginePriority(pub u8);
 
-impl FromStr for Priority {
+impl FromStr for EnginePriority {
     type Err = AircraftError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -114,9 +114,9 @@ impl FromStr for AircraftType {
 pub enum AircraftError {
     #[error("Invalid aircraft ID: {0}")]
     InvalidID(#[source] std::num::ParseIntError),
-    #[error("Invalid short name: must be between 1 and 10 characters")]
+    #[error("Invalid short name: must be between 1 and 20 characters")]
     InvalidShortName,
-    #[error("Invalid name: must be between 1 and 20 characters")]
+    #[error("Invalid name: must be between 1 and 40 characters")]
     InvalidName,
     #[error("Invalid aircraft type")]
     InvalidAircraftType,
