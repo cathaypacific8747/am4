@@ -104,72 +104,59 @@ impl Into<Option<SearchKey>> for &QueryCtx {
     }
 }
 
-pub type AircraftVariants<'a> = HashMap<EnginePriority, &'a Aircraft>;
+pub type AircraftVariants = HashMap<EnginePriority, usize>;
 
 #[derive(Debug)]
 pub struct Aircrafts {
     pub data: Vec<Aircraft>,
+    index: HashMap<SearchKey, AircraftVariants>,
 }
 
 impl Aircrafts {
-    pub fn from_csv(file_path: &str) -> Result<Self, csv::Error> {
+    pub fn from_csv(file_path: &str) -> Result<Aircrafts, csv::Error> {
         let file = File::open(file_path)?;
         let mut rdr = csv::Reader::from_reader(file);
 
-        let mut aircrafts = Self { data: Vec::new() };
+        let mut aircrafts = Self {
+            data: Vec::new(),
+            index: HashMap::new(),
+        };
 
-        for result in rdr.deserialize() {
+        for (i, result) in rdr.deserialize().enumerate() {
             let ac: Aircraft = result?;
+
+            aircrafts
+                .index
+                .entry(SearchKey::from(ac.id.clone()))
+                .or_insert_with(HashMap::new)
+                .insert(ac.priority.clone(), i);
+
+            aircrafts
+                .index
+                .entry(SearchKey::from(ac.shortname.clone()))
+                .or_insert_with(HashMap::new)
+                .insert(ac.priority.clone(), i);
+
+            aircrafts
+                .index
+                .entry(SearchKey::from(ac.name.clone()))
+                .or_insert_with(HashMap::new)
+                .insert(ac.priority.clone(), i);
+
             aircrafts.data.push(ac);
         }
 
         Ok(aircrafts)
     }
 
-    pub fn indexed<'a>(&'a self) -> AircraftsIndex<'a> {
-        AircraftsIndex::new(&self.data)
-    }
-}
-
-// Simplified Index
-#[derive(Debug)]
-pub struct AircraftsIndex<'a> {
-    index: HashMap<SearchKey, AircraftVariants<'a>>,
-    _data: &'a [Aircraft],
-}
-
-impl<'a> AircraftsIndex<'a> {
-    pub fn new(data: &'a [Aircraft]) -> Self {
-        let mut index: HashMap<SearchKey, AircraftVariants> = HashMap::new();
-
-        for aircraft in data {
-            index
-                .entry(SearchKey::from(aircraft.id.clone()))
-                .or_insert_with(HashMap::new)
-                .insert(aircraft.priority.clone(), aircraft);
-
-            index
-                .entry(SearchKey::from(aircraft.shortname.clone()))
-                .or_insert_with(HashMap::new)
-                .insert(aircraft.priority.clone(), aircraft);
-
-            index
-                .entry(SearchKey::from(aircraft.name.clone()))
-                .or_insert_with(HashMap::new)
-                .insert(aircraft.priority.clone(), aircraft);
-        }
-
-        Self { index, _data: data }
-    }
-
     /// Search for an aircraft
-    pub fn search(&'a self, s: &str) -> Result<CustomAircraft, AircraftSearchError> {
+    pub fn search(&self, s: &str) -> Result<CustomAircraft, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
-        let variants = self.search_variants(&ctx)?;
+        let engines = self.search_by_key(&ctx)?;
 
-        if let Some(aircraft) = variants.get(&ctx.modifiers.engine) {
+        if let Some(i) = engines.get(&ctx.modifiers.engine) {
             Ok(CustomAircraft::from_aircraft_and_modifiers(
-                aircraft.to_owned().to_owned(),
+                self.data[*i].to_owned(),
                 ctx.modifiers,
             ))
         } else {
@@ -178,12 +165,12 @@ impl<'a> AircraftsIndex<'a> {
     }
 
     /// Search all engine variants for a given aircraft
-    pub fn search_engines(&'a self, s: &str) -> Result<&AircraftVariants, AircraftSearchError> {
+    pub fn search_engines(&self, s: &str) -> Result<&AircraftVariants, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
-        self.search_variants(&ctx)
+        self.search_by_key(&ctx)
     }
 
-    fn search_variants(&'a self, ctx: &QueryCtx) -> Result<&AircraftVariants, AircraftSearchError> {
+    fn search_by_key(&self, ctx: &QueryCtx) -> Result<&AircraftVariants, AircraftSearchError> {
         let key: Option<SearchKey> = ctx.into();
         let key = key.ok_or(AircraftSearchError::InvalidQueryType)?;
 
@@ -192,10 +179,7 @@ impl<'a> AircraftsIndex<'a> {
             .ok_or(AircraftSearchError::AircraftNotFound)
     }
 
-    pub fn suggest(
-        &'a self,
-        s: &str,
-    ) -> Result<Vec<Suggestion<&'a Aircraft>>, AircraftSearchError> {
+    pub fn suggest(&self, s: &str) -> Result<Vec<Suggestion<&Aircraft>>, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
 
         // TODO: this is a hack to get the uppercase version of the parsed query
@@ -212,14 +196,14 @@ impl<'a> AircraftsIndex<'a> {
         for (key, variants) in &self.index {
             // only search first engine variant
             // TODO: restrict to only search by shortname if ctx.key is shortname
-            if let Some(aircraft) = variants.values().next() {
+            if let Some(i) = variants.values().next() {
                 let s = match key {
                     SearchKey::ShortName(v) => &v.0,
                     SearchKey::Name(v) => &v.0,
                     _ => continue, // ignore searching by id
                 };
                 let similarity = jaro_winkler(s, &su);
-                queue_suggestions(&mut heap, *aircraft, similarity);
+                queue_suggestions(&mut heap, &self.data[*i], similarity);
             }
         }
 
@@ -233,7 +217,7 @@ pub enum AircraftSearchError {
     InvalidQueryType,
     #[error("Aircraft not found")]
     AircraftNotFound,
-    #[error("Aircraft does not exist for this engine")]
+    #[error("Engine does not exist for this aircraft")]
     EngineNotFound,
     #[error("Found opening `[` but no closing `]`.")]
     MissingClosingBracket,

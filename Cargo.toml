@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["am4", "am4-cli"]
+members = ["am4", "am4-app"]
 
 [profile.release]
 debug = true

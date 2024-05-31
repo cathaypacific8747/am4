@@ -1,27 +1,17 @@
 use once_cell::sync::Lazy;
 
-use am4::aircraft::search::{Aircrafts, AircraftsIndex};
-// use am4::user::{GameMode, Role, User};
+use am4::aircraft::search::Aircrafts;
 use rstest::*;
 
-#[fixture]
-fn aircraft_data() -> AircraftsIndex<'static> {
-    static AIRCRAFTS: Lazy<Aircrafts> =
-        Lazy::new(|| Aircrafts::from_csv("./data/aircrafts.csv").unwrap());
-
-    AIRCRAFTS.indexed()
-}
+static AIRCRAFTS: Lazy<Aircrafts> =
+    Lazy::new(|| Aircrafts::from_csv("./data/aircrafts.csv").unwrap());
 
 #[rstest]
 #[case("id:1", "b744")]
 #[case("shortname:b744", "b744")]
 #[case("name:B747-400", "b744")]
-fn test_aircraft_search(
-    aircraft_data: AircraftsIndex<'static>,
-    #[case] inp: &str,
-    #[case] expected_shortname: &str,
-) {
-    let ac = aircraft_data.search(inp).unwrap();
+fn test_aircraft_search(#[case] inp: &str, #[case] expected_shortname: &str) {
+    let ac = AIRCRAFTS.search(inp).unwrap();
     assert_eq!(ac.aircraft.shortname.0, expected_shortname);
 }
 
@@ -32,15 +22,11 @@ fn test_aircraft_search(
 #[case("name:B747-4000", "b744")]
 #[case("shortname:b747-4000", "b744")] // cross suggest with name
 #[case("name:b744", "b744")] // cross suggest with shortname
-fn test_aircraft_fail_and_suggest(
-    aircraft_data: AircraftsIndex<'static>,
-    #[case] inp: &str,
-    #[case] expected_shortname: &str,
-) {
-    let ac_result = aircraft_data.search(inp);
+fn test_aircraft_fail_and_suggest(#[case] inp: &str, #[case] expected_shortname: &str) {
+    let ac_result = AIRCRAFTS.search(inp);
     assert!(ac_result.is_err());
 
-    let suggs = aircraft_data.suggest(inp);
+    let suggs = AIRCRAFTS.suggest(inp);
     assert!(suggs.is_ok());
     assert_eq!(suggs.unwrap()[0].item.shortname.0, expected_shortname);
 }
@@ -48,16 +34,16 @@ fn test_aircraft_fail_and_suggest(
 #[rstest]
 #[case("74sp")]
 #[case("id:335a")]
-fn test_aircraft_stoi_trailing(aircraft_data: AircraftsIndex<'static>, #[case] inp: &str) {
-    let result = aircraft_data.search(inp);
+fn test_aircraft_stoi_trailing(#[case] inp: &str) {
+    let result = AIRCRAFTS.search(inp);
     assert!(result.is_err());
 }
 
 #[rstest]
 #[case("65590")]
 #[case("id:65590")]
-fn test_aircraft_stoi_overflow(aircraft_data: AircraftsIndex<'static>, #[case] inp: &str) {
-    let result = aircraft_data.search(inp);
+fn test_aircraft_stoi_overflow(#[case] inp: &str) {
+    let result = AIRCRAFTS.search(inp);
     assert!(result.is_err());
 }
 
@@ -72,7 +58,6 @@ fn test_aircraft_stoi_overflow(aircraft_data: AircraftsIndex<'static>, #[case] i
 #[case("shortname:b744[sfcx]", "b744", 0, true, true, true, true)]
 #[case("name:B747-400[sfcx]", "b744", 0, true, true, true, true)]
 fn test_aircraft_modifiers_syntax(
-    aircraft_data: AircraftsIndex<'static>,
     #[case] inp: &str,
     #[case] expected_shortname: &str,
     #[case] expected_engine: u8,
@@ -81,7 +66,7 @@ fn test_aircraft_modifiers_syntax(
     #[case] expected_co2_mod: bool,
     #[case] expected_fourx_mod: bool,
 ) {
-    let result = aircraft_data.search(inp).unwrap();
+    let result = AIRCRAFTS.search(inp).unwrap();
     assert_eq!(result.aircraft.shortname.0, expected_shortname);
 
     // Check modifiers
@@ -106,11 +91,11 @@ fn test_aircraft_modifiers_syntax(
 }
 
 #[rstest]
-fn test_aircraft_engine_modifier(aircraft_data: AircraftsIndex<'static>) {
-    let a = aircraft_data.search("b744").unwrap().aircraft;
-    let a0 = aircraft_data.search("b744[0]").unwrap().aircraft;
-    let a1 = aircraft_data.search("b744[1]").unwrap().aircraft;
-    let a1sfc = aircraft_data.search("b744[1,sfc]").unwrap().aircraft;
+fn test_aircraft_engine_modifier() {
+    let a = AIRCRAFTS.search("b744").unwrap().aircraft;
+    let a0 = AIRCRAFTS.search("b744[0]").unwrap().aircraft;
+    let a1 = AIRCRAFTS.search("b744[1]").unwrap().aircraft;
+    let a1sfc = AIRCRAFTS.search("b744[1,sfc]").unwrap().aircraft;
 
     assert_eq!(a.id, a0.id);
     assert_eq!(a0.id, a1.id);
@@ -133,10 +118,10 @@ fn test_aircraft_engine_modifier(aircraft_data: AircraftsIndex<'static>) {
 }
 
 #[rstest]
-fn test_aircraft_fourx(aircraft_data: AircraftsIndex<'static>) {
-    let a0 = aircraft_data.search("b744").unwrap().aircraft;
+fn test_aircraft_fourx() {
+    let a0 = AIRCRAFTS.search("b744").unwrap().aircraft;
 
-    let a1 = aircraft_data.search("b744[x]").unwrap().aircraft;
+    let a1 = AIRCRAFTS.search("b744[x]").unwrap().aircraft;
 
     assert!(
         (a1.speed / a0.speed - 4.0).abs() < 0.001,

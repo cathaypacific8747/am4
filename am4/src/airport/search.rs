@@ -102,7 +102,8 @@ impl Into<Option<SearchKey>> for QueryCtx {
 
 #[derive(Debug)]
 pub struct Airports {
-    pub data: Vec<Airport>,
+    data: Vec<Airport>,
+    index: HashMap<SearchKey, usize>,
 }
 
 impl Airports {
@@ -110,54 +111,36 @@ impl Airports {
         let file = File::open(file_path)?;
         let mut rdr = csv::Reader::from_reader(file);
 
-        let mut airports = Self { data: Vec::new() };
+        let mut airports = Self {
+            data: Vec::new(),
+            index: HashMap::new(),
+        };
 
-        for result in rdr.deserialize() {
+        for (i, result) in rdr.deserialize().enumerate() {
             let ap: Airport = result?;
+            airports.index.insert(SearchKey::from(ap.id.clone()), i);
+            airports.index.insert(SearchKey::from(ap.iata.clone()), i);
+            airports.index.insert(SearchKey::from(ap.icao.clone()), i);
+            airports.index.insert(SearchKey::from(ap.name.clone()), i);
             airports.data.push(ap);
         }
 
         Ok(airports)
     }
 
-    pub fn indexed<'a>(&'a self) -> AirportsIndex<'a> {
-        AirportsIndex::new(&self.data)
-    }
-}
-
-#[derive(Debug)]
-pub struct AirportsIndex<'a> {
-    index: HashMap<SearchKey, &'a Airport>,
-    _data: &'a [Airport],
-}
-
-impl<'a> AirportsIndex<'a> {
-    pub fn new(data: &'a [Airport]) -> Self {
-        let mut index: HashMap<SearchKey, &'a Airport> = HashMap::new();
-
-        for airport in data {
-            index.insert(SearchKey::from(airport.id.clone()), airport);
-            index.insert(SearchKey::from(airport.iata.clone()), airport);
-            index.insert(SearchKey::from(airport.icao.clone()), airport);
-            index.insert(SearchKey::from(airport.name.clone()), airport);
-        }
-
-        Self { index, _data: data }
-    }
-
     /// Search for an airport
-    pub fn search(&'a self, s: &str) -> Result<&'a Airport, AirportSearchError> {
+    pub fn search(&self, s: &str) -> Result<&Airport, AirportSearchError> {
         let ctx = QueryCtx::from_str(s)?;
         let key: Option<SearchKey> = ctx.into();
         let key = key.ok_or(AirportSearchError::InvalidQueryType)?;
 
         self.index
             .get(&key)
+            .and_then(|&i| self.data.get(i))
             .ok_or(AirportSearchError::AirportNotFound)
-            .copied()
     }
 
-    pub fn suggest(&'a self, s: &str) -> Result<Vec<Suggestion<&'a Airport>>, AirportSearchError> {
+    pub fn suggest(&self, s: &str) -> Result<Vec<Suggestion<&Airport>>, AirportSearchError> {
         let ctx = QueryCtx::from_str(s)?;
 
         // TODO: this is a hack to get the uppercase version of the parsed query
@@ -172,7 +155,7 @@ impl<'a> AirportsIndex<'a> {
 
         let mut heap = BinaryHeap::with_capacity(MAX_SUGGESTIONS);
 
-        for (key, airport) in &self.index {
+        for (key, &i) in &self.index {
             // TODO: restrict to only search by shortname if ctx.key is shortname
             let s = match key {
                 SearchKey::Iata(v) => &v.0,
@@ -181,7 +164,8 @@ impl<'a> AirportsIndex<'a> {
                 _ => continue, // ignore searching by id
             };
             let similarity = jaro_winkler(s, &su);
-            queue_suggestions(&mut heap, *airport, similarity);
+            // Access data using the index
+            queue_suggestions(&mut heap, &self.data[i], similarity);
         }
 
         Ok(heap.into_sorted_vec())

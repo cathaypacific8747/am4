@@ -1,5 +1,5 @@
 [package]
-name = "am4-cli"
+name = "am4-app"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 am4 = { path = "../am4" }
+eframe = { version = "0.27.2", features = ["default", "__screenshot"] }
+once_cell = "1.19.0"
