@@ -1,7 +1,6 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
-use std::rc::Rc;
 use std::str::FromStr;
 
 use crate::utils::Suggestion;
@@ -186,14 +185,11 @@ impl FromStr for QueryCtx {
     }
 }
 
-pub type AircraftVariants = HashMap<Priority, Rc<Aircraft>>;
+pub type AircraftVariants<'a> = HashMap<Priority, &'a Aircraft>;
 
-// TODO: implement IntoIterator returning by_id
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Aircrafts {
-    pub by_id: HashMap<Id, AircraftVariants>,
-    pub by_shortname: HashMap<ShortName, AircraftVariants>,
-    pub by_name: HashMap<Name, AircraftVariants>,
+    data: Vec<Aircraft>,
 }
 
 impl Aircrafts {
@@ -202,51 +198,78 @@ impl Aircrafts {
         let mut rdr = csv::Reader::from_reader(file);
 
         let mut aircrafts = Self {
-            by_id: HashMap::with_capacity(COUNT),
-            by_shortname: HashMap::with_capacity(COUNT),
-            by_name: HashMap::with_capacity(COUNT),
+            data: Vec::with_capacity(COUNT),
         };
 
         for result in rdr.deserialize() {
-            let aircraft: Aircraft = result?;
-            aircrafts.add_aircraft(aircraft);
+            let ac: Aircraft = result?;
+            aircrafts.data.push(ac);
         }
 
         Ok(aircrafts)
     }
 
-    fn add_aircraft(&mut self, aircraft: Aircraft) {
-        // TODO: HashMap<*, Rc<RefCell<AircraftVariants>>> looks ugly...
-        //        id ---> AircraftVariants[priority] ---> Aircraft
-        // shortname --/
-        //      name -/
-        let ac = Rc::new(aircraft);
+    pub fn indexed<'a>(&'a self) -> AircraftsIndex<'a> {
+        AircraftsIndex::new(&self.data)
+    }
+}
 
-        self.by_id
-            .entry(ac.id.clone())
-            .or_default()
-            .insert(ac.priority.clone(), Rc::clone(&ac));
+impl<'a> From<&'a Aircrafts> for AircraftsIndex<'a> {
+    fn from(aircrafts: &'a Aircrafts) -> Self {
+        aircrafts.indexed()
+    }
+}
 
-        self.by_shortname
-            .entry(ShortName(ac.shortname.0.to_uppercase()))
-            .or_default()
-            .insert(ac.priority.clone(), Rc::clone(&ac));
+// TODO: implement IntoIterator returning by_id
+// TODO: isolate HashMap<*, AircraftVariants<'a>> and attach .search_variants(s: &str)
+#[derive(Debug)]
+pub struct AircraftsIndex<'a> {
+    pub by_id: HashMap<Id, AircraftVariants<'a>>,
+    pub by_shortname: HashMap<ShortName, AircraftVariants<'a>>,
+    pub by_name: HashMap<Name, AircraftVariants<'a>>,
+    _data: &'a [Aircraft],
+}
 
-        self.by_name
-            .entry(Name(ac.name.0.to_uppercase()))
-            .or_default()
-            .insert(ac.priority.clone(), Rc::clone(&ac));
+impl<'a> AircraftsIndex<'a> {
+    pub fn new(data: &'a [Aircraft]) -> Self {
+        let mut by_id = HashMap::<Id, AircraftVariants<'a>>::with_capacity(COUNT);
+        let mut by_shortname = HashMap::<ShortName, AircraftVariants<'a>>::with_capacity(COUNT);
+        let mut by_name = HashMap::<Name, AircraftVariants<'a>>::with_capacity(COUNT);
+
+        for ac in data {
+            by_id
+                .entry(ac.id.clone())
+                .or_default()
+                .insert(ac.priority.clone(), ac);
+
+            by_shortname
+                .entry(ShortName(ac.shortname.0.to_uppercase()))
+                .or_default()
+                .insert(ac.priority.clone(), ac);
+
+            by_name
+                .entry(Name(ac.name.0.to_uppercase()))
+                .or_default()
+                .insert(ac.priority.clone(), ac);
+        }
+
+        Self {
+            by_id,
+            by_shortname,
+            by_name,
+            _data: data,
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct CustomAircraft {
-    pub aircraft: Rc<Aircraft>,
+    pub aircraft: Aircraft,
     pub modifiers: Modifiers,
 }
 
 impl CustomAircraft {
-    pub fn new(aircraft: Rc<Aircraft>, modifiers: Modifiers) -> Self {
+    pub fn from_aircraft_and_modifiers(aircraft: Aircraft, modifiers: Modifiers) -> Self {
         let mut mulspd: f32 = 1.0;
         let mut mulfuel: f32 = 1.0;
         let mut mulco2: f32 = 1.0;
@@ -272,14 +295,14 @@ impl CustomAircraft {
         }
 
         let ac = if mulspd == 1.0 && mulfuel == 1.0 && mulco2 == 1.0 && mulcost == 1.0 {
-            aircraft
+            aircraft.clone()
         } else {
-            let mut cloned = (*aircraft).clone();
+            let mut cloned = aircraft.clone();
             cloned.speed *= mulspd;
             cloned.fuel *= mulfuel;
             cloned.co2 *= mulco2;
             cloned.cost = (cloned.cost as f32 * mulcost).ceil() as u32;
-            Rc::new(cloned)
+            cloned
         };
 
         Self {
@@ -289,22 +312,27 @@ impl CustomAircraft {
     }
 }
 
-impl Aircrafts {
-    pub fn search(&self, s: &str) -> Result<CustomAircraft, Error> {
+impl<'a> AircraftsIndex<'a> {
+    pub fn search(&'a self, s: &str) -> Result<CustomAircraft, Error> {
         let ctx = QueryCtx::from_str(s)?;
 
         let ac = self.search_variants_(&ctx)?;
         ac.get(&ctx.modifiers.priority)
-            .map(|ac| CustomAircraft::new(Rc::clone(ac), ctx.modifiers))
+            .map(|ac| {
+                CustomAircraft::from_aircraft_and_modifiers(ac.to_owned().to_owned(), ctx.modifiers)
+            })
             .ok_or(Error::AircraftPriorityNotFound)
     }
 
-    pub fn search_variants(&self, s: &str) -> Result<&AircraftVariants, Error> {
+    pub fn search_variants(&'a self, s: &str) -> Result<&HashMap<Priority, &'a Aircraft>, Error> {
         let ctx = QueryCtx::from_str(s)?;
         self.search_variants_(&ctx)
     }
 
-    fn search_variants_(&self, ctx: &QueryCtx) -> Result<&AircraftVariants, Error> {
+    fn search_variants_(
+        &'a self,
+        ctx: &QueryCtx,
+    ) -> Result<&HashMap<Priority, &'a Aircraft>, Error> {
         match &ctx.key {
             QueryKey::ALL(s) => {
                 if let Ok(id) = Id::from_str(s) {
@@ -323,27 +351,27 @@ impl Aircrafts {
     }
 }
 
-fn queue_suggestions(
-    heap: &mut BinaryHeap<Suggestion<Rc<Aircraft>>>,
-    aircraft: &Rc<Aircraft>,
+fn queue_suggestions<'a>(
+    heap: &mut BinaryHeap<Suggestion<&'a Aircraft>>,
+    aircraft: &'a Aircraft,
     similarity: f64,
 ) {
     if heap.len() < MAX_SUGGESTIONS {
-        heap.push(Suggestion::<Rc<Aircraft>> {
-            item: Rc::clone(aircraft),
+        heap.push(Suggestion::<&'a Aircraft> {
+            item: aircraft,
             similarity,
         });
     } else if similarity > heap.peek().unwrap().similarity {
         heap.pop();
-        heap.push(Suggestion::<Rc<Aircraft>> {
-            item: Rc::clone(aircraft),
+        heap.push(Suggestion::<&'a Aircraft> {
+            item: aircraft,
             similarity,
         });
     }
 }
 
-impl Aircrafts {
-    pub fn suggest(&self, s: &str) -> Vec<Suggestion<Rc<Aircraft>>> {
+impl<'a> AircraftsIndex<'a> {
+    pub fn suggest(&'a self, s: &str) -> Vec<Suggestion<&'a Aircraft>> {
         let su = s.to_uppercase();
 
         let mut heap = BinaryHeap::with_capacity(MAX_SUGGESTIONS);
