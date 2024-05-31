@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug)]
 pub struct PaxDemand {
     pub y: u16,
     pub j: u16,

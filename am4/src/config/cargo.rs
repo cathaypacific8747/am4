@@ -22,7 +22,7 @@ impl CargoConfig {
         l_training: u8,
         h_training: u8,
     ) -> Option<Self> {
-        let d_pf_cargo = CargoDemand::from(*d_pf);
+        let d_pf_cargo = CargoDemand::from(d_pf);
 
         let l_cap = capacity as f32 * 0.7 * (1.0 + l_training as f32 / 100.0);
 
@@ -55,7 +55,7 @@ impl CargoConfig {
         l_training: u8,
         h_training: u8,
     ) -> Option<Self> {
-        let d_pf_cargo = CargoDemand::from(*d_pf);
+        let d_pf_cargo = CargoDemand::from(d_pf);
 
         let h_cap = capacity as f32 * (1.0 + h_training as f32 / 100.0);
 

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Airline {
     C4_4HR,
     C4_8HR,
@@ -33,7 +33,7 @@ impl Default for Airline {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug)]
 pub enum Eco {
     C4Hr,
     C8Hr,
@@ -50,7 +50,7 @@ impl Default for Eco {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct Campaign {
     pub pax_activated: Airline,
     pub cargo_activated: Airline,
@@ -68,19 +68,19 @@ impl Campaign {
 
     pub fn estimate_pax_reputation(&self, base_reputation: f64) -> f64 {
         let mut reputation = base_reputation;
-        reputation += self.estimate_airline_reputation(self.pax_activated);
-        reputation += self.estimate_eco_reputation(self.eco_activated);
+        reputation += self.estimate_airline_reputation(&self.pax_activated);
+        reputation += self.estimate_eco_reputation(&self.eco_activated);
         reputation
     }
 
     pub fn estimate_cargo_reputation(&self, base_reputation: f64) -> f64 {
         let mut reputation = base_reputation;
-        reputation += self.estimate_airline_reputation(self.cargo_activated);
-        reputation += self.estimate_eco_reputation(self.eco_activated);
+        reputation += self.estimate_airline_reputation(&self.cargo_activated);
+        reputation += self.estimate_eco_reputation(&self.eco_activated);
         reputation
     }
 
-    fn estimate_airline_reputation(&self, airline: Airline) -> f64 {
+    fn estimate_airline_reputation(&self, airline: &Airline) -> f64 {
         match airline {
             Airline::C4_4HR
             | Airline::C4_8HR
@@ -110,7 +110,7 @@ impl Campaign {
         }
     }
 
-    fn estimate_eco_reputation(&self, eco: Eco) -> f64 {
+    fn estimate_eco_reputation(&self, eco: &Eco) -> f64 {
         match eco {
             Eco::C4Hr | Eco::C8Hr | Eco::C12Hr | Eco::C16Hr | Eco::C20Hr | Eco::C24Hr => 10.0,
             Eco::None => 0.0,

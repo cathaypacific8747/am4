@@ -29,8 +29,7 @@ pub struct AircraftRouteOptions {
     pub sort_by: SortBy,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub enum TPDMode {
     #[default]
     Auto,
@@ -38,14 +37,9 @@ pub enum TPDMode {
     Strict,
 }
 
-
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub enum SortBy {
     #[default]
     PerTrip,
     PerAcPerDay,
 }
-
-

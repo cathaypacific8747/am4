@@ -1,6 +1,6 @@
 use crate::demand::pax::PaxDemand;
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug)]
 pub struct CargoDemand {
     pub l: u32,
     pub h: u32,
@@ -12,8 +12,8 @@ impl CargoDemand {
     }
 }
 
-impl From<PaxDemand> for CargoDemand {
-    fn from(pax_demand: PaxDemand) -> Self {
+impl From<&PaxDemand> for CargoDemand {
+    fn from(pax_demand: &PaxDemand) -> Self {
         Self {
             l: (pax_demand.y as f64 / 2.0).round() as u32 * 1000,
             h: pax_demand.j as u32 * 1000,

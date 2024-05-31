@@ -1,6 +1,6 @@
 use crate::user::GameMode;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug)]
 pub struct PaxTicket {
     pub y: u16,
     pub j: u16,
@@ -26,7 +26,7 @@ impl PaxTicket {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug)]
 pub struct CargoTicket {
     pub l: f32,
     pub h: f32,
@@ -51,7 +51,7 @@ impl CargoTicket {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug)]
 pub struct VIPTicket {
     pub y: u16,
     pub j: u16,
@@ -67,7 +67,7 @@ impl VIPTicket {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub enum Ticket {
     Pax(PaxTicket),
     Cargo(CargoTicket),

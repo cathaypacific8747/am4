@@ -19,3 +19,9 @@ impl<T: PartialEq> PartialOrd for Suggestion<T> {
         Some(self.cmp(other))
     }
 }
+
+/// converts raw database value into a key
+/// note: this is not hashing but a preprocessing step
+pub trait Preprocess {
+    fn preprocess(&self) -> Self;
+}
