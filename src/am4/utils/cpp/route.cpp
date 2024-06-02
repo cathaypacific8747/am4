@@ -226,7 +226,8 @@ AircraftRoute AircraftRoute::create(
         acr.warnings.push_back(AircraftRoute::Warning::ERR_FLIGHT_TIME_ABOVE_SPECIFIED);
         return acr;
     }
-    if (options.tpd_mode != Options::TPDMode::AUTO && acr.flight_time > 24 / options.trips_per_day_per_ac) {
+    if (options.tpd_mode != Options::TPDMode::AUTO &&
+        acr.flight_time > 24.0f / static_cast<float>(options.trips_per_day_per_ac)) {
         acr.warnings.push_back(AircraftRoute::Warning::ERR_TRIPS_PER_DAY_TOO_HIGH);
         return acr;
     }
@@ -646,8 +647,13 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("direct_distance", &Route::direct_distance)
         .def_readonly("valid", &Route::valid)
         .def_static("create", &Route::create, "ap0"_a, "ap1"_a)
-        .def_static("calc_distance", py::overload_cast<double, double, double, double>(&Route::calc_distance), "lat1"_a, "lon1"_a, "lat2"_a, "lon2"_a)
-        .def_static("calc_distance", py::overload_cast<const Airport&, const Airport&>(&Route::calc_distance), "a0"_a, "a1"_a)
+        .def_static(
+            "calc_distance", py::overload_cast<double, double, double, double>(&Route::calc_distance), "lat1"_a,
+            "lon1"_a, "lat2"_a, "lon2"_a
+        )
+        .def_static(
+            "calc_distance", py::overload_cast<const Airport&, const Airport&>(&Route::calc_distance), "a0"_a, "a1"_a
+        )
         .def("__repr__", &Route::repr)
         .def("to_dict", py::overload_cast<const Route&>(&to_dict));
 

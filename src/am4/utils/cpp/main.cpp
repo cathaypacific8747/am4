@@ -79,11 +79,10 @@ int main() {
         init(executable_path);  // 1.3s
         // const auto& db = Database::Client();
 
-        Airport ap0 = *Airport::search("SIN").ap;
-        // Airport ap1 = *Airport::search("TPE").ap;
-        Aircraft ac = *Aircraft::search("a32vip").ac;
-        auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT_ALLOW_MULTIPLE_AC, 2);
-        // auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO);
+        Airport ap0 = *Airport::search("BAH").ap;
+        Airport ap1 = *Airport::search("LUW").ap;
+        Aircraft ac = *Aircraft::search("mc214[sfc]").ac;
+        auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::STRICT_ALLOW_MULTIPLE_AC, 5);
         User user = User::Default();
 
         auto timer = Timer();
@@ -91,10 +90,7 @@ int main() {
         // auto rs = RoutesSearch(ap0, ac, options, user);
         // auto results = rs.get();
         // std::cout << "results.size(): " << results.size() << std::endl;
-        auto a = Airport::search("vhhx");
-        for (int i = 0; i < 1000; i++) {
-            std::ignore = Airport::suggest(a.parse_result);
-        }
+        auto results = AircraftRoute::create(ap0, ap1, ac, options, user);
         // __itt_task_end(domain);
         timer.stop();
         // getchar();
