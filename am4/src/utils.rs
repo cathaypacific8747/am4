@@ -1,4 +1,5 @@
 use std::{cmp::Ordering, collections::BinaryHeap};
+use thiserror::Error;
 
 pub const MAX_SUGGESTIONS: usize = 5; // TODO: make this configurable
 
@@ -33,4 +34,16 @@ pub fn queue_suggestions<'a, T: PartialEq>(
         heap.pop();
         heap.push(Suggestion { item, similarity });
     }
+}
+
+#[derive(Error, Debug)]
+pub enum ParseError {
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
+    #[error("Archive error: {0}")]
+    ArchiveError(String),
+    #[error("Deserialise error: {0}")]
+    DeserialiseError(String),
+    #[error("Invalid data length: expected {expected} routes, got {actual}")]
+    InvalidDataLength { expected: usize, actual: usize },
 }

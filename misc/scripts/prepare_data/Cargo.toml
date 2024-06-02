@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+am4 = { path = "../../../am4" }
+polars = { version = "0.40.0", features = [
+    "lazy",
+    "dtype-u16",
+    "dtype-u8",
+    "parquet",
+] }
+rkyv = "0.7.44"
+thiserror = "1.0.61"

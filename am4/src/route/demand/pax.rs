@@ -1,6 +1,10 @@
+use rkyv;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(
+    Debug, PartialEq, Deserialize, Serialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,
+)]
+#[archive(check_bytes)]
 pub struct PaxDemand {
     pub y: u16,
     pub j: u16,
@@ -18,26 +22,3 @@ impl std::ops::Div<f64> for PaxDemand {
         }
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use bincode::{self, Options};
-
-//     #[test]
-//     fn test_from_bytes() {
-//         let options = bincode::DefaultOptions::new().with_fixint_encoding();
-
-//         // let xs: &[u8] = &[0x21, 0xe2, 0x00, 0xb6, 0x00, 0x2d];
-//         // let ys: PaxDemand = options.deserialize(&xs).unwrap();
-//         // dbg!(ys);
-//         // let expected = PaxDemand {
-//         //     y: 542,
-//         //     j: 182,
-//         //     f: 45,
-//         // };
-//         // let xhat: Vec<u8> = options.serialize(&expected).unwrap();
-//         // dbg!(xhat);
-//         // assert_eq!(expected, ys);
-//     }
-// }

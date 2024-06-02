@@ -1,10 +1,15 @@
 use once_cell::sync::Lazy;
 
-use am4::aircraft::search::Aircrafts;
+use am4::aircraft::db::Aircrafts;
 use rstest::*;
 
-static AIRCRAFTS: Lazy<Aircrafts> =
-    Lazy::new(|| Aircrafts::from_csv("./data/aircrafts.csv").unwrap());
+static AIRCRAFTS: Lazy<Aircrafts> = Lazy::new(|| Aircrafts::from("./data/aircrafts.bin").unwrap());
+
+#[rstest]
+fn test_aircrafts_ok() {
+    assert_eq!(AIRCRAFTS.index().len(), 992);
+    assert_eq!(AIRCRAFTS.data().len(), 492);
+}
 
 #[rstest]
 #[case("id:1", "b744")]

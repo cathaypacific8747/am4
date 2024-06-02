@@ -1,11 +1,13 @@
 pub mod custom;
-pub mod search;
+pub mod db;
 
+use rkyv::{Archive as Ra, Deserialize as Rd, Serialize as Rs};
 use serde::Deserialize;
 use std::str::FromStr;
 use thiserror::Error;
 
-#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Ra, Rd, Rs)]
+#[archive(check_bytes)]
 pub struct Aircraft {
     pub id: Id,
     pub shortname: ShortName,
@@ -35,8 +37,9 @@ pub struct Aircraft {
     pub length: u8,
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)] // TODO: implement hash and partialeq
-pub struct Id(u16);
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash, Ra, Rd, Rs)]
+#[archive(check_bytes)]
+pub struct Id(pub u16);
 
 impl FromStr for Id {
     type Err = AircraftError;
@@ -48,7 +51,8 @@ impl FromStr for Id {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash, Ra, Rd, Rs)]
+#[archive(check_bytes)]
 pub struct ShortName(pub String);
 
 impl FromStr for ShortName {
@@ -62,7 +66,8 @@ impl FromStr for ShortName {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash, Ra, Rd, Rs)]
+#[archive(check_bytes)]
 pub struct Name(pub String);
 
 impl FromStr for Name {
@@ -76,7 +81,8 @@ impl FromStr for Name {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash, Ra, Rd, Rs)]
+#[archive(check_bytes)]
 pub struct EnginePriority(pub u8);
 
 impl FromStr for EnginePriority {
@@ -89,7 +95,8 @@ impl FromStr for EnginePriority {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Ra, Rd, Rs)]
+#[archive(check_bytes)]
 #[serde(rename_all = "lowercase")]
 pub enum AircraftType {
     Pax,

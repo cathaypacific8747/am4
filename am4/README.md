@@ -8,8 +8,8 @@ Some implementation details
   - fuzzy finding: jaro winkler the query string against every single `K`: $O(n)$
   - not using [self referential structs](https://stackoverflow.com/questions/32300132/why-cant-i-store-a-value-and-a-reference-to-that-value-in-the-same-struct/32300133#32300133) for simplicity
 - `routes` similarly stored in a `Vec`
+- data are deserialised with zero-copy using `rkyv`
 
 TODO:
-- [ ] move away from csv and use bincode.
 - [ ] consider storing {y, 2j, 3f} to avoid repeated * ops in config.
 - [ ] store `airports` on the stack instead of `Vec` - it is and should be immutable.

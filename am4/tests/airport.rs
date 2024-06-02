@@ -1,9 +1,15 @@
 use once_cell::sync::Lazy;
 
-use am4::airport::search::Airports;
+use am4::airport::db::Airports;
 use rstest::*;
 
-static AIRPORTS: Lazy<Airports> = Lazy::new(|| Airports::from_csv("./data/airports.csv").unwrap());
+static AIRPORTS: Lazy<Airports> = Lazy::new(|| Airports::from("./data/airports.bin").unwrap());
+
+#[rstest]
+fn test_airports_ok() {
+    assert_eq!(AIRPORTS.index().len(), 15583);
+    assert_eq!(AIRPORTS.data().len(), 3907);
+}
 
 #[rstest]
 #[case("id:3500", "HKG")]

@@ -3,20 +3,15 @@ mod app;
 use eframe::egui;
 
 fn main() -> Result<(), eframe::Error> {
-    // let options = eframe::NativeOptions {
-    //     viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 600.0]),
-    //     ..Default::default()
-    // };
-    // eframe::run_native(
-    //     "am4help",
-    //     options,
-    //     Box::new(|cc| Box::new(app::AM4Help::new(cc))),
-    // )
-
-    use am4::route::Routes;
-
-    let test = Routes::from_file("am4/data/routes.bin").unwrap();
-    dbg!(test.demands);
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 600.0]),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "am4help",
+        options,
+        Box::new(|cc| Box::new(app::AM4Help::new(cc))),
+    )?;
 
     Ok(())
 }

@@ -1,5 +1,5 @@
-use am4::aircraft::search::Aircrafts;
-use am4::airport::search::Airports;
+use am4::aircraft::db::Aircrafts;
+use am4::airport::db::Airports;
 use eframe::{egui, CreationContext};
 
 pub struct AM4Help {
@@ -22,8 +22,8 @@ struct AppData {
 
 impl AM4Help {
     pub fn new(_cc: &CreationContext<'_>) -> Self {
-        let airports = Airports::from_csv("am4/data/airports.csv").unwrap();
-        let aircrafts = Aircrafts::from_csv("am4/data/aircrafts.csv").unwrap();
+        let airports = Airports::from("am4/data/airports.bin").unwrap();
+        let aircrafts = Aircrafts::from("am4/data/aircrafts.bin").unwrap();
 
         Self {
             search_mode: SearchMode::Airport,
