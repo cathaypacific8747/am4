@@ -1,15 +1,9 @@
-use crate::demand::pax::PaxDemand;
+use super::pax::PaxDemand;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CargoDemand {
     pub l: u32,
     pub h: u32,
-}
-
-impl CargoDemand {
-    pub fn new(l: u32, h: u32) -> Self {
-        Self { l, h }
-    }
 }
 
 impl From<&PaxDemand> for CargoDemand {

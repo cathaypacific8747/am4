@@ -80,6 +80,7 @@ research = [
     "wandb",
     "scikit-learn",
     "shapely",
+    "bitarray",
 ]
 
 [tool.pytest.ini_options]

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["am4", "am4-app"]
+members = ["am4", "am4-app", "misc/scripts/prepare_data"]
 
 [profile.release]
 debug = true

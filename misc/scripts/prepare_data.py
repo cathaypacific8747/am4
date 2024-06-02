@@ -1,6 +1,11 @@
 import pyarrow as pa
 import pyarrow.csv as csv
 import pyarrow.parquet as pq
+from bitarray import bitarray
+from tqdm import tqdm
+
+MAGIC_HEADER = b"AM4"
+VERSION = 1
 
 
 def convert_routes():
@@ -23,6 +28,32 @@ def convert_routes():
     )
     table = table.drop_columns(["oid", "did", "rwy"])
     pq.write_table(table, "routes.parquet")
+
+    ba = bitarray()
+    # ba.frombytes(MAGIC_HEADER)
+    # ba.frombytes(VERSION.to_bytes(1, "big"))
+    for i in tqdm(range(table.num_rows)):
+        yd = table.column("yd")[i].as_py()
+        jd = table.column("jd")[i].as_py()
+        fd = table.column("fd")[i].as_py()
+
+        if i < 2:
+            print(f"Route {i}:")
+            print(f"   int: {yd}|{jd}|{fd}")
+            print(f"   bin: {yd:016b}|{jd:016b}|{fd:016b}")
+            print("        ....^^^^^^^^^^^^ ......^^^^^^^^^^ .......^^^^^^^^^")
+            # packed_data = (yd << 19) | (jd << 9) | fd
+            # print(f"packed: {packed_data:031b}")
+
+        # ba.extend(format(yd, "012b"))
+        # ba.extend(format(jd, "010b"))
+        # ba.extend(format(fd, "09b"))
+        ba.extend(format(yd, "016b"))
+        ba.extend(format(jd, "016b"))
+        ba.extend(format(fd, "016b"))
+
+    with open("routes.bin", "wb") as f:
+        ba.tofile(f)
 
 
 def convert_airports():
@@ -103,6 +134,6 @@ def convert_aircrafts():
 
 
 if __name__ == "__main__":
-    # convert_routes()
-    convert_airports()
-    convert_aircrafts()
+    convert_routes()
+    # convert_airports()
+    # convert_aircrafts()
