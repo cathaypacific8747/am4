@@ -85,6 +85,7 @@ pub struct User {
     pub role: Role,
 }
 
+// TODO: use builder pattern
 impl User {
     pub fn new(realism: bool) -> Self {
         let mut user = Self::default();

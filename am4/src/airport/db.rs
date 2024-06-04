@@ -6,8 +6,6 @@ use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::convert::Into;
-use std::fs::File;
-use std::io::Read;
 use std::str::FromStr;
 
 use thiserror::Error;
@@ -106,15 +104,10 @@ impl From<QueryCtx> for Option<SearchKey> {
 #[derive(Debug)]
 pub struct Airports {
     data: Vec<Airport>,
-    index: HashMap<SearchKey, usize>,
 }
 
 impl Airports {
-    pub fn from(file_path: &str) -> Result<Self, ParseError> {
-        let mut file = File::open(file_path)?;
-        let mut buffer = Vec::<u8>::new();
-        file.read_to_end(&mut buffer)?;
-
+    pub fn from_bytes(buffer: &Vec<u8>) -> Result<Self, ParseError> {
         let archived = rkyv::check_archived_root::<Vec<Airport>>(&buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
 
@@ -122,16 +115,31 @@ impl Airports {
             .deserialize(&mut rkyv::Infallible)
             .map_err(|e| ParseError::DeserialiseError(e.to_string()))?;
 
-        let mut index = HashMap::<SearchKey, usize>::new();
+        Ok(Self { data })
+    }
 
-        for (i, ap) in data.iter().enumerate() {
-            index.entry(SearchKey::from(ap.id.clone())).or_insert(i);
-            index.entry(SearchKey::from(ap.iata.clone())).or_insert(i);
-            index.entry(SearchKey::from(ap.icao.clone())).or_insert(i);
-            index.entry(SearchKey::from(ap.name.clone())).or_insert(i);
+    pub fn data(&self) -> &Vec<Airport> {
+        &self.data
+    }
+}
+
+#[derive(Debug)]
+pub struct AirportsIndex<'ap> {
+    index: HashMap<SearchKey, &'ap Airport>,
+}
+
+impl<'ap> AirportsIndex<'ap> {
+    pub fn new(airports: &'ap Airports) -> Self {
+        let mut index = HashMap::<SearchKey, &'ap Airport>::new();
+
+        for ap in airports.data.iter() {
+            index.entry(SearchKey::from(ap.id.clone())).or_insert(ap);
+            index.entry(SearchKey::from(ap.iata.clone())).or_insert(ap);
+            index.entry(SearchKey::from(ap.icao.clone())).or_insert(ap);
+            index.entry(SearchKey::from(ap.name.clone())).or_insert(ap);
         }
 
-        Ok(Self { data, index })
+        Self { index }
     }
 
     /// Search for an airport
@@ -142,7 +150,7 @@ impl Airports {
 
         self.index
             .get(&key)
-            .and_then(|&i| self.data.get(i))
+            .map(|a| *a)
             .ok_or(AirportSearchError::AirportNotFound)
     }
 
@@ -161,7 +169,7 @@ impl Airports {
 
         let mut heap = BinaryHeap::with_capacity(MAX_SUGGESTIONS);
 
-        for (key, &i) in &self.index {
+        for (key, a) in &self.index {
             // TODO: restrict to only search by shortname if ctx.key is shortname
             let s = match key {
                 SearchKey::Iata(v) => &v.0,
@@ -171,18 +179,13 @@ impl Airports {
             };
             let similarity = jaro_winkler(s, &su);
             // Access data using the index
-            queue_suggestions(&mut heap, &self.data[i], similarity);
+            queue_suggestions(&mut heap, *a, similarity);
         }
 
         Ok(heap.into_sorted_vec())
     }
 
-    // getter only - no modification after building allowed
-    pub fn data(&self) -> &Vec<Airport> {
-        &self.data
-    }
-
-    pub fn index(&self) -> &HashMap<SearchKey, usize> {
+    pub fn index(&self) -> &HashMap<SearchKey, &Airport> {
         &self.index
     }
 }

@@ -5,3 +5,4 @@ default-members = ["am4-app"]
 
 [profile.release]
 debug = true
+lto = true

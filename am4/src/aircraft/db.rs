@@ -7,11 +7,32 @@ use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::convert::Into;
-use std::fs::File;
-use std::io::Read;
 use std::str::FromStr;
 
 use thiserror::Error;
+
+#[derive(Debug)]
+pub struct Aircrafts {
+    data: Vec<Aircraft>,
+}
+
+impl Aircrafts {
+    pub fn from_bytes(buffer: &Vec<u8>) -> Result<Self, ParseError> {
+        let archived = rkyv::check_archived_root::<Vec<Aircraft>>(&buffer)
+            .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
+
+        let data: Vec<Aircraft> = archived
+            .deserialize(&mut rkyv::Infallible)
+            .map_err(|e| ParseError::DeserialiseError(e.to_string()))?;
+
+        Ok(Self { data })
+    }
+
+    // getter only - no modification after building allowed
+    pub fn data(&self) -> &Vec<Aircraft> {
+        &self.data
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SearchKey {
@@ -105,47 +126,36 @@ impl From<&QueryCtx> for Option<SearchKey> {
     }
 }
 
-pub type AircraftVariants = HashMap<EnginePriority, usize>;
+// aircraftsindex only valid when Vec<Aircraft> is valid
+pub type AircraftVariants<'ac> = HashMap<EnginePriority, &'ac Aircraft>;
 
 #[derive(Debug)]
-pub struct Aircrafts {
-    data: Vec<Aircraft>,
-    index: HashMap<SearchKey, AircraftVariants>,
+pub struct AircraftsIndex<'ac> {
+    index: HashMap<SearchKey, AircraftVariants<'ac>>,
 }
 
-impl Aircrafts {
-    pub fn from(file_path: &str) -> Result<Aircrafts, ParseError> {
-        let mut file = File::open(file_path)?;
-        let mut buffer = Vec::<u8>::new();
-        file.read_to_end(&mut buffer)?;
-
-        let archived = rkyv::check_archived_root::<Vec<Aircraft>>(&buffer)
-            .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
-
-        let data: Vec<Aircraft> = archived
-            .deserialize(&mut rkyv::Infallible)
-            .map_err(|e| ParseError::DeserialiseError(e.to_string()))?;
-
+impl<'ac> AircraftsIndex<'ac> {
+    pub fn new(aircrafts: &'ac Aircrafts) -> Self {
         let mut index = HashMap::<SearchKey, AircraftVariants>::new();
 
-        for (i, ac) in data.iter().enumerate() {
+        for ac in aircrafts.data.iter() {
             index
                 .entry(SearchKey::from(ac.id.clone()))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority.clone(), ac);
 
             index
                 .entry(SearchKey::from(ac.shortname.clone()))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority.clone(), ac);
 
             index
                 .entry(SearchKey::from(ac.name.clone()))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority.clone(), ac);
         }
 
-        Ok(Self { data, index })
+        Self { index }
     }
 
     /// Search for an aircraft, defaulting to the engine that gives the fastest speed, (priority == 0, fastest)
@@ -153,9 +163,9 @@ impl Aircrafts {
         let ctx = QueryCtx::from_str(s)?;
         let engines = self.search_by_key(&ctx)?;
 
-        if let Some(i) = engines.get(&ctx.modifiers.engine) {
+        if let Some(a) = engines.get(&ctx.modifiers.engine) {
             Ok(CustomAircraft::from_aircraft_and_modifiers(
-                self.data[*i].to_owned(),
+                (*a).clone(),
                 ctx.modifiers,
             ))
         } else {
@@ -195,23 +205,18 @@ impl Aircrafts {
         for (key, variants) in &self.index {
             // only search first engine variant
             // TODO: restrict to only search by shortname if ctx.key is shortname
-            if let Some(i) = variants.values().next() {
+            if let Some(a) = variants.values().next() {
                 let s = match key {
                     SearchKey::ShortName(v) => &v.0,
                     SearchKey::Name(v) => &v.0,
                     _ => continue, // ignore searching by id
                 };
                 let similarity = jaro_winkler(s, &su);
-                queue_suggestions(&mut heap, &self.data[*i], similarity);
+                queue_suggestions(&mut heap, *a, similarity);
             }
         }
 
         Ok(heap.into_sorted_vec())
-    }
-
-    // getter only - no modification after building allowed
-    pub fn data(&self) -> &Vec<Aircraft> {
-        &self.data
     }
 
     pub fn index(&self) -> &HashMap<SearchKey, AircraftVariants> {

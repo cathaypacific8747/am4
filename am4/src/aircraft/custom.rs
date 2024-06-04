@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct CustomAircraft {
-    pub aircraft: Aircraft,
+    pub aircraft: Aircraft, // owned for now
     pub modifiers: Modification,
 }
 

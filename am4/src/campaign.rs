@@ -1,29 +1,11 @@
+// TODO: use C*(num_hours) instead
+#[rustfmt::skip]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Airline {
-    C4_4HR,
-    C4_8HR,
-    C4_12HR,
-    C4_16HR,
-    C4_20HR,
-    C4_24HR,
-    C3_4HR,
-    C3_8HR,
-    C3_12HR,
-    C3_16HR,
-    C3_20HR,
-    C3_24HR,
-    C2_4HR,
-    C2_8HR,
-    C2_12HR,
-    C2_16HR,
-    C2_20HR,
-    C2_24HR,
-    C1_4HR,
-    C1_8HR,
-    C1_12HR,
-    C1_16HR,
-    C1_20HR,
-    C1_24HR,
+    C4_4HR, C4_8HR, C4_12HR, C4_16HR, C4_20HR, C4_24HR,
+    C3_4HR, C3_8HR, C3_12HR, C3_16HR, C3_20HR, C3_24HR,
+    C2_4HR, C2_8HR, C2_12HR, C2_16HR, C2_20HR, C2_24HR,
+    C1_4HR, C1_8HR, C1_12HR, C1_16HR, C1_20HR, C1_24HR,
     None,
 }
 

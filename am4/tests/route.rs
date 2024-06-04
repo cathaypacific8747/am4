@@ -1,10 +1,8 @@
-use once_cell::sync::Lazy;
+mod db;
+use db::ROUTES;
 
-use am4::route::db::Routes;
 use am4::route::demand::pax::PaxDemand;
 use rstest::*;
-
-static ROUTES: Lazy<Routes> = Lazy::new(|| Routes::from("./data/routes.bin").unwrap());
 
 #[rstest]
 fn test_routes_ok() {

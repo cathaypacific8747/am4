@@ -1,13 +1,10 @@
-use once_cell::sync::Lazy;
-
-use am4::airport::db::Airports;
+mod db;
+use db::{AIRPORTS, AP_IDX};
 use rstest::*;
-
-static AIRPORTS: Lazy<Airports> = Lazy::new(|| Airports::from("./data/airports.bin").unwrap());
 
 #[rstest]
 fn test_airports_ok() {
-    assert_eq!(AIRPORTS.index().len(), 15583);
+    assert_eq!(AP_IDX.index().len(), 15583);
     assert_eq!(AIRPORTS.data().len(), 3907);
 }
 
@@ -18,7 +15,7 @@ fn test_airports_ok() {
 #[case("name:hong kong", "HKG")]
 #[case("hong kong", "HKG")]
 fn test_airport_search(#[case] inp: &str, #[case] iata: &str) {
-    let ap = AIRPORTS.search(inp).unwrap();
+    let ap = AP_IDX.search(inp).unwrap();
     assert_eq!(ap.iata.0, iata);
 }
 
@@ -31,10 +28,10 @@ fn test_airport_search(#[case] inp: &str, #[case] iata: &str) {
 #[case("iata:vhhx", "HKG")] // cross suggest with icao
 #[case("name:vhhx", "HKG")] // cross suggest with icao
 fn test_airport_fail_and_suggest(#[case] inp: &str, #[case] iata: &str) {
-    let ap_result = AIRPORTS.search(inp);
+    let ap_result = AP_IDX.search(inp);
     assert!(ap_result.is_err());
 
-    let suggs = AIRPORTS.suggest(inp);
+    let suggs = AP_IDX.suggest(inp);
     assert!(suggs.is_ok());
     assert_eq!(suggs.unwrap()[0].item.iata.0, iata);
 }
@@ -43,6 +40,6 @@ fn test_airport_fail_and_suggest(#[case] inp: &str, #[case] iata: &str) {
 #[case("65590")]
 #[case("id:65590")]
 fn test_airport_stoi_overflow(#[case] inp: &str) {
-    let result = AIRPORTS.search(inp);
+    let result = AP_IDX.search(inp);
     assert!(result.is_err());
 }
