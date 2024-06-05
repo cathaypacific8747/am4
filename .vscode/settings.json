@@ -15,4 +15,15 @@
     ],
     "editor.formatOnSave": true,
     "rust-analyzer.lens.enable": false,
+    "rust-analyzer.procMacro.ignored": {
+        "leptos_macro": [
+            "component",
+            "server"
+        ],
+    },
+    "rust-analyzer.rustfmt.overrideCommand": [
+        "leptosfmt",
+        "--stdin",
+        "--rustfmt"
+    ]
 }

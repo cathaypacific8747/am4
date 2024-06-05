@@ -1,17 +1,20 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-mod app;
-use eframe::egui;
+use am4::aircraft::db::{Aircrafts, AircraftsIndex};
+use am4::airport::db::{Airports, AirportsIndex};
+use std::fs::File;
+use std::io::Read;
 
-fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 600.0]),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "am4help",
-        options,
-        Box::new(|cc| Box::new(app::AM4Help::new(cc))),
-    )?;
+fn get_bytes(path: &str) -> Result<Vec<u8>, std::io::Error> {
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::<u8>::new();
+    file.read_to_end(&mut buffer)?;
+    Ok(buffer)
+}
 
-    Ok(())
+fn main() {
+    let airports = Airports::from_bytes(&get_bytes("../am4/data/airports.bin").unwrap()).unwrap();
+    let ap_idx = AirportsIndex::new(&airports);
+    // let aircrafts = Aircrafts::from_bytes(&get_bytes("../am4/data/aircrafts.bin").unwrap()).unwrap();
+    // let ac_idx = AircraftsIndex::new(&aircrafts);
+
+    dbg!(ap_idx.search("HKG").unwrap());
 }

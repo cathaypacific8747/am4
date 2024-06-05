@@ -82,7 +82,7 @@ fn convert_airports() {
     schema.with_column("hub_cost".into(), DataType::UInt32);
     schema.with_column("rwy_codes".into(), DataType::String);
 
-    let lf = LazyCsvReader::new("../../private/web/airports.csv")
+    let lf = LazyCsvReader::new("../../private/web/airports.new.csv")
         .with_has_header(true)
         .with_schema(Some(Arc::new(schema)))
         .finish()

@@ -1,0 +1,22 @@
+[package]
+name = "am4-web"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+am4 = { path = "../am4" }
+thiserror = "1.0.61"
+leptos = { version = "0.6.12", features = ["csr"] }
+console_error_panic_hook = "0.1.7"
+indexed_db_futures = "0.4.1"
+serde = "1.0.203"
+wasm-bindgen-futures = "0.4.42"
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = true
+codegen-units = 1
+
+[package.metadata.leptos]
+lib-profile-release = "wasm-release"

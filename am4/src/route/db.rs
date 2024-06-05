@@ -7,7 +7,7 @@ const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
 #[derive(Debug)]
 pub struct Routes {
-    pub demands: Vec<PaxDemand>,
+    demands: Vec<PaxDemand>,
 }
 
 impl Routes {
@@ -28,5 +28,9 @@ impl Routes {
         }
 
         Ok(Routes { demands })
+    }
+
+    pub fn data(&self) -> &Vec<PaxDemand> {
+        &self.demands
     }
 }

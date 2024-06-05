@@ -8,7 +8,7 @@ edition = "2021"
 jaro_winkler = "0.1.0"
 serde = { version = "1.0.203", features = ["derive"] }
 thiserror = "1.0.61"
-rkyv = { version = "0.7.44", features = ["validation"] }
+rkyv = { version = "0.7.44", features = ["validation", "strict", "archive_le"] }
 
 [dev-dependencies]
 rstest = "0.20.0"
