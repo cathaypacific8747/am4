@@ -9,13 +9,13 @@ pub struct CustomAircraft {
     pub modifiers: Modification,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Modification {
     pub mods: HashSet<Modifier>, // not using Vec to avoid duplicates
     pub engine: EnginePriority,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Modifier {
     Speed,
     Fuel,

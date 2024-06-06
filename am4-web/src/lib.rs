@@ -1,10 +1,10 @@
-mod nav;
-mod search;
+mod components;
 mod db;
 
-use nav::Header;
-use search::Search;
-use db::{init_db, Database, LoadDbProgress};
+use components::nav::Header;
+use components::aircraft::ACSearch;
+use components::airport::APSearch;
+use db::{Idb, Database, LoadDbProgress};
 
 use leptos::*;
 #[component]
@@ -13,10 +13,12 @@ pub fn App() -> impl IntoView {
     let database = store_value::<Option<Database>>(None);
     let (progress, set_progress) = create_signal(LoadDbProgress::Starting);
 
+    provide_context(database);
     create_resource(
         || (),
         move |_| async move {
-            match init_db(&|msg| set_progress.set(msg)).await {
+            set_progress.set(LoadDbProgress::IDBConnect);
+            match Idb::connect().await.unwrap().init_db(&|msg| set_progress.set(msg)).await {
                 Ok(db) => {
                     database.set_value(Some(db));
                     set_progress.set(LoadDbProgress::Loaded);
@@ -26,25 +28,15 @@ pub fn App() -> impl IntoView {
         },
     );
 
-    let status = move || {
-        if progress.get() == LoadDbProgress::Loaded {
-            database.with_value(|db| match db {
-                Some(db) => {
-                    format!("{:?}", db.aircrafts.search("a388").unwrap())
-                }
-                None => unreachable!(),
-            })
-        } else {
-            "".to_string()
-        }
-    };
-
     view! {
         <div id="app">
             <Header progress/>
-            <Show when=move || progress.get() == LoadDbProgress::Loaded>
-                <Search database/>
-            </Show>
+            <main>
+                <Show when=move || progress.get() == LoadDbProgress::Loaded>
+                    <ACSearch/>
+                    <APSearch/>
+                </Show>
+            </main>
         </div>
     }
 }

@@ -3,6 +3,7 @@ pub mod db;
 
 use rkyv::{Archive as Ra, Deserialize as Rd, Serialize as Rs};
 use serde::Deserialize;
+use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -92,6 +93,12 @@ impl FromStr for EnginePriority {
         s.parse::<u8>()
             .map(Self)
             .map_err(AircraftError::InvalidPriority)
+    }
+}
+
+impl fmt::Display for EnginePriority {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

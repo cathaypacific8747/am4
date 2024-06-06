@@ -3,42 +3,71 @@
     src: url("/assets/fonts/B612-Regular.ttf");
 }
 
+@font-face {
+    font-family: "B612";
+    src: url("/assets/fonts/B612-Bold.ttf");
+    font-weight: bold;
+}
+
 html,
 body {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
-    background-color: #0e1014;
+    background-color: #010409;
     color: #d4e3ee;
-    font-size: 1em;
+    font-size: 1rem;
     font-family: "B612", sans-serif;
+    overflow-x: hidden;
 
-    div#app {
+    // fix for input: https://stackoverflow.com/questions/16907518/css-input-with-width-100-goes-outside-parents-bound
+    box-sizing: border-box;
+
+    *,
+    *:before,
+    *:after {
+        box-sizing: inherit;
+    }
+
+    >div#app {
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100%;
+        width: 100%;
 
-        #header {
+        >header {
+            width: 100%;
             box-shadow: inset 0 -1px 0 #313744;
 
-            #global-nav {
-                padding: .75em;
+            >#global-nav {
+                padding: .75rem;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                column-gap: .75em;
+                column-gap: .75rem;
 
-                #db-progress {
+                span#name {
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                }
+
+                span#version,
+                >#db-progress {
                     color: #6a6a6a;
+                }
+
+                span#version {
+                    vertical-align: super;
+                    font-size: .75rem;
                 }
             }
 
-            #local-bar {
-                padding: 0 .75em;
+            >#local-bar {
+                padding: 0 .75rem;
 
-                nav {
-                    ul {
+                >nav {
+                    >ul {
                         list-style: none;
                         padding: 0;
                         margin: 0;
@@ -46,23 +75,108 @@ body {
                         flex-direction: row;
                         align-items: center;
 
-                        li {
-                            margin-right: 1em;
-                            margin-bottom: .25em;
-                            font-size: 0.9em;
+                        >li {
+                            margin-right: 1rem;
+                            margin-bottom: .25rem;
+                            font-size: 0.9rem;
 
                             a {
                                 text-decoration: none;
                                 color: inherit;
+
+                                &:visited {
+                                    color: inherit;
+                                }
 
                                 &:hover {
                                     color: #71a3dc;
                                 }
                             }
                         }
+
+                        >li#clear-cache {
+                            cursor: pointer;
+                            color: rgb(184, 154, 154);
+
+                            &:hover {
+                                color: #71a3dc;
+                            }
+                        }
                     }
                 }
             }
         }
+
+        >main {
+            padding: .75rem;
+            width: 100%;
+            background-color: #0d1117;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: row;
+            column-gap: .75em;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+                row-gap: .75em;
+            }
+
+            #ac-search,
+            #ap-search {
+                width: 50%;
+                height: 100%;
+
+                @media (max-width: 768px) {
+                    width: 100%;
+                }
+
+                >input {
+                    padding: .25rem;
+                    width: 100%;
+                    border: 1px solid #2b3037;
+                    color: #d4e3ee;
+                    background-color: inherit;
+                    font-size: 1rem;
+                    font-family: "B612", sans-serif;
+                    border-radius: .375rem;
+                }
+
+                span.bold {
+                    font-weight: bold;
+                }
+
+                .ac-card,
+                .ap-card {
+                    background-color: #1c1f24;
+                    border-radius: 0.5rem;
+                    border: 1px solid #313744;
+                    padding: 1rem;
+                    margin: 0.75rem 0;
+
+                    h3 {
+                        margin-top: 0;
+                        margin-bottom: 1rem;
+                        font-size: 1.1rem;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+
+                    th,
+                    td {
+                        padding: .25rem;
+                        text-align: left;
+                        border-bottom: 1px solid #313744;
+                    }
+                }
+
+                .err {
+                    color: #e9b7b7;
+                }
+            }
+        }
     }
+
 }

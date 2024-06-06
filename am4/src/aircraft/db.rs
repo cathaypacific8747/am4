@@ -6,7 +6,6 @@ use jaro_winkler::jaro_winkler;
 use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
-use std::convert::Into;
 use std::str::FromStr;
 
 use thiserror::Error;
@@ -36,7 +35,7 @@ impl From<Name> for SearchKey {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum QueryKey {
     All(String),
     Id(Id),
@@ -44,7 +43,7 @@ pub enum QueryKey {
     Name(Name),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct QueryCtx {
     pub key: QueryKey,
     pub modifiers: Modification,
@@ -65,13 +64,17 @@ impl FromStr for QueryCtx {
             }
         };
 
+        if s.is_empty() {
+            return Err(AircraftSearchError::EmptyQuery);
+        }
+
         let key = match s.to_uppercase().split_once(':') {
             None => QueryKey::All(s.to_string()),
             Some((k, v)) => match k {
                 "SHORTNAME" => QueryKey::ShortName(ShortName(v.to_string())),
                 "NAME" => QueryKey::Name(Name(v.to_string())),
                 "ID" => QueryKey::Id(Id::from_str(v)?),
-                _ => return Err(AircraftSearchError::InvalidQueryType),
+                v => return Err(AircraftSearchError::InvalidColumnSpecifier(v.to_string())),
             },
         };
 
@@ -82,23 +85,24 @@ impl FromStr for QueryCtx {
     }
 }
 
-impl From<&QueryCtx> for Option<SearchKey> {
-    fn from(val: &QueryCtx) -> Self {
-        match &val.key {
+impl From<&QueryCtx> for Result<SearchKey, AircraftSearchError> {
+    fn from(ctx: &QueryCtx) -> Self {
+        match &ctx.key {
             QueryKey::All(s) => {
                 if let Ok(v) = Id::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else if let Ok(v) = ShortName::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else if let Ok(v) = Name::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else {
-                    None
+                    // all parsers failed, we can be sure it does not exist in the database
+                    Err(AircraftSearchError::AircraftNotFound(ctx.clone()))
                 }
             }
-            QueryKey::Id(id) => Some(SearchKey::from(id.clone())),
-            QueryKey::ShortName(sn) => Some(SearchKey::from(sn.clone())),
-            QueryKey::Name(name) => Some(SearchKey::from(name.clone())),
+            QueryKey::Id(id) => Ok(SearchKey::from(id.clone())),
+            QueryKey::ShortName(sn) => Ok(SearchKey::from(sn.clone())),
+            QueryKey::Name(name) => Ok(SearchKey::from(name.clone())),
         }
     }
 }
@@ -146,7 +150,7 @@ impl Aircrafts {
     /// Search for an aircraft, defaulting to the engine that gives the fastest speed, (priority == 0, fastest)
     pub fn search(&self, s: &str) -> Result<CustomAircraft, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
-        let engines = self.search_by_key(&ctx)?;
+        let engines = self.search_by_ctx(&ctx)?;
 
         if let Some(i) = engines.get(&ctx.modifiers.engine) {
             Ok(CustomAircraft::from_aircraft_and_modifiers(
@@ -154,31 +158,39 @@ impl Aircrafts {
                 ctx.modifiers,
             ))
         } else {
-            Err(AircraftSearchError::EngineNotFound)
+            // we got the suggestions for free, so we might as well return in the error
+            Err(AircraftSearchError::EnginePriorityNotFound {
+                src: ctx.modifiers.engine,
+                suggestions: engines.keys().cloned().collect(),
+            })
         }
     }
 
     /// Search all engine variants for a given aircraft
     pub fn search_engines(&self, s: &str) -> Result<&AircraftVariants, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
-        self.search_by_key(&ctx)
-    }
-
-    fn search_by_key(&self, ctx: &QueryCtx) -> Result<&AircraftVariants, AircraftSearchError> {
-        let key: Option<SearchKey> = ctx.into();
-        let key = key.ok_or(AircraftSearchError::InvalidQueryType)?;
-
-        self.index
-            .get(&key)
-            .ok_or(AircraftSearchError::AircraftNotFound)
+        self.search_by_ctx(&ctx)
     }
 
     pub fn suggest(&self, s: &str) -> Result<Vec<Suggestion<&Aircraft>>, AircraftSearchError> {
         let ctx = QueryCtx::from_str(s)?;
+        self.suggest_by_ctx(&ctx)
+    }
 
+    fn search_by_ctx(&self, ctx: &QueryCtx) -> Result<&AircraftVariants, AircraftSearchError> {
+        let key = Result::<SearchKey, AircraftSearchError>::from(ctx)?;
+
+        self.index
+            .get(&key)
+            .ok_or(AircraftSearchError::AircraftNotFound(ctx.clone()))
+    }
+
+    pub fn suggest_by_ctx(
+        &self,
+        ctx: &QueryCtx,
+    ) -> Result<Vec<Suggestion<&Aircraft>>, AircraftSearchError> {
         // TODO: this is a hack to get the uppercase version of the parsed query
-        let key: Option<SearchKey> = (&ctx).into();
-        let key = key.ok_or(AircraftSearchError::InvalidQueryType)?;
+        let key = Result::<SearchKey, AircraftSearchError>::from(ctx)?;
         let su = match key {
             SearchKey::ShortName(v) => v.0,
             SearchKey::Name(v) => v.0,
@@ -215,14 +227,19 @@ impl Aircrafts {
 
 #[derive(Debug, Error)]
 pub enum AircraftSearchError {
-    #[error("Invalid query type")]
-    InvalidQueryType,
-    #[error("Aircraft not found")]
-    AircraftNotFound,
-    #[error("Engine does not exist for this aircraft")]
-    EngineNotFound,
+    #[error("Empty query")] // TODO: "[sfc]" will match cause this.
+    EmptyQuery,
+    #[error("Invalid column specifier: `{0}`. Did you mean: `shortname`, `name` or `id`?")]
+    InvalidColumnSpecifier(String),
+    #[error("Aircraft `{0:?}` not found")]
+    AircraftNotFound(QueryCtx),
+    #[error("Engine with priority `{src}` does not exist for this aircraft. Did you mean: {}?", .suggestions.iter().map(|p| format!("`{}`", p)).collect::<Vec<String>>().join(", "))]
+    EnginePriorityNotFound {
+        src: EnginePriority,
+        suggestions: Vec<EnginePriority>,
+    },
     #[error("Found opening `[` but no closing `]`.")]
     MissingClosingBracket,
     #[error(transparent)]
-    Aircraft(#[from] AircraftError),
+    AircraftField(#[from] AircraftError),
 }

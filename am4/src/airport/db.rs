@@ -5,9 +5,7 @@ use jaro_winkler::jaro_winkler;
 use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
-use std::convert::Into;
 use std::str::FromStr;
-
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -42,7 +40,7 @@ impl From<Name> for SearchKey {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum QueryKey {
     All(String),
     Id(Id),
@@ -51,7 +49,7 @@ pub enum QueryKey {
     Name(Name),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct QueryCtx {
     pub key: QueryKey,
 }
@@ -62,6 +60,10 @@ impl FromStr for QueryCtx {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
+        if s.is_empty() {
+            return Err(AirportSearchError::EmptyQuery);
+        }
+
         let key = match s.to_uppercase().split_once(':') {
             None => QueryKey::All(s.to_string()),
             Some((k, v)) => match k {
@@ -69,7 +71,7 @@ impl FromStr for QueryCtx {
                 "ICAO" => QueryKey::Icao(Icao(v.to_string())),
                 "NAME" => QueryKey::Name(Name(v.to_string())),
                 "ID" => QueryKey::Id(Id::from_str(v)?),
-                _ => return Err(AirportSearchError::InvalidQueryType),
+                v => return Err(AirportSearchError::InvalidColumnSpecifier(v.to_string())),
             },
         };
 
@@ -77,31 +79,32 @@ impl FromStr for QueryCtx {
     }
 }
 
-impl From<QueryCtx> for Option<SearchKey> {
-    fn from(val: QueryCtx) -> Self {
-        match &val.key {
+impl From<QueryCtx> for Result<SearchKey, AirportSearchError> {
+    fn from(ctx: QueryCtx) -> Self {
+        match &ctx.key {
             QueryKey::All(s) => {
                 if let Ok(v) = Id::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else if let Ok(v) = Iata::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else if let Ok(v) = Icao::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else if let Ok(v) = Name::from_str(s) {
-                    Some(SearchKey::from(v))
+                    Ok(SearchKey::from(v))
                 } else {
-                    None
+                    // all parsers failed, we can be sure it does not exist in the database
+                    Err(AirportSearchError::AirportNotFound(ctx.clone()))
                 }
             }
-            QueryKey::Id(id) => Some(SearchKey::from(id.clone())),
-            QueryKey::Iata(iata) => Some(SearchKey::from(iata.clone())),
-            QueryKey::Icao(icao) => Some(SearchKey::from(icao.clone())),
-            QueryKey::Name(name) => Some(SearchKey::from(name.clone())),
+            QueryKey::Id(id) => Ok(SearchKey::from(id.clone())),
+            QueryKey::Iata(iata) => Ok(SearchKey::from(iata.clone())),
+            QueryKey::Icao(icao) => Ok(SearchKey::from(icao.clone())),
+            QueryKey::Name(name) => Ok(SearchKey::from(name.clone())),
         }
     }
 }
 
-/// A collection of airports.
+/// A collection of airports
 #[derive(Debug)]
 pub struct Airports {
     data: Vec<Airport>,
@@ -132,21 +135,25 @@ impl Airports {
     /// Search for an airport
     pub fn search(&self, s: &str) -> Result<&Airport, AirportSearchError> {
         let ctx = QueryCtx::from_str(s)?;
-        let key: Option<SearchKey> = ctx.into();
-        let key = key.ok_or(AirportSearchError::InvalidQueryType)?;
+        let key = Result::<SearchKey, AirportSearchError>::from(ctx.clone())?;
 
         self.index
             .get(&key)
             .map(|i| &self.data[*i])
-            .ok_or(AirportSearchError::AirportNotFound)
+            .ok_or(AirportSearchError::AirportNotFound(ctx))
     }
 
     pub fn suggest(&self, s: &str) -> Result<Vec<Suggestion<&Airport>>, AirportSearchError> {
         let ctx = QueryCtx::from_str(s)?;
+        self.suggest_by_ctx(&ctx)
+    }
 
+    pub fn suggest_by_ctx(
+        &self,
+        ctx: &QueryCtx,
+    ) -> Result<Vec<Suggestion<&Airport>>, AirportSearchError> {
         // TODO: this is a hack to get the uppercase version of the parsed query
-        let key: Option<SearchKey> = ctx.into();
-        let key = key.ok_or(AirportSearchError::InvalidQueryType)?;
+        let key = Result::<SearchKey, AirportSearchError>::from(ctx.clone())?;
         let su = match key {
             SearchKey::Iata(v) => v.0.clone(),
             SearchKey::Icao(v) => v.0.clone(),
@@ -165,7 +172,6 @@ impl Airports {
                 _ => continue, // ignore searching by id
             };
             let similarity = jaro_winkler(s, &su);
-            // Access data using the index
             queue_suggestions(&mut heap, &self.data[i], similarity);
         }
 
@@ -183,10 +189,12 @@ impl Airports {
 
 #[derive(Debug, Error)]
 pub enum AirportSearchError {
-    #[error("Invalid query type")]
-    InvalidQueryType,
-    #[error("Airport not found")]
-    AirportNotFound,
+    #[error("Empty query")]
+    EmptyQuery,
+    #[error("Invalid column specifier: `{0}`. Did you mean: `iata`, `icao`, `name` or `id`?")]
+    InvalidColumnSpecifier(String),
+    #[error("Airport `{0:?}` not found")]
+    AirportNotFound(QueryCtx),
     #[error(transparent)]
     Airport(#[from] AirportError),
 }

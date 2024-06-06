@@ -5,7 +5,6 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::{window, Response, js_sys::ArrayBuffer};
 use am4::aircraft::db::Aircrafts;
 use am4::airport::db::Airports;
-// use am4::route::db::Routes;
 
 pub struct Idb {
     database: IdbDatabase,
@@ -13,7 +12,7 @@ pub struct Idb {
 
 impl Idb {
     /// connect to the database and ensure that `am4help/static`` object store exists
-    async fn connect() -> Result<Self, GenericError> {
+    pub async fn connect() -> Result<Self, GenericError> {
         let mut db_req = IdbDatabase::open("am4help")?;
         db_req.set_on_upgrade_needed(Some(move |evt: &IdbVersionChangeEvent| {
             if !evt.db().object_store_names().any(|n| &n == "static") {
@@ -61,6 +60,33 @@ impl Idb {
         };
         Ok(Uint8Array::new(&ab).to_vec())
     }
+
+    pub async fn clear(&self) -> Result<(), GenericError> {
+        let tx = self.database.transaction_on_one_with_mode("static", IdbTransactionMode::Readwrite)?;
+        let store = tx.object_store("static")?;
+        store.clear()?;
+        Ok(())
+    }
+
+    pub async fn init_db(&self, set_progress: &dyn Fn(LoadDbProgress)) -> Result<Database, GenericError> {
+        // set_progress(LoadDbProgress::IDBConnect);
+        // let db = Idb::connect().await?;
+        
+        let bytes = self.fetch("airports", "data/airports.bin", set_progress).await?;
+        set_progress(LoadDbProgress::Parsing("airports".to_string()));
+        let airports = Airports::from_bytes(&bytes).unwrap();
+        log!("airports: {}", airports.data().len());
+        
+        let bytes = self.fetch("aircrafts", "data/aircrafts.bin", set_progress).await?;
+        set_progress(LoadDbProgress::Parsing("aircrafts".to_string()));
+        let aircrafts = Aircrafts::from_bytes(&bytes).unwrap();
+        log!("aircrafts: {}", aircrafts.data().len());
+        
+        Ok(Database {
+            aircrafts,
+            airports,
+        })
+    }
 }
 
 async fn fetch_bytes(path: &str) -> Result<JsValue, GenericError> {
@@ -74,26 +100,6 @@ async fn fetch_bytes(path: &str) -> Result<JsValue, GenericError> {
     assert!(data.is_instance_of::<ArrayBuffer>());
 
     Ok(data)
-}
-
-pub async fn init_db(set_progress: &dyn Fn(LoadDbProgress)) -> Result<Database, GenericError> {
-    set_progress(LoadDbProgress::IDBConnect);
-    let db = Idb::connect().await?;
-    
-    let bytes = db.fetch("airports", "data/airports.bin", set_progress).await?;
-    set_progress(LoadDbProgress::Parsing("airports".to_string()));
-    let airports = Airports::from_bytes(&bytes).unwrap();
-    log!("airports: {}", airports.data().len());
-    
-    let bytes = db.fetch("aircrafts", "data/aircrafts.bin", set_progress).await?;
-    set_progress(LoadDbProgress::Parsing("aircrafts".to_string()));
-    let aircrafts = Aircrafts::from_bytes(&bytes).unwrap();
-    log!("aircrafts: {}", aircrafts.data().len());
-    
-    Ok(Database {
-        aircrafts,
-        airports,
-    })
 }
 
 pub struct Database {
