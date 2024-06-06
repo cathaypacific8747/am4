@@ -11,9 +11,9 @@ pub struct Routes {
 }
 
 impl Routes {
-    pub fn from_bytes(buffer: &Vec<u8>) -> Result<Self, ParseError> {
+    pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         // ensure serialised bytes can be deserialised
-        let archived = rkyv::check_archived_root::<Vec<PaxDemand>>(&buffer)
+        let archived = rkyv::check_archived_root::<Vec<PaxDemand>>(buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
 
         let demands: Vec<PaxDemand> = archived

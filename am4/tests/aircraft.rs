@@ -1,11 +1,11 @@
 mod db;
-use db::{AC_IDX, AIRCRAFTS};
+use db::AIRCRAFTS;
 use rstest::*;
 
 #[rstest]
 fn test_aircrafts_ok() {
     assert_eq!(AIRCRAFTS.data().len(), 492);
-    assert_eq!(AC_IDX.index().len(), 992);
+    assert_eq!(AIRCRAFTS.index().len(), 992);
 }
 
 #[rstest]
@@ -13,7 +13,7 @@ fn test_aircrafts_ok() {
 #[case("shortname:b744", "b744")]
 #[case("name:B747-400", "b744")]
 fn test_aircraft_search(#[case] inp: &str, #[case] expected_shortname: &str) {
-    let ac = AC_IDX.search(inp).unwrap();
+    let ac = AIRCRAFTS.search(inp).unwrap();
     assert_eq!(ac.aircraft.shortname.0, expected_shortname);
 }
 
@@ -25,10 +25,10 @@ fn test_aircraft_search(#[case] inp: &str, #[case] expected_shortname: &str) {
 #[case("shortname:b747-4000", "b744")] // cross suggest with name
 #[case("name:b744", "b744")] // cross suggest with shortname
 fn test_aircraft_fail_and_suggest(#[case] inp: &str, #[case] expected_shortname: &str) {
-    let ac_result = AC_IDX.search(inp);
+    let ac_result = AIRCRAFTS.search(inp);
     assert!(ac_result.is_err());
 
-    let suggs = AC_IDX.suggest(inp);
+    let suggs = AIRCRAFTS.suggest(inp);
     assert!(suggs.is_ok());
     assert_eq!(suggs.unwrap()[0].item.shortname.0, expected_shortname);
 }
@@ -37,7 +37,7 @@ fn test_aircraft_fail_and_suggest(#[case] inp: &str, #[case] expected_shortname:
 #[case("74sp")]
 #[case("id:335a")]
 fn test_aircraft_stoi_trailing(#[case] inp: &str) {
-    let result = AC_IDX.search(inp);
+    let result = AIRCRAFTS.search(inp);
     assert!(result.is_err());
 }
 
@@ -45,7 +45,7 @@ fn test_aircraft_stoi_trailing(#[case] inp: &str) {
 #[case("65590")]
 #[case("id:65590")]
 fn test_aircraft_stoi_overflow(#[case] inp: &str) {
-    let result = AC_IDX.search(inp);
+    let result = AIRCRAFTS.search(inp);
     assert!(result.is_err());
 }
 
@@ -68,7 +68,7 @@ fn test_aircraft_modifiers_syntax(
     #[case] expected_co2_mod: bool,
     #[case] expected_fourx_mod: bool,
 ) {
-    let result = AC_IDX.search(inp).unwrap();
+    let result = AIRCRAFTS.search(inp).unwrap();
     assert_eq!(result.aircraft.shortname.0, expected_shortname);
 
     let mods = &result.modifiers;
@@ -93,10 +93,10 @@ fn test_aircraft_modifiers_syntax(
 
 #[rstest]
 fn test_aircraft_engine_modifier() {
-    let a = AC_IDX.search("b744").unwrap().aircraft;
-    let a0 = AC_IDX.search("b744[0]").unwrap().aircraft;
-    let a1 = AC_IDX.search("b744[1]").unwrap().aircraft;
-    let a1sfc = AC_IDX.search("b744[1,sfc]").unwrap().aircraft;
+    let a = AIRCRAFTS.search("b744").unwrap().aircraft;
+    let a0 = AIRCRAFTS.search("b744[0]").unwrap().aircraft;
+    let a1 = AIRCRAFTS.search("b744[1]").unwrap().aircraft;
+    let a1sfc = AIRCRAFTS.search("b744[1,sfc]").unwrap().aircraft;
 
     assert_eq!(a.id, a0.id);
     assert_eq!(a0.id, a1.id);
@@ -120,8 +120,8 @@ fn test_aircraft_engine_modifier() {
 
 #[rstest]
 fn test_aircraft_fourx() {
-    let a0 = AC_IDX.search("b744").unwrap().aircraft;
-    let a1 = AC_IDX.search("b744[x]").unwrap().aircraft;
+    let a0 = AIRCRAFTS.search("b744").unwrap().aircraft;
+    let a1 = AIRCRAFTS.search("b744[x]").unwrap().aircraft;
 
     assert!(
         (a1.speed / a0.speed - 4.0).abs() < 0.001,

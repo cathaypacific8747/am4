@@ -12,9 +12,8 @@ The weekly leaderboards and alliances are highly competitive arenas which requir
 A new version (v0.2) is currently under development* so you can run it on the web ([`am4help.com`](https://am4help.com/)) and completely offline.
 
 - [ ] core library in Rust ([`am4`](https://github.com/cathaypacific8747/am4/tree/master/am4))
-- [ ] an executable using `egui` ([`am4-app`](https://github.com/cathaypacific8747/am4/tree/master/am4-app))
+- [ ] a web frontend using WASM ([`am4-web`](https://github.com/cathaypacific8747/am4/tree/master/am4-web))
 - [ ] a discord bot
-- [ ] a web frontend using WASM
 
 <figure markdown="span">
     ![overview](assets/img/overview.drawio.svg)

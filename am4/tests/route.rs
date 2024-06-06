@@ -6,9 +6,9 @@ use rstest::*;
 
 #[rstest]
 fn test_routes_ok() {
-    assert_eq!(ROUTES.demands.len(), 3907 * 3906 / 2);
+    assert_eq!(ROUTES.data().len(), 3907 * 3906 / 2);
     assert_eq!(
-        ROUTES.demands[0],
+        ROUTES.data()[0],
         PaxDemand {
             y: 542,
             j: 182,

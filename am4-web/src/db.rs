@@ -3,20 +3,20 @@ use leptos::{logging::log, wasm_bindgen::{JsCast, JsValue}, web_sys};
 use thiserror::Error;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{window, Response, js_sys::ArrayBuffer};
-use am4::airport::db::Airports;
 use am4::aircraft::db::Aircrafts;
-use am4::route::db::Routes;
+use am4::airport::db::Airports;
+// use am4::route::db::Routes;
 
-pub struct Db {
+pub struct Idb {
     database: IdbDatabase,
 }
 
-impl Db {
+impl Idb {
     /// connect to the database and ensure that `am4help/static`` object store exists
     async fn connect() -> Result<Self, GenericError> {
         let mut db_req = IdbDatabase::open("am4help")?;
         db_req.set_on_upgrade_needed(Some(move |evt: &IdbVersionChangeEvent| {
-            if let None = evt.db().object_store_names().find(|n| n == "static") {
+            if !evt.db().object_store_names().any(|n| &n == "static") {
                 evt.db().create_object_store("static")?;
             }
             Ok(())
@@ -36,22 +36,25 @@ impl Db {
     }
 
     /// https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get
-    async fn get(&self, k: &str) -> Result<Option<JsValue>, GenericError> {
-        log!("idb(read): {k}");
+    async fn get(&self, k: &str, set_progress: &dyn Fn(LoadDbProgress)) -> Result<Option<JsValue>, GenericError> {
         let tx = self.database.transaction_on_one_with_mode("static", IdbTransactionMode::Readonly)?;
         let store = tx.object_store("static")?;
-
+        
+        set_progress(LoadDbProgress::IDBRead(k.to_string()));
         Ok(store.get_owned(k)?.await?)
     }
 
-    pub async fn fetch(&self, k: &str, url: &str) -> Result<Vec<u8>, GenericError> {
-        let ab = match self.get(k).await? {
+    pub async fn fetch(&self, k: &str, url: &str, set_progress: &dyn Fn(LoadDbProgress)) -> Result<Vec<u8>, GenericError> {
+        set_progress(LoadDbProgress::IDBCheck(k.to_string()));
+        let ab = match self.get(k, set_progress).await? {
             Some(ab) => {
                 assert!(ab.is_instance_of::<ArrayBuffer>());
                 ab
             },
             None => {
+                set_progress(LoadDbProgress::Fetching(k.to_string()));
                 let ab = fetch_bytes(url).await?;
+                set_progress(LoadDbProgress::IDBWrite(k.to_string()));
                 self.write(k, &ab).await?;
                 ab
             }
@@ -73,30 +76,49 @@ async fn fetch_bytes(path: &str) -> Result<JsValue, GenericError> {
     Ok(data)
 }
 
-
-pub async fn init_db() -> Result<String, GenericError> {
-    let db = Db::connect().await?;
+pub async fn init_db(set_progress: &dyn Fn(LoadDbProgress)) -> Result<Database, GenericError> {
+    set_progress(LoadDbProgress::IDBConnect);
+    let db = Idb::connect().await?;
     
-    let bytes = db.fetch("airports", "data/airports.bin").await?;
-    let aps = Airports::from_bytes(&bytes).unwrap();
-    log!("airports: {}", aps.data().len());
+    let bytes = db.fetch("airports", "data/airports.bin", set_progress).await?;
+    set_progress(LoadDbProgress::Parsing("airports".to_string()));
+    let airports = Airports::from_bytes(&bytes).unwrap();
+    log!("airports: {}", airports.data().len());
     
-    let bytes = db.fetch("aircrafts", "data/aircrafts.bin").await?;
-    let acs = Aircrafts::from_bytes(&bytes).unwrap();
-    log!("aircrafts: {}", acs.data().len());
+    let bytes = db.fetch("aircrafts", "data/aircrafts.bin", set_progress).await?;
+    set_progress(LoadDbProgress::Parsing("aircrafts".to_string()));
+    let aircrafts = Aircrafts::from_bytes(&bytes).unwrap();
+    log!("aircrafts: {}", aircrafts.data().len());
     
-    let bytes = db.fetch("routes", "data/routes.bin").await?;
-    let rts = Routes::from_bytes(&bytes).unwrap();
-    log!("routes: {}", rts.data().len());
-
-    Ok("Done!".to_string())
+    Ok(Database {
+        aircrafts,
+        airports,
+    })
 }
 
-#[derive(Error, Debug)]
+pub struct Database {
+    pub aircrafts: Aircrafts,
+    pub airports: Airports,
+}
+
+#[derive(Clone, PartialEq)]
+pub enum LoadDbProgress {
+    Starting,
+    IDBConnect,
+    IDBRead(String),
+    IDBCheck(String),
+    IDBWrite(String),
+    Fetching(String),
+    Parsing(String),
+    Loaded,
+    Err(GenericError)
+}
+
+#[derive(Clone, Error, Debug, PartialEq)]
 pub enum GenericError {
-    #[error("DOM exception: {}", self.to_string())]
+    #[error("DOM exception: {:?}", self)]
     Dom(web_sys::DomException),
-    #[error("JavaScript exception: {}", self.to_string())]
+    #[error("JavaScript exception: {:?}", self)]
     Js(JsValue),
 }
 
