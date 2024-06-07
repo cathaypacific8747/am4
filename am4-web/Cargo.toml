@@ -1,6 +1,6 @@
 [package]
 name = "am4-web"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.2"
 edition = "2021"
 
 [dependencies]
@@ -11,12 +11,6 @@ console_error_panic_hook = "0.1.7"
 indexed_db_futures = "0.4.1"
 serde = "1.0.203"
 wasm-bindgen-futures = "0.4.42"
-
-[profile.wasm-release]
-inherits = "release"
-opt-level = 'z'
-lto = true
-codegen-units = 1
 
 [package.metadata.leptos]
 lib-profile-release = "wasm-release"

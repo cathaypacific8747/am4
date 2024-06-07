@@ -1,9 +1,7 @@
-use rkyv;
+use rkyv::{Archive as Ra, Deserialize as Rd, Serialize as Rs};
 use serde::{Deserialize, Serialize};
 
-#[derive(
-    Debug, PartialEq, Deserialize, Serialize, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize,
-)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Ra, Rd, Rs)]
 #[archive(check_bytes)]
 pub struct PaxDemand {
     pub y: u16,

@@ -31,7 +31,7 @@ pub fn ACSearch() -> impl IntoView {
                 on:input=move |event| {
                     let target = event.target().unwrap();
                     let value = target.unchecked_into::<web_sys::HtmlInputElement>().value();
-                    set_search_term.set(value.into());
+                    set_search_term.set(value);
                 }
             />
 
@@ -47,8 +47,9 @@ fn ACErr(e: AircraftSearchError) -> impl IntoView {
 
     if let AircraftSearchError::AircraftNotFound(ctx) = &e {
         return database.with_value(|db| {
-            let suggs = db.as_ref().unwrap().aircrafts.suggest_by_ctx(&ctx);
-            return view! {
+            let suggs = db.as_ref().unwrap().aircrafts.suggest_by_ctx(ctx);
+
+            view! {
                 <div>
                     <p class="err">"Aircraft not found. Did you mean: "</p>
                     <ul>
@@ -65,7 +66,7 @@ fn ACErr(e: AircraftSearchError) -> impl IntoView {
 
                     </ul>
                 </div>
-            };
+            }
         });
     } else if let AircraftSearchError::EmptyQuery = &e {
         return view! { <div></div> };
@@ -115,7 +116,7 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                 </tr>
                 <tr>
                     <th>{"Cost"}</th>
-                    <td>" $" {aircraft.cost}</td>
+                    <td>"$ " {aircraft.cost}</td>
                 </tr>
                 <tr>
                     <th>{"Capacity"}</th>
@@ -131,11 +132,11 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                 </tr>
                 <tr>
                     <th>{"Maintenance"}</th>
-                    <td>{aircraft.maint} "hr"</td>
+                    <td>{aircraft.maint} " hr"</td>
                 </tr>
                 <tr>
                     <th>{"Ceiling"}</th>
-                    <td>{aircraft.ceil} "ft"</td>
+                    <td>{aircraft.ceil} " ft"</td>
                 </tr>
                 <tr>
                     <th>{"Personnel"}</th>
@@ -152,7 +153,7 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                 </tr>
                 <tr>
                     <th>{"Dimensions"}</th>
-                    <td>{format!("{} m x {} m", aircraft.length, aircraft.wingspan)}</td>
+                    <td>{format!("{} m × {} m", aircraft.length, aircraft.wingspan)}</td>
                 </tr>
             </table>
         </div>

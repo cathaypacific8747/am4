@@ -29,13 +29,6 @@ pub fn get_f32(v: AnyValue) -> f32 {
     }
 }
 
-pub fn get_f64(v: AnyValue) -> f64 {
-    match v {
-        AnyValue::Float64(v) => v,
-        _ => panic!(),
-    }
-}
-
 pub fn get_str(v: AnyValue) -> &str {
     match v {
         AnyValue::String(v) => v,

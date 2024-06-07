@@ -31,7 +31,7 @@ pub fn APSearch() -> impl IntoView {
                 on:input=move |event| {
                     let target = event.target().unwrap();
                     let value = target.unchecked_into::<web_sys::HtmlInputElement>().value();
-                    set_search_term.set(value.into());
+                    set_search_term.set(value);
                 }
             />
 
@@ -47,8 +47,9 @@ fn APErr(e: AirportSearchError) -> impl IntoView {
 
     if let AirportSearchError::AirportNotFound(ctx) = &e {
         return database.with_value(|db| {
-            let suggs = db.as_ref().unwrap().airports.suggest_by_ctx(&ctx);
-            return view! {
+            let suggs = db.as_ref().unwrap().airports.suggest_by_ctx(ctx);
+
+            view! {
                 <div>
                     <p>"Airport not found. Did you mean: "</p>
                     <ul>
@@ -68,7 +69,7 @@ fn APErr(e: AirportSearchError) -> impl IntoView {
 
                     </ul>
                 </div>
-            };
+            }
         });
     } else if let AirportSearchError::EmptyQuery = &e {
         return view! { <div></div> };
@@ -100,7 +101,7 @@ fn Ap(airport: Airport) -> impl IntoView {
                 </tr>
                 <tr>
                     <th>"Location"</th>
-                    <td>{format!("{}, {}", &airport.lat, &airport.lng)}</td>
+                    <td>{format!("{}, {}", &airport.location.lat, &airport.location.lng)}</td>
                 </tr>
                 <tr>
                     <th>"Runway"</th>

@@ -57,14 +57,20 @@ fn convert_routes() {
             println!("processed {i} / {num_rows}");
         }
     }
-    let mut file = std::fs::File::create("routes.bin").unwrap();
-    let b = rkyv::to_bytes::<Vec<PaxDemand>, 45_782_236>(&dems).unwrap();
-    file.write_all(&b).unwrap();
+    let buf = rkyv::to_bytes::<Vec<PaxDemand>, 45_782_236>(&dems).unwrap();
 
-    println!("wrote {:?} bytes to {:?}", b.len(), file);
+    let spl = buf.len() / 2;
+    let mut file0 = std::fs::File::create("routes0.bin").unwrap();
+    file0.write_all(&buf[..spl]).unwrap();
+    println!("wrote ..{:} to {:?}", spl, file0);
+
+    let mut file1 = std::fs::File::create("routes1.bin").unwrap();
+    file1.write_all(&buf[spl..]).unwrap();
+    println!("wrote {:}.. to {:?}", spl, file1);
 }
 
 fn convert_airports() {
+    use am4::airport::Point;
     use am4::airport::{Airport, Iata, Icao, Id, Name};
 
     let mut schema = Schema::new();
@@ -75,8 +81,8 @@ fn convert_airports() {
     schema.with_column("continent".into(), DataType::String);
     schema.with_column("iata".into(), DataType::String);
     schema.with_column("icao".into(), DataType::String);
-    schema.with_column("lat".into(), DataType::Float64);
-    schema.with_column("lng".into(), DataType::Float64);
+    schema.with_column("lat".into(), DataType::Float32);
+    schema.with_column("lng".into(), DataType::Float32);
     schema.with_column("rwy".into(), DataType::UInt16);
     schema.with_column("market".into(), DataType::UInt8);
     schema.with_column("hub_cost".into(), DataType::UInt32);
@@ -100,6 +106,11 @@ fn convert_airports() {
         // not using amortized version - slow!
         let r = df.get_row(i).unwrap().0;
 
+        let loc = Point {
+            lng: get_f32(r[8].clone()),
+            lat: get_f32(r[7].clone()),
+        };
+
         airports.push(Airport {
             id: Id(get_u16(r[0].clone())),
             name: Name::from_str(get_str(r[1].clone())).unwrap(),
@@ -108,8 +119,7 @@ fn convert_airports() {
             continent: get_str(r[4].clone()).to_string(),
             iata: Iata::from_str(get_str(r[5].clone())).unwrap(),
             icao: Icao::from_str(get_str(r[6].clone())).unwrap(),
-            lat: get_f64(r[7].clone()),
-            lng: get_f64(r[8].clone()),
+            location: loc,
             rwy: get_u16(r[9].clone()),
             market: get_u8(r[10].clone()),
             hub_cost: get_u32(r[11].clone()),
@@ -121,7 +131,7 @@ fn convert_airports() {
     }
     println!("{:?}", airports.len());
     let mut file = std::fs::File::create("airports.bin").unwrap();
-    let b = rkyv::to_bytes::<Vec<Airport>, 514040>(&airports).unwrap();
+    let b = rkyv::to_bytes::<Vec<Airport>, 502684>(&airports).unwrap();
     file.write_all(&b).unwrap();
 
     println!("wrote {:?} bytes to {:?}", b.len(), file);

@@ -1,12 +1,13 @@
 mod db;
-use db::ROUTES;
+use db::{DISTANCES, ROUTES};
 
+use am4::route::db::ROUTE_COUNT;
 use am4::route::demand::pax::PaxDemand;
 use rstest::*;
 
 #[rstest]
 fn test_routes_ok() {
-    assert_eq!(ROUTES.data().len(), 3907 * 3906 / 2);
+    assert_eq!(ROUTES.data().len(), ROUTE_COUNT);
     assert_eq!(
         ROUTES.data()[0],
         PaxDemand {
@@ -15,4 +16,11 @@ fn test_routes_ok() {
             f: 45
         }
     );
+}
+
+#[rstest]
+fn test_distances_ok() {
+    assert_eq!(DISTANCES.data().len(), ROUTE_COUNT);
+    assert_eq!(DISTANCES.data()[0].to_bits(), 330.21942_f32.to_bits()); // 1 -> 2
+    assert_eq!(DISTANCES.data()[1].to_bits(), 1245.81169_f32.to_bits()); // 1 -> 3
 }

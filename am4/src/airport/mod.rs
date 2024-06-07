@@ -15,8 +15,7 @@ pub struct Airport {
     pub continent: String,
     pub iata: Iata,
     pub icao: Icao,
-    pub lat: f64,
-    pub lng: f64,
+    pub location: Point,
     pub rwy: u16,
     pub market: u8,
     pub hub_cost: u32,
@@ -78,6 +77,13 @@ impl FromStr for Icao {
             _ => Err(AirportError::InvalidIcao),
         }
     }
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Ra, Rd, Rs)]
+#[archive(check_bytes)]
+pub struct Point {
+    pub lng: f32,
+    pub lat: f32,
 }
 
 #[derive(Debug, Error)]

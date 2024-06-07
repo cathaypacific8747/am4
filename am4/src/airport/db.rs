@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
 
+pub const AIRPORT_COUNT: usize = 3907;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SearchKey {
     Id(Id),
