@@ -2,9 +2,9 @@ use crate::db::Database;
 use am4::aircraft::db::AircraftSearchError;
 use am4::aircraft::{Aircraft, AircraftType};
 use leptos::{wasm_bindgen::JsCast, *};
+use web_sys::HtmlInputElement;
 
 #[component]
-#[allow(non_snake_case)]
 pub fn ACSearch() -> impl IntoView {
     let (search_term, set_search_term) = create_signal("".to_string());
     let database = expect_context::<StoredValue<Option<Database>>>();
@@ -30,7 +30,7 @@ pub fn ACSearch() -> impl IntoView {
                 placeholder="Search an aircraft..."
                 on:input=move |event| {
                     let target = event.target().unwrap();
-                    let value = target.unchecked_into::<web_sys::HtmlInputElement>().value();
+                    let value = target.unchecked_into::<HtmlInputElement>().value();
                     set_search_term.set(value);
                 }
             />
@@ -41,7 +41,6 @@ pub fn ACSearch() -> impl IntoView {
 }
 
 #[component]
-#[allow(non_snake_case)]
 fn ACErr(e: AircraftSearchError) -> impl IntoView {
     let database = expect_context::<StoredValue<Option<Database>>>();
 
@@ -79,7 +78,6 @@ fn ACErr(e: AircraftSearchError) -> impl IntoView {
 }
 
 #[component]
-#[allow(non_snake_case)]
 fn Ac(aircraft: Aircraft) -> impl IntoView {
     let ac_type = move || match aircraft.ac_type {
         AircraftType::Pax => "Pax",

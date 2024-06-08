@@ -1,5 +1,6 @@
 mod utils;
 
+use am4::{AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use polars::frame::row::Row;
 use polars::prelude::*;
 use std::io::Write;
@@ -60,18 +61,17 @@ fn convert_routes() {
     let buf = rkyv::to_bytes::<Vec<PaxDemand>, 45_782_236>(&dems).unwrap();
 
     let spl = buf.len() / 2;
-    let mut file0 = std::fs::File::create("routes0.bin").unwrap();
+    let mut file0 = std::fs::File::create(DEM_FILENAME0).unwrap();
     file0.write_all(&buf[..spl]).unwrap();
     println!("wrote ..{:} to {:?}", spl, file0);
 
-    let mut file1 = std::fs::File::create("routes1.bin").unwrap();
+    let mut file1 = std::fs::File::create(DEM_FILENAME1).unwrap();
     file1.write_all(&buf[spl..]).unwrap();
     println!("wrote {:}.. to {:?}", spl, file1);
 }
 
 fn convert_airports() {
-    use am4::airport::Point;
-    use am4::airport::{Airport, Iata, Icao, Id, Name};
+    use am4::airport::{Airport, Iata, Icao, Id, Name, Point};
 
     let mut schema = Schema::new();
     schema.with_column("id".into(), DataType::UInt16);
@@ -130,7 +130,7 @@ fn convert_airports() {
         });
     }
     println!("{:?}", airports.len());
-    let mut file = std::fs::File::create("airports.bin").unwrap();
+    let mut file = std::fs::File::create(AP_FILENAME).unwrap();
     let b = rkyv::to_bytes::<Vec<Airport>, 502684>(&airports).unwrap();
     file.write_all(&b).unwrap();
 
@@ -213,7 +213,7 @@ fn convert_aircrafts() {
             length: get_u8(r[24].clone()),
         });
     }
-    let mut file = std::fs::File::create("aircrafts.bin").unwrap();
+    let mut file = std::fs::File::create(AC_FILENAME).unwrap();
     let b = rkyv::to_bytes::<Vec<Aircraft>, 68200>(&aircrafts).unwrap();
     file.write_all(&b).unwrap();
 

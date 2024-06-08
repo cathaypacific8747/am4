@@ -1,10 +1,11 @@
 use crate::db::Database;
 use am4::airport::db::AirportSearchError;
 use am4::airport::Airport;
+use leptos::prelude::*;
 use leptos::{wasm_bindgen::JsCast, *};
+use web_sys::HtmlInputElement;
 
 #[component]
-#[allow(non_snake_case)]
 pub fn APSearch() -> impl IntoView {
     let (search_term, set_search_term) = create_signal("".to_string());
     let database = expect_context::<StoredValue<Option<Database>>>();
@@ -16,10 +17,7 @@ pub fn APSearch() -> impl IntoView {
                 .unwrap()
                 .airports
                 .search(s.as_str())
-                .map_or_else(
-                    |e| view! { <APErr e/> },
-                    |ap| view! { <Ap airport=ap.clone()/> },
-                )
+                .map_or_else(|e| view! { <APErr e/> }, |ap| view! { <Ap airport=ap/> })
         })
     };
 
@@ -30,7 +28,7 @@ pub fn APSearch() -> impl IntoView {
                 placeholder="Search an airport..."
                 on:input=move |event| {
                     let target = event.target().unwrap();
-                    let value = target.unchecked_into::<web_sys::HtmlInputElement>().value();
+                    let value = target.unchecked_into::<HtmlInputElement>().value();
                     set_search_term.set(value);
                 }
             />
@@ -41,7 +39,6 @@ pub fn APSearch() -> impl IntoView {
 }
 
 #[component]
-#[allow(non_snake_case)]
 fn APErr(e: AirportSearchError) -> impl IntoView {
     let database = expect_context::<StoredValue<Option<Database>>>();
 
@@ -82,8 +79,8 @@ fn APErr(e: AirportSearchError) -> impl IntoView {
 }
 
 #[component]
-#[allow(non_snake_case)]
-fn Ap(airport: Airport) -> impl IntoView {
+#[allow(clippy::needless_lifetimes)]
+fn Ap<'a>(airport: &'a Airport) -> impl IntoView {
     view! {
         <div class="ap-card">
             <h3>

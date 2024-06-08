@@ -113,6 +113,7 @@ dependencies = [
  "serde",
  "thiserror",
  "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

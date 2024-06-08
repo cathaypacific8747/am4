@@ -7,7 +7,6 @@ use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::str::FromStr;
-
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

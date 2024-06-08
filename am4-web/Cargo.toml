@@ -5,12 +5,23 @@ edition = "2021"
 
 [dependencies]
 am4 = { path = "../am4" }
-thiserror = "1.0.61"
+serde = "1.0"
+thiserror = "1.0"
+indexed_db_futures = "0.4.1"
+wasm-bindgen-futures = "0.4.42"
 leptos = { version = "0.6.12", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
-indexed_db_futures = "0.4.1"
-serde = "1.0.203"
-wasm-bindgen-futures = "0.4.42"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Document",
+    "DomException",
+    "HtmlInputElement",
+    "Response",
+    "Blob",
+    "BlobPropertyBag",
+]
 
 [package.metadata.leptos]
 lib-profile-release = "wasm-release"

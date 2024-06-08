@@ -1,7 +1,7 @@
 use crate::airport::{db::AIRPORT_COUNT, Airport};
 use crate::route::{demand::pax::PaxDemand, leg::calculate_distance};
 use crate::utils::ParseError;
-use rkyv::{self, Deserialize};
+use rkyv::{self, AlignedVec, Deserialize};
 
 pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
@@ -37,6 +37,24 @@ impl Demands {
 pub struct Distances(Vec<f32>);
 
 impl Distances {
+    pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
+        let archived = rkyv::check_archived_root::<Vec<f32>>(buffer)
+            .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
+
+        let distances: Vec<f32> = archived
+            .deserialize(&mut rkyv::Infallible)
+            .map_err(|e| ParseError::DeserialiseError(e.to_string()))?;
+
+        if distances.len() != ROUTE_COUNT {
+            return Err(ParseError::InvalidDataLength {
+                expected: ROUTE_COUNT,
+                actual: distances.len(),
+            });
+        }
+
+        Ok(Distances(distances))
+    }
+
     pub fn from_airports(aps: &[Airport]) -> Self {
         assert!(aps.len() == AIRPORT_COUNT); // compiler optimisation
         let mut d = Vec::<f32>::with_capacity(ROUTE_COUNT);
@@ -52,6 +70,12 @@ impl Distances {
         }
         assert_eq!(d.len(), ROUTE_COUNT);
         Distances(d)
+    }
+
+    pub fn to_bytes(&self) -> Result<AlignedVec, ParseError> {
+        let av = rkyv::to_bytes::<Vec<f32>, 30_521_492>(&self.0)
+            .map_err(|e| ParseError::SerialiseError(e.to_string()))?;
+        Ok(av)
     }
 
     pub fn data(&self) -> &Vec<f32> {

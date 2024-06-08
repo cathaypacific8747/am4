@@ -44,6 +44,8 @@ pub enum ParseError {
     ArchiveError(String),
     #[error("Deserialise error: {0}")]
     DeserialiseError(String),
+    #[error("Serialise error: {0}")]
+    SerialiseError(String),
     #[error("Invalid data length: expected {expected} routes, got {actual}")]
     InvalidDataLength { expected: usize, actual: usize },
 }
