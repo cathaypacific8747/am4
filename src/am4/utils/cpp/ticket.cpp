@@ -27,11 +27,17 @@ CargoTicket CargoTicket::from_optimal(double distance, User::GameMode game_mode)
     return ticket;
 }
 
-VIPTicket VIPTicket::from_optimal(double distance) {
+VIPTicket VIPTicket::from_optimal(double distance, User::GameMode game_mode) {
     VIPTicket ticket;
-    ticket.y = (uint16_t)(1.22 * 1.7489 * (0.4 * distance + 170)) - 2;
-    ticket.j = (uint16_t)(1.20 * 1.7489 * (0.8 * distance + 560)) - 2;
-    ticket.f = (uint16_t)(1.17 * 1.7489 * (1.2 * distance + 1200)) - 2;
+    if (game_mode == User::GameMode::EASY) {
+        ticket.y = (uint16_t)(1.22 * 1.7489 * (0.4 * distance + 170)) - 2;
+        ticket.j = (uint16_t)(1.20 * 1.7489 * (0.8 * distance + 560)) - 2;
+        ticket.f = (uint16_t)(1.17 * 1.7489 * (1.2 * distance + 1200)) - 2;
+    } else {
+        ticket.y = (uint16_t)(1.22 * 1.7489 * (0.3 * distance + 150)) - 2;
+        ticket.j = (uint16_t)(1.20 * 1.7489 * (0.6 * distance + 500)) - 2;
+        ticket.f = (uint16_t)(1.17 * 1.7489 * (0.9 * distance + 1000)) - 2;
+    }
     return ticket;
 }
 
@@ -87,7 +93,10 @@ void pybind_init_ticket(py::module_& m) {
         .def_readonly("y", &VIPTicket::y)
         .def_readonly("j", &VIPTicket::j)
         .def_readonly("f", &VIPTicket::f)
-        .def_static("from_optimal", &VIPTicket::from_optimal, "distance"_a)
+        .def_static(
+            "from_optimal", &VIPTicket::from_optimal, "distance"_a,
+            py::arg_v("game_mode", User::GameMode::EASY, "am4.utils.game.User.GameMode.EASY")
+        )
         .def("__repr__", &VIPTicket::repr)
         .def("to_dict", py::overload_cast<const VIPTicket&>(&to_dict));
 }

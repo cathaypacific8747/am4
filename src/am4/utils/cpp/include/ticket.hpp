@@ -28,7 +28,7 @@ struct VIPTicket {
     uint16_t j;
     uint16_t f;
 
-    static VIPTicket from_optimal(double distance);
+    static VIPTicket from_optimal(double distance, User::GameMode game_mode = User::GameMode::EASY);
     static const string repr(const VIPTicket& ticket);
 
     operator PaxTicket() const { return PaxTicket{y, j, f}; }

@@ -46,6 +46,7 @@ where:
 - $d$: total distance[^1] of the flight.
 
 ### VIP
+#### <span class="easy">Easy</span>
 
 Found: 22 Jul 2021 (Cathay Express)
 
@@ -54,6 +55,20 @@ $$
 \$_\text{Y} &= 1.7489(0.4d+170) \\
 \$_\text{J} &= 1.7489(0.8d+560) \\
 \$_\text{F} &= 1.7489(1.2d+1200) \\
+\end{align*}
+$$
+
+where:
+
+- $\$_\text{\{Y,J,F\}}$ are the **autoprice** prices. For *optimal* prices, multiply $\$_\text{Y}$ by 1.22, $\$_\text{J}$ by 1.195, and $\$_\text{F}$ by 1.175.
+- $d$: total distance[^1] of the flight.
+
+#### <span class="realism">Realism</span>
+$$
+\begin{align*}
+\$_\text{Y} &= 1.7489(0.3d+150) \\
+\$_\text{J} &= 1.7489(0.6d+500) \\
+\$_\text{F} &= 1.7489(0.9d+1000) \\
 \end{align*}
 $$
 

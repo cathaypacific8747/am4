@@ -130,7 +130,7 @@ inline void AircraftRoute::update_pax_details(
 
     const auto tkt = [&]() {
         if constexpr (is_vip)
-            return VIPTicket::from_optimal(this->route.direct_distance);
+            return VIPTicket::from_optimal(this->route.direct_distance, user.game_mode);
         else
             return PaxTicket::from_optimal(this->route.direct_distance, user.game_mode);
     }();
