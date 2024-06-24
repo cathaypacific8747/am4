@@ -97,9 +97,10 @@ fn convert_airports() {
     let df = &lf.collect().unwrap();
     // v0.1
     // let mut file = std::fs::File::create("routes.parquet").unwrap();
-    // ParquetWriter::new(&mut file).finish(&mut df).unwrap();
+    // ParquetWriter::new(&mut file).finish(&mut df.clone()).unwrap();
     // dbg!(df);
 
+    // v0.2
     let num_rows = df.height();
     let mut airports = Vec::<Airport>::with_capacity(num_rows);
     for i in 0..num_rows {
@@ -173,6 +174,12 @@ fn convert_aircrafts() {
         .finish()
         .unwrap();
     let df = &lf.collect().unwrap();
+
+    // v0.1
+    let mut file = std::fs::File::create("aircrafts.parquet").unwrap();
+    ParquetWriter::new(&mut file)
+        .finish(&mut df.clone())
+        .unwrap();
 
     let num_rows = df.height();
     let mut aircrafts = Vec::<Aircraft>::with_capacity(num_rows);
