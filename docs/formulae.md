@@ -607,12 +607,12 @@ $$
 
 where:
 
-- $T$: time needed to the lounge
+- $T$: time needed to construct the lounge
 - $n_l$: number of lounges owned
 
 #### Construction cost
 
-Found: 07/07/2021
+Found: 07 Jul 2021
 
 Confidence: <span class="c-moderate">75%</span> (Lounge fee is lower for airlines with less cash?)
 
@@ -627,25 +627,9 @@ C_{\text{exclusive}} &= 15000000n_l + 375000000 \\
 $$
 
 where:
+
 - $C$: cost needed to construct the lounge
 - $n_l$: number of lounges owned
-
-___
-
-## Miscellaneous
-
-### Level Bar
-
-Found: Mar 4 2020 (Cathay Express)
-
-Confidence: <span class="c-good">100%</span> ($R^2 = 1$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
-
-$$f_{l + 1} = 8l + 4$$
-
-where:
-
-- $f_{l+1}$: number of flights needed to reach the next level
-- $l$: current level number
 
 ### Hangar expansion
 
@@ -672,3 +656,71 @@ $$C_{1} = \left\lfloor \frac{1}{10}C_{10} \right\rfloor$$
 
 [^1]: A flight A→B→C has total distance is `distance(A, B) + distance(B, C)`.
 [^2]: A flight A→B→C has direct distance is `distance(A, C)`.
+
+___
+
+## Aircraft
+### Wear
+
+Found: 2021 (Cathay Express)
+
+Confidence: <span class="c-good">100%</span> ($R^2 = 1$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
+
+$$
+\text{wear} \sim \mathcal{U}(0, 0.015\cdot(1-0.02t_r))
+$$
+
+where:
+
+- $t_r$: repair training amount (0-5)
+- $\mathcal{U}$: uniform distribution
+
+Equivalently, the expected wear is 0.75% per departure, which decreases by 1% per training point.
+
+### Repair Time
+
+Found: 29 June 2024 (Cathay Express, Point Connect)
+
+Confidence: <span class="c-good">99%</span> ($R^2 = .995$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
+
+$$
+T = 480000 \cdot \text{wear}+3600
+$$
+
+where:
+
+- $T$: downtime (seconds)
+- $\text{wear}$: [aircraft wear](#wear) percentage, 0-1 
+
+### Check Time
+
+Found: 29 June 2024 (Cathay Express, Point Connect)
+
+Confidence: <span class="c-good">99%</span> ($R^2 = .995$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
+
+$$
+T = 0.01 \cdot C+1860
+$$
+
+where:
+
+- $T$: downtime (seconds)
+- $C$: [check cost][utils.aircraft.Aircraft.check_cost]
+
+___
+
+## Miscellaneous
+
+### Level Bar
+
+Found: Mar 4 2020 (Cathay Express)
+
+Confidence: <span class="c-good">100%</span> ($R^2 = 1$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
+
+
+$$f_{l + 1} = 8l + 4$$
+
+where:
+
+- $f_{l+1}$: number of flights needed to reach the next level
+- $l$: current level number
