@@ -1,13 +1,16 @@
+mod ac_image;
 mod utils;
 
 use am4::{AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use polars::frame::row::Row;
 use polars::prelude::*;
+
 use std::io::Write;
+use std::path::Path;
 use std::str::FromStr;
 use utils::*;
 
-fn convert_routes() {
+fn convert_routes(out_dir: &Path) {
     use am4::route::demand::pax::PaxDemand;
 
     let mut schema = Schema::new();
@@ -19,17 +22,21 @@ fn convert_routes() {
     schema.with_column("d".into(), DataType::Float64);
     schema.with_column("rwy".into(), DataType::UInt16);
 
-    let lf = LazyCsvReader::new("../../private/web/routes.fixed2.csv")
+    let lf = LazyCsvReader::new("../../private/community/db-data/routes.csv")
         .with_has_header(false)
         .with_schema(Some(Arc::new(schema)))
         .finish()
         .unwrap();
 
     // v0.1
-    // let mut df = lf.drop(vec!["oid", "did", "rwy"]).collect().unwrap();
-    // let mut file = std::fs::File::create("routes.parquet").unwrap();
-    // ParquetWriter::new(&mut file).finish(&mut df).unwrap();
-    // dbg!(df);
+    let mut df = lf
+        .clone()
+        .drop(vec!["oid", "did", "rwy"])
+        .collect()
+        .unwrap();
+    let mut file = std::fs::File::create("routes.parquet").unwrap();
+    ParquetWriter::new(&mut file).finish(&mut df).unwrap();
+    dbg!(df);
 
     // v0.2
     let df = &lf.drop(vec!["oid", "did", "d", "rwy"]).collect().unwrap();
@@ -61,16 +68,16 @@ fn convert_routes() {
     let buf = rkyv::to_bytes::<Vec<PaxDemand>, 45_782_236>(&dems).unwrap();
 
     let spl = buf.len() / 2;
-    let mut file0 = std::fs::File::create(DEM_FILENAME0).unwrap();
+    let mut file0 = std::fs::File::create(out_dir.join(DEM_FILENAME0)).unwrap();
     file0.write_all(&buf[..spl]).unwrap();
     println!("wrote ..{:} to {:?}", spl, file0);
 
-    let mut file1 = std::fs::File::create(DEM_FILENAME1).unwrap();
+    let mut file1 = std::fs::File::create(out_dir.join(DEM_FILENAME1)).unwrap();
     file1.write_all(&buf[spl..]).unwrap();
     println!("wrote {:}.. to {:?}", spl, file1);
 }
 
-fn convert_airports() {
+fn convert_airports(out_dir: &Path) {
     use am4::airport::{Airport, Iata, Icao, Id, Name, Point};
 
     let mut schema = Schema::new();
@@ -88,7 +95,7 @@ fn convert_airports() {
     schema.with_column("hub_cost".into(), DataType::UInt32);
     schema.with_column("rwy_codes".into(), DataType::String);
 
-    let lf = LazyCsvReader::new("../../private/web/airports.new.csv")
+    let lf = LazyCsvReader::new("../../private/community/db-data/airports.csv")
         .with_has_header(true)
         .with_schema(Some(Arc::new(schema)))
         .finish()
@@ -96,8 +103,11 @@ fn convert_airports() {
 
     let df = &lf.collect().unwrap();
     // v0.1
-    // let mut file = std::fs::File::create("routes.parquet").unwrap();
-    // ParquetWriter::new(&mut file).finish(&mut df.clone()).unwrap();
+    // not regenerating due to change from f64 -> f32
+    // let mut file = std::fs::File::create("airports.parquet").unwrap();
+    // ParquetWriter::new(&mut file)
+    //     .finish(&mut df.clone())
+    //     .unwrap();
     // dbg!(df);
 
     // v0.2
@@ -131,14 +141,14 @@ fn convert_airports() {
         });
     }
     println!("{:?}", airports.len());
-    let mut file = std::fs::File::create(AP_FILENAME).unwrap();
+    let mut file = std::fs::File::create(out_dir.join(AP_FILENAME)).unwrap();
     let b = rkyv::to_bytes::<Vec<Airport>, 502684>(&airports).unwrap();
     file.write_all(&b).unwrap();
 
     println!("wrote {:?} bytes to {:?}", b.len(), file);
 }
 
-fn convert_aircrafts() {
+fn convert_aircrafts(out_dir: &Path) {
     use am4::aircraft::{Aircraft, AircraftType, EnginePriority, Id, Name, ShortName};
 
     let mut schema = Schema::new();
@@ -168,7 +178,7 @@ fn convert_aircrafts() {
     schema.with_column("wingspan".into(), DataType::UInt8);
     schema.with_column("length".into(), DataType::UInt8);
 
-    let lf = LazyCsvReader::new("../../private/web/aircrafts.new.csv")
+    let lf = LazyCsvReader::new("../../private/community/db-data/aircrafts.csv")
         .with_has_header(true)
         .with_schema(Some(Arc::new(schema)))
         .finish()
@@ -176,15 +186,17 @@ fn convert_aircrafts() {
     let df = &lf.collect().unwrap();
 
     // v0.1
-    let mut file = std::fs::File::create("aircrafts.parquet").unwrap();
-    ParquetWriter::new(&mut file)
-        .finish(&mut df.clone())
-        .unwrap();
+    // let mut file = std::fs::File::create("aircrafts.parquet").unwrap();
+    // ParquetWriter::new(&mut file)
+    //     .finish(&mut df.clone())
+    //     .unwrap();
+
+    let web_images = ac_image::process(df.column("img").unwrap(), out_dir);
 
     let num_rows = df.height();
     let mut aircrafts = Vec::<Aircraft>::with_capacity(num_rows);
 
-    for i in 0..num_rows {
+    for (i, im) in web_images.iter().enumerate() {
         let r = df.get_row(i).unwrap().0;
 
         aircrafts.push(Aircraft {
@@ -215,20 +227,29 @@ fn convert_aircrafts() {
             crew: get_u8(r[19].clone()),
             engineers: get_u8(r[20].clone()),
             technicians: get_u8(r[21].clone()),
-            img: get_str(r[22].clone()).to_string(),
+            img: im
+                .fp_processed
+                .file_stem()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .into(),
             wingspan: get_u8(r[23].clone()),
             length: get_u8(r[24].clone()),
         });
     }
-    let mut file = std::fs::File::create(AC_FILENAME).unwrap();
-    let b = rkyv::to_bytes::<Vec<Aircraft>, 68200>(&aircrafts).unwrap();
+    let mut file = std::fs::File::create(out_dir.join(AC_FILENAME)).unwrap();
+    let b = rkyv::to_bytes::<Vec<Aircraft>, 56648>(&aircrafts).unwrap();
     file.write_all(&b).unwrap();
 
     println!("wrote {:?} bytes to {:?}", b.len(), file);
 }
 
 fn main() {
-    convert_routes();
-    convert_airports();
-    convert_aircrafts();
+    let out_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../am4/assets");
+    std::fs::create_dir_all(&out_dir).unwrap();
+
+    convert_routes(&out_dir);
+    convert_airports(&out_dir);
+    convert_aircrafts(&out_dir);
 }

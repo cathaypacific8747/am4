@@ -1,4 +1,4 @@
-use crate::db::{LoadDbProgress, Idb};
+use crate::db::{Idb, LoadDbProgress};
 use leptos::*;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -23,10 +23,8 @@ impl std::fmt::Display for LoadDbProgress {
 pub fn Header(progress: ReadSignal<LoadDbProgress>) -> impl IntoView {
     let prog_str = move || progress.get().to_string();
 
-    let clear_db = create_action(|_e| {
-        async move {
-            Idb::connect().await.unwrap().clear().await.unwrap();
-        }
+    let clear_db = create_action(|_e| async move {
+        Idb::connect().await.unwrap().clear().await.unwrap();
     });
 
     view! {

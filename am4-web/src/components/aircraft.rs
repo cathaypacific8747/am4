@@ -1,5 +1,5 @@
 use crate::db::Database;
-use am4::aircraft::db::AircraftSearchError;
+use am4::aircraft::db::{AircraftSearchError, LENGTH_MAX, LENGTH_MEAN};
 use am4::aircraft::{Aircraft, AircraftType};
 use leptos::{wasm_bindgen::JsCast, *};
 use web_sys::HtmlInputElement;
@@ -85,6 +85,12 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
         AircraftType::Vip => "VIP",
     };
 
+    let width = if aircraft.length == 0 {
+        LENGTH_MEAN / LENGTH_MAX
+    } else {
+        aircraft.length as f32 / LENGTH_MAX
+    } * 250f32;
+
     view! {
         <div class="ac-card">
             <h3>
@@ -94,15 +100,14 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
             <table>
                 <tr>
                     <th>{"Engine"}</th>
-                    <td>{aircraft.ename} " (id: " {aircraft.eid} ")"</td>
+                    <td>
+                        {aircraft.ename} " (id: " {aircraft.eid} ", rank: "
+                        {format!("{}", aircraft.priority)} ")"
+                    </td>
                 </tr>
                 <tr>
                     <th>{"Speed"}</th>
-                    <td>{aircraft.speed} " km/h (rank: " {format!("{}", aircraft.priority)} ")"</td>
-                </tr>
-                <tr>
-                    <th>{"Priority"}</th>
-                    <td>{format!("{}", aircraft.priority)}</td>
+                    <td>{aircraft.speed} " km/h"</td>
                 </tr>
                 <tr>
                     <th>{"Fuel"}</th>
@@ -127,6 +132,10 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                 <tr>
                     <th>{"Runway"}</th>
                     <td>{aircraft.rwy} " ft"</td>
+                </tr>
+                <tr>
+                    <th>{"Check cost"}</th>
+                    <td>"$ " {aircraft.check_cost}</td>
                 </tr>
                 <tr>
                     <th>{"Maintenance"}</th>
@@ -154,6 +163,9 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                     <td>{format!("{} m × {} m", aircraft.length, aircraft.wingspan)}</td>
                 </tr>
             </table>
+            <div id="ac-img">
+            <img src=format!("/assets/img/aircraft/{}.webp", aircraft.img) width=width/>
+            </div>
         </div>
     }
 }

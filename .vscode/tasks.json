@@ -46,6 +46,34 @@
             "label": "py: test",
             "type": "shell",
             "command": "${command:python.interpreterPath} -m pytest"
+        },
+        {
+            "label": "cargo: clippy",
+            "type": "shell",
+            "command": "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "cargo: fmt all",
+            "type": "shell",
+            "command": "cargo fmt --all",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "cargo: test all",
+            "type": "shell",
+            "command": "cargo test --workspace --all-features --all-targets",
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "cargo: build docs",
+            "type": "shell",
+            "command": "RUSTDOCFLAGS=\"-D rustdoc::all -A rustdoc::private-doc-tests\" cargo doc --package am4 --all-features --no-deps",
+            "group": "test",
+            "problemMatcher": []
         }
     ]
 }

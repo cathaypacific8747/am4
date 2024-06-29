@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::Read;
 
 pub fn get_bytes(path: &str) -> Result<Vec<u8>, std::io::Error> {
-    let fp = "./data".to_string() + path;
+    let fp = env!("CARGO_MANIFEST_DIR").to_string() + "/assets/" + path;
     let mut file = File::open(fp)?;
     let mut buffer = Vec::<u8>::new();
     file.read_to_end(&mut buffer)?;
@@ -31,4 +31,4 @@ pub static ROUTES: Lazy<Demands> = Lazy::new(|| {
 });
 
 #[allow(dead_code)]
-pub static DISTANCES: Lazy<Distances> = Lazy::new(|| Distances::from_airports(&(*AIRPORTS.data())));
+pub static DISTANCES: Lazy<Distances> = Lazy::new(|| Distances::from_airports(AIRPORTS.data()));

@@ -2,10 +2,10 @@
 mod components;
 mod db;
 
-use components::nav::Header;
 use components::aircraft::ACSearch;
 use components::airport::APSearch;
-use db::{Idb, Database, LoadDbProgress};
+use components::nav::Header;
+use db::{Database, Idb, LoadDbProgress};
 
 use leptos::*;
 #[component]
@@ -19,7 +19,12 @@ pub fn App() -> impl IntoView {
         || (),
         move |_| async move {
             set_progress.set(LoadDbProgress::IDBConnect);
-            match Idb::connect().await.unwrap().init_db(&|msg| set_progress.set(msg)).await {
+            match Idb::connect()
+                .await
+                .unwrap()
+                .init_db(&|msg| set_progress.set(msg))
+                .await
+            {
                 Ok(db) => {
                     database.set_value(Some(db));
                     set_progress.set(LoadDbProgress::Loaded);

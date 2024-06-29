@@ -1,3 +1,5 @@
+//! Core tools and utilities for the game Airline Manager 4.
+
 pub mod airport;
 pub mod utils;
 
@@ -13,7 +15,7 @@ pub mod route; // under development
 #[macro_export]
 macro_rules! ac_version {
     () => {
-        "1"
+        "2"
     };
 }
 pub const AC_FILENAME: &str = concat!("aircrafts-v", ac_version!(), ".bin");

@@ -1,6 +1,6 @@
 [package]
 name = "am4-web"
-version = "0.2.0-alpha.2"
+version = "0.2.0-alpha.4"
 edition = "2021"
 
 [dependencies]

@@ -1,12 +1,19 @@
-use indexed_db_futures::prelude::*;
-use leptos::{logging::log, wasm_bindgen::{prelude::*, JsValue}, web_sys};
-use thiserror::Error;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{window, Response, js_sys::{Uint8Array, Array}, Blob, BlobPropertyBag};
 use am4::aircraft::db::Aircrafts;
-use am4::airport::{Airport, db::Airports};
+use am4::airport::{db::Airports, Airport};
 use am4::route::db::Distances;
 use am4::{AC_FILENAME, AP_FILENAME, DIST_FILENAME};
+use indexed_db_futures::prelude::*;
+use leptos::{
+    logging::log,
+    wasm_bindgen::{prelude::*, JsValue},
+    web_sys,
+};
+use thiserror::Error;
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{
+    js_sys::{Array, Uint8Array},
+    window, Blob, BlobPropertyBag, Response,
+};
 
 pub struct Idb {
     database: IdbDatabase,
@@ -28,26 +35,41 @@ impl Idb {
     }
 
     async fn get(&self, k: &str) -> Result<Option<JsValue>, GenericError> {
-        let tx = self.database.transaction_on_one_with_mode("data", IdbTransactionMode::Readonly)?;
-        tx.object_store("data")?.get_owned(k)?.await.map_err(|e| e.into())
+        let tx = self
+            .database
+            .transaction_on_one_with_mode("data", IdbTransactionMode::Readonly)?;
+        tx.object_store("data")?
+            .get_owned(k)?
+            .await
+            .map_err(|e| e.into())
     }
 
     async fn write(&self, k: &str, v: &JsValue) -> Result<(), GenericError> {
-        let tx = self.database.transaction_on_one_with_mode("data", IdbTransactionMode::Readwrite).unwrap();
+        let tx = self
+            .database
+            .transaction_on_one_with_mode("data", IdbTransactionMode::Readwrite)
+            .unwrap();
         tx.object_store("data")?.put_key_val_owned(k, v)?;
         Ok(())
     }
 
     pub async fn clear(&self) -> Result<(), GenericError> {
-        let tx = self.database.transaction_on_one_with_mode("data", IdbTransactionMode::Readwrite)?;
+        let tx = self
+            .database
+            .transaction_on_one_with_mode("data", IdbTransactionMode::Readwrite)?;
         tx.object_store("data")?.clear()?;
         Ok(())
     }
 
-    /// Load a binary file from the IndexedDb. If the blob is not found*, 
+    /// Load a binary file from the IndexedDb. If the blob is not found*,
     /// fetch it from the server and cache it in the IndexedDb.
     /// not found: `Response`* -> `Blob`* -> IndexedDb -> `Blob` -> `ArrayBuffer` -> `Vec<u8>`
-    pub async fn get_blob(&self, k: &str, url: &str, set_progress: &dyn Fn(LoadDbProgress)) -> Result<Vec<u8>, GenericError> {
+    pub async fn get_blob(
+        &self,
+        k: &str,
+        url: &str,
+        set_progress: &dyn Fn(LoadDbProgress),
+    ) -> Result<Vec<u8>, GenericError> {
         set_progress(LoadDbProgress::IDBRead(k.to_string()));
         let jsb = match self.get(k).await? {
             Some(b) => b,
@@ -67,7 +89,11 @@ impl Idb {
     /// generate it from the slice of airports and cache it in the indexeddb.
     /// not found: `&[Airport]`* -> `Distances`* (return this) -> `Blob`* -> IndexedDb
     /// found: IndexedDb -> `Blob` -> `ArrayBuffer` -> `Distances`
-    async fn get_distances(&self, aps: &[Airport], set_progress: &dyn Fn(LoadDbProgress)) -> Result<Distances, GenericError> {
+    async fn get_distances(
+        &self,
+        aps: &[Airport],
+        set_progress: &dyn Fn(LoadDbProgress),
+    ) -> Result<Distances, GenericError> {
         let k = DIST_FILENAME;
         set_progress(LoadDbProgress::IDBRead(k.to_string()));
         match self.get(k).await? {
@@ -76,12 +102,12 @@ impl Idb {
                 let ab = JsFuture::from(jsb.dyn_into::<Blob>()?.array_buffer()).await?;
                 let bytes = Uint8Array::new(&ab).to_vec();
                 Ok(Distances::from_bytes(&bytes).unwrap())
-            },
+            }
             None => {
                 set_progress(LoadDbProgress::Parsing(k.to_string()));
                 let distances = Distances::from_airports(aps);
                 let b = distances.to_bytes().unwrap();
-                
+
                 // https://github.com/rustwasm/wasm-bindgen/issues/1693
                 // effectively, this is `new Blob([new Uint8Array(b)], {type: 'application/octet-stream'})`
                 let ja = Array::new();
@@ -95,22 +121,37 @@ impl Idb {
         }
     }
 
-    pub async fn init_db(&self, set_progress: &dyn Fn(LoadDbProgress)) -> Result<Database, GenericError> {
-        let bytes = self.get_blob(AP_FILENAME, format!("data/{}", AP_FILENAME).as_str(), set_progress).await?;
+    pub async fn init_db(
+        &self,
+        set_progress: &dyn Fn(LoadDbProgress),
+    ) -> Result<Database, GenericError> {
+        let bytes = self
+            .get_blob(
+                AP_FILENAME,
+                format!("assets/{}", AP_FILENAME).as_str(),
+                set_progress,
+            )
+            .await?;
         set_progress(LoadDbProgress::Parsing("airports".to_string()));
         let airports = Airports::from_bytes(&bytes).unwrap();
         log!("airports: {}", airports.data().len());
-        
-        let bytes = self.get_blob(AC_FILENAME, format!("data/{}", AC_FILENAME).as_str(), set_progress).await?;
+
+        let bytes = self
+            .get_blob(
+                AC_FILENAME,
+                format!("assets/{}", AC_FILENAME).as_str(),
+                set_progress,
+            )
+            .await?;
         set_progress(LoadDbProgress::Parsing("aircrafts".to_string()));
         let aircrafts = Aircrafts::from_bytes(&bytes).unwrap();
         log!("aircrafts: {}", aircrafts.data().len());
-        
+
         set_progress(LoadDbProgress::Parsing("distances".to_string()));
         let distances = self.get_distances(airports.data(), set_progress).await?;
         log!("distances: {}", distances.data().len());
         // let distances = Distances::from_airports(&(airports.data()));
-        // let bytes = self.fetch("routes", "data/routes.bin", set_progress).await?;
+        // let bytes = self.fetch("routes", "assets/routes.bin", set_progress).await?;
         // set_progress(LoadDbProgress::Parsing("routes".to_string()));
         // let routes = Routes::from_bytes(&bytes).unwrap();
         // log!("routes: {}", routes.data().len());
@@ -145,7 +186,7 @@ pub enum LoadDbProgress {
     Fetching(String),
     Parsing(String),
     Loaded,
-    Err(GenericError)
+    Err(GenericError),
 }
 
 #[derive(Clone, Error, Debug, PartialEq)]

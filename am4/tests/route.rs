@@ -22,5 +22,5 @@ fn test_routes_ok() {
 fn test_distances_ok() {
     assert_eq!(DISTANCES.data().len(), ROUTE_COUNT);
     assert_eq!(DISTANCES.data()[0].to_bits(), 330.21942_f32.to_bits()); // 1 -> 2
-    assert_eq!(DISTANCES.data()[1].to_bits(), 1245.81169_f32.to_bits()); // 1 -> 3
+    assert_eq!(DISTANCES.data()[1].to_bits(), 1_245.811_6_f32.to_bits()); // 1 -> 3
 }

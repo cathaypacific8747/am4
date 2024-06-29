@@ -5,11 +5,14 @@ edition = "2021"
 
 [dependencies]
 am4 = { path = "../../../am4" }
+image = "0.25.1"
 polars = { version = "0.40.0", features = [
     "lazy",
     "dtype-u16",
     "dtype-u8",
     "parquet",
 ] }
+reqwest = { version = "0.12.5", features = ["blocking"] }
 rkyv = "0.7.44"
 thiserror = "1.0.61"
+webp = "0.3.0"

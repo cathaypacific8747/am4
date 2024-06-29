@@ -9,6 +9,9 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
 
+pub static LENGTH_MAX: f32 = 77.0;
+pub static LENGTH_MEAN: f32 = 34.278454;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SearchKey {
     Id(Id),

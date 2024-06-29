@@ -4,7 +4,6 @@ members = ["am4", "am4-app", "am4-web", "misc/scripts/prepare_data"]
 
 [profile.release]
 debug = true
-lto = true
 
 [profile.wasm-release]
 inherits = "release"
