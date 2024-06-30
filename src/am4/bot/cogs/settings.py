@@ -1,8 +1,9 @@
 from typing import Literal
 
 import discord
-from am4.utils.game import User
 from discord.ext import commands
+
+from am4.utils.game import User
 
 from ...config import cfg
 from ...db.client import pb
@@ -25,7 +26,6 @@ class SettingsCog(BaseCog):
         ),
         invoke_without_command=True,
     )
-    @commands.guild_only()
     async def settings(
         self,
         ctx: commands.Context,
@@ -153,15 +153,17 @@ class SettingsCog(BaseCog):
                 f"{cfg.bot.COMMAND_PREFIX}settings {suggs[0]}",
             ]
 
+        await h.banned_user()
         await h.bad_literal(get_cmd_suggs)
-        await h.missing_arg()
         await h.too_many_args("action")
+        await h.common_mistakes()
         await h.raise_for_unhandled()
 
     @show.error
     async def show_error(self, ctx: commands.Context, error: commands.CommandError):
         h = CustomErrHandler(ctx, error, "settings show")
         await h.too_many_args("action")
+        await h.common_mistakes()
         await h.raise_for_unhandled()
 
     @set.error
@@ -174,10 +176,11 @@ class SettingsCog(BaseCog):
                 f"{cfg.bot.COMMAND_PREFIX}settings set {suggs[0]} <value>",
             ]
 
+        await h.banned_user()
         await h.bad_literal(get_cmd_suggs)
         await h.invalid_setting_value()
-        await h.missing_arg()
         await h.too_many_args("key/value")
+        await h.common_mistakes()
         await h.raise_for_unhandled()
 
     @reset.error
@@ -190,7 +193,8 @@ class SettingsCog(BaseCog):
                 f"{cfg.bot.COMMAND_PREFIX}settings reset {suggs[0]}",
             ]
 
+        await h.banned_user()
         await h.bad_literal(get_cmd_suggs)
-        await h.missing_arg()
         await h.too_many_args("key")
+        await h.common_mistakes()
         await h.raise_for_unhandled()

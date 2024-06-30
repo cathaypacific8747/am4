@@ -54,6 +54,8 @@ inline User::GameMode gamemode_from_string(const string &s) {
 
 inline const string to_string(User::Role role) {
     switch (role) {
+        case User::Role::BANNED:
+            return "BANNED";
         case User::Role::USER:
             return "USER";
         case User::Role::TRUSTED_USER:
@@ -78,6 +80,7 @@ inline const string to_string(User::Role role) {
 }
 
 inline User::Role role_from_string(const string &s) {
+    if (s == "BANNED") return User::Role::BANNED;
     if (s == "USER") return User::Role::USER;
     if (s == "TRUSTED_USER") return User::Role::TRUSTED_USER;
     if (s == "TRUSTED_USER_2") return User::Role::TRUSTED_USER_2;
@@ -260,6 +263,7 @@ void pybind_init_game(py::module_ &m) {
         .value("EASY", User::GameMode::EASY)
         .value("REALISM", User::GameMode::REALISM);
     py::enum_<User::Role>(user_class, "Role")
+        .value("BANNED", User::Role::BANNED)
         .value("USER", User::Role::USER)
         .value("TRUSTED_USER", User::Role::TRUSTED_USER)
         .value("ADMIN", User::Role::ADMIN);

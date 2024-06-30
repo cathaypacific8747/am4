@@ -9,7 +9,8 @@
         "PRICEALERT_ROLEID": 0,
         "PRICEALERTBAN_ROLEID": 0,
         "MODERATOR_ROLEID": 0,
-        "HELPER_ROLEID": 0
+        "HELPER_ROLEID": 0,
+        "SERVER_ID": 0
     },
     "db": {
         "PB_EMAIL": "admin@am4help.com",

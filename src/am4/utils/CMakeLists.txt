@@ -3,7 +3,7 @@ project(am4utils LANGUAGES CXX)
 
 if(NOT SKBUILD_PROJECT_VERSION)
     file(STRINGS ../../../pyproject.toml PROJECT_TOML_CONTENTS REGEX "^version =")
-    string(REGEX MATCH "\"([0-9]+\\.[0-9]+(\\.[0-9]+)?(-[a-zA-Z0-9]+)?)\"" _ ${PROJECT_TOML_CONTENTS})
+    string(REGEX MATCH "\"([0-9]+\.[0-9]+\.[0-9](-[a-zA-Z0-9.]+)?)\"" _ ${PROJECT_TOML_CONTENTS})
     set(SKBUILD_PROJECT_VERSION ${CMAKE_MATCH_1})
 endif()
 

@@ -1,17 +1,15 @@
 import heapq
 import io
-import traceback
 from typing import Annotated, Callable
 
 import discord
+from discord.ext import commands
+from pydantic_core import PydanticCustomError, ValidationError
+from rich.console import Console
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db.utils import jaro_winkler_distance
-from discord.ext import commands
-from discord.ext.commands.view import StringView
-from pydantic_core import PydanticCustomError, ValidationError
-from rich import inspect
-from rich.console import Console
 
 from ..config import cfg
 from .channels import channels
@@ -64,9 +62,12 @@ class PriceValidationError(ValidationErrorBase):
     pass
 
 
-def get_err_tb(v: StringView) -> str:
-    highlight = " ▔▔▔?" if (wordlen := v.index - v.previous) < 1 else ("▔" * wordlen + "↖")
-    return f"```php\n{v.buffer}\n{' ' * v.previous}{highlight}\n```"
+class UserBannedError(commands.BadArgument):
+    pass
+
+
+class OutsideMainServerError(commands.CheckFailure):
+    pass
 
 
 class CustomErrHandler:
@@ -76,13 +77,18 @@ class CustomErrHandler:
         self.ctx = ctx
         self.error = error
         self.cmd = cmd
-
-        self.err_tb = get_err_tb(self.ctx.view)
-
         self.handled = False
 
+    @property
+    def err_tb(self) -> str:
+        v = self.ctx.view
+        highlight = " ▔▔▔?" if (wordlen := v.index - v.previous) < 1 else ("▔" * wordlen + "↖")
+        return f"```php\n{v.buffer}\n{' ' * v.previous}{highlight}\n```"
+
     async def raise_for_unhandled(self):
-        if not self.handled:
+        # we need to set/getattr because @cmd.error and @global.error both catches,
+        # we don't want to send the error twice
+        if not self.handled and not getattr(self.error, "__handled__", False):
             await self.ctx.send(
                 embed=discord.Embed(
                     title="An error occurred!",
@@ -95,14 +101,18 @@ class CustomErrHandler:
             )
             buf = io.StringIO()
             console = Console(file=buf)
-            console.print_exception(show_locals=True)
-            inspect(self.ctx, console=console)
+            if self.error is not None:
+                console.print_exception(show_locals=True, max_frames=0)
+
+            # inspect(self.ctx, console=console)
             buf.seek(0)
             await channels.debug.send(
                 f"`{self.ctx.message.content}` by {self.ctx.author.mention}: {self.ctx.message.jump_url}",
                 file=discord.File(buf, filename="error.log"),
             )
             raise self.error
+        else:
+            setattr(self.error, "__handled__", True)
 
     def _get_err_embed(
         self, title: str, description: str | None, suggs: Suggestions | None = None, sugg_cmd_override: list[str] = []
@@ -203,11 +213,10 @@ class CustomErrHandler:
             if as_time
             else "**Tip**: I'm assuming the constraint is by distance: if you'd like to use time instead, use `HH:MM`."
         )
-        suggs = [("08:00", "")] if as_time else [("08:00", ""), ("15000", "")]
         embed = self._get_err_embed(
             title="Invalid constraint!",
             description=f"{self.err_tb}\n{self.error.msg}\n{extra}".strip(),
-            suggs=suggs,
+            suggs=[("08:00", "`08:00`")] if as_time else [("08:00", "`08:00`"), ("15000", "`15000`")],
         )
         await self.ctx.send(embed=embed)
         self.handled = True
@@ -220,6 +229,17 @@ class CustomErrHandler:
             description=f"{self.err_tb}\n{self.error.msg}".strip(),
         )
         await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def banned_user(self):
+        if not isinstance(self.error, UserBannedError):
+            return
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="You are not allowed to use this command.",
+                description="If you think this is a mistake, contact a moderator.",
+            )
+        )
         self.handled = True
 
     async def too_many_args(self, arg_name: str):
@@ -246,20 +266,6 @@ class CustomErrHandler:
         )
         self.handled = True
 
-    async def missing_arg(self):
-        if not isinstance(self.error, commands.MissingRequiredArgument):
-            return
-        pre = self.ctx.view.buffer[: self.ctx.view.previous]
-        cp = self.ctx.current_parameter
-        await self.ctx.send(
-            embed=self._get_err_embed(
-                title="Missing required argument!",
-                description=(f"{self.err_tb}I expected the `{cp.name}` argument.\n"),
-                sugg_cmd_override=[f"{cfg.bot.COMMAND_PREFIX}help {self.cmd}", f"{pre} <{cp.name}>"],
-            )
-        )
-        self.handled = True
-
     async def bad_literal(self, get_cmd_suggs: Callable[[list[str]], list[str]]):
         if not isinstance(self.error, commands.BadLiteralArgument):
             return
@@ -279,3 +285,110 @@ class CustomErrHandler:
         )
         await self.ctx.send(embed=embed)
         self.handled = True
+
+    async def _missing_arg(self):
+        if not isinstance(self.error, commands.MissingRequiredArgument):
+            return
+        pre = self.ctx.view.buffer[: self.ctx.view.previous]
+        cp = self.ctx.current_parameter
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="Missing required argument!",
+                description=(f"{self.err_tb}I expected the `{cp.name}` argument.\n"),
+                sugg_cmd_override=[f"{cfg.bot.COMMAND_PREFIX}help {self.cmd}", f"{pre} <{cp.name}>"],
+            )
+        )
+        self.handled = True
+
+    async def _expected_closing_quote_error(self):
+        if not isinstance(self.error, commands.ExpectedClosingQuoteError):
+            return
+        v = self.ctx.view
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="Missing closing quote!",
+                description=f"{self.err_tb}You forgot to close the quote here.",
+                sugg_cmd_override=[f'{v.buffer[:v.index]}"{v.buffer[v.index:]}'],
+            )
+        )
+        self.handled = True
+
+    async def _invalid_end_of_quoted_string_error(self):
+        if not isinstance(self.error, commands.InvalidEndOfQuotedStringError):
+            return
+        v = self.ctx.view
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="Invalid end of quoted string!",
+                description=f"{self.err_tb}You can't have anything after this closing quote.",
+                sugg_cmd_override=[f"{v.buffer[:v.index]}"],
+            )
+        )
+        self.handled = True
+
+    async def _unexpected_quote_error(self):
+        if not isinstance(self.error, commands.UnexpectedQuoteError):
+            return
+        v = self.ctx.view
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="Unexpected quote!",
+                description=f"{self.err_tb}You can't have a quote after this character.",
+                sugg_cmd_override=[f"{v.buffer[:v.index]}{v.buffer[v.index+1:]}"],
+            )
+        )
+        self.handled = True
+
+    async def _main_server_only(self):
+        if not isinstance(self.error, OutsideMainServerError):
+            return
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="This command can only be used on our official server!",
+                description="Join our server [here](https://discord.gg/4tVQHtf).",
+            )
+        )
+        self.handled = True
+
+    async def _no_pm(self):
+        if not isinstance(self.error, commands.NoPrivateMessage):
+            return
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="This command cannot be used in private messages!",
+                description="Join our server [here](https://discord.gg/4tVQHtf).",
+            )
+        )
+        self.handled = True
+
+    async def _command_not_found(self):
+        if not isinstance(self.error, commands.CommandNotFound):
+            return
+        v = self.ctx.view
+        command = v.buffer[v.previous : v.index]
+
+        top_keys = []
+        for c in self.ctx.bot.commands:
+            heapq.heappush(top_keys, (jaro_winkler_distance(command, c.name), c.name))
+        suggs = [k for _, k in heapq.nlargest(3, top_keys)]
+
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title=f"`{command}` is not a valid command!",
+                description=f"{self.err_tb}Check `{cfg.bot.COMMAND_PREFIX}help` to list all commands.",
+                suggs=[("", f"`{cfg.bot.COMMAND_PREFIX}{s}`") for s in suggs],
+                sugg_cmd_override=[f"{cfg.bot.COMMAND_PREFIX}help"],
+            )
+        )
+        self.handled = True
+
+    async def common_mistakes(self):
+        await self._missing_arg()
+        await self._expected_closing_quote_error()
+        await self._invalid_end_of_quoted_string_error()
+        await self._unexpected_quote_error()
+        await self._main_server_only()
+
+    async def top_level(self):
+        await self._no_pm()
+        await self._command_not_found()

@@ -8,6 +8,7 @@ import cmocean
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
+import PIL
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
 from pyproj import CRS, Transformer
@@ -59,8 +60,8 @@ class MPLMap:
         ax3.set_xlabel("#aircraft")
         ax3.invert_xaxis()
         d = Path(__file__).parent / "assets" / "img" / "map.jpg"  # peirce_quincuncial
-        ax.imshow(plt.imread(d), extent=[-ext, ext, -ext, ext])
-        self.template = pickle.dumps((fig, ax, ax2, ax3))
+        im = np.array(PIL.Image.open(d))
+        self.template = pickle.dumps((fig, ax, ax2, ax3, im))
         plt.close(fig)
 
     def _plot_destinations(
@@ -69,11 +70,16 @@ class MPLMap:
         origin_lng: float,
         origin_lat: float,
     ) -> io.BytesIO:
-        fig, ax, ax2, ax3 = pickle.loads(self.template)
+        fig, ax, ax2, ax3, im = pickle.loads(self.template)
         fig: Figure
         ax: plt.Axes
         ax2: plt.Axes
         ax3: plt.Axes
+        im: np.ndarray
+
+        # FIXME: see https://github.com/matplotlib/matplotlib/issues/28448
+        ext = 2**24
+        ax.imshow(im.astype(np.uint16), extent=[-ext, ext, -ext, ext])
 
         lats = cols["98|dest.lat"]
         lngs = cols["99|dest.lng"]

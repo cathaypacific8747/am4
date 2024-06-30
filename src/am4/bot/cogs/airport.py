@@ -1,6 +1,7 @@
 import discord
-from am4.utils.airport import Airport
 from discord.ext import commands
+
+from am4.utils.airport import Airport
 
 from ...common import HELP_AP_ARG0
 from ...config import cfg
@@ -21,7 +22,6 @@ class AirportCog(BaseCog):
         ),
         ignore_extra=False,
     )
-    @commands.guild_only()
     async def airport(
         self,
         ctx: commands.Context,
@@ -49,6 +49,6 @@ class AirportCog(BaseCog):
         h = CustomErrHandler(ctx, error, "airport")
 
         await h.invalid_airport()
-        await h.missing_arg()
         await h.too_many_args("ap_query")
+        await h.common_mistakes()
         await h.raise_for_unhandled()

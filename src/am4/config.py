@@ -30,6 +30,7 @@ class ConfigBot(BaseModel):
     PRICEALERTBAN_ROLEID: int
     MODERATOR_ROLEID: int
     HELPER_ROLEID: int
+    SERVER_ID: int
 
 
 class Config(BaseModel):

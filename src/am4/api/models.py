@@ -1,10 +1,11 @@
 from typing import Annotated
 
+from fastapi import HTTPException, Query
+from pydantic import BaseModel, Field
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.game import User
 from am4.utils.route import AircraftRoute
-from fastapi import HTTPException, Query
-from pydantic import BaseModel, Field
 
 from ..common import (
     HELP_AC_ARG0,
@@ -304,7 +305,6 @@ class FAPIReqUser:
                 le=1,
             ),
         ] = None,
-        # role: Annotated[User.Role, Query(description="[Optional] Role - defaults to `USER` if not specified.)")] = None,
     ):
         self.realism = realism
         self.wear_training = wear_training

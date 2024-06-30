@@ -13,9 +13,10 @@ struct User {
     };
 
     enum class Role : uint8_t {
-        USER = 0,
-        TRUSTED_USER = 1,
-        TRUSTED_USER_2 = 2,
+        BANNED = 0,
+        USER = 5,
+        TRUSTED_USER = 6,
+        TRUSTED_USER_2 = 7,
         TOP_ALLIANCE_MEMBER = 10,
         TOP_ALLIANCE_ADMIN = 11,
         HELPER = 50,

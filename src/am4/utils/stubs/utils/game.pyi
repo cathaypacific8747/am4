@@ -221,6 +221,8 @@ class User:
         """
         Members:
         
+          BANNED
+        
           USER
         
           TRUSTED_USER
@@ -228,9 +230,10 @@ class User:
           ADMIN
         """
         ADMIN: typing.ClassVar[User.Role]  # value = <Role.ADMIN: 52>
-        TRUSTED_USER: typing.ClassVar[User.Role]  # value = <Role.TRUSTED_USER: 1>
-        USER: typing.ClassVar[User.Role]  # value = <Role.USER: 0>
-        __members__: typing.ClassVar[dict[str, User.Role]]  # value = {'USER': <Role.USER: 0>, 'TRUSTED_USER': <Role.TRUSTED_USER: 1>, 'ADMIN': <Role.ADMIN: 52>}
+        BANNED: typing.ClassVar[User.Role]  # value = <Role.BANNED: 0>
+        TRUSTED_USER: typing.ClassVar[User.Role]  # value = <Role.TRUSTED_USER: 6>
+        USER: typing.ClassVar[User.Role]  # value = <Role.USER: 5>
+        __members__: typing.ClassVar[dict[str, User.Role]]  # value = {'BANNED': <Role.BANNED: 0>, 'USER': <Role.USER: 5>, 'TRUSTED_USER': <Role.TRUSTED_USER: 6>, 'ADMIN': <Role.ADMIN: 52>}
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:

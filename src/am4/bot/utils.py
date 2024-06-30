@@ -2,14 +2,15 @@ import time
 from typing import Literal
 
 import discord
+from discord import AllowedMentions
+from discord.ext import commands
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand, PaxDemand
 from am4.utils.game import User
 from am4.utils.route import AircraftRoute
 from am4.utils.ticket import CargoTicket, PaxTicket, VIPTicket
-from discord import AllowedMentions
-from discord.ext import commands
 
 from ..common import (
     HELP_U_FOURX,
@@ -19,7 +20,7 @@ from ..common import (
 from ..config import cfg
 from ..db.client import pb
 from ..db.user import UserExtra
-from .errors import CustomErrHandler
+from .errors import CustomErrHandler, OutsideMainServerError, UserBannedError
 
 GUIDE_DEV_ROLEID = 646148607636144131
 STAR_ROLEID = 701410528853098497
@@ -71,21 +72,26 @@ _SPPUNC = " "
 
 async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
     u = ctx.author
-    r_role = discord.utils.get(u.roles, name="Realism")
-    e_role = discord.utils.get(u.roles, name="Easy")
+    if "roles" in dir(u):
+        r_role = discord.utils.get(u.roles, name="Realism")
+        e_role = discord.utils.get(u.roles, name="Easy")
+    else:
+        r_role = e_role = None
     gm_target = "Realism" if r_role is not None else "Easy"
     role_id = r_role.id if r_role is not None else e_role.id if e_role is not None else None
 
     user, user_extra, dbstatus = await pb.users.get_from_discord(u.name, u.display_name, gm_target.upper(), u.id)
+    if user.role == User.Role.BANNED:
+        raise UserBannedError()
     if dbstatus == "created":
         gm_reason = f" because of your <@&{role_id}> role" if role_id is not None else ""
         await ctx.send(
             embed=discord.Embed(
-                title="Your account has been created.",
+                title="Setup complete 🚀",
                 description=(
-                    f"Your game mode is now `{gm_target}`{gm_reason}.\n\n"
-                    f"To view your settings, use `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
-                    f"Need help with settings? Try `{cfg.bot.COMMAND_PREFIX}help settings`."
+                    f"Welcome! Your game mode is `{gm_target}`{gm_reason}.\n\n"
+                    f"Check your settings: `{cfg.bot.COMMAND_PREFIX}settings show`.\n"
+                    f"Need help? Try `{cfg.bot.COMMAND_PREFIX}help settings`."
                 ),
                 color=COLOUR_SUCCESS,
             ),
@@ -95,8 +101,7 @@ async def fetch_user_info(ctx: commands.Context) -> tuple[User, UserExtra]:
         e_role is not None and user.game_mode == User.GameMode.REALISM
     ):
         gm_user = "Realism" if user.game_mode == User.GameMode.REALISM else "Easy"
-        h = CustomErrHandler(ctx)
-        embed = h._get_err_embed(
+        embed = CustomErrHandler(ctx)._get_err_embed(
             title="Mismatched game mode!",
             description=(
                 f"I detected the <@&{role_id}> role on your account, but your settings indicate "
@@ -182,3 +187,14 @@ def format_num(num: float, *_pos) -> str:
         magnitude += 1
         num /= 1000.0
     return f"{num:.{magnitude}f}".rstrip("0").rstrip(".") + ["", "K", "M", "B", "T"][magnitude]
+
+
+def main_server_only():
+    async def predicate(ctx: commands.Context):
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage()
+        if ctx.guild.id != cfg.bot.SERVER_ID:
+            raise OutsideMainServerError()
+        return True
+
+    return commands.check(predicate)

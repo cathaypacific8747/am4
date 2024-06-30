@@ -696,7 +696,8 @@ where:
 
 Found: 29 June 2024 (Cathay Express, Point Connect)
 
-Confidence: <span class="c-good">99%</span> ($R^2 = .995$). Applicable for both <span class="easy">easy</span> and <span class="realism">realism</span>.
+Confidence: <span class="c-good">80%</span>. Formulae for realism has not yet been found.
+Note that the check cost for easy players are half of realism.
 
 $$
 T = 0.01 \cdot C+1860

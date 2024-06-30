@@ -1,7 +1,8 @@
 import discord
-from am4.utils import __version__ as am4utils_version
+from discord import AllowedMentions, Embed
 from discord.ext import commands
-from discord.mentions import AllowedMentions
+
+from am4.utils import __version__ as am4utils_version
 
 from ...config import cfg
 from ..base import BaseCog
@@ -11,17 +12,29 @@ from ..utils import COLOUR_ERROR, COLOUR_GENERIC
 class HelpCog(BaseCog):
     @commands.command(brief="Shows information about our bot", ignore_extra=False)
     async def botinfo(self, ctx: commands.Context):
-        await ctx.send(
-            (
-                "# AM4Help.com discord bot\n"
-                f"- coreutils version: `{am4utils_version}`\n"
-                "- Made by <@697804580456759397>, <@243007616714801157> and <@663796476257763370>\n"
-                "- If you need any help, feel free to ask on our support server: https://discord.gg/4tVQHtf\n"
-                "- The code is open-source on GitHub at https://github.com/cathaypacific8747/am4 - "
-                "feel free to open an issue and/or PR!"
-            ),
-            allowed_mentions=AllowedMentions.none(),
+        embed = Embed(title=f"AM4Help `v{am4utils_version}`", color=discord.Colour.blue())
+        embed.add_field(name="Made by", value="<@697804580456759397>", inline=False)
+        embed.add_field(
+            name="Contributed by",
+            value="<@243007616714801157>, <@663796476257763370>, Star Alliance members and the community",
+            inline=False,
         )
+        embed.add_field(
+            name="Support",
+            value="If you need any help, join our [community server](https://discord.gg/4tVQHtf)!",
+            inline=False,
+        )
+        embed.add_field(
+            name="Contribute",
+            value=(
+                "[Source code](https://github.com/cathaypacific8747/am4), "
+                "[list of formulae and documentation](https://cathaypacific8747.github.io/am4) "
+                "is open-source on GitHub. Feel free to open an issue or pull request!"
+            ),
+            inline=False,
+        )
+        embed.set_thumbnail(url="https://am4help.com/assets/img/logo.png")
+        await ctx.send(embed=embed, allowed_mentions=AllowedMentions.none())
 
     @staticmethod
     def _collect_commands_descs(cmd: commands.Command | commands.Group, level=0):
@@ -34,7 +47,6 @@ class HelpCog(BaseCog):
         return ""
 
     @commands.command(brief="Shows this command", ignore_extra=False)
-    @commands.guild_only()
     async def help(
         self,
         ctx: commands.Context,

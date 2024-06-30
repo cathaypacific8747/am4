@@ -242,6 +242,7 @@ migrate((db) => {
           "options": {
             "maxSelect": 1,
             "values": [
+              "BANNED",
               "USER",
               "TRUSTED_USER",
               "TOP_ALLIANCE_MEMBER",

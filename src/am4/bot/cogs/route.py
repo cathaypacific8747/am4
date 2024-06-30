@@ -1,8 +1,9 @@
 import discord
+from discord.ext import commands
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
-from am4.utils.route import AircraftRoute, Route
-from discord.ext import commands
+from am4.utils.route import AircraftRoute, Route, SameOdException
 
 from ...config import cfg
 from ..base import BaseCog
@@ -64,7 +65,6 @@ class RouteCog(BaseCog):
         ),
         ignore_extra=False,
     )
-    @commands.guild_only()
     async def route(
         self,
         ctx: commands.Context,
@@ -84,7 +84,16 @@ class RouteCog(BaseCog):
         ),
     ):
         if ac_query is None:
-            r = Route.create(ap0_query.ap, ap1_query.ap)
+            try:
+                r = Route.create(ap0_query.ap, ap1_query.ap)
+            except SameOdException as e:
+                embed = discord.Embed(
+                    title="Invalid route!",
+                    description=str(e),
+                    colour=COLOUR_ERROR,
+                )
+                await ctx.send(embed=embed)
+                return
             embed = self.get_basic_route_embed(ap0_query, ap1_query, r)
             await ctx.send(embed=embed)
             return
@@ -178,6 +187,8 @@ class RouteCog(BaseCog):
         await h.invalid_aircraft()
         await h.invalid_tpd()
         await h.invalid_cfg_alg()
-        await h.missing_arg()
+
+        await h.banned_user()
         await h.too_many_args("argument")
+        await h.common_mistakes()
         await h.raise_for_unhandled()

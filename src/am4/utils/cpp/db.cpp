@@ -13,6 +13,7 @@ shared_ptr<Database> Database::Client(const string& home_dir) {
         default_client = make_shared<Database>();
         default_client->database = duckdb::make_uniq<DuckDB>(":memory:");
         default_client->connection = duckdb::make_uniq<Connection>(*default_client->database);
+        std::cout << "duckdb: connected to " << home_dir << std::endl;
 
         CHECK_SUCCESS(default_client->connection->Query("SET home_directory = '" + home_dir + "';"));
     }
@@ -84,11 +85,12 @@ void Database::populate_internal() {
     }
 }
 
-const uint16_t missing_apids[] = {
-    52,   178,  248,  318,  538,  542,  544,  552,  558,  562,  571,  572,  577,  597,  1110, 1130, 1162, 1200, 1249,
-    1265, 1306, 1310, 1311, 1313, 1326, 1328, 1356, 1358, 1378, 1381, 1388, 1391, 1468, 1481, 1513, 1528, 1532, 1537,
-    1540, 1542, 1543, 1571, 1592, 1598, 1625, 1683, 1696, 2382, 2400, 2533, 2557, 2559, 2566, 2573, 2577, 2591, 2597,
-    2610, 2627, 2630, 2647, 2648, 2656, 2660, 2662, 2664, 2666, 2667, 2673, 3053, 3194, 3507, 3508, 3550, 3899};
+const uint16_t missing_apids[] = {52,   178,  248,  318,  538,  542,  544,  552,  558,  562,  571,  572,  577,
+                                  597,  1110, 1130, 1162, 1200, 1249, 1265, 1306, 1310, 1311, 1313, 1326, 1328,
+                                  1356, 1358, 1378, 1381, 1388, 1391, 1468, 1481, 1513, 1528, 1532, 1537, 1540,
+                                  1542, 1543, 1571, 1592, 1598, 1625, 1683, 1696, 2382, 2400, 2533, 2557, 2559,
+                                  2566, 2573, 2577, 2591, 2597, 2610, 2627, 2630, 2647, 2648, 2656, 2660, 2662,
+                                  2664, 2666, 2667, 2673, 3053, 3194, 3507, 3508, 3550, 3899};
 Airport Database::get_airport_by_id(uint16_t id) {
     if (std::find(std::begin(missing_apids), std::end(missing_apids), id) != std::end(missing_apids)) return Airport();
     if (id > 3982) return Airport();
@@ -239,7 +241,8 @@ uint16_t Database::get_aircraft_idx_by_id(uint16_t id, uint8_t priority) {
         {343, 441}, {344, 442}, {345, 443}, {346, 444}, {347, 445}, {348, 446}, {349, 447}, {350, 448}, {351, 449},
         {352, 450}, {353, 451}, {355, 453}, {356, 454}, {357, 455}, {358, 457}, {359, 459}, {360, 460}, {361, 464},
         {362, 468}, {363, 471}, {364, 474}, {365, 475}, {366, 477}, {367, 479}, {368, 480}, {369, 482}, {370, 483},
-        {371, 484}, {372, 485}, {373, 486}, {374, 487}, {375, 488}, {376, 489}, {377, 491}};
+        {371, 484}, {372, 485}, {373, 486}, {374, 487}, {375, 488}, {376, 489}, {377, 491}
+    };
     auto search = idx_id_map.find(id);
     if (search != idx_id_map.end()) {
         auto next = std::next(search);

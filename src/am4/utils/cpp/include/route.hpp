@@ -31,6 +31,12 @@ struct Route {
     static const string repr(const Route& r);
 };
 
+// TODO: remove this, bad practice
+class SameOdException : public std::exception {
+   public:
+    const char* what() const throw() { return "Cannot create a route with the same origin and destination."; }
+};
+
 struct AircraftRoute {
     // TODO: decouple the options specific to the route finding to somewhere else
     struct Options {

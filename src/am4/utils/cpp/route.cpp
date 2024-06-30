@@ -12,7 +12,7 @@ Route::Route() : direct_distance(0.0), valid(false){};
 
 // basic route meta
 Route Route::create(const Airport& ap1, const Airport& ap2) {
-    if (ap1.id == ap2.id) throw std::invalid_argument("Cannot create route with same origin and destination");
+    if (ap1.id == ap2.id) throw SameOdException();
 
     const auto& db = Database::Client();
     const uint16_t o_idx = db->airport_id_hashtable[ap1.id];
@@ -641,6 +641,8 @@ void pybind_init_route(py::module_& m) {
     py::module_ m_route = m.def_submodule("route");
 
     py::class_<AircraftRoute> acr_class(m_route, "AircraftRoute");
+
+    py::register_exception<SameOdException>(m_route, "SameOdException");
 
     py::class_<Route>(m_route, "Route")
         .def_readonly("pax_demand", &Route::pax_demand)

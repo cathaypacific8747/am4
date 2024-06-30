@@ -5,7 +5,7 @@ import am4.utils.demand
 import am4.utils.game
 import am4.utils.ticket
 import typing
-__all__ = ['AircraftRoute', 'Destination', 'Route', 'RoutesSearch']
+__all__ = ['AircraftRoute', 'Destination', 'Route', 'RoutesSearch', 'SameOdException']
 class AircraftRoute:
     class Options:
         class SortBy:
@@ -287,3 +287,5 @@ class RoutesSearch:
         ...
     def get(self) -> list[Destination]:
         ...
+class SameOdException(Exception):
+    pass

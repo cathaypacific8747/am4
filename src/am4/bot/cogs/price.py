@@ -9,7 +9,7 @@ from ..base import BaseCog
 from ..channels import channels
 from ..converters import PriceCvtr
 from ..errors import CustomErrHandler
-from ..utils import COLOUR_ERROR, COLOUR_SUCCESS
+from ..utils import COLOUR_ERROR, COLOUR_SUCCESS, main_server_only
 
 HELP_FUEL = "Fuel or CO₂ price. Example: `f690` or `c130`."
 ParsedPrice = tuple[Literal["Fuel", "CO₂"], float]
@@ -33,7 +33,7 @@ class PriceCog(BaseCog):
         ),
         ignore_extra=False,
     )
-    @commands.guild_only()
+    @main_server_only()
     async def price(
         self,
         ctx: commands.Context,
@@ -72,7 +72,7 @@ class PriceCog(BaseCog):
             desc = f"{jump_url}\n> {prices_f}."
             if not is_edit:
                 desc += (
-                    f"\n\nIf there was a mistake, send the `{cfg.bot.COMMAND_PREFIX}price` command again"
+                    f"\n\nIf there was a mistake, send the `{cfg.bot.COMMAND_PREFIX}price` command again "
                     f"**within 60 seconds** to update it. Otherwise, contact one of our <@&{cfg.bot.HELPER_ROLEID}>"
                     f"or <@&{cfg.bot.MODERATOR_ROLEID}>."
                 )
@@ -120,6 +120,6 @@ class PriceCog(BaseCog):
         h = CustomErrHandler(ctx, error, "price")
 
         await h.invalid_price()
-        await h.missing_arg()
         await h.too_many_args("price")
+        await h.common_mistakes()
         await h.raise_for_unhandled()

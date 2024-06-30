@@ -1,7 +1,8 @@
 from typing import Annotated, Literal
 
-from am4.utils.game import User
 from pydantic import BaseModel, BeforeValidator, Field
+
+from am4.utils.game import User
 
 from .util import assert_equal_property_names
 
@@ -32,6 +33,7 @@ class PyUser(BaseModel):
     fourx: bool
     role: Annotated[
         Literal[
+            "BANNED",
             "USER",
             "TRUSTED_USER",
             "HIGHLY_TRUSTED_USER",

@@ -1,11 +1,12 @@
 import asyncio
 
 import discord
-from am4.utils import __version__ as am4utils_version
-from am4.utils.db import init as utils_init
 from discord.ext import commands
 from discord.ext.commands import Bot
 from loguru import logger
+
+from am4.utils import __version__ as am4utils_version
+from am4.utils.db import init as utils_init
 
 from ..config import cfg
 from .channels import channels
@@ -16,7 +17,7 @@ from .cogs.price import PriceCog
 from .cogs.route import RouteCog
 from .cogs.routes import RoutesCog
 from .cogs.settings import SettingsCog
-from .utils import COLOUR_ERROR
+from .errors import CustomErrHandler
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,15 +32,46 @@ async def on_ready():
 
 
 @bot.event
-async def on_command_error(ctx: commands.Context, error: commands.CommandError):
-    if isinstance(error, commands.CommandNotFound):
-        await ctx.send(
-            embed=discord.Embed(
-                title="Command not found!",
-                description=f"Please check `{cfg.bot.COMMAND_PREFIX}help` for more information.",
-                colour=COLOUR_ERROR,
-            )
+async def on_guild_join(guild: discord.Guild):
+    channel = guild.system_channel
+    if channel is not None:
+        embed = discord.Embed(
+            title="Hello!",
+            description=(
+                "Here are some tips to setup the bot.\n\n"
+                "1. Create two roles: `Easy` and `Realism` and assign them to users. "
+                "The bot will pick them up automatically for accurate calculations.\n"
+                "2. Join our [community server](https://discord.gg/4tVQHtf) and follow the "
+                "`am4-bot-updates` channel. We will post updates on new features and bug fixes there.\n"
+            ),
+            colour=discord.Colour.blue(),
         )
+        embed.add_field(
+            name="Get started",
+            value=(
+                f"Show a list of all commands with `{cfg.bot.COMMAND_PREFIX}help`.\n"
+                f"For example, try `{cfg.bot.COMMAND_PREFIX}help airport` or `{cfg.bot.COMMAND_PREFIX}help routes`.\n"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Contribute",
+            value=(
+                "[Source code](https://github.com/cathaypacific8747/am4), "
+                "[list of formulae and documentation](https://cathaypacific8747.github.io/am4) "
+                "is open-source on GitHub. Feel free to open an issue or pull request!"
+            ),
+            inline=False,
+        )
+        embed.set_thumbnail(url="https://am4help.com/assets/img/logo.png")
+        await channel.send(embed=embed)
+
+
+@bot.event
+async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+    h = CustomErrHandler(ctx, error)
+    await h.top_level()
+    await h.raise_for_unhandled()
 
 
 async def start(db_done: asyncio.Event):

@@ -1,12 +1,13 @@
 from datetime import timedelta
 from typing import Annotated, Any, Literal
 
-from am4.utils.aircraft import Aircraft
-from am4.utils.airport import Airport
-from am4.utils.route import AircraftRoute
 from discord.ext import commands
 from pydantic import BaseModel, Field
 from pydantic_core import PydanticCustomError, ValidationError
+
+from am4.utils.aircraft import Aircraft
+from am4.utils.airport import Airport
+from am4.utils.route import AircraftRoute
 
 from ..db.models.aircraft import PyConfigAlgorithmCargo, PyConfigAlgorithmPax
 from ..db.models.game import PyUser
@@ -48,7 +49,7 @@ class _ACROptions(BaseModel):
     algorithm_pax: PyConfigAlgorithmPax
     algorithm_cargo: PyConfigAlgorithmCargo
     max_distance: PyACROptionsMaxDistance
-    max_flight_time: Annotated[timedelta, Field(ge=0, lt=72 * 3600)]
+    max_flight_time: Annotated[timedelta, Field(gt=0, lt=72 * 3600)]
     __tpd_mode: PyACROptionsTPDMode
     trips_per_day_per_ac: PyACROptionsTripsPerDayPerAC
 

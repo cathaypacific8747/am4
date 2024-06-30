@@ -1,6 +1,7 @@
 import discord
-from am4.utils.aircraft import Aircraft
 from discord.ext import commands
+
+from am4.utils.aircraft import Aircraft
 
 from ...common import HELP_AC_ARG0
 from ...config import cfg
@@ -22,7 +23,6 @@ class AircraftCog(BaseCog):
         ),
         ignore_extra=False,
     )
-    @commands.guild_only()
     async def aircraft(
         self,
         ctx: commands.Context,
@@ -62,6 +62,6 @@ class AircraftCog(BaseCog):
         h = CustomErrHandler(ctx, error, "aircraft")
 
         await h.invalid_aircraft()
-        await h.missing_arg()
         await h.too_many_args("ac_query")
+        await h.common_mistakes()
         await h.raise_for_unhandled()

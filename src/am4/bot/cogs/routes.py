@@ -7,12 +7,13 @@ from concurrent.futures import ThreadPoolExecutor
 import discord
 import orjson
 import pyarrow as pa
+from discord.ext import commands
+from pyarrow import csv
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.game import User
 from am4.utils.route import AircraftRoute, Destination, RoutesSearch
-from discord.ext import commands
-from pyarrow import csv
 
 from ...config import cfg
 from ..base import BaseCog
@@ -165,7 +166,6 @@ class RoutesCog(BaseCog):
         ),
         ignore_extra=False,
     )
-    @commands.guild_only()
     async def routes(
         self,
         ctx: commands.Context,
@@ -348,6 +348,8 @@ class RoutesCog(BaseCog):
         await h.invalid_tpd()
         await h.invalid_cfg_alg()
         await h.invalid_constraint()
-        await h.missing_arg()
+
+        await h.banned_user()
         await h.too_many_args("argument")
+        await h.common_mistakes()
         await h.raise_for_unhandled()
