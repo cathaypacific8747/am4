@@ -81,6 +81,8 @@ research = [
     "scikit-learn",
     "shapely",
     "bitarray",
+    "scipy",
+    "polars",
 ]
 
 [tool.pytest.ini_options]

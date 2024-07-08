@@ -695,12 +695,21 @@ where:
 ### Check Time
 
 Found: 29 June 2024 (Cathay Express, Point Connect)
+Updated: 9 July 2024
 
-Confidence: <span class="c-good">80%</span>. Formulae for realism has not yet been found.
+Confidence: <span class="c-good">95%</span>.
 Note that the check cost for easy players are half of realism.
+
+#### Easy
 
 $$
 T = 0.01 \cdot C+1860
+$$
+
+#### Realism
+
+$$
+T = 0.01 \cdot C+3700
 $$
 
 where:
