@@ -30,6 +30,7 @@ PyACROptionsMaxDistance = Annotated[float, Field(gt=100, lt=65536)]
 PyACROptionsMaxFlightTime = Annotated[float, Field(gt=0, lt=72)]
 PyACROptionsTPDMode = Literal["AUTO", "STRICT_ALLOW_MULTIPLE_AC", "STRICT"]
 PyACROptionsTripsPerDayPerAC = Annotated[int, Field(ge=1, lt=65536)]
+PyACROptionsSortBy = Literal["PER_TRIP", "PER_AC_PER_DAY"]
 
 
 class PyACRouteStopover(BaseModel):

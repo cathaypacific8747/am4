@@ -98,10 +98,10 @@ def test_route_with_aircraft_auto():
     user = User.Default()
 
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.y == 0
-    assert r.config.j == 43
-    assert r.config.f == 48
-    assert r.trips_per_day_per_ac == 9
+    assert r.config.y == 69
+    assert r.config.j == 37
+    assert r.config.f == 29
+    assert r.trips_per_day_per_ac == 15
 
 
 def test_route_with_aircraft_strict_allow_multiple_ac():

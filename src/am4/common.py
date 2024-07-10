@@ -25,6 +25,7 @@ HELP_ACRO_TPD = (
     "[Optional] **Trips per day**: defaults to 1. Note that this parameter is only respected when tpd_mode is set "
     "to `STRICT_ALLOW_MULTIPLE_AC` or `STRICT`. When `tpd_mode=AUTO`, it throws an error."
 )
+HELP_ACRO_SORTBY = "[Optional] **Sort by**: one of `PER_AC_PER_DAY`, `PROFIT_PER_AC_PER_DAY`."
 HELP_U_WEAR_TRAINING = "**Wear training** (default: `0`)"
 HELP_U_REPAIR_TRAINING = "**Repair training** (default: `0`)"
 HELP_U_L_TRAINING = "**L training** (default: `0`)"

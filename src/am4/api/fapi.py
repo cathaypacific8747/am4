@@ -2,13 +2,14 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+from fastapi import Depends, FastAPI
+from fastapi.responses import ORJSONResponse
+from uvicorn import Config, Server
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.db import init as utils_init
 from am4.utils.route import AircraftRoute, Route, RoutesSearch
-from fastapi import Depends, FastAPI
-from fastapi.responses import ORJSONResponse
-from uvicorn import Config, Server
 
 from ..config import cfg
 from .models import (
@@ -36,7 +37,7 @@ app = FastAPI(
     title="AM4Tools V2 API (Alpha)",
     description="""A collection of calculators and tools for Airline Manager 4, aimed to facilitate statistical analyses and promote the development of third-party tools. This version is primarily rewritten in C++ for performance, in particular, route finding.
 
-**This API is currently in alpha and will serve as the backbone of the upcoming discord bot V2** - please report any issues on our [AM4Tools Discord server](https://discord.gg/4tVQHtf), or ping me at @cathayexpress if you encounter critical issues such as 500 Internal Server Error. This project is open source - feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4).
+**This API is currently in alpha** - please report any issues on our [AM4Tools Discord server](https://discord.gg/4tVQHtf), or ping me at @cathayexpress if you encounter critical issues such as 500 Internal Server Error. This project is open source - feel free to open pull requests on [GitHub](https://github.com/cathaypacific8747/am4).
 
 # Key features
 - Fuzzy airport and aircraft search
@@ -46,14 +47,12 @@ app = FastAPI(
 - Advanced route finder (P2P, with aircraft, origin hub, and filters) - **be careful: the massive response payload may crash this tab**: use Insomnia or Postman instead!
 - Fuel, CO2, misc costs and contribution estimation
 
-In a nutshell, they are equivalent to enhanced versions of the `$airport <ap>`, `$aircraft <ac>`, `$route <ap0> <ap1> <ac>` and `$routes <ap0> <dist>` Discord commands.
+At this stage, **no authentication is required** to access the API. An API token in the future will be required as this scales.
 
-At this stage, **no authentication is required** to access the API (it will throttle ~600 requests/min). An API token in the future will be required as this scales.
-
-This service is 100% free to use for all users. We would really appreciate any donations to help cover server costs: you can donate via [Paypal](https://paypal.me/am4tools). As a token of appreciation, you will be given a special Donor role on our server (use command `$donate` for more information).
+This service is 100% free to use for all users.
 
 Open one of the endpoints and click the try it out button right here in your browser, or download `openapi.json` to test it out!""",
-    version="0.1.2-alpha.0",
+    version="0.1.8",
     lifespan=lifespan,
 )
 

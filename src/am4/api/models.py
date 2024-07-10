@@ -12,6 +12,7 @@ from ..common import (
     HELP_ACRO_CFG,
     HELP_ACRO_MAXDIST,
     HELP_ACRO_MAXFT,
+    HELP_ACRO_SORTBY,
     HELP_ACRO_TPD,
     HELP_ACRO_TPD_MODE,
     HELP_AP_ARG0,
@@ -35,6 +36,7 @@ from ..db.models.route import (
     PyACROptionsConfigAlgorithm,
     PyACROptionsMaxDistance,
     PyACROptionsMaxFlightTime,
+    PyACROptionsSortBy,
     PyACROptionsTPDMode,
     PyACROptionsTripsPerDayPerAC,
     PyACRoute,
@@ -117,7 +119,6 @@ FAPIReqRealism = Annotated[
 ]
 
 
-# TODO: add sortby
 class FAPIReqACROptions:
     # not using pydantic basemodel: see https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
     def __init__(
@@ -142,12 +143,17 @@ class FAPIReqACROptions:
             PyACROptionsTripsPerDayPerAC,
             Query(description=HELP_ACRO_TPD),
         ] = None,
+        sort_by: Annotated[
+            PyACROptionsSortBy,
+            Query(description=HELP_ACRO_SORTBY),
+        ] = None,
     ):
         self.config_algorithm = config_algorithm
         self.max_distance = max_distance
         self.max_flight_time = max_flight_time
         self.tpd_mode = tpd_mode
         self.trips_per_day_per_ac = trips_per_day_per_ac
+        self.sort_by = sort_by
 
     def to_core(self, ac_type: Aircraft.Type) -> AircraftRoute.Options:
         opt = {}
@@ -201,6 +207,19 @@ class FAPIReqACROptions:
                     ],
                 )
             opt["trips_per_day_per_ac"] = self.trips_per_day_per_ac
+        if self.sort_by is not None:
+            if (sb := AircraftRoute.Options.SortBy.__members__.get(self.sort_by)) is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail=[
+                        {
+                            "loc": ["query", "sort_by"],
+                            "msg": "Specified sort by does not exist",
+                            "type": "value_error",
+                        }
+                    ],
+                )
+            opt["sort_by"] = sb
         return AircraftRoute.Options(**opt)
 
 
