@@ -1,9 +1,10 @@
 import pytest
+
 from am4.utils.aircraft import Aircraft
 from am4.utils.airport import Airport
 from am4.utils.demand import CargoDemand
 from am4.utils.game import User
-from am4.utils.route import AircraftRoute, Route, RoutesSearch
+from am4.utils.route import AircraftRoute, Route, RoutesSearch, SameOdException
 
 
 def test_route():
@@ -17,7 +18,7 @@ def test_route():
 def test_invalid_route_to_self():
     a0 = Airport.search("VHHH").ap
 
-    with pytest.raises(ValueError):
+    with pytest.raises(SameOdException):
         _r = Route.create(a0, a0)
 
 

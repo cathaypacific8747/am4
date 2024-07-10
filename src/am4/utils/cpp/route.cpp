@@ -120,7 +120,8 @@ inline void AircraftRoute::update_pax_details(
             : get<Aircraft::PaxConfig::Algorithm>(options.config_algorithm);
     const PaxDemand load_adj_pd = this->route.pax_demand / user.load;
     auto est_max_tpd = [&]() -> double {
-        return static_cast<double>(load_adj_pd.y + load_adj_pd.j + load_adj_pd.f) / static_cast<double>(ac_capacity);
+        return static_cast<double>(load_adj_pd.y + load_adj_pd.j * 2 + load_adj_pd.f * 3) /
+               static_cast<double>(ac_capacity);
     };
     auto calc_cfg = [&](double tpd) {
         return Aircraft::PaxConfig::calc_pax_conf(
@@ -252,7 +253,7 @@ AircraftRoute AircraftRoute::create(
         }
     }
     acr.fuel = AircraftRoute::calc_fuel(ac, full_distance, user);
-    acr.acheck_cost = static_cast<float>(ac.check_cost) *
+    acr.acheck_cost = static_cast<float>(ac.check_cost * (user.game_mode == User::GameMode::EASY ? 0.5 : 1.0)) *
                       ceil(acr.flight_time * (user.game_mode == User::GameMode::EASY ? 1.5 : 1.0)) /
                       static_cast<float>(ac.maint);
     acr.repair_cost =
