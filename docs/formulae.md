@@ -74,7 +74,7 @@ $$
 
 where:
 
-- $\$_\text{\{Y,J,F\}}$ are the **autoprice** prices. For *optimal* prices, multiply $\$_\text{Y}$ by 1.22, $\$_\text{J}$ by 1.195, and $\$_\text{F}$ by 1.175.
+- $\$_\text{\{Y,J,F\}}$ are the **autoprice** prices. For *optimal* prices, multiply $\$_\text{Y}$ by 1.22, $\$****_\text{J}$ by 1.195, and $\$_\text{F}$ by 1.175.
 - $d$: total distance[^1] of the flight.
 
 ### Cargo
@@ -125,7 +125,7 @@ API: [utils.route.AircraftRoute.contribution][]
 
 ??? warning "SPOILERS: Click to reveal"
 
-    $$\$_\text{C} = \min\left(k_\text{gm}kd\left(1 + \frac{2(200 - \text{CI})}{200}\right),152 \right) \pm 16\%$$
+    $$\$_\text{C} = \min\left(k_\text{gm}kd\left(3 - \frac{\text{CI}}{100}\right),152 \right) \pm 16\%$$
 
     where:
 

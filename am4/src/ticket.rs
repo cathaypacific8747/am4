@@ -73,26 +73,3 @@ pub enum Ticket {
     Cargo(CargoTicket),
     VIP(VIPTicket),
 }
-
-impl Ticket {
-    pub fn pax(&self) -> Option<&PaxTicket> {
-        match self {
-            Ticket::Pax(pax_ticket) => Some(pax_ticket),
-            _ => None,
-        }
-    }
-
-    pub fn cargo(&self) -> Option<&CargoTicket> {
-        match self {
-            Ticket::Cargo(cargo_ticket) => Some(cargo_ticket),
-            _ => None,
-        }
-    }
-
-    pub fn vip(&self) -> Option<&VIPTicket> {
-        match self {
-            Ticket::VIP(vip_ticket) => Some(vip_ticket),
-            _ => None,
-        }
-    }
-}

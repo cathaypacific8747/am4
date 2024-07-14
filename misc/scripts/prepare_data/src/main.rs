@@ -249,7 +249,7 @@ fn main() {
     let out_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../am4/assets");
     std::fs::create_dir_all(&out_dir).unwrap();
 
-    convert_routes(&out_dir);
-    convert_airports(&out_dir);
+    // convert_routes(&out_dir);
+    // convert_airports(&out_dir);
     convert_aircrafts(&out_dir);
 }

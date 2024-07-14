@@ -79,8 +79,8 @@ int main() {
         init(executable_path);  // 1.3s
         // const auto& db = Database::Client();
 
-        Airport ap0 = *Airport::search("CKY").ap;
-        Airport ap1 = *Airport::search("KTM").ap;
+        Airport ap0 = *Airport::search("BAH").ap;
+        Airport ap1 = *Airport::search("GMR").ap;
         Aircraft ac = *Aircraft::search("a388[sfc]").ac;
         auto options = AircraftRoute::Options(AircraftRoute::Options::TPDMode::AUTO);
         User user = User::Default();

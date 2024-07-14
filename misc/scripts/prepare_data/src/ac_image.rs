@@ -96,45 +96,38 @@ fn get_cropped_image(im: &DynamicImage) -> DynamicImage {
     // TODO: use a sliding buffer to check if adjacent pixels are also
     // transparent, avoid cutting off the image too early
     let (im_x, im_y) = (im.width(), im.height());
-    let (mut x0, mut x1) = (0, im_x - 1);
-    for x in 0..im_x {
-        let mut score = 0;
-        for y in 0..im_y {
-            let alpha = im.get_pixel(x, y).0[3];
-            if alpha < ALPHA_THRESHOLD {
-                score += 1;
+
+    fn find_borders<F>(size: u32, get_alpha: F) -> (u32, u32)
+    where
+        F: Fn(u32) -> Vec<u8>,
+    {
+        let mut start = 0;
+        let mut end = size - 1;
+
+        for i in 0..size {
+            let alphas = get_alpha(i);
+            let score = alphas.iter().filter(|&&a| a < ALPHA_THRESHOLD).count();
+            let score_pct = score as f32 / alphas.len() as f32;
+
+            if score_pct >= PCT_THRESHOLD {
+                if i < size / 2 {
+                    start = i;
+                } else {
+                    end = i;
+                    break;
+                }
             }
         }
-        let score_pct = score as f32 / im_y as f32;
-        if score_pct < PCT_THRESHOLD {
-            continue;
-        }
-        if x < im_x / 2 {
-            x0 = x;
-        } else {
-            x1 = x;
-            break;
-        }
+
+        (start, end)
     }
-    let (mut y0, mut y1) = (0, im_y - 1);
-    for y in 0..im_y {
-        let mut score = 0;
-        for x in 0..im_x {
-            let alpha = im.get_pixel(x, y).0[3];
-            if alpha < ALPHA_THRESHOLD {
-                score += 1;
-            }
-        }
-        let score_pct = score as f32 / im_x as f32;
-        if score_pct < PCT_THRESHOLD {
-            continue;
-        }
-        if y < im_y / 2 {
-            y0 = y;
-        } else {
-            y1 = y;
-            break;
-        }
-    }
+
+    let (x0, x1) = find_borders(im_x, |x| {
+        (0..im_y).map(|y| im.get_pixel(x, y).0[3]).collect()
+    });
+    let (y0, y1) = find_borders(im_y, |y| {
+        (0..im_x).map(|x| im.get_pixel(x, y).0[3]).collect()
+    });
+
     im.crop_imm(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 }
