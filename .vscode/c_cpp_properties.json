@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${vcpkgRoot}/x64-windows/include",
-                "${vcpkgRoot}/x86-windows/include",
+                "${vcpkgRoot}/x86-windows/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -25,6 +25,22 @@
             "compilerPath": "/usr/bin/clang++",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "macOS",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "__APPLE__",
+                "__MACH__"
+            ],
+            "compilerPath": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
