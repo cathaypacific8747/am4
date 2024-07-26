@@ -107,6 +107,7 @@ struct AircraftRoute {
     };
     vector<Warning> warnings;
     bool valid;
+    std::optional<uint16_t> max_tpd;
 
     AircraftRoute();
     static AircraftRoute create(

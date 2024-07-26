@@ -156,16 +156,22 @@ class CustomErrHandler:
         await self.ctx.send(embed=embed)
         self.handled = True
 
-    async def invalid_airport(self):
+    async def invalid_airport(self, *, route_typo: bool = False):
         if not isinstance(self.error, AirportNotFoundError):
             return
         apsr = self.error.apsr
         suggs = Airport.suggest(apsr.parse_result)
 
         extra = f" using search mode `{st}`" if (st := apsr.parse_result.search_type) != Airport.SearchType.ALL else ""
+        typo_help = ""
+        if route_typo:
+            acsr = Aircraft.search(self.ctx.current_argument)
+            if acsr.ac.valid:
+                typo_help = f"`{self.ctx.current_argument}` is an aircraft. "
+            typo_help += "You are currently using the `route` command. Maybe you meant to use the `routes` command?"
         embed = self._get_err_embed(
             title=f"Airport `{self.ctx.current_argument}` not found{extra}!",
-            description=self.err_tb,
+            description=self.err_tb + typo_help,
             suggs=[(a.ap.iata.lower(), f"`{a.ap.iata}` / `{a.ap.icao}` ({a.ap.name}, {a.ap.country})") for a in suggs],
         )
         await self.ctx.send(embed=embed)

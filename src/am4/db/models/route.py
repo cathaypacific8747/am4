@@ -74,6 +74,7 @@ class PyACRoute(BaseModel):
         ]
     ]
     valid: Optional[bool]
+    max_tpd: Optional[int]
 
 
 assert_equal_property_names(AircraftRoute.Stopover, PyACRouteStopover)

@@ -106,7 +106,7 @@ impl From<QueryCtx> for Result<SearchKey, AirportSearchError> {
     }
 }
 
-/// A collection of airports
+/// A collection of indexed airports
 #[derive(Debug)]
 pub struct Airports {
     data: Vec<Airport>,

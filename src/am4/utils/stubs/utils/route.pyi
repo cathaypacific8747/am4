@@ -217,6 +217,9 @@ class AircraftRoute:
     def max_income(self) -> float:
         ...
     @property
+    def max_tpd(self) -> int | None:
+        ...
+    @property
     def needs_stopover(self) -> bool:
         ...
     @property

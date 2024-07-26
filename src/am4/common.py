@@ -49,7 +49,8 @@ HELP_U_INCOME_LOSS_TOL = (
     "**Recommended: set this to `0.05` for end-game players**"
 )
 HELP_U_LOAD = (
-    "**Assumed aircraft load** (default: `0.87`)\n\n"
-    "`0.87` means 87% of the aircraft is filled: demand will be 'virtually' inflated by 1/0.87 = +14.9%.\n"
+    "**Assumed aircraft load** (default: `0.99`)\n\n"
+    "For advanced players, set this to `0.875` (the expected value of the max reputation). In this case, "
+    "the demand will be inflated by 1/0.875 = 14.3%.\n"
     "*Note*: you can assume this to be roughly equivalent to the reputation."
 )

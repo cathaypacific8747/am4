@@ -54,6 +54,7 @@ void tpd_sweep(
     }
     Cfg cfg = calc_cfg(tpdpa);
     if (options.tpd_mode != AircraftRoute::Options::TPDMode::AUTO && !cfg.valid) {
+        ar->warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
         ar->valid = false;
         return;
     }
@@ -61,6 +62,7 @@ void tpd_sweep(
     while (!cfg.valid) {
         tpdpa--;
         if (tpdpa <= 0) {
+            ar->warnings.push_back(AircraftRoute::Warning::ERR_INSUFFICIENT_DEMAND);
             ar->valid = false;
             return;
         }
@@ -75,6 +77,9 @@ void tpd_sweep(
         ar->num_ac = 1;
         ar->trips_per_day_per_ac = tpdpa;
         ar->valid = true;
+        uint16_t max_tpd_demand = static_cast<uint16_t>(est_max_tpd());
+        max_tpd_demand -= max_tpd_demand % static_cast<uint16_t>(floor(24. / static_cast<double>(ar->flight_time)));
+        ar->max_tpd = tpdpa == max_tpd_demand ? std::nullopt : std::optional<uint16_t>(max_tpd_demand);
         return;
     }
     /*
@@ -107,6 +112,7 @@ void tpd_sweep(
     ar->num_ac = num_ac;
     ar->trips_per_day_per_ac = tpdpa;
     ar->valid = true;
+    ar->max_tpd = std::nullopt;
 }
 
 // TODO: use one template function for both pax and cargo
@@ -354,8 +360,7 @@ inline double AircraftRoute::calc_co2(
 ) {
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * ac.co2 *  // (ac.co2_mod ? 0.9 : 1)
-             ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
+        (ceil(distance * 100.0) / 100.0 * ac.co2 * ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
          (cfg.y + cfg.j + cfg.f)) *
         (ci / 2000.0 + 0.9)
     );
@@ -366,7 +371,7 @@ inline double AircraftRoute::calc_co2(
 ) {
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * ac.co2 *  // (ac.co2_mod ? 0.9 : 1)
+        (ceil(distance * 100.0) / 100.0 * ac.co2 *
              ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity) +
          ((cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity)) *
         (ci / 2000.0 + 0.9)
@@ -725,6 +730,7 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("stopover", &AircraftRoute::stopover)
         .def_readonly("warnings", &AircraftRoute::warnings)
         .def_readonly("valid", &AircraftRoute::valid)
+        .def_readonly("max_tpd", &AircraftRoute::max_tpd)
         .def_static(
             "create", &AircraftRoute::create, "ap0"_a, "ap1"_a, "ac"_a,
             py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),

@@ -20,7 +20,7 @@ User::User()
       fuel_price(700),
       co2_price(120),
       accumulated_count(0),
-      load(0.87),
+      load(0.99),
       income_loss_tol(0.02),
       fourx(false),
       role(User::Role::USER),

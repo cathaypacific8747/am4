@@ -42,9 +42,9 @@ def test_route_with_aircraft():
     assert r1.ticket.f == 10245
     assert int(r0.route.direct_distance) == int(r1.route.direct_distance) == 9630
     assert r0.route.pax_demand.y == r1.route.pax_demand.y == 1093
-    assert r0.config.y == r1.config.y == 0
-    assert r0.config.j == r1.config.j == 1
-    assert r0.config.f == r1.config.f == 138
+    assert r0.config.y == r1.config.y == 1
+    assert r0.config.j == r1.config.j == 14
+    assert r0.config.f == r1.config.f == 129
     assert r0.config.algorithm == r1.config.algorithm == Aircraft.PaxConfig.Algorithm.FJY
     assert r1.flight_time / r0.flight_time == pytest.approx(1.5)
     assert r1.contribution / r0.contribution == pytest.approx(1.5)
@@ -54,8 +54,8 @@ def test_route_with_aircraft():
     r2 = AircraftRoute.create(ap0, ap2, ac, options)
     assert int(r2.route.direct_distance) == 16394
     assert r2.route.pax_demand.y == 303
-    assert r2.config.y == 348
-    assert r2.config.j == 34
+    assert r2.config.y == 306
+    assert r2.config.j == 55
     assert r2.config.f == 0
     assert r2.config.algorithm == Aircraft.PaxConfig.Algorithm.YJF
 
@@ -101,7 +101,7 @@ def test_route_with_aircraft_auto():
     assert r.config.y == 69
     assert r.config.j == 37
     assert r.config.f == 29
-    assert r.trips_per_day_per_ac == 15
+    assert r.trips_per_day_per_ac == 13
 
 
 def test_route_with_aircraft_strict_allow_multiple_ac():
@@ -123,11 +123,11 @@ def test_route_with_aircraft_strict_allow_multiple_ac():
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.y == 59
-    assert r.config.j == 39
-    assert r.config.f == 31
+    assert r.config.y == 54
+    assert r.config.j == 40
+    assert r.config.f == 32
     assert r.trips_per_day_per_ac == 2
-    assert r.num_ac == 7
+    assert r.num_ac == 6
 
     options.trips_per_day_per_ac = 3
     user.income_loss_tol = 0
@@ -140,11 +140,11 @@ def test_route_with_aircraft_strict_allow_multiple_ac():
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.y == 69
-    assert r.config.j == 37
-    assert r.config.f == 29
+    assert r.config.y == 54
+    assert r.config.j == 40
+    assert r.config.f == 32
     assert r.trips_per_day_per_ac == 3
-    assert r.num_ac == 5
+    assert r.num_ac == 4
 
 
 def test_cargo_route_with_aircraft():
@@ -166,8 +166,8 @@ def test_cargo_route_with_aircraft():
     cargo_demand = CargoDemand(r.route.pax_demand)
     assert cargo_demand.l == 148000
     assert cargo_demand.h == 220000
-    assert r.config.l == 81
-    assert r.config.h == 19
+    assert r.config.l == 71
+    assert r.config.h == 29
     assert r.config.algorithm == Aircraft.CargoConfig.Algorithm.L
 
 
@@ -180,9 +180,9 @@ def test_cargo_route_with_aircraft_auto():
 
     user.income_loss_tol = 1  # allow 100% income loss
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.l == 63
-    assert r.config.h == 37
-    assert r.trips_per_day_per_ac == 36
+    assert r.config.l == 62
+    assert r.config.h == 38
+    assert r.trips_per_day_per_ac == 32
 
 
 def test_cargo_route_with_aircraft_strict_allow_multiple_ac():
@@ -202,10 +202,10 @@ def test_cargo_route_with_aircraft_strict_allow_multiple_ac():
 
     user.income_loss_tol = 1
     r = AircraftRoute.create(ap0, ap1, ac, options, user)
-    assert r.config.l == 65
-    assert r.config.h == 35
+    assert r.config.l == 66
+    assert r.config.h == 34
     assert r.trips_per_day_per_ac == 5
-    assert r.num_ac == 7
+    assert r.num_ac == 6
 
 
 def test_route_stopover():
@@ -307,8 +307,8 @@ def test_find_routes():
     ac = Aircraft.search("mc214").ac
     dests = RoutesSearch(ap0, ac).get()
     assert len(dests) == 2248
-    assert dests[0].airport.iata == "ZND"
-    assert dests[0].ac_route.route.direct_distance == pytest.approx(10909.51)
+    assert dests[0].airport.iata == "TMX"
+    assert dests[0].ac_route.route.direct_distance == pytest.approx(10891.46)
 
 
 def test_export_routes_vip():

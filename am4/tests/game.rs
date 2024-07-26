@@ -38,7 +38,7 @@ fn test_campaign_reputation() {
 //     assert_eq!(ur.game_mode, GameMode::Realism);
 //     assert_eq!(u.fuel_price, 700);
 //     assert_eq!(u.co2_price, 120);
-//     assert_eq!(u.load, 0.87);
+//     assert_eq!(u.load, 0.99);
 //     assert_eq!(u.accumulated_count, 0);
 //     assert_eq!(u.income_loss_tol, 0.02);
 //     assert_eq!(u.fourx, false);

@@ -107,7 +107,7 @@ class RouteCog(BaseCog):
         if not acr.valid:
             embed_w = discord.Embed(
                 title="Error: Invalid Route.",
-                description="\n".join(f"- {format_warning(w)}" for w in acr.warnings),
+                description="\n".join(f"- {format_warning(w)}" for w in acr.warnings) or "Unknown error.",
                 colour=COLOUR_ERROR,
             )
             embed = self.get_basic_route_embed(ap0_query, ap1_query, acr.route)
@@ -167,6 +167,19 @@ class RouteCog(BaseCog):
         )
         await ctx.send(embed=embed)
 
+        if (t := acr.max_tpd) is not None:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Warning: Demand wasted",
+                    description=(
+                        f"You forced the route to fly {trips_per_day_per_ac[0]} t/d on 1 aircraft, but the demand "
+                        f"is sufficient for **__{t:.0f} t/d__** on multiple aircraft.\n\nConsider enabling aircraft "
+                        f"cramming by passing `{trips_per_day_per_ac[0]}!` to the `trips_per_day` argument."
+                    ),
+                    colour=COLOUR_ERROR,
+                )
+            )
+
     def get_basic_route_embed(self, ap0_query: Airport.SearchResult, ap1_query: Airport.SearchResult, r: Route):
         embed = discord.Embed(
             title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{format_ap_short(ap1_query.ap, mode=2)}",
@@ -183,7 +196,7 @@ class RouteCog(BaseCog):
     @route.error
     async def route_error(self, ctx: commands.Context, error: commands.CommandError):
         h = CustomErrHandler(ctx, error, "route")
-        await h.invalid_airport()
+        await h.invalid_airport(route_typo=True)
         await h.invalid_aircraft()
         await h.invalid_tpd()
         await h.invalid_cfg_alg()

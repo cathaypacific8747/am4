@@ -111,7 +111,7 @@ impl From<&QueryCtx> for Result<SearchKey, AircraftSearchError> {
 
 pub type AircraftVariants = HashMap<EnginePriority, usize>;
 
-/// A collection of aircrafts
+/// A collection of indexed aircrafts
 #[derive(Debug)]
 pub struct Aircrafts {
     data: Vec<Aircraft>,
