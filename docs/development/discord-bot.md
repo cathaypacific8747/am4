@@ -23,82 +23,83 @@ To start it, use:
 python3 -m src.am4 start bot
 ```
 
-## Documentation for Legacy Code
+??? note "Documentation for legacy code, click to expand."
 
-- `src-old`: the very first iteration of the discord bot.
-- `src-v2-v3`: my first attempts at rewriting in C/Cython
-- `research`: parts of my attempts to figure out the demand formula
+    Code [here](https://github.com/cathaypacific8747/am4/tree/master/misc/old-versions)
+    - `src-old`: the very first iteration of the discord bot.
+    - `src-v2-v3`: my first attempts at rewriting in C/Cython
+    
 
-### Features
-Old bot:
+    ### Features
+    Old bot:
 
-- calculates essential statistics
-    - most distance-efficient stopovers
-    - route demands, best seat configurations, best ticket prices, estimated income
-    - player rank, mode, achievements, fleet
-    - alliance rank, share value, contribution
-    - aircraft characteristics and profit
-    - airport characteristics
-- CSV export for route queries
-- fuel/CO2 notifications
-- aircraft characteristics comparisons
-- internal *Star Alliance* tools (now disbanded)
-    - adding competitor alliances to watchlist
-    - alliance comparisons over time: value,contribution/day, rate of changes
-    - realtime alliance-member comparisons: SV/contribution distribution
-    - member tracking: cheat detection tools, departure pattern identification
+    - calculates essential statistics
+        - most distance-efficient stopovers
+        - route demands, best seat configurations, best ticket prices, estimated income
+        - player rank, mode, achievements, fleet
+        - alliance rank, share value, contribution
+        - aircraft characteristics and profit
+        - airport characteristics
+    - CSV export for route queries
+    - fuel/CO2 notifications
+    - aircraft characteristics comparisons
+    - internal *Star Alliance* tools (now disbanded)
+        - adding competitor alliances to watchlist
+        - alliance comparisons over time: value,contribution/day, rate of changes
+        - realtime alliance-member comparisons: SV/contribution distribution
+        - member tracking: cheat detection tools, departure pattern identification
 
-### Public
-- `$route|stop <airport> <airport> <aircraft> [flights_per_day] [reputation]`: finds the best route between two airports
-  
-  ![route](../assets/img/route.png)
+    ### Public
+    - `$route|stop <airport> <airport> <aircraft> [flights_per_day] [reputation]`: finds the best route between two airports
+      
+      ![route](../assets/img/route.png)
 
-- `$routes <airport> <aircraft> <max_distance> <flights_per_day> [reputation]`: finds the best destinations from a certain airport, sorted by decreasing estimated income
-  
-  ![routes](../assets/img/routes.png)
+    - `$routes <airport> <aircraft> <max_distance> <flights_per_day> [reputation]`: finds the best destinations from a certain airport, sorted by decreasing estimated income
+      
+      ![routes](../assets/img/routes.png)
 
-- `$user [player]`: shows player (and associated alliance if found) statistics
-  
-  ![user](../assets/img/user.png)
+    - `$user [player]`: shows player (and associated alliance if found) statistics
+      
+      ![user](../assets/img/user.png)
 
-- `$fleet [player]`: shows player fleet and estimated income
-  
-  ![fleet](../assets/img/fleet.png)
+    - `$fleet [player]`: shows player fleet and estimated income
+      
+      ![fleet](../assets/img/fleet.png)
 
-- `$info <aircraft>`: shows basic aircraft information and rough profit estimations
-  
-  ![info](../assets/img/info.png)
+    - `$info <aircraft>`: shows basic aircraft information and rough profit estimations
+      
+      ![info](../assets/img/info.png)
 
-- `$compare <aircraft>`: compares two aircrafts
-  
-  ![compare](../assets/img/compare.png)
+    - `$compare <aircraft>`: compares two aircrafts
+      
+      ![compare](../assets/img/compare.png)
 
-- `$search <aircraft>`: finds the associated aircraft shortname for aircraft commands
-  
-  ![search](../assets/img/search.png)
+    - `$search <aircraft>`: finds the associated aircraft shortname for aircraft commands
+      
+      ![search](../assets/img/search.png)
 
-- `$airport <airport>`: shows airport information
-  
-  ![airport](../assets/img/airport.png)
+    - `$airport <airport>`: shows airport information
+      
+      ![airport](../assets/img/airport.png)
 
-- `$price f[fuel_price] c[co2_price]`: notifies everyone for the fuel price
-  
-  ![price](../assets/img/price.png)
+    - `$price f[fuel_price] c[co2_price]`: notifies everyone for the fuel price
+      
+      ![price](../assets/img/price.png)
 
-### Internal Alliance Tools
-- `$memberCompare <player> <player>`: compares descending structure of contribution/day and SV
-  
-  ![member-compare](../assets/img/member-compare.png)
-- `$alliance <alliance>`: shows AV progression and d(AV)/dt.
-  
-  ![alliance](../assets/img/alliance.png)
-- `$allianceCompare <alliance> <alliance>`: compares AV progression and gap difference over time, shows 48h/12h-average contribution/day graphs
-  
-  ![alliance-compare](../assets/img/alliance-compare.png)
-- `$member <player> [player[]]` shows contribution/day, total contribution and SV history for 1+ members
-  
-  ![member](../assets/img/member.png)
-- `$actions <player> [maxResults]`: shows log of estimated departures, contributions and income
-  
-  ![member-compare](../assets/img/member-compare.png)
-- `$watchlist [add|+, remove|rm|-] [alliance]`: shows, adds or remove alliance(s) to the watchlist
+    ### Internal Alliance Tools
+    - `$memberCompare <player> <player>`: compares descending structure of contribution/day and SV
+      
+      ![member-compare](../assets/img/member-compare.png)
+    - `$alliance <alliance>`: shows AV progression and d(AV)/dt.
+      
+      ![alliance](../assets/img/alliance.png)
+    - `$allianceCompare <alliance> <alliance>`: compares AV progression and gap difference over time, shows 48h/12h-average contribution/day graphs
+      
+      ![alliance-compare](../assets/img/alliance-compare.png)
+    - `$member <player> [player[]]` shows contribution/day, total contribution and SV history for 1+ members
+      
+      ![member](../assets/img/member.png)
+    - `$actions <player> [maxResults]`: shows log of estimated departures, contributions and income
+      
+      ![member-compare](../assets/img/member-compare.png)
+    - `$watchlist [add|+, remove|rm|-] [alliance]`: shows, adds or remove alliance(s) to the watchlist

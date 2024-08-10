@@ -28,6 +28,7 @@ nav:
     - Web API: 'api/web-api.md'
     - Database: 'api/db.md'
     - Bot: 'api/bot.md'
+  - TOS: 'tos.md'
 
 theme:
   name: material
