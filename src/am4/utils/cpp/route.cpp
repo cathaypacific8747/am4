@@ -203,6 +203,7 @@ AircraftRoute AircraftRoute::create(
     AircraftRoute acr;
     acr.route = Route::create(a0, a1);
     acr._ac_type = ac.type;
+    acr.max_tpd = std::nullopt;
 
     if (user.game_mode == User::GameMode::REALISM && a1.rwy < ac.rwy) {
         acr.warnings.push_back(AircraftRoute::Warning::ERR_RWY_TOO_SHORT);
@@ -513,7 +514,9 @@ py::list to_list(const vector<AircraftRoute::Warning>& warnings) {
 }
 
 py::dict to_dict(const AircraftRoute& ar) {
-    py::dict d("route"_a = to_dict(ar.route), "warnings"_a = to_list(ar.warnings), "valid"_a = false);
+    py::dict d(
+        "route"_a = to_dict(ar.route), "warnings"_a = to_list(ar.warnings), "valid"_a = false, "max_tpd"_a = ar.max_tpd
+    );
 
     if (std::any_of(std::begin(ar.warnings), std::end(ar.warnings), [](const AircraftRoute::Warning& w) {
             return w == AircraftRoute::Warning::ERR_RWY_TOO_SHORT ||
@@ -566,7 +569,6 @@ py::dict to_dict(const AircraftRoute& ar) {
     d["ci"] = ar.ci;
     d["contribution"] = ar.contribution;
     d["valid"] = ar.valid;
-    d["max_tpd"] = ar.max_tpd;
 
     return d;
 }

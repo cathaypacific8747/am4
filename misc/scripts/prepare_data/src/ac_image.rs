@@ -1,4 +1,4 @@
-use image::{imageops::FilterType, io::Reader, DynamicImage, GenericImageView};
+use image::{imageops::FilterType, DynamicImage, GenericImageView, ImageReader};
 use polars::prelude::*;
 use reqwest::blocking::Client;
 use std::fs;
@@ -63,7 +63,7 @@ impl Image {
         if self.fp_processed.exists() {
             return;
         }
-        let im: DynamicImage = Reader::open(&self.fp_raw).unwrap().decode().unwrap();
+        let im: DynamicImage = ImageReader::open(&self.fp_raw).unwrap().decode().unwrap();
         let im_cropped = get_cropped_image(&im);
 
         let webp = Encoder::from_image(&im_cropped.resize(250, 250, FilterType::Lanczos3))

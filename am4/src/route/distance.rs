@@ -1,7 +1,5 @@
 use crate::airport::{Airport, Point};
 
-use super::demand::pax::PaxDemand;
-
 const EARTH_RADIUS_KM: f32 = 6371.0;
 
 impl Point {

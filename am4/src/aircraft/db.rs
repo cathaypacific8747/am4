@@ -18,6 +18,7 @@ Given &[[Aircraft]], build hashmaps that point [SearchKey]s to the array index.
     - in the case of [QueryKey::All] (general search), attempt all [SearchKey]s.
 4. Dereference the associated array index to get the aircraft.
 5. If engine is specified, choose the correct [AircraftVariants].
+
 Apply the modifiers and return a [CustomAircraft].
 */
 use crate::aircraft::custom::{CustomAircraft, Modification};

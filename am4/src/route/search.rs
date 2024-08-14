@@ -75,7 +75,7 @@ impl<'a> RouteSearch<'a> {
         demands: &'a Demands,
         origin: &'a Airport,
     ) -> Result<Self, RouteError> {
-        let origin = CheckedAirport::new(&airports, &origin)?;
+        let origin = CheckedAirport::new(airports, origin)?;
         Ok(Self {
             airports,
             demands,
@@ -88,12 +88,12 @@ impl<'a> RouteSearch<'a> {
         destinations: &'a [Airport],
     ) -> Vec<Result<AbstractRoute<'a>, RouteError>> {
         destinations
-            .into_iter()
+            .iter()
             .map(|airport| {
                 if airport.id == self.origin.airport.id {
                     Err(RouteError::SelfReferential(airport.id.clone()))
                 } else {
-                    let destination = CheckedAirport::new(&self.airports, airport)?;
+                    let destination = CheckedAirport::new(self.airports, airport)?;
                     let demand = self.demands[(self.origin.idx, destination.idx)].clone(); // owned
                     Ok(AbstractRoute {
                         destination,
