@@ -1,3 +1,25 @@
+/*!
+Implements an in-memory, indexed aircraft database.
+
+An aircraft has unique identifiers (such as [Id], [ShortName], [Name] etc.)
+and we wish to query it in O(1) given the primary key.
+
+## Database building
+Given &[[Aircraft]], build hashmaps that point [SearchKey]s to the array index.
+
+## Searching
+1. Given user input (&[str]), e.g. `shortname:b744[sfc]`, `B74[1]`
+2. Parse into a [QueryCtx]
+
+    a. The [QueryKey]: e.g. ShortName("b744"), All("B74")
+
+    b. The [Modification]: e.g. speed+fuel+co2, engine variant 1
+3. Convert it into the primary key.
+    - in the case of [QueryKey::All] (general search), attempt all [SearchKey]s.
+4. Dereference the associated array index to get the aircraft.
+5. If engine is specified, choose the correct [AircraftVariants].
+Apply the modifiers and return a [CustomAircraft].
+*/
 use crate::aircraft::custom::{CustomAircraft, Modification};
 use crate::aircraft::{Aircraft, AircraftError, EnginePriority, Id, Name, ShortName};
 use crate::utils::ParseError;
@@ -111,7 +133,9 @@ impl From<&QueryCtx> for Result<SearchKey, AircraftSearchError> {
 
 pub type AircraftVariants = HashMap<EnginePriority, usize>;
 
-/// A collection of indexed aircrafts
+/// An immutable collection of aircrafts, stored entirely in-memory.
+///
+/// This must be created from a rkyv archive of a [`Vec<Aircraft>`] via [Self::from_bytes].
 #[derive(Debug)]
 pub struct Aircrafts {
     data: Vec<Aircraft>,

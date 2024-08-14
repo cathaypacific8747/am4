@@ -1,6 +1,6 @@
+#![allow(dead_code)]
 mod ac_image;
 mod utils;
-
 use am4::{AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use polars::frame::row::Row;
 use polars::prelude::*;

@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameMode {
@@ -62,14 +63,9 @@ impl FromStr for Role {
     }
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct User {
-    pub id: String,
-    pub username: String,
-    pub game_id: u32,
-    pub game_name: String,
+#[derive(Debug, Clone)]
+pub struct Settings {
     pub game_mode: GameMode,
-    pub discord_id: u64,
     pub wear_training: u8,
     pub repair_training: u8,
     pub l_training: u8,
@@ -79,20 +75,17 @@ pub struct User {
     pub fuel_price: u16,
     pub co2_price: u8,
     pub accumulated_count: u16,
-    pub load: f64,
-    pub income_loss_tol: f64,
+    pub load: f32,
+    pub income_loss_tol: f32,
     pub fourx: bool,
-    pub role: Role,
 }
 
-// TODO: use builder pattern
-impl User {
-    pub fn new(realism: bool) -> Self {
-        let mut user = Self::default();
-        if realism {
-            user.id = "00000000-0000-0000-0000-000000000001".to_string();
-            user.game_mode = GameMode::Realism;
-        }
-        user
-    }
+#[derive(Debug, Clone)]
+pub struct User {
+    pub id: Uuid,
+    pub username: String,
+    pub game_id: u32,
+    pub game_name: String,
+    pub discord_id: u64,
+    pub role: Role,
 }

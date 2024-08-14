@@ -1,3 +1,20 @@
+/*!
+Implements an in-memory, indexed airport database.
+
+An airport has unique identifiers (such as [Iata], [Icao], [Name] etc.)
+and we wish to query it in O(1) given the primary key.
+
+## Database building
+Given &[[Airport]], build hashmaps that point [SearchKey]s to the array index.
+
+## Searching
+1. Given user input (&[str]), e.g. `iata:hkg`, `hkg`
+2. Parse into a [QueryKey], e.g. IATA("hkg"), All("hkg")
+3. Convert it into the primary key.
+    - in the case of [QueryKey::All] (general search), attempt all [SearchKey]s.
+4. Dereference the associated array index to get the airport.
+*/
+
 use crate::airport::{Airport, AirportError, Iata, Icao, Id, Name};
 use crate::utils::ParseError;
 use crate::utils::{queue_suggestions, Suggestion, MAX_SUGGESTIONS};
@@ -51,12 +68,7 @@ pub enum QueryKey {
     Name(Name),
 }
 
-#[derive(Debug, Clone)]
-pub struct QueryCtx {
-    pub key: QueryKey,
-}
-
-impl FromStr for QueryCtx {
+impl FromStr for QueryKey {
     type Err = AirportSearchError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -77,13 +89,13 @@ impl FromStr for QueryCtx {
             },
         };
 
-        Ok(QueryCtx { key })
+        Ok(key)
     }
 }
 
-impl From<QueryCtx> for Result<SearchKey, AirportSearchError> {
-    fn from(ctx: QueryCtx) -> Self {
-        match &ctx.key {
+impl From<QueryKey> for Result<SearchKey, AirportSearchError> {
+    fn from(key: QueryKey) -> Self {
+        match &key {
             QueryKey::All(s) => {
                 if let Ok(v) = Id::from_str(s) {
                     Ok(SearchKey::from(v))
@@ -95,7 +107,7 @@ impl From<QueryCtx> for Result<SearchKey, AirportSearchError> {
                     Ok(SearchKey::from(v))
                 } else {
                     // all parsers failed, we can be sure it does not exist in the database
-                    Err(AirportSearchError::AirportNotFound(ctx.clone()))
+                    Err(AirportSearchError::AirportNotFound(key.clone()))
                 }
             }
             QueryKey::Id(id) => Ok(SearchKey::from(id.clone())),
@@ -106,7 +118,9 @@ impl From<QueryCtx> for Result<SearchKey, AirportSearchError> {
     }
 }
 
-/// A collection of indexed airports
+/// An immutable collection of indexed airports, stored entirely in-memory.
+///
+/// This must be created from a rkyv archive of a [`Vec<Airport>`] via [Self::from_bytes].
 #[derive(Debug)]
 pub struct Airports {
     data: Vec<Airport>,
@@ -136,26 +150,26 @@ impl Airports {
 
     /// Search for an airport
     pub fn search(&self, s: &str) -> Result<&Airport, AirportSearchError> {
-        let ctx = QueryCtx::from_str(s)?;
-        let key = Result::<SearchKey, AirportSearchError>::from(ctx.clone())?;
+        let qkey = QueryKey::from_str(s)?;
+        let key = Result::<SearchKey, AirportSearchError>::from(qkey.clone())?;
 
         self.index
             .get(&key)
             .map(|i| &self.data[*i])
-            .ok_or(AirportSearchError::AirportNotFound(ctx))
+            .ok_or(AirportSearchError::AirportNotFound(qkey))
     }
 
     pub fn suggest(&self, s: &str) -> Result<Vec<Suggestion<&Airport>>, AirportSearchError> {
-        let ctx = QueryCtx::from_str(s)?;
+        let ctx = QueryKey::from_str(s)?;
         self.suggest_by_ctx(&ctx)
     }
 
     pub fn suggest_by_ctx(
         &self,
-        ctx: &QueryCtx,
+        qkey: &QueryKey,
     ) -> Result<Vec<Suggestion<&Airport>>, AirportSearchError> {
         // TODO: this is a hack to get the uppercase version of the parsed query
-        let key = Result::<SearchKey, AirportSearchError>::from(ctx.clone())?;
+        let key = Result::<SearchKey, AirportSearchError>::from(qkey.clone())?;
         let su = match key {
             SearchKey::Iata(v) => v.0.clone(),
             SearchKey::Icao(v) => v.0.clone(),
@@ -195,8 +209,8 @@ pub enum AirportSearchError {
     EmptyQuery,
     #[error("Invalid column specifier: `{0}`. Did you mean: `iata`, `icao`, `name` or `id`?")]
     InvalidColumnSpecifier(String),
-    #[error("Airport `{0:?}` not found")]
-    AirportNotFound(QueryCtx),
+    #[error("Query `{0:?}` returned no results.")]
+    AirportNotFound(QueryKey),
     #[error(transparent)]
     Airport(#[from] AirportError),
 }

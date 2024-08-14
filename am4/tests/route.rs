@@ -8,14 +8,13 @@ use rstest::*;
 #[rstest]
 fn test_routes_ok() {
     assert_eq!(ROUTES.data().len(), ROUTE_COUNT);
-    assert_eq!(
-        ROUTES.data()[0],
-        PaxDemand {
-            y: 542,
-            j: 182,
-            f: 45
-        }
-    );
+    let expected = PaxDemand {
+        y: 542,
+        j: 182,
+        f: 45,
+    };
+    assert_eq!(&ROUTES.data()[0], &expected);
+    assert_eq!(&ROUTES[(0, 1)], &expected);
 }
 
 #[rstest]
