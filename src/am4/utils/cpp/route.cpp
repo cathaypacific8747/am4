@@ -566,6 +566,7 @@ py::dict to_dict(const AircraftRoute& ar) {
     d["ci"] = ar.ci;
     d["contribution"] = ar.contribution;
     d["valid"] = ar.valid;
+    d["max_tpd"] = ar.max_tpd;
 
     return d;
 }
