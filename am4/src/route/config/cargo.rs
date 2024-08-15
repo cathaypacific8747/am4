@@ -1,5 +1,5 @@
-use crate::demand::cargo::CargoDemand;
-use crate::demand::pax::PaxDemand;
+use crate::route::demand::cargo::CargoDemand;
+use crate::route::demand::pax::PaxDemand;
 
 #[derive(Debug)]
 pub struct CargoConfig {
@@ -82,6 +82,7 @@ impl CargoConfig {
         }
     }
 
+    // Implements a greedy configuration algorithm for cargo aircraft.
     pub fn calculate_cargo_config(
         d_pf: &PaxDemand,
         capacity: u32,

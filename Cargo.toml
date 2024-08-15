@@ -10,6 +10,3 @@ inherits = "release"
 opt-level = 's'
 lto = true
 codegen-units = 1
-
-[patch.crates-io]
-indexed_db_futures = { git = "https://github.com/Twey/rust-indexed-db", branch = "no-uuid-wasm-bindgen" } # for am4-web

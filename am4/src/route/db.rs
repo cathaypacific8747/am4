@@ -1,3 +1,7 @@
+/*!
+Implements an in-memory, pax demand database.
+*/
+
 use crate::airport::{db::AIRPORT_COUNT, Airport};
 use crate::route::demand::pax::PaxDemand;
 use crate::utils::ParseError;
@@ -6,6 +10,12 @@ use rkyv::{self, AlignedVec, Deserialize};
 
 pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
+/// A route constructed from one [Airport] to the other is associated
+/// with an **undirected** pair of (economy, business, first) class demands.
+///
+/// We represent it as a flattened version of the upper triangular matrix.
+/// Excluding routes with origin equal to the destination, we have
+/// `n * (n - 1) / 2 = 7630371` possible routes, where `n = 3907` is the [AIRPORT_COUNT].
 #[derive(Debug)]
 pub struct Demands(Vec<PaxDemand>);
 
@@ -47,6 +57,8 @@ impl Index<(usize, usize)> for Demands {
         self.0.index(idx)
     }
 }
+
+// TODO: remove distance matrix.
 
 #[derive(Debug)]
 pub struct Distances(Vec<f32>);

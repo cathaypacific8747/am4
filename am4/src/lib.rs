@@ -1,10 +1,17 @@
-//! Core tools and utilities for the game Airline Manager 4.
+/*!
+ * Core tools and utilities for the game Airline Manager 4.
+ *
+ * We do not use external databases, but instead create immutable, in-memory
+ * stores of all aircrafts, airports and route demands for maximum performance.
+ *
+ * It is intended for use as a core library in many targets, including WASM, CLI
+ * and a discord bot.
+ */
 
 pub mod airport;
 pub mod utils;
 
 pub mod campaign;
-pub mod ticket;
 pub mod user;
 
 pub mod aircraft;

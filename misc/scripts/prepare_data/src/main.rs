@@ -123,7 +123,7 @@ fn convert_airports(out_dir: &Path) {
         };
 
         airports.push(Airport {
-            id: Id(get_u16(r[0].clone())),
+            idx: Id(get_u16(r[0].clone())),
             name: Name::from_str(get_str(r[1].clone())).unwrap(),
             fullname: get_str(r[2].clone()).to_string(),
             country: get_str(r[3].clone()).to_string(),

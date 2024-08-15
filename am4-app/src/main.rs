@@ -4,8 +4,9 @@ use am4::aircraft::db::Aircrafts;
 use am4::airport::db::Airports;
 use am4::airport::{self, Airport};
 use am4::route::db::Demands;
-use am4::route::search::RouteSearch;
-use am4::{AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
+use am4::route::search::{AbstractConfig, AbstractRoute, Routes};
+use am4::user::GameMode;
+use am4::{aircraft, AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use std::fs::File;
 use std::io::Read;
 
@@ -24,18 +25,22 @@ fn get_demands() -> Demands {
     Demands::from_bytes(&buf).unwrap()
 }
 
+fn print_len<R, C>(dests: &Routes<R, C>) {
+    println!(
+        "ok: {:<4}, err: {:<4}",
+        dests.routes().len(),
+        dests.errors().len(),
+    );
+}
+
 fn main() {
     let aircrafts = Aircrafts::from_bytes(&get_bytes(AC_FILENAME).unwrap()).unwrap();
     let airports = Airports::from_bytes(&get_bytes(AP_FILENAME).unwrap()).unwrap();
-    let demands = get_demands();
     let origin = airports.search("HKG").unwrap();
-    // let destinations = [
-    //     airports.search("LHR").unwrap(),
-    //     airports.search("HKG").unwrap(),
-    // ];
-    let destinations = airports.data();
+    let aircraft = aircrafts.search("a388").unwrap();
 
-    let search = RouteSearch::new(&airports, &demands, origin).unwrap();
-    let data = search.create_abstract(destinations.as_slice());
-    println!("{:#?}", data.len())
+    let routes = Routes::new(&airports, origin, airports.data())
+        .unwrap()
+        .with_aircraft(&aircraft.aircraft, &GameMode::Realism);
+    print_len(&routes);
 }

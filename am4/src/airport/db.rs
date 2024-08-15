@@ -139,7 +139,7 @@ impl Airports {
         let mut index = HashMap::<SearchKey, usize>::new();
 
         for (i, ap) in data.iter().enumerate() {
-            index.entry(SearchKey::from(ap.id.clone())).or_insert(i);
+            index.entry(SearchKey::from(ap.idx.clone())).or_insert(i);
             index.entry(SearchKey::from(ap.iata.clone())).or_insert(i);
             index.entry(SearchKey::from(ap.icao.clone())).or_insert(i);
             index.entry(SearchKey::from(ap.name.clone())).or_insert(i);

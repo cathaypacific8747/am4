@@ -71,6 +71,7 @@ class PyACRoute(BaseModel):
             "ERR_NO_STOPOVER",
             "ERR_FLIGHT_TIME_ABOVE_SPECIFIED",
             "ERR_INSUFFICIENT_DEMAND",
+            "ERR_TRIPS_PER_DAY_TOO_HIGH",
         ]
     ]
     valid: Optional[bool]

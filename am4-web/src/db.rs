@@ -112,8 +112,8 @@ impl Idb {
                 // effectively, this is `new Blob([new Uint8Array(b)], {type: 'application/octet-stream'})`
                 let ja = Array::new();
                 ja.push(&Uint8Array::from(b.as_slice()).buffer());
-                let mut opts = BlobPropertyBag::new();
-                opts.type_("application/octet-stream");
+                let opts = BlobPropertyBag::new();
+                opts.set_type("application/octet-stream");
                 let blob = Blob::new_with_u8_array_sequence_and_options(&ja, &opts)?;
                 let _ = self.write(k, &blob).await;
                 Ok(distances)

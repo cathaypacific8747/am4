@@ -1,5 +1,10 @@
-pub mod cargo;
-pub mod pax;
+//! Implements greedy configuration algorithms for pax and cargo aircraft
+
+mod cargo;
+mod pax;
+
+pub use cargo::{CargoConfig, CargoConfigAlgorithm};
+pub use pax::{PaxConfig, PaxConfigAlgorithm};
 
 #[derive(Debug)]
 pub enum ConfigAlgorithm {

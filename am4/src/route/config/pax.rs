@@ -1,4 +1,4 @@
-use crate::demand::pax::PaxDemand;
+use crate::route::demand::pax::PaxDemand;
 use crate::user::GameMode;
 
 #[derive(Debug)]
@@ -159,6 +159,7 @@ impl PaxConfig {
         }
     }
 
+    // Implements a greedy configuration algorithm for pax aircraft.
     pub fn calculate_pax_config(
         d_pf: &PaxDemand,
         capacity: u16,

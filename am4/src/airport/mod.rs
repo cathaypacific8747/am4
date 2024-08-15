@@ -8,7 +8,7 @@ use thiserror::Error;
 #[derive(Debug, Clone, Deserialize, PartialEq, Ra, Rd, Rs)]
 #[archive(check_bytes)]
 pub struct Airport {
-    pub id: Id,
+    pub idx: Id,
     pub name: Name,
     pub fullname: String,
     pub country: String,
