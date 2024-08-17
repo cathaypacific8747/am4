@@ -40,6 +40,8 @@
 
 #![allow(dead_code)] // temp
 
+mod profit;
+
 // TODO: const generic to silently ignore errors
 use crate::airport::{db::Airports, Airport};
 use thiserror::Error;
@@ -64,7 +66,8 @@ pub enum RouteError<'a> {
 
 // NOTE: not using struct of arrays for now. keeping it simple
 /// A generic routelist, holding destinations from a given origin.
-/// For performance, details ([Routes::routes]) are kept as minimal as possible unless the user explicitly requests.
+/// For performance, details ([Routes::routes]) are kept as minimal as possible
+/// unless the user explicitly requests more.
 #[derive(Debug, Clone)]
 pub struct Routes<'a, R, C> {
     routes: Vec<R>,
@@ -195,8 +198,8 @@ fn distance_valid(route: &AbstractRoute, aircraft: &Aircraft) -> bool {
 }
 
 impl<'a> AbstractRoutes<'a> {
-    /// Consumes [AbstractRoutes], making them concrete.
-    /// Prunes routes that do not meet range and runway constraints.
+    /// Prune routes that do not meet the aircraft's range and runway constraints,
+    /// making [AbstractRoutes] into [ConcreteRoutes].
     pub fn with_aircraft(
         mut self, // consume the abstract routelist.
         aircraft: &'a Aircraft,

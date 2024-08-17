@@ -1,2 +1,5 @@
-pub mod cargo;
-pub mod pax;
+mod cargo;
+mod pax;
+
+pub use cargo::CargoDemand;
+pub use pax::PaxDemand;

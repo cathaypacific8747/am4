@@ -1,6 +1,6 @@
 [package]
 name = "am4"
-version = "0.2.0-alpha.1"
+version = "0.2.0-alpha.2"
 authors = ["Abraham Cheung <abraham@ylcheung.com>"]
 edition = "2021"
 
@@ -10,6 +10,12 @@ serde = { version = "1.0.203", features = ["derive"] }
 thiserror = "1.0.61"
 rkyv = { version = "0.7.44", features = ["validation", "strict", "archive_le"] }
 uuid = { version = "1.10.0", features = ["v4"] }
+derive_more = { version = "1.0.0", features = [
+    "from",
+    "into",
+    "display",
+    "add",
+] }
 
 [dev-dependencies]
 rstest = "0.20.0"

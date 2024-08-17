@@ -4,19 +4,18 @@
  * We do not use external databases, but instead create immutable, in-memory
  * stores of all aircrafts, airports and route demands for maximum performance.
  *
- * It is intended for use as a core library in many targets, including WASM, CLI
- * and a discord bot.
+ * It is intended for use as a core library in many targets, including WASM, CLI,
+ * Web API and a discord bot.
  */
 
+pub mod aircraft;
 pub mod airport;
 pub mod utils;
 
 pub mod campaign;
 pub mod user;
 
-pub mod aircraft;
-
-pub mod route; // under development
+pub mod route;
 
 // to keep track of changes for data files in `../data`
 #[macro_export]

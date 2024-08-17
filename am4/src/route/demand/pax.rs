@@ -9,6 +9,12 @@ pub struct PaxDemand {
     pub f: u16,
 }
 
+impl PaxDemand {
+    pub fn equivalent(&self) -> u16 {
+        self.y + 2 * self.j + 3 * self.f
+    }
+}
+
 impl std::ops::Div<f64> for PaxDemand {
     type Output = Self;
 

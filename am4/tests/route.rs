@@ -2,7 +2,7 @@ mod db;
 use db::{DISTANCES, ROUTES};
 
 use am4::route::db::ROUTE_COUNT;
-use am4::route::demand::pax::PaxDemand;
+use am4::route::demand::PaxDemand;
 use rstest::*;
 
 #[rstest]

@@ -3,7 +3,7 @@ Implements an in-memory, pax demand database.
 */
 
 use crate::airport::{db::AIRPORT_COUNT, Airport};
-use crate::route::demand::pax::PaxDemand;
+use crate::route::demand::PaxDemand;
 use crate::utils::ParseError;
 use core::ops::Index;
 use rkyv::{self, AlignedVec, Deserialize};
@@ -13,7 +13,17 @@ pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 /// A route constructed from one [Airport] to the other is associated
 /// with an **undirected** pair of (economy, business, first) class demands.
 ///
-/// We represent it as a flattened version of the upper triangular matrix.
+/// We represent it as a flattened version of the upper triangular matrix:
+///
+/// ```txt
+///     0  1  2  3
+///    ___________
+/// 0 | ·  1  2  4
+/// 1 | 1  ·  3  5
+/// 2 | 2  3  ·  6
+/// 3 | 4  5  6  ·
+/// ```
+///
 /// Excluding routes with origin equal to the destination, we have
 /// `n * (n - 1) / 2 = 7630371` possible routes, where `n = 3907` is the [AIRPORT_COUNT].
 #[derive(Debug)]

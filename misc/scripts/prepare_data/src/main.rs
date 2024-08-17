@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 mod ac_image;
 mod utils;
+
 use am4::{AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use polars::frame::row::Row;
 use polars::prelude::*;
@@ -11,7 +12,7 @@ use std::str::FromStr;
 use utils::*;
 
 fn convert_routes(out_dir: &Path) {
-    use am4::route::demand::pax::PaxDemand;
+    use am4::route::demand::PaxDemand;
 
     let mut schema = Schema::new();
     schema.with_column("oid".into(), DataType::UInt32);

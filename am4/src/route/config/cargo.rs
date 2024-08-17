@@ -1,5 +1,5 @@
-use crate::route::demand::cargo::CargoDemand;
-use crate::route::demand::pax::PaxDemand;
+use crate::route::demand::CargoDemand;
+use crate::route::demand::PaxDemand;
 
 #[derive(Debug)]
 pub struct CargoConfig {
@@ -8,8 +8,9 @@ pub struct CargoConfig {
     pub algorithm: CargoConfigAlgorithm,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum CargoConfigAlgorithm {
+    #[default]
     Auto,
     L,
     H,
