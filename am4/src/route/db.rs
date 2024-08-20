@@ -13,15 +13,19 @@ pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 /// A route constructed from one [Airport] to the other is associated
 /// with an **undirected** pair of (economy, business, first) class demands.
 ///
-/// We represent it as a flattened version of the upper triangular matrix:
+/// We represent it as a flattened version of the upper triangular matrix.
+/// For example, consider a world with 4 airports, the index into the [Vec] would be:
 ///
 /// ```txt
-///     0  1  2  3
+///     0  1  2  3  <-- origin index
 ///    ___________
-/// 0 | ·  1  2  4
-/// 1 | 1  ·  3  5
-/// 2 | 2  3  ·  6
-/// 3 | 4  5  6  ·
+/// 0 | ·  0  1  2
+/// 1 | 0  ·  3  4
+/// 2 | 1  3  ·  5
+/// 3 | 2  4  5  ·
+///
+/// ^
+/// └-- destination index
 /// ```
 ///
 /// Excluding routes with origin equal to the destination, we have
@@ -54,17 +58,22 @@ impl Demands {
     }
 }
 
+/// SAFETY: panics when both are 0 (underflow)
+fn index(oidx: usize, didx: usize) -> usize {
+    let (x, y) = if oidx > didx {
+        (didx, oidx)
+    } else {
+        (oidx, didx)
+    };
+    x * (2 * AIRPORT_COUNT - y - 1) / 2 + (y - x - 1)
+}
+
 impl Index<(usize, usize)> for Demands {
     type Output = PaxDemand;
 
-    /// SAFETY: will panic if oidx == didx.
+    /// SAFETY: panics when both are 0 (underflow)
     fn index(&self, (oidx, didx): (usize, usize)) -> &Self::Output {
-        let idx = if oidx > didx {
-            ((didx * (2 * AIRPORT_COUNT - didx - 1)) >> 1) + oidx - didx - 1
-        } else {
-            ((oidx * (2 * AIRPORT_COUNT - oidx - 1)) >> 1) + didx - oidx - 1
-        };
-        self.0.index(idx)
+        &self.0[index(oidx, didx)]
     }
 }
 

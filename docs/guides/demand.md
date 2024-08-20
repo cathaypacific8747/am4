@@ -8,7 +8,7 @@ There are $n=3907$ airports in the game. A route can be constructed between two 
 
 Right now, we store each demand value in a giant database, and the goal is to find a *compressed* formula that generates the demand instead.
 
-Here's a visualisation of the data I've collected back in early 2020:
+Here's a visualisation of the data I've collected back in early 2020[^1]:
 
 ![yd matrix](../assets/img/demand-research/matrix_yds.webp)
 
@@ -78,3 +78,5 @@ The two peaks (600-603 and 800-803) and the way the distribution tapers off on b
 
 - construct the transformation matrix that does the reverse operation
 - determine if it's even possible to crack the PRNG
+
+[^1]: Back then, collecting data with automated tools was not against the TOS.

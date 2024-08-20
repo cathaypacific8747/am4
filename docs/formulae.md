@@ -1,6 +1,6 @@
 By Cathay Express, Star Alliance and other contributors.
 
-Last major revision: Jul 7 2021
+Last major revision: 7 Jul 2021, last updated: 20 Aug 2024
 
 If you have any suggestions or error corrections, open an
 [issue](https://github.com/cathaypacific8747/am4/issues) or contact me via our
@@ -74,7 +74,7 @@ $$
 
 where:
 
-- $\$_\text{\{Y,J,F\}}$ are the **autoprice** prices. For *optimal* prices, multiply $\$_\text{Y}$ by 1.22, $\$****_\text{J}$ by 1.195, and $\$_\text{F}$ by 1.175.
+- $\$_\text{\{Y,J,F\}}$ are the **autoprice** prices. For *optimal* prices, multiply $\$_\text{Y}$ by 1.22, $\$_\text{J}$ by 1.195, and $\$_\text{F}$ by 1.175.
 - $d$: total distance[^1] of the flight.
 
 ### Cargo
@@ -266,10 +266,10 @@ where:
     - $k = 66666666$ when purchasing an aircraft
     - $k = 40000000$ for *positive* actions:
         - Income earned on departure
-        - Cost of route fee on route creation
+        - Cost of route creation
         - Cost of constructing lounges
     - $k = -40000000$ for *negative* actions:
-        - Cost of purchasing Fuel and $\text{CO}_{2}$
+        - Cost of purchasing fuel and $\text{CO}_{2}$
         - Cost of route fee on rerouting, including ferry flight
         - Cost of maintenance or repair
         - Income earned by selling or recalling aircraft
@@ -280,7 +280,6 @@ No change: hangar unlocking or expansion
 Not tested: maintaining lounges
 
 ___
-
 
 ## Route
 
@@ -295,7 +294,7 @@ API: [utils.route.Route.direct_distance][] and `utils.route.Route.calc_distance`
 Internally, AM4 calculates the distance between two airports with the [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula):
 
 $$
-d = 12742 \arcsin\left(\sqrt{\sin^2\left(\frac{\phi_2-\phi_1}{2}\right) + \cos(\phi_1) \times \cos(\phi_2) \times \sin^2\left(\frac{\lambda_2-\lambda_1}{2}\right)}\right)
+d = 12742 \arcsin\left(\sqrt{\sin^2\left(\frac{\phi_2-\phi_1}{2}\right) + \cos(\phi_1) \cdot \cos(\phi_2) \cdot \sin^2\left(\frac{\lambda_2-\lambda_1}{2}\right)}\right)
 $$
 
 where:
@@ -372,7 +371,7 @@ where:
 
 - $C_{k}$: Cost of marketing campaign *k*
 - $T$: Campaign length, hours
-- $n_p$: Total amount of planes ever owned
+- $n_p$: Total amount of planes ever owned[^3]
 
 ### Pax Carried
 
@@ -434,7 +433,7 @@ ___
 Found: 2019 (AM4 Community)
 
 $$
-v = u(0.0035\times \text{CI} + 0.3)
+v = u(0.0035\cdot \text{CI} + 0.3)
 $$
 
 where:
@@ -509,6 +508,35 @@ where:
 - $C$: the total equivalent cargo capacity of the aircraft (lbs)
 - $CI$: cost index (0-200)
 
+### Creation cost
+
+Found: 2024 (Alliance *Ariving Germany*)
+
+Confidence: <span class="c-good">100%</span>
+
+#### Pax, <span class="easy">Easy</span>
+
+$$
+C = 0.4 (d + (y_c \cdot \lfloor 0.4d + 170 \rfloor) + (j_c \cdot \lfloor 0.8d + 560 \rfloor) + (f_c \cdot \lfloor 1.2d + 1200 \rfloor))
+$$
+
+where:
+
+- $d$: total distance[^1]
+- $y_c$, $j_c$, $f_c$ are the number of economy, business, and first class seats
+
+#### Pax, <span class="realism">Realism</span>
+
+$$
+C = (d \cdot n_p) + (y_c \cdot \lfloor 0.3d + 150 \rfloor) + (j_c \cdot \lfloor 0.6d + 500 \rfloor) + (f_c \cdot \lfloor 0.9d + 1000 \rfloor)
+$$
+
+where:
+
+- $d$: total distance[^1]
+- $n_p$: total amount of planes ever owned[^3]
+- $y_c$, $j_c$, $f_c$ are the number of economy, business, and first class seats
+
 ### Best Configuration
 
 Developed: 2019 (AM4 Community, Cathay Express)
@@ -532,8 +560,8 @@ See [guides/configuration](guides/configuration.md)
 1. $C_{\text{remaining}} \leftarrow C$.
 2. **for** $i \leftarrow 1$ **to** $n$:
     - $\text{seats}_i \leftarrow \left\lfloor\frac{d_i}{f}\right\rfloor$.
-    - **if** $\text{seats}_i \times c_i \leq C_{\text{remaining}}$:
-        - $C_{\text{remaining}} \leftarrow C_{\text{remaining}} - \text{seats}_i \times c_i$.
+    - **if** $\text{seats}_i \cdot c_i \leq C_{\text{remaining}}$:
+        - $C_{\text{remaining}} \leftarrow C_{\text{remaining}} - \text{seats}_i \cdot c_i$.
     - **else**:
         - $\text{seats}_i \leftarrow \left\lfloor\frac{C_{\text{remaining}}}{c_i}\right\rfloor$.
         - $C_{\text{remaining}} \leftarrow 0$.
@@ -656,6 +684,7 @@ $$C_{1} = \left\lfloor \frac{1}{10}C_{10} \right\rfloor$$
 
 [^1]: A flight A→B→C has total distance is `distance(A, B) + distance(B, C)`.
 [^2]: A flight A→B→C has direct distance is `distance(A, C)`.
+[^3]: The total number of planes ever purchased can be found by navigating to the aircraft ordering page and checking the prefix of the registration.
 
 ___
 
