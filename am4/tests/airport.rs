@@ -16,7 +16,7 @@ fn test_airports_ok() {
 #[case("hong kong", "HKG")]
 fn test_airport_search(#[case] inp: &str, #[case] iata: &str) {
     let ap = AIRPORTS.search(inp).unwrap();
-    assert_eq!(ap.iata.0, iata);
+    assert_eq!(ap.iata.to_string(), iata);
 }
 
 #[rstest]
@@ -33,7 +33,7 @@ fn test_airport_fail_and_suggest(#[case] inp: &str, #[case] iata: &str) {
 
     let suggs = AIRPORTS.suggest(inp);
     assert!(suggs.is_ok());
-    assert_eq!(suggs.unwrap()[0].item.iata.0, iata);
+    assert_eq!(suggs.unwrap()[0].item.iata.to_string(), iata);
 }
 
 #[rstest]

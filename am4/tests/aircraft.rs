@@ -14,7 +14,7 @@ fn test_aircrafts_ok() {
 #[case("name:B747-400", "b744")]
 fn test_aircraft_search(#[case] inp: &str, #[case] expected_shortname: &str) {
     let ac = AIRCRAFTS.search(inp).unwrap();
-    assert_eq!(ac.aircraft.shortname.0, expected_shortname);
+    assert_eq!(ac.aircraft.shortname.to_string(), expected_shortname);
 }
 
 #[rstest]
@@ -30,7 +30,10 @@ fn test_aircraft_fail_and_suggest(#[case] inp: &str, #[case] expected_shortname:
 
     let suggs = AIRCRAFTS.suggest(inp);
     assert!(suggs.is_ok());
-    assert_eq!(suggs.unwrap()[0].item.shortname.0, expected_shortname);
+    assert_eq!(
+        suggs.unwrap()[0].item.shortname.to_string(),
+        expected_shortname
+    );
 }
 
 #[rstest]
@@ -69,10 +72,10 @@ fn test_aircraft_modifiers_syntax(
     #[case] expected_fourx_mod: bool,
 ) {
     let result = AIRCRAFTS.search(inp).unwrap();
-    assert_eq!(result.aircraft.shortname.0, expected_shortname);
+    assert_eq!(result.aircraft.shortname.to_string(), expected_shortname);
 
     let mods = &result.modifiers;
-    assert_eq!(mods.engine.0, expected_engine);
+    assert_eq!(mods.engine, expected_engine.into());
     assert_eq!(
         mods.mods.contains(&am4::aircraft::custom::Modifier::Speed),
         expected_speed_mod

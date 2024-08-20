@@ -8,6 +8,8 @@
  * Web API and a discord bot.
  */
 
+#![warn(missing_debug_implementations)]
+
 pub mod aircraft;
 pub mod airport;
 pub mod utils;

@@ -114,7 +114,7 @@ impl<'a> CheckedAirport<'a> {
     pub fn new(airports: &Airports, airport: &'a Airport) -> Result<Self, RouteError<'a>> {
         let idx = airports
             .index()
-            .get(&(airport.idx.clone().into()))
+            .get(&(airport.idx.into()))
             .ok_or(RouteError::AirportNotFound(airport))
             .copied()?;
         Ok(Self { airport, idx })

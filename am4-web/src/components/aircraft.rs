@@ -1,6 +1,6 @@
 use crate::db::Database;
 use am4::aircraft::db::{AircraftSearchError, LENGTH_MAX, LENGTH_MEAN};
-use am4::aircraft::{Aircraft, AircraftType};
+use am4::aircraft::Aircraft;
 use leptos::{wasm_bindgen::JsCast, *};
 use web_sys::HtmlInputElement;
 
@@ -58,7 +58,10 @@ fn ACErr(e: AircraftSearchError) -> impl IntoView {
                             .into_iter()
                             .map(|sugg| {
                                 view! {
-                                    <li>{&sugg.item.shortname.0} " (" {&sugg.item.name.0} ")"</li>
+                                    <li>
+                                        {&sugg.item.shortname.to_string()} " ("
+                                        {&sugg.item.name.to_string()} ")"
+                                    </li>
                                 }
                             })
                             .collect::<Vec<_>>()}
@@ -79,12 +82,6 @@ fn ACErr(e: AircraftSearchError) -> impl IntoView {
 
 #[component]
 fn Ac(aircraft: Aircraft) -> impl IntoView {
-    let ac_type = move || match aircraft.ac_type {
-        AircraftType::Pax => "Pax",
-        AircraftType::Cargo => "Cargo",
-        AircraftType::Vip => "VIP",
-    };
-
     let width = if aircraft.length == 0 {
         LENGTH_MEAN / LENGTH_MAX
     } else {
@@ -94,8 +91,8 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
     view! {
         <div class="ac-card">
             <h3>
-                {&aircraft.manufacturer} " " {&aircraft.name.0} " ("
-                <code>{&aircraft.shortname.0}</code> ", " {ac_type} ")"
+                {aircraft.manufacturer} " " {aircraft.name.to_string()} " ("
+                <code>{aircraft.shortname.to_string()}</code> ", " {aircraft.r#type.to_string()} ")"
             </h3>
             <table>
                 <tr>
@@ -164,7 +161,7 @@ fn Ac(aircraft: Aircraft) -> impl IntoView {
                 </tr>
             </table>
             <div id="ac-img">
-            <img src=format!("/assets/img/aircraft/{}.webp", aircraft.img) width=width/>
+                <img src=format!("/assets/img/aircraft/{}.webp", aircraft.img) width=width/>
             </div>
         </div>
     }

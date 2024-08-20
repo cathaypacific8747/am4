@@ -6,16 +6,26 @@ edition = "2021"
 
 [dependencies]
 jaro_winkler = "0.1.0"
-serde = { version = "1.0.203", features = ["derive"] }
 thiserror = "1.0.61"
-rkyv = { version = "0.7.44", features = ["validation", "strict", "archive_le"] }
 uuid = { version = "1.10.0", features = ["v4"] }
 derive_more = { version = "1.0.0", features = [
     "from",
     "into",
     "display",
     "add",
+    "constructor",
 ] }
+serde = { version = "1.0.203", optional = true, features = ["derive"] }
+rkyv = { version = "0.7.44", optional = true, features = [
+    "validation",
+    "strict",
+    "archive_le",
+] }
+
+[features]
+default = ["rkyv"]
+serde = ["dep:serde"]
+rkyv = ["dep:rkyv"]
 
 [dev-dependencies]
 rstest = "0.20.0"

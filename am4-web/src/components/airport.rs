@@ -57,8 +57,9 @@ fn APErr(e: AirportSearchError) -> impl IntoView {
                             .map(|sugg| {
                                 view! {
                                     <li>
-                                        {&sugg.item.iata.0} " / " {&sugg.item.icao.0} " ("
-                                        {&sugg.item.name.0} ", " {&sugg.item.country} ")"
+                                        {&sugg.item.iata.to_string()} " / "
+                                        {&sugg.item.icao.to_string()} " ("
+                                        {&sugg.item.name.to_string()} ", " {&sugg.item.country} ")"
                                     </li>
                                 }
                             })
@@ -84,8 +85,8 @@ fn Ap<'a>(airport: &'a Airport) -> impl IntoView {
     view! {
         <div class="ap-card">
             <h3>
-                {&airport.name.0} ", " {&airport.country} " (" {&airport.iata.0} " / "
-                {&airport.icao.0} ")"
+                {&airport.name.to_string()} ", " {&airport.country} " (" {&airport.iata.to_string()}
+                " / " {&airport.icao.to_string()} ")"
             </h3>
             <table>
                 <tr>

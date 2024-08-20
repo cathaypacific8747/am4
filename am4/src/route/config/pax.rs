@@ -1,8 +1,10 @@
 use crate::route::demand::PaxDemand;
 use crate::user::GameMode;
+use derive_more::Display;
 use std::cmp::min;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Display)]
+#[display("Y{y} J{j} F{f}")]
 pub struct PaxConfig {
     pub y: u16,
     pub j: u16,

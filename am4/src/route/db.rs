@@ -6,6 +6,8 @@ use crate::airport::{db::AIRPORT_COUNT, Airport};
 use crate::route::demand::PaxDemand;
 use crate::utils::ParseError;
 use core::ops::Index;
+
+#[cfg(feature = "rkyv")]
 use rkyv::{self, AlignedVec, Deserialize};
 
 pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
@@ -34,6 +36,7 @@ pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 pub struct Demands(Vec<PaxDemand>);
 
 impl Demands {
+    #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         // ensure serialised bytes can be deserialised
         let archived = rkyv::check_archived_root::<Vec<PaxDemand>>(buffer)
@@ -84,6 +87,7 @@ pub struct Distances(Vec<f32>);
 
 impl Distances {
     /// Load the distance matrix from a rkyv serialised buffer
+    #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         let archived = rkyv::check_archived_root::<Vec<f32>>(buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
@@ -120,6 +124,7 @@ impl Distances {
         Distances(d)
     }
 
+    #[cfg(feature = "rkyv")]
     pub fn to_bytes(&self) -> Result<AlignedVec, ParseError> {
         let av = rkyv::to_bytes::<Vec<f32>, 30_521_492>(&self.0)
             .map_err(|e| ParseError::SerialiseError(e.to_string()))?;

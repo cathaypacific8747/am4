@@ -124,7 +124,7 @@ fn convert_airports(out_dir: &Path) {
         };
 
         airports.push(Airport {
-            idx: Id(get_u16(r[0].clone())),
+            idx: Id::new(get_u16(r[0].clone())),
             name: Name::from_str(get_str(r[1].clone())).unwrap(),
             fullname: get_str(r[2].clone()).to_string(),
             country: get_str(r[3].clone()).to_string(),
@@ -201,17 +201,17 @@ fn convert_aircrafts(out_dir: &Path) {
         let r = df.get_row(i).unwrap().0;
 
         aircrafts.push(Aircraft {
-            id: Id(get_u16(r[0].clone())),
+            id: Id::new(get_u16(r[0].clone())),
             shortname: ShortName::from_str(get_str(r[1].clone())).unwrap(),
             manufacturer: get_str(r[2].clone()).to_string(),
             name: Name::from_str(get_str(r[3].clone())).unwrap(),
-            ac_type: match get_u8(r[4].clone()) {
+            r#type: match get_u8(r[4].clone()) {
                 0 => AircraftType::Pax,
                 1 => AircraftType::Cargo,
                 2 => AircraftType::Vip,
                 _ => panic!("unknown aircraft type"),
             },
-            priority: EnginePriority(get_u8(r[5].clone())),
+            priority: EnginePriority::new(get_u8(r[5].clone())),
             eid: get_u16(r[6].clone()),
             ename: get_str(r[7].clone()).to_string(),
             speed: get_f32(r[8].clone()),

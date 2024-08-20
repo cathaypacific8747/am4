@@ -23,14 +23,16 @@ Apply the modifiers and return a [CustomAircraft].
 */
 use crate::aircraft::custom::{CustomAircraft, Modification};
 use crate::aircraft::{Aircraft, AircraftError, EnginePriority, Id, Name, ShortName};
-use crate::utils::ParseError;
 use crate::utils::{queue_suggestions, Suggestion, MAX_SUGGESTIONS};
 use jaro_winkler::jaro_winkler;
-use rkyv::{self, Deserialize};
-use std::collections::BinaryHeap;
-use std::collections::HashMap;
+use std::collections::{BinaryHeap, HashMap};
 use std::str::FromStr;
 use thiserror::Error;
+
+#[cfg(feature = "rkyv")]
+use crate::utils::ParseError;
+#[cfg(feature = "rkyv")]
+use rkyv::{self, Deserialize};
 
 pub static LENGTH_MAX: f32 = 77.0;
 pub static LENGTH_MEAN: f32 = 34.278454;
@@ -125,7 +127,7 @@ impl From<&QueryCtx> for Result<SearchKey, AircraftSearchError> {
                     Err(AircraftSearchError::AircraftNotFound(ctx.clone()))
                 }
             }
-            QueryKey::Id(id) => Ok(SearchKey::from(id.clone())),
+            QueryKey::Id(id) => Ok(SearchKey::from(*id)),
             QueryKey::ShortName(sn) => Ok(SearchKey::from(sn.clone())),
             QueryKey::Name(name) => Ok(SearchKey::from(name.clone())),
         }
@@ -144,6 +146,7 @@ pub struct Aircrafts {
 }
 
 impl Aircrafts {
+    #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         let archived = rkyv::check_archived_root::<Vec<Aircraft>>(buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
@@ -156,19 +159,19 @@ impl Aircrafts {
 
         for (i, ac) in data.iter().enumerate() {
             index
-                .entry(SearchKey::from(ac.id.clone()))
+                .entry(SearchKey::from(ac.id))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority, i);
 
             index
                 .entry(SearchKey::from(ac.shortname.clone()))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority, i);
 
             index
                 .entry(SearchKey::from(ac.name.clone()))
                 .or_default()
-                .insert(ac.priority.clone(), i);
+                .insert(ac.priority, i);
         }
 
         Ok(Self { data, index })

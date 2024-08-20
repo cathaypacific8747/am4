@@ -16,14 +16,17 @@ Given &[[Airport]], build hashmaps that point [SearchKey]s to the array index.
 */
 
 use crate::airport::{Airport, AirportError, Iata, Icao, Id, Name};
-use crate::utils::ParseError;
 use crate::utils::{queue_suggestions, Suggestion, MAX_SUGGESTIONS};
 use jaro_winkler::jaro_winkler;
-use rkyv::{self, Deserialize};
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
+
+#[cfg(feature = "rkyv")]
+use crate::utils::ParseError;
+#[cfg(feature = "rkyv")]
+use rkyv::{self, Deserialize};
 
 pub const AIRPORT_COUNT: usize = 3907;
 
@@ -110,7 +113,7 @@ impl From<QueryKey> for Result<SearchKey, AirportSearchError> {
                     Err(AirportSearchError::AirportNotFound(key.clone()))
                 }
             }
-            QueryKey::Id(id) => Ok(SearchKey::from(id.clone())),
+            QueryKey::Id(id) => Ok(SearchKey::from(*id)),
             QueryKey::Iata(iata) => Ok(SearchKey::from(iata.clone())),
             QueryKey::Icao(icao) => Ok(SearchKey::from(icao.clone())),
             QueryKey::Name(name) => Ok(SearchKey::from(name.clone())),
@@ -128,6 +131,7 @@ pub struct Airports {
 }
 
 impl Airports {
+    #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         let archived = rkyv::check_archived_root::<Vec<Airport>>(buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
@@ -139,7 +143,7 @@ impl Airports {
         let mut index = HashMap::<SearchKey, usize>::new();
 
         for (i, ap) in data.iter().enumerate() {
-            index.entry(SearchKey::from(ap.idx.clone())).or_insert(i);
+            index.entry(SearchKey::from(ap.idx)).or_insert(i);
             index.entry(SearchKey::from(ap.iata.clone())).or_insert(i);
             index.entry(SearchKey::from(ap.icao.clone())).or_insert(i);
             index.entry(SearchKey::from(ap.name.clone())).or_insert(i);
