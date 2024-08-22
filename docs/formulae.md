@@ -1,6 +1,6 @@
 By Cathay Express, Star Alliance and other contributors.
 
-Last major revision: 7 Jul 2021, last updated: 20 Aug 2024
+Last major revision: 7 Jul 2021, last updated: 22 Aug 2024
 
 If you have any suggestions or error corrections, open an
 [issue](https://github.com/cathaypacific8747/am4/issues) or contact me via our
@@ -704,7 +704,23 @@ where:
 - $t_r$: repair training amount (0-5)
 - $\mathcal{U}$: uniform distribution
 
-Equivalently, the expected wear is 0.75% per departure, which decreases by 1% per training point.
+Equivalently, the expected wear is 0.75% per departure, which decreases by 2% per training point.
+
+### Repair Cost
+
+Found: 2020 (Cathay Express)
+
+Confidence: <span class="c-good">100%</span> ($R^2 = 1$). Untested on realism.
+
+$$
+C_r = 0.001C(1 - 0.02t_r)\cdot\text{wear}
+$$
+
+where:
+
+- $C$: aircraft [cost][utils.aircraft.Aircraft.cost]
+- $t_r$: repair training amount (0-5)
+- $\text{wear}$: [aircraft wear](#wear) percentage, 0-1 
 
 ### Repair Time
 

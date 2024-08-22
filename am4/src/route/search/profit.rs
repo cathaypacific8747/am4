@@ -23,6 +23,14 @@ pub enum ConfigError {
     FlightTimeOrdering,
 }
 
+pub struct ProfitConfig<'a> {
+    settings: &'a Settings,
+    constraint: Constraint,
+    trips_per_day: Schedule,
+    config_algorithm: &'a ConfigAlgorithm,
+    sort_by: SortBy,
+}
+
 // NOTE: Irregular schedules (e.g. 7 trips in 48 hours) are not allowed.
 // TODO: coerce floats?
 /// Trips per day, the number of departures made within a 24 hour window,
@@ -34,8 +42,9 @@ type NumAircraft = NonZeroU8;
 
 /// Attempt to maximise the [TripsPerDay] or strictly enforce a particular amount.
 /// It is assumed that the departing conditions (e.g. marketing campaign) are identical.
-#[derive(Debug, Clone, Display)]
+#[derive(Debug, Clone, Display, Default)]
 pub enum TripsPerDayStrategy {
+    #[default]
     Maximise,
     Strict(TripsPerDay),
 }
@@ -46,6 +55,12 @@ pub enum TripsPerDayStrategy {
 pub enum NumAircraftStrategy {
     Maximise,
     Strict(NumAircraft),
+}
+
+impl Default for NumAircraftStrategy {
+    fn default() -> Self {
+        Self::Strict(1.try_into().unwrap())
+    }
 }
 
 /// A route schedule consists of the [TripsPerDay] and [NumAircraft], both of
@@ -71,10 +86,19 @@ impl Default for Schedule {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum SortBy {
-    PerTrip,
+    #[default]
     PerAircraftPerDay,
+    PerTrip,
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum Constraint {
+    #[default]
+    None,
+    Distance(DistanceRange),
+    FlightTime(FlightTimeRange),
 }
 
 #[derive(Debug, Clone)]
@@ -125,18 +149,4 @@ impl Default for FlightTimeRange {
             max: FlightTime::MAX.try_into().unwrap(),
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub enum Constraint {
-    Distance(DistanceRange),
-    FlightTime(FlightTimeRange),
-}
-
-pub struct ProfitConfig<'a> {
-    settings: &'a Settings,
-    constraint: Option<Constraint>,
-    trips_per_day: Schedule,
-    config_algorithm: &'a ConfigAlgorithm,
-    sort_by: SortBy,
 }

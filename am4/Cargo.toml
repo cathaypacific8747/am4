@@ -9,10 +9,10 @@ jaro_winkler = "0.1.0"
 thiserror = "1.0.61"
 uuid = { version = "1.10.0", features = ["v4"] }
 derive_more = { version = "1.0.0", features = [
-    "from",
-    "into",
     "display",
     "add",
+    "from",
+    "into",
     "constructor",
 ] }
 serde = { version = "1.0.203", optional = true, features = ["derive"] }

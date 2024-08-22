@@ -1,4 +1,4 @@
-use derive_more::derive::{Display, Into};
+use derive_more::derive::{Constructor, Display, From, Into};
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -33,17 +33,27 @@ pub struct User {
     pub role: Role,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Settings {
     pub game_mode: GameMode,
     pub training: Training,
-    pub fuel_price: u16,
-    pub co2_price: u8,
+    pub fuel_price: FuelPrice,
+    pub co2_price: Co2Price,
     pub accumulated_count: u16,
     pub load: AircraftLoad,
     pub income_loss_tol: f32,
     pub fourx: bool,
 }
+
+// TODO: impl FromStr for fuel and co2
+
+/// The assumed fuel price, for use in profit calculations
+#[derive(Debug, Clone, Copy, PartialEq, From, Into, Constructor)]
+pub struct FuelPrice(u16);
+
+/// The assumed CO₂, for use in profit calculations
+#[derive(Debug, Clone, Copy, PartialEq, From, Into, Constructor)]
+pub struct Co2Price(u16);
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum GameMode {
@@ -111,6 +121,8 @@ macro_rules! create_validated_newtype {
     };
 }
 
+impl_default!(FuelPrice, 900);
+impl_default!(Co2Price, 120);
 create_validated_newtype!(
     AircraftLoad,
     f32,
