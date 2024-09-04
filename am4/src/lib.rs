@@ -31,7 +31,7 @@ pub const AC_FILENAME: &str = concat!("aircrafts-v", ac_version!(), ".bin");
 #[macro_export]
 macro_rules! ap_version {
     () => {
-        "0"
+        "1"
     };
 }
 pub const AP_FILENAME: &str = concat!("airports-v", ap_version!(), ".bin");
@@ -44,5 +44,5 @@ macro_rules! demand_version {
         "0"
     };
 }
-pub const DEM_FILENAME0: &str = concat!("demands0-v", demand_version!(), ".bin");
-pub const DEM_FILENAME1: &str = concat!("demands1-v", demand_version!(), ".bin");
+pub const DEM_FILENAME0: &str = concat!("demands-v", demand_version!(), ".00.bin");
+pub const DEM_FILENAME1: &str = concat!("demands-v", demand_version!(), ".01.bin");

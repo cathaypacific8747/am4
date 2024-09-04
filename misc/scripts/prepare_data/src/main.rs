@@ -124,7 +124,8 @@ fn convert_airports(out_dir: &Path) {
         };
 
         airports.push(Airport {
-            idx: Id::new(get_u16(r[0].clone())),
+            idx: i,
+            id: Id::new(get_u16(r[0].clone())),
             name: Name::from_str(get_str(r[1].clone())).unwrap(),
             fullname: get_str(r[2].clone()).to_string(),
             country: get_str(r[3].clone()).to_string(),
@@ -143,7 +144,7 @@ fn convert_airports(out_dir: &Path) {
     }
     println!("{:?}", airports.len());
     let mut file = std::fs::File::create(out_dir.join(AP_FILENAME)).unwrap();
-    let b = rkyv::to_bytes::<Vec<Airport>, 502684>(&airports).unwrap();
+    let b = rkyv::to_bytes::<Vec<Airport>, 518312>(&airports).unwrap();
     file.write_all(&b).unwrap();
 
     println!("wrote {:?} bytes to {:?}", b.len(), file);
@@ -250,7 +251,7 @@ fn main() {
     let out_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../am4/assets");
     std::fs::create_dir_all(&out_dir).unwrap();
 
-    // convert_routes(&out_dir);
-    // convert_airports(&out_dir);
+    convert_routes(&out_dir);
+    convert_airports(&out_dir);
     convert_aircrafts(&out_dir);
 }

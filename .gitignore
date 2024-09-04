@@ -1,5 +1,5 @@
-*config.json
-*config.production.json
+*config*.json
+src/am4/.*.json
 **/.*.rs
 am4/data
 

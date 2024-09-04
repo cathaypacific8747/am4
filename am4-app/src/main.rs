@@ -3,7 +3,7 @@
 use am4::aircraft::db::Aircrafts;
 use am4::airport::db::Airports;
 use am4::airport::{self, Airport};
-use am4::route::db::Demands;
+use am4::route::db::{Demands, Distances};
 use am4::route::search::{AbstractConfig, AbstractRoute, Routes};
 use am4::user::GameMode;
 use am4::{aircraft, AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
@@ -25,9 +25,9 @@ fn get_demands() -> Demands {
     Demands::from_bytes(&buf).unwrap()
 }
 
-fn print_len<R, C>(dests: &Routes<R, C>) {
+fn print_len<R, C>(id: &str, dests: &Routes<R, C>) {
     println!(
-        "ok: {:<4}, err: {:<4}",
+        "{id:>20} | ok: {:<4} | err: {:<4}",
         dests.routes().len(),
         dests.errors().len(),
     );
@@ -36,11 +36,18 @@ fn print_len<R, C>(dests: &Routes<R, C>) {
 fn main() {
     let aircrafts = Aircrafts::from_bytes(&get_bytes(AC_FILENAME).unwrap()).unwrap();
     let airports = Airports::from_bytes(&get_bytes(AP_FILENAME).unwrap()).unwrap();
-    let origin = airports.search("HKG").unwrap();
-    let aircraft = aircrafts.search("a388").unwrap();
+    let distances = Distances::from_airports(airports.data());
 
-    let routes = Routes::new(&airports, origin, airports.data())
-        .unwrap()
-        .with_aircraft(&aircraft.aircraft, &GameMode::Realism);
-    print_len(&routes);
+    let origin = airports.search("WLG").unwrap();
+    let aircraft = aircrafts.search("mc214").unwrap();
+
+    let abstract_routes = Routes::new(&airports, &distances, origin, airports.data()).unwrap();
+    // let routes = abstract_routes.with_aircraft(&aircraft.aircraft, &GameMode::Easy);
+    // print_len(&routes);
+    for aircraft in aircrafts.data() {
+        let routes = abstract_routes
+            .clone()
+            .with_aircraft(&aircraft, &GameMode::Realism);
+        print_len(aircraft.name.to_string().as_str(), &routes);
+    }
 }

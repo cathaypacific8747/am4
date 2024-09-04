@@ -13,7 +13,10 @@ use serde::Deserialize;
 #[cfg_attr(feature = "serde", derive(Deserialize))]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 pub struct Airport {
-    pub idx: Id,
+    /// Index for the demands and distance matrix.
+    pub idx: usize,
+    /// Game airport id. Not necessarily equal to [Airport::idx]
+    pub id: Id,
     pub name: Name,
     pub fullname: String,
     pub country: String,

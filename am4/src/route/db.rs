@@ -80,8 +80,6 @@ impl Index<(usize, usize)> for Demands {
     }
 }
 
-// TODO: remove distance matrix.
-
 #[derive(Debug)]
 pub struct Distances(Vec<f32>);
 
@@ -133,5 +131,14 @@ impl Distances {
 
     pub fn data(&self) -> &Vec<f32> {
         &self.0
+    }
+}
+
+impl Index<(usize, usize)> for Distances {
+    type Output = f32;
+
+    /// SAFETY: panics when both are 0 (underflow)
+    fn index(&self, (oidx, didx): (usize, usize)) -> &Self::Output {
+        &self.0[index(oidx, didx)]
     }
 }

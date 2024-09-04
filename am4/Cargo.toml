@@ -6,17 +6,17 @@ edition = "2021"
 
 [dependencies]
 jaro_winkler = "0.1.0"
-thiserror = "1.0.61"
+thiserror = "1.0"
 uuid = { version = "1.10.0", features = ["v4"] }
-derive_more = { version = "1.0.0", features = [
+derive_more = { version = "1.0", features = [
     "display",
     "add",
     "from",
     "into",
     "constructor",
 ] }
-serde = { version = "1.0.203", optional = true, features = ["derive"] }
-rkyv = { version = "0.7.44", optional = true, features = [
+serde = { version = "1.0", optional = true, features = ["derive"] }
+rkyv = { version = "0.7", optional = true, features = [
     "validation",
     "strict",
     "archive_le",

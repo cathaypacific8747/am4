@@ -44,6 +44,7 @@ mod profit;
 
 // TODO: const generic to silently ignore errors
 use crate::airport::{db::Airports, Airport};
+use crate::route::db::Distances;
 use thiserror::Error;
 
 use crate::aircraft::Aircraft;
@@ -51,9 +52,6 @@ use crate::user::GameMode;
 
 #[derive(Debug, Clone, Error)]
 pub enum RouteError<'a> {
-    // this shouldn't happen, but just in case downstream users create custom airports
-    #[error("airport `{0:?}` not found in the database")]
-    AirportNotFound(&'a Airport),
     #[error("destination `{0:?}` cannot be the same as the origin")]
     SelfReferential(&'a Airport),
     #[error("distance to `{0:?}` is too short ({1:.2} km < 100 km)")]
@@ -97,49 +95,28 @@ pub type AbstractRoutes<'a> = Routes<'a, AbstractRoute<'a>, AbstractConfig<'a>>;
 #[derive(Debug, Clone)]
 pub struct AbstractRoute<'a> {
     /// index into airports array
-    destination: CheckedAirport<'a>,
+    destination: &'a Airport,
     direct_distance: f32,
-}
-
-/// A valid airport that is guaranteed to exist in the demand table.
-#[derive(Debug, Clone)]
-pub struct CheckedAirport<'a> {
-    airport: &'a Airport,
-    /// Used to index into [Demands].
-    idx: usize,
-}
-
-impl<'a> CheckedAirport<'a> {
-    /// Check if the given airport is in the database.
-    pub fn new(airports: &Airports, airport: &'a Airport) -> Result<Self, RouteError<'a>> {
-        let idx = airports
-            .index()
-            .get(&(airport.idx.into()))
-            .ok_or(RouteError::AirportNotFound(airport))
-            .copied()?;
-        Ok(Self { airport, idx })
-    }
 }
 
 impl<'a> AbstractRoute<'a> {
     /// Create a direct [AbstractRoute] from the origin to the destination.
     /// Errors if the destination is the same as the origin, or if it doesn't exist in the database.
     fn new(
-        airports: &'a Airports,
+        distances: &'a Distances,
         origin: &'a Airport,
         destination: &'a Airport,
     ) -> Result<Self, RouteError<'a>> {
         if destination.idx == origin.idx {
             Err(RouteError::SelfReferential(destination))
         } else {
-            let destination_checked = CheckedAirport::new(airports, destination)?;
-            let distance = origin.location.distance_to(&destination.location);
-            if distance < 100.0 {
-                return Err(RouteError::DistanceTooShort(destination, distance));
+            let direct_distance = distances[(origin.idx, destination.idx)];
+            if direct_distance < 100.0 {
+                return Err(RouteError::DistanceTooShort(destination, direct_distance));
             }
             Ok(Self {
-                destination: destination_checked,
-                direct_distance: distance,
+                destination,
+                direct_distance,
             })
         }
     }
@@ -148,21 +125,22 @@ impl<'a> AbstractRoute<'a> {
 #[derive(Debug, Clone)]
 pub struct AbstractConfig<'a> {
     airports: &'a Airports,
-    origin: CheckedAirport<'a>,
+    origin: &'a Airport,
 }
 
 impl<'a> AbstractRoutes<'a> {
-    /// Create a routelist from an origin airport to multiple destination airports.
+    /// Create an abstract routelist from an origin airport
+    /// to multiple destination airports.
     pub fn new(
         airports: &'a Airports,
+        distances: &'a Distances,
         origin: &'a Airport,
         destinations: &'a [Airport],
     ) -> Result<Self, RouteError<'a>> {
-        let origin = CheckedAirport::new(airports, origin)?;
         let mut routes = Vec::new();
         let mut errors = Vec::new();
         for destination in destinations {
-            match AbstractRoute::new(airports, origin.airport, destination) {
+            match AbstractRoute::new(distances, origin, destination) {
                 Ok(route) => routes.push(route),
                 Err(e) => errors.push(e),
             }
@@ -181,7 +159,7 @@ pub type ConcreteRoutes<'a> = Routes<'a, AbstractRoute<'a>, ConcreteConfig<'a>>;
 #[derive(Debug, Clone)]
 pub struct ConcreteConfig<'a> {
     airports: &'a Airports,
-    origin: CheckedAirport<'a>,
+    origin: &'a Airport,
     aircraft: &'a Aircraft,
     game_mode: &'a GameMode,
 }
@@ -189,7 +167,7 @@ pub struct ConcreteConfig<'a> {
 fn runway_valid(route: &AbstractRoute, aircraft: &Aircraft, game_mode: &GameMode) -> bool {
     match game_mode {
         GameMode::Easy => true,
-        GameMode::Realism => route.destination.airport.rwy >= aircraft.rwy,
+        GameMode::Realism => route.destination.rwy >= aircraft.rwy,
     }
 }
 
@@ -208,7 +186,7 @@ impl<'a> AbstractRoutes<'a> {
         self.routes.retain(|route| {
             if !distance_valid(route, aircraft) {
                 self.errors.push(RouteError::DistanceAboveRange(
-                    route.destination.airport,
+                    route.destination,
                     route.direct_distance,
                     aircraft.range as f32 * 2.0,
                 ));
@@ -216,7 +194,7 @@ impl<'a> AbstractRoutes<'a> {
             }
             if !runway_valid(route, aircraft, game_mode) {
                 self.errors
-                    .push(RouteError::RunwayTooShort(route.destination.airport));
+                    .push(RouteError::RunwayTooShort(route.destination));
                 return false;
             }
             true
