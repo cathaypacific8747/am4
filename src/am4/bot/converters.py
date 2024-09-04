@@ -82,13 +82,13 @@ class TPDCvtr(commands.Converter):
     async def convert(self, ctx: commands.Context, tpdo: str) -> tuple[int | None, AircraftRoute.Options.TPDMode]:
         if tpdo is None or (tpd := tpdo.strip().lower()) == "auto":
             return self._default
-        allow_multiple_ac = tpd.endswith("!")
+        strict = tpd.endswith("!")
         try:
             return (
-                acro_cast("trips_per_day_per_ac", tpd[:-1] if allow_multiple_ac else tpd).trips_per_day_per_ac,
-                AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC
-                if allow_multiple_ac
-                else AircraftRoute.Options.TPDMode.STRICT,
+                acro_cast("trips_per_day_per_ac", tpd[:-1] if strict else tpd).trips_per_day_per_ac,
+                AircraftRoute.Options.TPDMode.STRICT
+                if strict
+                else AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC,
             )
         except ValidationError as e:
             raise TPDValidationError(e)

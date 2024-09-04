@@ -60,7 +60,6 @@ def add_data(d: Destination, is_cargo: bool, embed: discord.Embed):
     distance_f = f"{acr.stopover.full_distance if acr.stopover.exists else acr.route.direct_distance:.0f} km"
     flight_time_f = format_flight_time(acr.flight_time)
     num_ac_f = f"**__{acr.num_ac} ac__**" if acr.num_ac > 1 else f"{acr.num_ac} ac"
-    wasted_indicator = "" if (t := acr.max_tpd) is None else f"\n     Cramming with total {t} t/d is possible*"
     embed.add_field(
         name=f"{stopover_f}{format_ap_short(d.airport, mode=2)}",
         value=(
@@ -68,7 +67,7 @@ def add_data(d: Destination, is_cargo: bool, embed: discord.Embed):
             f"**  Config**: {format_config(acr.config)}\n"
             f"**  Tickets**: {format_ticket(acr.ticket)}\n"
             f"** Details**: {distance_f} ({flight_time_f}), C$ {acr.contribution:.1f}/t\n"
-            f"     {acr.trips_per_day_per_ac} t/d/ac × {num_ac_f}{wasted_indicator}\n"
+            f"     {acr.trips_per_day_per_ac} t/d/ac × {num_ac_f}\n"
             f"** Profit**: $ {acr.profit:,.0f}/t, $ {profit_per_day_per_ac:,.0f}/d/ac\n"
         ),
         inline=False,
@@ -244,15 +243,10 @@ class RoutesCog(BaseCog):
             )
 
         sorted_by = f" (sorted by $ {'per ac per day' if cons_set else 'per trip'})"
-        cram_warn = (
-            f"\n* Aircraft cramming is now disabled by default, use {trips_per_day_per_ac[0]}! to enable it."
-            if trips_per_day_per_ac[1] == AircraftRoute.Options.TPDMode.STRICT
-            else ""
-        )
         embed.set_footer(
             text=(
                 f"{len(destinations)} routes found in {(t_end-t_start)*1000:.2f} ms{sorted_by}\n"
-                f"top 10 ac: $ {sum(profits[:10]):,.0f}/d, 30 ac: $ {sum(profits[:30]):,.0f}/d{cram_warn}\n"
+                f"top 10 ac: $ {sum(profits[:10]):,.0f}/d, 30 ac: $ {sum(profits[:30]):,.0f}/d\n"
                 "Generating map and CSV..."
             ),
         )

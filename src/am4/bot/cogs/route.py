@@ -167,19 +167,6 @@ class RouteCog(BaseCog):
         )
         await ctx.send(embed=embed)
 
-        if (t := acr.max_tpd) is not None:
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Warning: Demand wasted",
-                    description=(
-                        f"You forced the route to fly {trips_per_day_per_ac[0]} t/d on 1 aircraft, but the demand "
-                        f"is sufficient for **__{t:.0f} t/d__** on multiple aircraft.\n\nConsider enabling aircraft "
-                        f"cramming by passing `{trips_per_day_per_ac[0]}!` to the `trips_per_day` argument."
-                    ),
-                    colour=COLOUR_ERROR,
-                )
-            )
-
     def get_basic_route_embed(self, ap0_query: Airport.SearchResult, ap1_query: Airport.SearchResult, r: Route):
         embed = discord.Embed(
             title=f"{format_ap_short(ap0_query.ap, mode=0)}\n{format_ap_short(ap1_query.ap, mode=2)}",

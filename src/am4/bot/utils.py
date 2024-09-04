@@ -43,9 +43,8 @@ IJSON = "<:json:1210823838334586880>"
 HELP_TPD = (
     "**Number of departures per day, per aircraft**\n"
     "- if not provided or set to `AUTO`, the bot will attempt to maximise it.\n"
-    "- if you provide a number, the bot will fly **one aircraft** with this number of departures per day.\n"
-    "  - you may want to assign multiple aircraft to the same route to avoid wasting demand. "
-    "Append a `!` at the end to enable cramming (recommended)."
+    "- if you provide a number, the bot will try to assign more aircraft to the same route to avoid wasting demand.\n"
+    "  - to disable the cramming, append a `!` at the end (not recommended)."
 )
 HELP_CFG_ALG = (
     "**Configuration Algorithm**\n"
