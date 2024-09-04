@@ -1,6 +1,6 @@
 [package]
 name = "am4"
-version = "0.2.0-alpha.2"
+version = "0.2.0-alpha.5"
 authors = ["Abraham Cheung <abraham@ylcheung.com>"]
 edition = "2021"
 

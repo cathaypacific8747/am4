@@ -11,17 +11,17 @@ jobs:
     name: Build sdist for am4utils
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Build sdist
-      working-directory: ./
-      run: pipx run build --sdist
+      - name: Build sdist
+        working-directory: ./
+        run: pipx run build --sdist
 
-    - name: Store artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dist
-        path: ./dist/*.tar.gz
+      - name: Store artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./dist/*.tar.gz
 
   build_wheels:
     name: Build wheels for py${{ matrix.python }}-${{ matrix.platform_id }}
@@ -33,7 +33,7 @@ jobs:
           - os: ubuntu-latest
             python: 39
             platform_id: "manylinux_x86_64"
-            manylinux_image: 
+            manylinux_image:
           - os: ubuntu-latest
             python: 310
             platform_id: "manylinux_x86_64"
@@ -71,7 +71,7 @@ jobs:
           CIBW_TEST_SKIP: "*"
           MACOSX_DEPLOYMENT_TARGET: 10.15
         run: pipx run cibuildwheel --output-dir wheelhouse
-        
+
       - name: Store artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -82,7 +82,7 @@ jobs:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist

@@ -1,5 +1,16 @@
 /*!
-Implements an in-memory, pax demand database.
+Implements an in-memory, pax demand and distance database.
+
+A route constructed from one [Airport] to the other is associated
+with an **undirected** pair of:
+- (economy, business, first) class demands
+- direct distance
+
+We represent it as a flattened version of the
+[strictly upper triangular matrix][StrictlyUpperTriangularMatrix].
+
+Excluding routes with origin equal to the destination, there are
+`n * (n - 1) / 2 = 7630371` possible routes, where `n = 3907` is the [AIRPORT_COUNT].
 */
 
 use crate::airport::{db::AIRPORT_COUNT, Airport};
@@ -12,10 +23,8 @@ use rkyv::{self, AlignedVec, Deserialize};
 
 pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 
-/// A route constructed from one [Airport] to the other is associated
-/// with an **undirected** pair of (economy, business, first) class demands.
+/// A flattened version of the strictly upper triangular matrix.
 ///
-/// We represent it as a flattened version of the upper triangular matrix.
 /// For example, consider a world with 4 airports, the index into the [Vec] would be:
 ///
 /// ```txt
@@ -29,13 +38,69 @@ pub const ROUTE_COUNT: usize = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
 /// ^
 /// └-- destination index
 /// ```
-///
-/// Excluding routes with origin equal to the destination, we have
-/// `n * (n - 1) / 2 = 7630371` possible routes, where `n = 3907` is the [AIRPORT_COUNT].
+// TODO: using row and column for convenience for now, switch to index
 #[derive(Debug)]
-pub struct Demands(Vec<PaxDemand>);
+pub struct StrictlyUpperTriangularMatrix<const N: usize> {
+    curr: usize,
+    /// Row number
+    i: usize,
+    /// Column number
+    j: usize,
+}
 
-impl Demands {
+impl<const N: usize> StrictlyUpperTriangularMatrix<N> {
+    const CURR_MAX: usize = N * (N - 1) / 2;
+
+    /// Compute the index of the flattened [Vec] representation,
+    /// given the row and column number.
+    ///
+    /// Panics if `i >= j` (underflow).
+    pub fn index((i, j): (usize, usize)) -> usize {
+        i * (2 * N - i - 1) / 2 + (j - i - 1)
+    }
+}
+
+impl<const N: usize> Default for StrictlyUpperTriangularMatrix<N> {
+    fn default() -> Self {
+        Self {
+            curr: 0,
+            i: 0,
+            j: 0,
+        }
+    }
+}
+
+impl<const N: usize> Iterator for StrictlyUpperTriangularMatrix<N> {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.curr >= Self::CURR_MAX {
+            return None;
+        }
+        self.j += 1;
+        if self.j == N {
+            self.i += 1;
+            self.j = self.i + 1;
+        }
+        self.curr += 1;
+        Some((self.i, self.j))
+    }
+}
+
+/// Panics if `oidx == didx` (underflow)
+fn get_index(oidx: usize, didx: usize) -> usize {
+    let (i, j) = if oidx > didx {
+        (didx, oidx)
+    } else {
+        (oidx, didx)
+    };
+    StrictlyUpperTriangularMatrix::<AIRPORT_COUNT>::index((i, j))
+}
+
+#[derive(Debug)]
+pub struct DemandMatrix(Vec<PaxDemand>);
+
+impl DemandMatrix {
     #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
         // ensure serialised bytes can be deserialised
@@ -53,7 +118,7 @@ impl Demands {
             });
         }
 
-        Ok(Demands(demands))
+        Ok(DemandMatrix(demands))
     }
 
     pub fn data(&self) -> &Vec<PaxDemand> {
@@ -61,29 +126,19 @@ impl Demands {
     }
 }
 
-/// SAFETY: panics when both are 0 (underflow)
-fn index(oidx: usize, didx: usize) -> usize {
-    let (x, y) = if oidx > didx {
-        (didx, oidx)
-    } else {
-        (oidx, didx)
-    };
-    x * (2 * AIRPORT_COUNT - y - 1) / 2 + (y - x - 1)
-}
-
-impl Index<(usize, usize)> for Demands {
+impl Index<(usize, usize)> for DemandMatrix {
     type Output = PaxDemand;
 
-    /// SAFETY: panics when both are 0 (underflow)
+    /// Panics if `oidx == didx` (underflow)
     fn index(&self, (oidx, didx): (usize, usize)) -> &Self::Output {
-        &self.0[index(oidx, didx)]
+        &self.0[get_index(oidx, didx)]
     }
 }
 
 #[derive(Debug)]
-pub struct Distances(Vec<f32>);
+pub struct DistanceMatrix(Vec<f32>);
 
-impl Distances {
+impl DistanceMatrix {
     /// Load the distance matrix from a rkyv serialised buffer
     #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
@@ -101,25 +156,16 @@ impl Distances {
             });
         }
 
-        Ok(Distances(distances))
+        Ok(DistanceMatrix(distances))
     }
 
     /// Compute the distance matrix with haversine
     pub fn from_airports(aps: &[Airport]) -> Self {
-        assert!(aps.len() == AIRPORT_COUNT); // compiler optimisation
-        let mut d = Vec::<f32>::with_capacity(ROUTE_COUNT);
-        let mut x: usize = 0;
-        let mut y: usize = 0;
-        for _ in 0..ROUTE_COUNT {
-            y += 1;
-            if y == AIRPORT_COUNT {
-                x += 1;
-                y = x + 1;
-            }
-            d.push(aps[x].distance_to(&aps[y]));
-        }
-        assert_eq!(d.len(), ROUTE_COUNT);
-        Distances(d)
+        let d: Vec<_> = StrictlyUpperTriangularMatrix::<AIRPORT_COUNT>::default()
+            .map(|(i, j)| aps[i].distance_to(&aps[j]))
+            .collect();
+        debug_assert_eq!(d.len(), ROUTE_COUNT);
+        Self(d)
     }
 
     #[cfg(feature = "rkyv")]
@@ -134,11 +180,11 @@ impl Distances {
     }
 }
 
-impl Index<(usize, usize)> for Distances {
+impl Index<(usize, usize)> for DistanceMatrix {
     type Output = f32;
 
-    /// SAFETY: panics when both are 0 (underflow)
+    /// Panics if `oidx == didx` (underflow)
     fn index(&self, (oidx, didx): (usize, usize)) -> &Self::Output {
-        &self.0[index(oidx, didx)]
+        &self.0[get_index(oidx, didx)]
     }
 }

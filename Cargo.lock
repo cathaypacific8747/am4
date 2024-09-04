@@ -97,7 +97,7 @@ checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
 name = "am4"
-version = "0.2.0-alpha.2"
+version = "0.2.0-alpha.5"
 dependencies = [
  "derive_more",
  "jaro_winkler",

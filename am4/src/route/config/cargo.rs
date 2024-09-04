@@ -5,7 +5,6 @@ use crate::route::demand::PaxDemand;
 pub struct CargoConfig {
     pub l: u8,
     pub h: u8,
-    pub algorithm: CargoConfigAlgorithm,
 }
 
 #[derive(Debug, Default)]
@@ -28,11 +27,7 @@ impl CargoConfig {
         let l_cap = capacity as f32 * 0.7 * (1.0 + l_training as f32 / 100.0);
 
         if d_pf_cargo.l as f32 > l_cap {
-            return Some(CargoConfig {
-                l: 100,
-                h: 0,
-                algorithm: CargoConfigAlgorithm::L,
-            });
+            return Some(CargoConfig { l: 100, h: 0 });
         }
 
         let l = d_pf_cargo.l as f32 / l_cap;
@@ -42,11 +37,7 @@ impl CargoConfig {
         } else {
             let lu = (l * 100.0) as u8;
 
-            Some(CargoConfig {
-                l: lu,
-                h: 100 - lu,
-                algorithm: CargoConfigAlgorithm::L,
-            })
+            Some(CargoConfig { l: lu, h: 100 - lu })
         }
     }
 
@@ -61,11 +52,7 @@ impl CargoConfig {
         let h_cap = capacity as f32 * (1.0 + h_training as f32 / 100.0);
 
         if d_pf_cargo.h as f32 > h_cap {
-            return Some(CargoConfig {
-                l: 0,
-                h: 100,
-                algorithm: CargoConfigAlgorithm::H,
-            });
+            return Some(CargoConfig { l: 0, h: 100 });
         }
 
         let h = d_pf_cargo.h as f32 / h_cap;
@@ -75,11 +62,7 @@ impl CargoConfig {
         } else {
             let hu = (h * 100.0) as u8;
 
-            Some(CargoConfig {
-                l: 100 - hu,
-                h: hu,
-                algorithm: CargoConfigAlgorithm::H,
-            })
+            Some(CargoConfig { l: 100 - hu, h: hu })
         }
     }
 

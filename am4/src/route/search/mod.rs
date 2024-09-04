@@ -44,7 +44,7 @@ mod profit;
 
 // TODO: const generic to silently ignore errors
 use crate::airport::{db::Airports, Airport};
-use crate::route::db::Distances;
+use crate::route::db::DistanceMatrix;
 use thiserror::Error;
 
 use crate::aircraft::Aircraft;
@@ -54,10 +54,10 @@ use crate::user::GameMode;
 pub enum RouteError<'a> {
     #[error("destination `{0:?}` cannot be the same as the origin")]
     SelfReferential(&'a Airport),
-    #[error("distance to `{0:?}` is too short ({1:.2} km < 100 km)")]
+    #[error("distance to `{0:?}` ({1:2} km) is too short, must be greater than 100 km")]
     DistanceTooShort(&'a Airport, f32),
-    #[error("distance to `{0:?}` is above aircraft maximum range ({1:.2} km > {2:.2} km)")]
-    DistanceAboveRange(&'a Airport, f32, f32),
+    #[error("distance to `{0:?}` ({1:2} km) is above aircraft maximum range")]
+    DistanceAboveRange(&'a Airport, f32),
     #[error("runway length at `{0:?}` is too short")]
     RunwayTooShort(&'a Airport),
 }
@@ -74,7 +74,7 @@ pub struct Routes<'a, R, C> {
 }
 
 impl<'a, R, C> Routes<'a, R, C> {
-    /// Get the list of routes (e.g. [AbstractRoutes])
+    /// Get the list of routes (e.g. [AbstractRoutes], [ConcreteRoutes])
     pub fn routes(&self) -> &[R] {
         &self.routes
     }
@@ -103,7 +103,7 @@ impl<'a> AbstractRoute<'a> {
     /// Create a direct [AbstractRoute] from the origin to the destination.
     /// Errors if the destination is the same as the origin, or if it doesn't exist in the database.
     fn new(
-        distances: &'a Distances,
+        distances: &'a DistanceMatrix,
         origin: &'a Airport,
         destination: &'a Airport,
     ) -> Result<Self, RouteError<'a>> {
@@ -120,6 +120,17 @@ impl<'a> AbstractRoute<'a> {
             })
         }
     }
+
+    fn runway_valid(&self, aircraft: &Aircraft, game_mode: &GameMode) -> bool {
+        match game_mode {
+            GameMode::Easy => true,
+            GameMode::Realism => self.destination.rwy >= aircraft.rwy,
+        }
+    }
+
+    fn distance_valid(&self, aircraft: &Aircraft) -> bool {
+        self.direct_distance < aircraft.range as f32 * 2.0
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -133,7 +144,7 @@ impl<'a> AbstractRoutes<'a> {
     /// to multiple destination airports.
     pub fn new(
         airports: &'a Airports,
-        distances: &'a Distances,
+        distances: &'a DistanceMatrix,
         origin: &'a Airport,
         destinations: &'a [Airport],
     ) -> Result<Self, RouteError<'a>> {
@@ -153,7 +164,7 @@ impl<'a> AbstractRoutes<'a> {
     }
 }
 
-// NOTE: routes are abstract, but checked.
+/// Collection of [AbstractRoutes], checked against the provided aircraft.
 pub type ConcreteRoutes<'a> = Routes<'a, AbstractRoute<'a>, ConcreteConfig<'a>>;
 
 #[derive(Debug, Clone)]
@@ -164,35 +175,23 @@ pub struct ConcreteConfig<'a> {
     game_mode: &'a GameMode,
 }
 
-fn runway_valid(route: &AbstractRoute, aircraft: &Aircraft, game_mode: &GameMode) -> bool {
-    match game_mode {
-        GameMode::Easy => true,
-        GameMode::Realism => route.destination.rwy >= aircraft.rwy,
-    }
-}
-
-fn distance_valid(route: &AbstractRoute, aircraft: &Aircraft) -> bool {
-    route.direct_distance < aircraft.range as f32 * 2.0
-}
-
 impl<'a> AbstractRoutes<'a> {
-    /// Prune routes that do not meet the aircraft's range and runway constraints,
-    /// making [AbstractRoutes] into [ConcreteRoutes].
+    /// Consumes and prunes the abstract route list that
+    /// do not meet the aircraft's range and runway constraints,
     pub fn with_aircraft(
-        mut self, // consume the abstract routelist.
+        mut self,
         aircraft: &'a Aircraft,
         game_mode: &'a GameMode,
     ) -> ConcreteRoutes<'a> {
         self.routes.retain(|route| {
-            if !distance_valid(route, aircraft) {
+            if !route.distance_valid(aircraft) {
                 self.errors.push(RouteError::DistanceAboveRange(
                     route.destination,
                     route.direct_distance,
-                    aircraft.range as f32 * 2.0,
                 ));
                 return false;
             }
-            if !runway_valid(route, aircraft, game_mode) {
+            if !route.runway_valid(aircraft, game_mode) {
                 self.errors
                     .push(RouteError::RunwayTooShort(route.destination));
                 return false;

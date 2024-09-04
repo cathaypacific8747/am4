@@ -1,6 +1,6 @@
 use am4::aircraft::db::Aircrafts;
 use am4::airport::{db::Airports, Airport};
-use am4::route::db::Distances;
+use am4::route::db::DistanceMatrix;
 use am4::{AC_FILENAME, AP_FILENAME, DIST_FILENAME};
 use indexed_db_futures::prelude::*;
 use leptos::{
@@ -93,7 +93,7 @@ impl Idb {
         &self,
         aps: &[Airport],
         set_progress: &dyn Fn(LoadDbProgress),
-    ) -> Result<Distances, GenericError> {
+    ) -> Result<DistanceMatrix, GenericError> {
         let k = DIST_FILENAME;
         set_progress(LoadDbProgress::IDBRead(k.to_string()));
         match self.get(k).await? {
@@ -101,11 +101,11 @@ impl Idb {
                 set_progress(LoadDbProgress::Parsing(k.to_string()));
                 let ab = JsFuture::from(jsb.dyn_into::<Blob>()?.array_buffer()).await?;
                 let bytes = Uint8Array::new(&ab).to_vec();
-                Ok(Distances::from_bytes(&bytes).unwrap())
+                Ok(DistanceMatrix::from_bytes(&bytes).unwrap())
             }
             None => {
                 set_progress(LoadDbProgress::Parsing(k.to_string()));
-                let distances = Distances::from_airports(aps);
+                let distances = DistanceMatrix::from_airports(aps);
                 let b = distances.to_bytes().unwrap();
 
                 // https://github.com/rustwasm/wasm-bindgen/issues/1693
