@@ -20,9 +20,12 @@ fn test_routes_ok() {
 #[rstest]
 fn test_distances_ok() {
     assert_eq!(DISTANCE_MATRIX.data().len(), ROUTE_COUNT);
-    assert_eq!(DISTANCE_MATRIX.data()[0].to_bits(), 330.21942_f32.to_bits()); // 1 -> 2
     assert_eq!(
-        DISTANCE_MATRIX.data()[1].to_bits(),
+        DISTANCE_MATRIX.data()[0].get().to_bits(),
+        330.21942_f32.to_bits()
+    ); // 1 -> 2
+    assert_eq!(
+        DISTANCE_MATRIX.data()[1].get().to_bits(),
         1_245.811_6_f32.to_bits()
     ); // 1 -> 3
 }

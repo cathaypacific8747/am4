@@ -14,7 +14,7 @@ Excluding routes with origin equal to the destination, there are
 */
 
 use crate::airport::{db::AIRPORT_COUNT, Airport};
-use crate::route::demand::PaxDemand;
+use crate::route::{demand::PaxDemand, Distance};
 use crate::utils::ParseError;
 use core::ops::Index;
 
@@ -136,16 +136,16 @@ impl Index<(usize, usize)> for DemandMatrix {
 }
 
 #[derive(Debug)]
-pub struct DistanceMatrix(Vec<f32>);
+pub struct DistanceMatrix(Vec<Distance>);
 
 impl DistanceMatrix {
     /// Load the distance matrix from a rkyv serialised buffer
     #[cfg(feature = "rkyv")]
     pub fn from_bytes(buffer: &[u8]) -> Result<Self, ParseError> {
-        let archived = rkyv::check_archived_root::<Vec<f32>>(buffer)
+        let archived = rkyv::check_archived_root::<Vec<Distance>>(buffer)
             .map_err(|e| ParseError::ArchiveError(e.to_string()))?;
 
-        let distances: Vec<f32> = archived
+        let distances: Vec<_> = archived
             .deserialize(&mut rkyv::Infallible)
             .map_err(|e| ParseError::DeserialiseError(e.to_string()))?;
 
@@ -162,7 +162,7 @@ impl DistanceMatrix {
     /// Compute the distance matrix with haversine
     pub fn from_airports(aps: &[Airport]) -> Self {
         let d: Vec<_> = StrictlyUpperTriangularMatrix::<AIRPORT_COUNT>::default()
-            .map(|(i, j)| aps[i].distance_to(&aps[j]))
+            .map(|(i, j)| Distance::haversine(&aps[i].location, &aps[j].location))
             .collect();
         debug_assert_eq!(d.len(), ROUTE_COUNT);
         Self(d)
@@ -170,18 +170,18 @@ impl DistanceMatrix {
 
     #[cfg(feature = "rkyv")]
     pub fn to_bytes(&self) -> Result<AlignedVec, ParseError> {
-        let av = rkyv::to_bytes::<Vec<f32>, 30_521_492>(&self.0)
+        let av = rkyv::to_bytes::<Vec<_>, 30_521_492>(&self.0)
             .map_err(|e| ParseError::SerialiseError(e.to_string()))?;
         Ok(av)
     }
 
-    pub fn data(&self) -> &Vec<f32> {
+    pub fn data(&self) -> &Vec<Distance> {
         &self.0
     }
 }
 
 impl Index<(usize, usize)> for DistanceMatrix {
-    type Output = f32;
+    type Output = Distance;
 
     /// Panics if `oidx == didx` (underflow)
     fn index(&self, (oidx, didx): (usize, usize)) -> &Self::Output {

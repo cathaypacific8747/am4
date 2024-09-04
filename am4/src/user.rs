@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use derive_more::derive::{Constructor, Display, From, Into};
 use thiserror::Error;
 use uuid::Uuid;
@@ -31,11 +33,13 @@ pub struct User {
     pub game_name: String,
     pub discord_id: u64,
     pub role: Role,
+    // NOTE: intentionally not putting in settings to avoid duplicates in
+    // AbstractRoutes vs. ScheduledRoutes
+    pub game_mode: GameMode,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Settings {
-    pub game_mode: GameMode,
     pub training: Training,
     pub fuel_price: FuelPrice,
     pub co2_price: Co2Price,
@@ -43,6 +47,14 @@ pub struct Settings {
     pub load: AircraftLoad,
     pub income_loss_tol: f32,
     pub fourx: bool,
+}
+
+static DEFAULT_SETTINGS: LazyLock<Settings> = LazyLock::new(Settings::default);
+
+impl<'a> Default for &'a Settings {
+    fn default() -> Self {
+        &DEFAULT_SETTINGS
+    }
 }
 
 // TODO: impl FromStr for fuel and co2

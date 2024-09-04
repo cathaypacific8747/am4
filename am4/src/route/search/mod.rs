@@ -28,23 +28,21 @@
  *   filter(toggleable): stopover finding --> no stopover
  *   |                         |
  *   +---- stopover -----------|
- *   |
- *   v
- * Route
- *   |
  *   +---- configuration
  *   |
- * Itinerary
+ * ScheduledRoute
  * ```
  */
 
 #![allow(dead_code)] // temp
 
-mod profit;
+mod schedule;
+mod stopover;
 
 // TODO: const generic to silently ignore errors
 use crate::airport::{db::Airports, Airport};
 use crate::route::db::DistanceMatrix;
+use crate::route::Distance;
 use thiserror::Error;
 
 use crate::aircraft::Aircraft;
@@ -55,9 +53,9 @@ pub enum RouteError<'a> {
     #[error("destination `{0:?}` cannot be the same as the origin")]
     SelfReferential(&'a Airport),
     #[error("distance to `{0:?}` ({1:2} km) is too short, must be greater than 100 km")]
-    DistanceTooShort(&'a Airport, f32),
+    DistanceTooShort(&'a Airport, Distance),
     #[error("distance to `{0:?}` ({1:2} km) is above aircraft maximum range")]
-    DistanceAboveRange(&'a Airport, f32),
+    DistanceAboveRange(&'a Airport, Distance),
     #[error("runway length at `{0:?}` is too short")]
     RunwayTooShort(&'a Airport),
 }
@@ -96,7 +94,7 @@ pub type AbstractRoutes<'a> = Routes<'a, AbstractRoute<'a>, AbstractConfig<'a>>;
 pub struct AbstractRoute<'a> {
     /// index into airports array
     destination: &'a Airport,
-    direct_distance: f32,
+    direct_distance: Distance,
 }
 
 impl<'a> AbstractRoute<'a> {
@@ -111,7 +109,7 @@ impl<'a> AbstractRoute<'a> {
             Err(RouteError::SelfReferential(destination))
         } else {
             let direct_distance = distances[(origin.idx, destination.idx)];
-            if direct_distance < 100.0 {
+            if direct_distance < Distance::MIN {
                 return Err(RouteError::DistanceTooShort(destination, direct_distance));
             }
             Ok(Self {
@@ -129,7 +127,7 @@ impl<'a> AbstractRoute<'a> {
     }
 
     fn distance_valid(&self, aircraft: &Aircraft) -> bool {
-        self.direct_distance < aircraft.range as f32 * 2.0
+        self.direct_distance.get() < aircraft.range as f32 * 2.0
     }
 }
 
@@ -162,20 +160,7 @@ impl<'a> AbstractRoutes<'a> {
             config: AbstractConfig { airports, origin },
         })
     }
-}
 
-/// Collection of [AbstractRoutes], checked against the provided aircraft.
-pub type ConcreteRoutes<'a> = Routes<'a, AbstractRoute<'a>, ConcreteConfig<'a>>;
-
-#[derive(Debug, Clone)]
-pub struct ConcreteConfig<'a> {
-    airports: &'a Airports,
-    origin: &'a Airport,
-    aircraft: &'a Aircraft,
-    game_mode: &'a GameMode,
-}
-
-impl<'a> AbstractRoutes<'a> {
     /// Consumes and prunes the abstract route list that
     /// do not meet the aircraft's range and runway constraints,
     pub fn with_aircraft(
@@ -209,4 +194,15 @@ impl<'a> AbstractRoutes<'a> {
             },
         }
     }
+}
+
+/// Collection of [AbstractRoutes], checked against the provided aircraft.
+pub type ConcreteRoutes<'a> = Routes<'a, AbstractRoute<'a>, ConcreteConfig<'a>>;
+
+#[derive(Debug, Clone)]
+pub struct ConcreteConfig<'a> {
+    airports: &'a Airports,
+    origin: &'a Airport,
+    aircraft: &'a Aircraft,
+    game_mode: &'a GameMode,
 }
