@@ -1,6 +1,8 @@
 use crate::airport::Point;
-use crate::utils::{FloatError, RealValidator};
+use crate::utils::{PositiveReal, PositiveRealError};
 use derive_more::{Add, Display, Into};
+use std::num::ParseFloatError;
+use std::str::FromStr;
 use thiserror::Error;
 
 #[cfg(feature = "rkyv")]
@@ -9,9 +11,11 @@ use rkyv::{Archive as Ra, Deserialize as Rd, Serialize as Rs};
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Error)]
-pub enum ValidationError {
+pub enum DistanceError {
+    #[error("not a valid float: {0}")]
+    ParseError(#[source] ParseFloatError),
     #[error(transparent)]
-    FloatError(#[from] FloatError),
+    FloatError(#[from] PositiveRealError),
 }
 
 /// Distance, km
@@ -25,6 +29,10 @@ impl Distance {
     pub const MAX: Self = Self(4. * std::f32::consts::PI * Self::RADIUS_EARTH); // 2 * circumference
 
     const RADIUS_EARTH: f32 = 6371.;
+
+    pub fn new_unchecked(value: f32) -> Self {
+        Self(value)
+    }
 
     #[inline]
     pub fn haversine(origin: &Point, destination: &Point) -> Self {
@@ -48,13 +56,50 @@ impl Distance {
     }
 }
 
-impl RealValidator for Distance {}
+impl PositiveReal for Distance {}
 
 impl TryFrom<f32> for Distance {
-    type Error = FloatError;
+    type Error = PositiveRealError;
 
     fn try_from(value: f32) -> Result<Self, Self::Error> {
-        Self::validate_real(value)?;
+        Self::validate_positive_real(value)?;
         Ok(Self(value))
     }
+}
+
+impl FromStr for Distance {
+    type Err = DistanceError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let value = s.parse::<f32>().map_err(DistanceError::ParseError)?;
+        Ok(Distance::try_from(value)?)
+    }
+}
+
+#[test]
+fn parse_distance() {
+    let v = "13e3".parse::<Distance>().unwrap();
+    assert_eq!(v.get(), 13000.0);
+
+    assert!("-1".parse::<Distance>().is_err());
+    assert!("inf".parse::<Distance>().is_err());
+    assert!("NaN".parse::<Distance>().is_err());
+}
+
+#[test]
+fn parse_distance_range() {
+    use crate::utils::{Filter, FilterError};
+
+    type F = Filter<Distance>;
+    type FE = FilterError<DistanceError>;
+
+    assert!(
+        matches!("13..13000".parse::<F>().unwrap(), F::Range(v) if v == ((Distance::new_unchecked(13f32))..(Distance::new_unchecked(13000f32))))
+    );
+    assert!("..NaN"
+        .parse::<F>()
+        .is_err_and(|e| matches!(e, FE::InvalidBound(_))));
+    assert!("NaN"
+        .parse::<F>()
+        .is_err_and(|e| matches!(e, FE::InvalidUpperBound(_))));
 }

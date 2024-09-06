@@ -6,29 +6,20 @@ use crate::route::{
     config::ConfigAlgorithm,
     db::DemandMatrix,
     search::{ConcreteRoutes, Routes},
-    Ci, Distance, DistanceError, FlightTime, FlightTimeError,
+    Ci, Distance, DistanceError, FlightTimeError,
 };
 use crate::user::{GameMode, Settings};
+use crate::utils::{Filter, FilterError};
 use derive_more::Display;
 use std::num::NonZeroU8;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
-pub enum RouteError<'a> {
+pub enum ScheduleError<'a> {
+    #[error("distance to `{0:?}` ({1:2} km) failed the constraint")]
+    DistanceConstraint(&'a Airport, Distance),
     #[error("insufficient demand")]
     InsufficientDemand(&'a Airport),
-}
-
-#[derive(Debug, Clone, Error)]
-pub enum ConfigError {
-    #[error(transparent)]
-    InvalidDistance(#[from] DistanceError),
-    #[error(transparent)]
-    InvalidFlightTime(#[from] FlightTimeError),
-    #[error("minimum distance must be less than the maximum")]
-    DistanceRangeOrdering,
-    #[error("minimum flight time must be less than the maximum")]
-    FlightTimeOrdering,
 }
 
 /// Collection of [ScheduledRoute], checked against the provided aircraft.
@@ -56,23 +47,62 @@ pub struct ScheduleConfig<'a> {
 
 #[allow(unused)]
 impl<'a> ConcreteRoutes<'a> {
-    fn schedule(
+    pub fn schedule(
         mut self,
-        demand_matrix: &DemandMatrix,
-        config: &SearchConfig,
+        demand_matrix: &'a DemandMatrix,
+        search_config: &'a SearchConfig,
     ) -> ScheduledRoutes<'a> {
-        todo!()
+        let routes: Vec<_> = self
+            .routes
+            .iter()
+            .filter_map(|route| {
+                if !search_config
+                    .distance_filter
+                    .contains(&route.direct_distance)
+                {
+                    self.errors.push(
+                        ScheduleError::DistanceConstraint(route.destination, route.direct_distance)
+                            .into(),
+                    );
+                    return None;
+                }
+                Some(ScheduledRoute {
+                    destination: route.destination,
+                    direct_distance: route.direct_distance,
+                    stopover: None,
+                })
+            })
+            .collect();
+        ScheduledRoutes {
+            routes,
+            errors: self.errors,
+            config: ScheduleConfig {
+                airports: self.config.airports,
+                origin: self.config.origin,
+                aircraft: self.config.aircraft,
+                game_mode: self.config.game_mode,
+                search_config,
+            },
+        }
     }
+}
+
+#[derive(Debug, Clone, Error)]
+pub enum SearchConfigError {
+    #[error("filter error: {0}")]
+    DistanceFilterError(FilterError<DistanceError>),
+    #[error("filter error: {0}")]
+    FlightTimeFilterError(FilterError<FlightTimeError>),
 }
 
 #[derive(Debug, Default)]
 pub struct SearchConfig<'a> {
-    user_settings: &'a Settings,
-    constraint: Constraint,
-    schedule: ScheduleStrategy,
-    config: ConfigAlgorithm,
-    ci: CiStrategy,
-    sort_by: SortBy,
+    pub user_settings: &'a Settings,
+    pub distance_filter: Filter<Distance>,
+    pub schedule: ScheduleStrategy,
+    pub config: ConfigAlgorithm,
+    pub ci: CiStrategy,
+    pub sort_by: SortBy,
 }
 
 // NOTE: Irregular schedules (e.g. 7 trips in 48 hours) are not allowed.
@@ -147,62 +177,4 @@ pub enum SortBy {
     #[default]
     ProfitPerAcPerDay,
     ProfitPerTrip,
-}
-
-#[derive(Debug, Clone, Default)]
-pub enum Constraint {
-    #[default]
-    None,
-    Distance(DistanceRange),
-    FlightTime(FlightTimeRange),
-}
-
-#[derive(Debug, Clone)]
-pub struct DistanceRange {
-    min: Distance,
-    max: Distance,
-}
-
-impl DistanceRange {
-    fn new(min: Distance, max: Distance) -> Result<Self, ConfigError> {
-        if min >= max {
-            Err(ConfigError::DistanceRangeOrdering)
-        } else {
-            Ok(Self { min, max })
-        }
-    }
-}
-
-impl Default for DistanceRange {
-    fn default() -> Self {
-        Self {
-            min: Distance::MIN,
-            max: Distance::MAX,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct FlightTimeRange {
-    min: FlightTime,
-    max: FlightTime,
-}
-
-impl FlightTimeRange {
-    fn new(min: FlightTime, max: FlightTime) -> Result<Self, ConfigError> {
-        if min >= max {
-            Err(ConfigError::FlightTimeOrdering)
-        } else {
-            Ok(Self { min, max })
-        }
-    }
-}
-
-impl Default for FlightTimeRange {
-    fn default() -> Self {
-        Self {
-            min: FlightTime::MIN,
-            max: FlightTime::MAX,
-        }
-    }
 }

@@ -3,12 +3,15 @@ use crate::aircraft::{Aircraft, AircraftError};
 use std::collections::HashSet;
 use std::str::FromStr;
 
+/// An [aircraft][Aircraft] that is modified from the base model, for example,
+/// by upgrading the engine or changing the game mode.
 #[derive(Debug)]
 pub struct CustomAircraft {
     pub aircraft: Aircraft, // owned for now
     pub modifiers: Modification,
 }
 
+/// A bitset of the specific modification and engine variant
 #[derive(Debug, Clone)]
 pub struct Modification {
     pub mods: HashSet<Modifier>, // not using Vec to avoid duplicates
@@ -75,6 +78,7 @@ impl Default for Modification {
 impl FromStr for Modification {
     type Err = AircraftError;
 
+    /// Parse single-character modifiers between square brackets of the query string.
     fn from_str(s: &str) -> Result<Modification, Self::Err> {
         let mut modifi = Modification::default();
 

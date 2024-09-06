@@ -22,6 +22,8 @@ pub struct Aircraft {
     pub priority: EnginePriority,
     pub eid: u16,
     pub ename: String,
+    /// Flight speed. When loaded from the database, this represents the *realism* base speed
+    /// and [custom aircraft][custom::CustomAircraft] mutate this according to the user settings (e.g. easy, 4x).
     pub speed: f32,
     pub fuel: f32,
     pub co2: f32,
@@ -36,11 +38,13 @@ pub struct Aircraft {
     pub crew: u8,
     pub engineers: u8,
     pub technicians: u8,
+    /// Filename of the image. Does not include the path nor extension.
     pub img: String,
     pub wingspan: u8,
     pub length: u8,
 }
 
+/// Internal game aircraft id
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Constructor, Into)]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 #[cfg_attr(feature = "serde", derive(Deserialize))]
@@ -56,6 +60,7 @@ impl FromStr for Id {
     }
 }
 
+/// ICAO 8643 aircraft type designator
 #[derive(Debug, Clone, Display, PartialEq, Eq, Hash, Into)]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 #[cfg_attr(feature = "serde", derive(Deserialize))]
@@ -72,6 +77,7 @@ impl FromStr for ShortName {
     }
 }
 
+/// Name of the aircraft model, e.g. A380-800
 #[derive(Debug, Clone, Display, PartialEq, Eq, Hash, Into)]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 #[cfg_attr(feature = "serde", derive(Deserialize))]
@@ -88,6 +94,7 @@ impl FromStr for Name {
     }
 }
 
+/// The priority of the engine variant. The engine with the greatest flight speed will be 0.
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Constructor, Into, From)]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 #[cfg_attr(feature = "serde", derive(Deserialize))]
@@ -103,6 +110,7 @@ impl FromStr for EnginePriority {
     }
 }
 
+// TODO: add charter
 #[derive(Debug, Clone, Display, PartialEq)]
 #[cfg_attr(feature = "rkyv", derive(Ra, Rd, Rs), archive(check_bytes))]
 #[cfg_attr(

@@ -36,13 +36,14 @@
 
 #![allow(dead_code)] // temp
 
-mod schedule;
-mod stopover;
+pub mod schedule;
+pub mod stopover;
 
 // TODO: const generic to silently ignore errors
 use crate::airport::{db::Airports, Airport};
 use crate::route::db::DistanceMatrix;
 use crate::route::Distance;
+use schedule::ScheduleError;
 use thiserror::Error;
 
 use crate::aircraft::Aircraft;
@@ -58,6 +59,14 @@ pub enum RouteError<'a> {
     DistanceAboveRange(&'a Airport, Distance),
     #[error("runway length at `{0:?}` is too short")]
     RunwayTooShort(&'a Airport),
+    #[error(transparent)]
+    ScheduleError(ScheduleError<'a>),
+}
+
+impl<'a> From<ScheduleError<'a>> for RouteError<'a> {
+    fn from(value: ScheduleError<'a>) -> Self {
+        Self::ScheduleError(value)
+    }
 }
 
 // NOTE: not using struct of arrays for now. keeping it simple

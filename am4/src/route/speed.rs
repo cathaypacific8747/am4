@@ -5,6 +5,10 @@ use derive_more::{Add, Display, Into};
 pub struct Speed(f32);
 
 impl Speed {
+    pub fn new_unchecked(value: f32) -> Self {
+        Self(value)
+    }
+
     pub fn get(&self) -> f32 {
         self.0
     }

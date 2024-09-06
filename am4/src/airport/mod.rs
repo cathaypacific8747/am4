@@ -24,8 +24,11 @@ pub struct Airport {
     pub iata: Iata,
     pub icao: Icao,
     pub location: Point,
+    /// Runway length, ft.
     pub rwy: u16,
+    /// Market, percent.
     pub market: u8,
+    /// Base hub cost, influenced by the tier.
     pub hub_cost: u32,
     pub rwy_codes: Vec<String>,
 }

@@ -3,8 +3,10 @@
 use am4::aircraft::db::Aircrafts;
 use am4::airport::{self, db::Airports, Airport};
 use am4::route::db::{DemandMatrix, DistanceMatrix};
-use am4::route::search::{AbstractConfig, AbstractRoute, Routes};
+use am4::route::search::{schedule::SearchConfig, AbstractConfig, AbstractRoute, Routes};
+use am4::route::Distance;
 use am4::user::GameMode;
+use am4::utils::Filter;
 use am4::{aircraft, AC_FILENAME, AP_FILENAME, DEM_FILENAME0, DEM_FILENAME1};
 use std::fs::File;
 use std::io::Read;
@@ -36,17 +38,19 @@ fn main() {
     let aircrafts = Aircrafts::from_bytes(&get_bytes(AC_FILENAME).unwrap()).unwrap();
     let airports = Airports::from_bytes(&get_bytes(AP_FILENAME).unwrap()).unwrap();
     let distances = DistanceMatrix::from_airports(airports.data());
+    let demand_matrix = get_demands();
 
     let origin = airports.search("WLG").unwrap();
     let aircraft = aircrafts.search("mc214").unwrap();
+    let search_config = SearchConfig {
+        distance_filter: "..9000".parse().unwrap(),
+        ..Default::default()
+    };
 
     let abstract_routes = Routes::new(&airports, &distances, origin, airports.data()).unwrap();
-    // let routes = abstract_routes.with_aircraft(&aircraft.aircraft, &GameMode::Easy);
-    // print_len(&routes);
-    for aircraft in aircrafts.data() {
-        let routes = abstract_routes
-            .clone()
-            .with_aircraft(aircraft, &GameMode::Realism);
-        print_len(aircraft.name.to_string().as_str(), &routes);
-    }
+    print_len("abstract", &abstract_routes);
+    let concrete_routes = abstract_routes.with_aircraft(&aircraft.aircraft, &GameMode::Easy);
+    print_len("concrete", &concrete_routes);
+    let scheduled_routes = concrete_routes.schedule(&demand_matrix, &search_config);
+    print_len("scheduled", &scheduled_routes);
 }
