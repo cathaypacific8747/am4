@@ -47,10 +47,10 @@ fn main() {
         ..Default::default()
     };
 
-    let abstract_routes = Routes::new(&airports, &distances, origin, airports.data()).unwrap();
+    let abstract_routes = Routes::new(&airports, &distances, origin, airports.data());
     print_len("abstract", &abstract_routes);
     let concrete_routes = abstract_routes.with_aircraft(&aircraft.aircraft, &GameMode::Easy);
     print_len("concrete", &concrete_routes);
-    let scheduled_routes = concrete_routes.schedule(&demand_matrix, &search_config);
+    let scheduled_routes = concrete_routes.schedule(&demand_matrix, &distances, &search_config);
     print_len("scheduled", &scheduled_routes);
 }

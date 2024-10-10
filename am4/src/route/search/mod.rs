@@ -34,8 +34,6 @@
  * ```
  */
 
-#![allow(dead_code)] // temp
-
 pub mod schedule;
 pub mod stopover;
 
@@ -43,30 +41,33 @@ pub mod stopover;
 use crate::airport::{db::Airports, Airport};
 use crate::route::db::DistanceMatrix;
 use crate::route::Distance;
-use schedule::ScheduleError;
 use thiserror::Error;
 
 use crate::aircraft::Aircraft;
 use crate::user::GameMode;
 
+/// Returns when a route returns to itself or is <= 100km
 #[derive(Debug, Clone, Error)]
-pub enum RouteError<'a> {
-    #[error("destination `{0:?}` cannot be the same as the origin")]
-    SelfReferential(&'a Airport),
-    #[error("distance to `{0:?}` ({1:2} km) is too short, must be greater than 100 km")]
-    DistanceTooShort(&'a Airport, Distance),
-    #[error("distance to `{0:?}` ({1:2} km) is above aircraft maximum range")]
-    DistanceAboveRange(&'a Airport, Distance),
-    #[error("runway length at `{0:?}` is too short")]
-    RunwayTooShort(&'a Airport),
+#[error("distance is too short, must be greater than 100km")]
+pub struct DistanceTooShort;
+
+#[derive(Debug, Clone, Error)]
+pub enum RouteError {
     #[error(transparent)]
-    ScheduleError(ScheduleError<'a>),
+    DistanceTooShort(#[from] DistanceTooShort),
+    #[error("distance is above the aircraft's maximum range")]
+    DistanceAboveRange,
+    #[error("runway length is too short")]
+    RunwayTooShort,
+    #[error(transparent)]
+    ScheduleError(#[from] schedule::ScheduleError),
 }
 
-impl<'a> From<ScheduleError<'a>> for RouteError<'a> {
-    fn from(value: ScheduleError<'a>) -> Self {
-        Self::ScheduleError(value)
-    }
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+pub struct FailedRoute<'a> {
+    destination: &'a Airport,
+    error: RouteError,
 }
 
 // NOTE: not using struct of arrays for now. keeping it simple
@@ -76,7 +77,7 @@ impl<'a> From<ScheduleError<'a>> for RouteError<'a> {
 #[derive(Debug, Clone)]
 pub struct Routes<'a, R, C> {
     routes: Vec<R>,
-    errors: Vec<RouteError<'a>>,
+    errors: Vec<FailedRoute<'a>>,
     config: C,
 }
 
@@ -87,7 +88,7 @@ impl<'a, R, C> Routes<'a, R, C> {
     }
 
     /// Get details about routing failures (e.g. insufficient range, runway too short etc.)
-    pub fn errors(&self) -> &[RouteError] {
+    pub fn errors(&self) -> &[FailedRoute] {
         &self.errors
     }
 
@@ -108,24 +109,22 @@ pub struct AbstractRoute<'a> {
 
 impl<'a> AbstractRoute<'a> {
     /// Create a direct [AbstractRoute] from the origin to the destination.
-    /// Errors if the destination is the same as the origin, or if it doesn't exist in the database.
     fn new(
-        distances: &'a DistanceMatrix,
-        origin: &'a Airport,
+        distances: &DistanceMatrix,
+        origin: &Airport,
         destination: &'a Airport,
-    ) -> Result<Self, RouteError<'a>> {
+    ) -> Result<Self, DistanceTooShort> {
         if destination.idx == origin.idx {
-            Err(RouteError::SelfReferential(destination))
-        } else {
-            let direct_distance = distances[(origin.idx, destination.idx)];
-            if direct_distance < Distance::MIN {
-                return Err(RouteError::DistanceTooShort(destination, direct_distance));
-            }
-            Ok(Self {
-                destination,
-                direct_distance,
-            })
+            return Err(DistanceTooShort);
         }
+        let direct_distance = distances[(origin.idx, destination.idx)];
+        if direct_distance < Distance::MIN {
+            return Err(DistanceTooShort);
+        }
+        Ok(Self {
+            destination,
+            direct_distance,
+        })
     }
 
     fn runway_valid(&self, aircraft: &Aircraft, game_mode: &GameMode) -> bool {
@@ -154,20 +153,23 @@ impl<'a> AbstractRoutes<'a> {
         distances: &'a DistanceMatrix,
         origin: &'a Airport,
         destinations: &'a [Airport],
-    ) -> Result<Self, RouteError<'a>> {
+    ) -> Self {
         let mut routes = Vec::new();
         let mut errors = Vec::new();
         for destination in destinations {
             match AbstractRoute::new(distances, origin, destination) {
                 Ok(route) => routes.push(route),
-                Err(e) => errors.push(e),
+                Err(e) => errors.push(FailedRoute {
+                    destination,
+                    error: e.into(),
+                }),
             }
         }
-        Ok(Self {
+        Self {
             routes,
             errors,
             config: AbstractConfig { airports, origin },
-        })
+        }
     }
 
     /// Consumes and prunes the abstract route list that
@@ -179,15 +181,17 @@ impl<'a> AbstractRoutes<'a> {
     ) -> ConcreteRoutes<'a> {
         self.routes.retain(|route| {
             if !route.distance_valid(aircraft) {
-                self.errors.push(RouteError::DistanceAboveRange(
-                    route.destination,
-                    route.direct_distance,
-                ));
+                self.errors.push(FailedRoute {
+                    destination: route.destination,
+                    error: RouteError::DistanceAboveRange,
+                });
                 return false;
             }
             if !route.runway_valid(aircraft, game_mode) {
-                self.errors
-                    .push(RouteError::RunwayTooShort(route.destination));
+                self.errors.push(FailedRoute {
+                    destination: route.destination,
+                    error: RouteError::RunwayTooShort,
+                });
                 return false;
             }
             true

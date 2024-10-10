@@ -2,6 +2,7 @@
 //! to determine the best configuration.
 use crate::aircraft::Aircraft;
 use crate::airport::{db::Airports, Airport};
+use crate::route::db::DistanceMatrix;
 use crate::route::{
     config::ConfigAlgorithm,
     db::DemandMatrix,
@@ -14,28 +15,32 @@ use derive_more::Display;
 use std::num::NonZeroU8;
 use thiserror::Error;
 
+use super::{stopover::Stopover, FailedRoute};
+
 #[derive(Debug, Clone, Error)]
-pub enum ScheduleError<'a> {
-    #[error("distance to `{0:?}` ({1:2} km) failed the constraint")]
-    DistanceConstraint(&'a Airport, Distance),
+pub enum ScheduleError {
+    #[error("distance failed the provided constraint")]
+    DistanceConstraint,
     #[error("insufficient demand")]
-    InsufficientDemand(&'a Airport),
+    InsufficientDemand,
 }
 
 /// Collection of [ScheduledRoute], checked against the provided aircraft.
 pub type ScheduledRoutes<'a> = Routes<'a, ScheduledRoute<'a>, ScheduleConfig<'a>>;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ScheduledRoute<'a> {
     /// index into airports array
     destination: &'a Airport,
     direct_distance: Distance,
-    stopover: Option<&'a Airport>,
+    stopover: Option<Stopover<'a>>,
     // ~~effective demand~~
     // configuration
     // income, fuel, co2, staff -> profit
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ScheduleConfig<'a> {
     airports: &'a Airports,
@@ -50,6 +55,7 @@ impl<'a> ConcreteRoutes<'a> {
     pub fn schedule(
         mut self,
         demand_matrix: &'a DemandMatrix,
+        distances: &'a DistanceMatrix,
         search_config: &'a SearchConfig,
     ) -> ScheduledRoutes<'a> {
         let routes: Vec<_> = self
@@ -60,12 +66,19 @@ impl<'a> ConcreteRoutes<'a> {
                     .distance_filter
                     .contains(&route.direct_distance)
                 {
-                    self.errors.push(
-                        ScheduleError::DistanceConstraint(route.destination, route.direct_distance)
-                            .into(),
-                    );
+                    self.errors.push(FailedRoute {
+                        destination: route.destination,
+                        error: ScheduleError::DistanceConstraint.into(),
+                    });
                     return None;
                 }
+                let stopover = Stopover::find_by_efficiency(
+                    self.config.airports.data(),
+                    distances,
+                    self.config.origin,
+                    route.destination,
+                    self.config.aircraft,
+                );
                 Some(ScheduledRoute {
                     destination: route.destination,
                     direct_distance: route.direct_distance,
@@ -109,10 +122,10 @@ pub struct SearchConfig<'a> {
 // TODO: coerce floats?
 /// Trips per day, the number of departures made within a 24 hour window,
 /// starting from 02:00 UTC to the next day
-type TripsPerDay = NonZeroU8;
+pub type TripsPerDay = NonZeroU8;
 
 /// Number of aircraft assigned to a single route.
-type NumAircraft = NonZeroU8;
+pub type NumAircraft = NonZeroU8;
 
 /// Attempt to maximise the [TripsPerDay] or strictly enforce a particular amount.
 /// It is assumed that the departing conditions (e.g. marketing campaign) are identical.
