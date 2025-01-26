@@ -1,6 +1,7 @@
 #pragma once
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <optional>
 #include <limits>
 
 #include "game.hpp"

@@ -274,6 +274,7 @@ class User:
     income_loss_tol: float
     l_training: int
     load: float
+    cargo_load: float
     repair_training: int
     role: User.Role
     username: str

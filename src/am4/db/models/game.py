@@ -29,6 +29,7 @@ class PyUser(BaseModel):
     co2_price: Annotated[int, Field(ge=0, le=200)]
     accumulated_count: Annotated[int, Field(ge=0)]
     load: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
+    cargo_load: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     income_loss_tol: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     fourx: bool
     role: Annotated[
@@ -63,6 +64,7 @@ PyUserWhitelistedKeys = Literal[
     "co2_price",
     "accumulated_count",
     "load",
+    "cargo_load",
     "income_loss_tol",
     "fourx",
 ]

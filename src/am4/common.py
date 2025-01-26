@@ -54,3 +54,9 @@ HELP_U_LOAD = (
     "the demand will be inflated by 1/0.875 = 14.3%.\n"
     "*Note*: you can assume this to be roughly equivalent to the reputation."
 )
+HELP_U_CARGO_LOAD = (
+    "**Assumed cargo aircraft load** (default: `0.99`)\n\n"
+    "For advanced players, set this to `0.875` (the expected value of the max reputation). In this case, "
+    "the demand will be inflated by 1/0.875 = 14.3%.\n"
+    "*Note*: you can assume this to be roughly equivalent to the reputation."
+)

@@ -37,6 +37,7 @@ user.h_training = 6
 user.fuel_training = 3
 user.co2_training = 3
 user.load = 0.9
+user.cargo_load = 0.9
 user.income_loss_tol = 0.9
 # %%
 start = time.time()
