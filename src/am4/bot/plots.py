@@ -83,13 +83,13 @@ class MPLMap:
 
         lats = cols["98|dest.lat"]
         lngs = cols["99|dest.lng"]
-        tpdpas = np.array(cols["22|trips_pd_pa"])
-        profits = np.array(cols["29|profit_pt"]) * tpdpas
+        tpdpas = np.array(cols["32|trips_pd_pa"])
+        profits = np.array(cols["39|profit_pt"]) * tpdpas
         sc_d = ax.scatter(*self.transformer.transform(lats, lngs), c=profits, s=0.5, cmap=self.cmap)
         ax.plot(*self.transformer.transform([origin_lat], [origin_lng]), "ro", markersize=3)
         legend = ax.legend(*sc_d.legend_elements(fmt=FuncFormatter(format_num)), title="$/d/ac")
 
-        ac_needs = cols["23|num_ac"]
+        ac_needs = cols["33|num_ac"]
         c = 0
         y1 = []
         for acn, pro in zip(ac_needs, profits):
@@ -101,7 +101,7 @@ class MPLMap:
         bins = np.arange(min(y1), max(y1) + binwidth, binwidth)
         ax3.hist(y1, bins=bins, alpha=0.4, orientation="horizontal")
 
-        dists = cols["20|direct_dist"]
+        dists = cols["30|direct_dist"]
         sc_tpdpa = ax2.scatter(dists, profits, s=1.5, c=tpdpas, cmap=self.cmap2)
         legend = ax2.legend(*sc_tpdpa.legend_elements(), title="t/d/ac", loc="upper left")
         ax2.add_artist(legend)

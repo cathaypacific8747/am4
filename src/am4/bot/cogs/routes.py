@@ -3,6 +3,7 @@ import io
 import math
 import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import List
 
 import discord
 import orjson
@@ -17,7 +18,7 @@ from am4.utils.route import AircraftRoute, Destination, RoutesSearch
 
 from ...config import cfg
 from ..base import BaseCog
-from ..converters import AircraftCvtr, AirportCvtr, CfgAlgCvtr, ConstraintCvtr, TPDCvtr
+from ..converters import AircraftCvtr, MultiAirportCvtr, CfgAlgCvtr, ConstraintCvtr, TPDCvtr
 from ..errors import CustomErrHandler
 from ..plots import mpl_map
 from ..utils import (
@@ -52,16 +53,17 @@ HELP_CONSTRAINT = (
 )
 
 
-def add_data(d: Destination, is_cargo: bool, embed: discord.Embed):
+def add_data(isMultiHub: bool, o: Airport, d: Destination, is_cargo: bool, embed: discord.Embed):
     acr = d.ac_route
 
     profit_per_day_per_ac = acr.profit * acr.trips_per_day_per_ac
+    origin_f = f"{format_ap_short(o, mode=0)}\n" if isMultiHub else ""
     stopover_f = f"{format_ap_short(acr.stopover.airport, mode=1)}\n" if acr.stopover.exists else ""
     distance_f = f"{acr.stopover.full_distance if acr.stopover.exists else acr.route.direct_distance:.0f} km"
     flight_time_f = format_flight_time(acr.flight_time)
     num_ac_f = f"**__{acr.num_ac} ac__**" if acr.num_ac > 1 else f"{acr.num_ac} ac"
     embed.add_field(
-        name=f"{stopover_f}{format_ap_short(d.airport, mode=2)}",
+        name=f"{origin_f}{stopover_f}{format_ap_short(d.airport, mode=2)}",
         value=(
             f"**Demand**: {format_demand(acr.route.pax_demand, is_cargo)}\n"
             f"**  Config**: {format_config(acr.config)}\n"
@@ -78,6 +80,7 @@ class ButtonHandler(discord.ui.View):
     def __init__(
         self,
         message: discord.Message,
+        isMultiHub: bool,
         destinations: list[Destination],
         cols: dict[str, list],
         is_cargo: bool,
@@ -91,6 +94,7 @@ class ButtonHandler(discord.ui.View):
 
         if len(destinations) <= 3:
             self.handle_show_more.disabled = True
+        self.isMultiHub = isMultiHub
         self.destinations = destinations
         self.cols = cols
         self.is_cargo = is_cargo
@@ -110,7 +114,7 @@ class ButtonHandler(discord.ui.View):
             colour=get_user_colour(self.user),
         )
         for d in self.destinations[self.start : end]:
-            add_data(d, self.is_cargo, emb)
+            add_data(self.isMultiHub, d.origin, d, self.is_cargo, emb)
         emb.set_footer(text=f"Showing {self.start}-{end} of {len(self.destinations)} routes")
 
         v = {"view": self} if self.start + 3 <= len(self.destinations) else {}
@@ -121,7 +125,7 @@ class ButtonHandler(discord.ui.View):
     async def handle_export_csv(self, interaction: discord.Interaction, button: discord.ui.Button):
         button.disabled = True
         await interaction.response.edit_message(view=self)
-        table = pa.Table.from_pydict({k[3:]: v for k, v in self.cols.items() if not k.startswith("9")})
+        table = pa.Table.from_pydict({k[3:]: v for k, v in self.cols.items() if not (k.startswith("9") or (not self.isMultiHub and k.startswith("0")))})
 
         buf = io.BytesIO()
         csv.write_csv(table, buf)
@@ -136,7 +140,7 @@ class ButtonHandler(discord.ui.View):
     async def handle_export_json(self, interaction: discord.Interaction, button: discord.ui.Button):
         button.disabled = True
         await interaction.response.edit_message(view=self)
-        data = [d.to_dict() for d in self.destinations]
+        data = [d.to_dict(self.isMultiHub) for d in self.destinations]
         buf = io.BytesIO(orjson.dumps(data, option=orjson.OPT_INDENT_2))
         buf.seek(0)
         msg = await interaction.followup.send("Uploading...", wait=True)
@@ -169,7 +173,7 @@ class RoutesCog(BaseCog):
     async def routes(
         self,
         ctx: commands.Context,
-        ap_query: Airport.SearchResult = commands.parameter(converter=AirportCvtr, description=HELP_AP),
+        ap_querys: List[Airport.SearchResult] = commands.parameter(converter=MultiAirportCvtr, description=HELP_AP),
         ac_query: Aircraft.SearchResult = commands.parameter(converter=AircraftCvtr, description=HELP_AC),
         constraint: tuple[float | None, float | None] = commands.parameter(
             converter=ConstraintCvtr,
@@ -217,27 +221,37 @@ class RoutesCog(BaseCog):
         if cons_set:
             await self.check_constraints(ctx, ac_query, tpd, max_distance, max_flight_time, tpd_set, u.game_mode)
 
-        rs = RoutesSearch(ap_query.ap, ac_query.ac, options, u)
+        rs = RoutesSearch([ap.ap for ap in ap_querys], ac_query.ac, options, u)
+        
         t_start = time.time()
-        destinations: list[Destination] = await asyncio.get_event_loop().run_in_executor(self.executor, rs.get)
+        
+        destinations = await asyncio.get_event_loop().run_in_executor(self.executor, rs.get)
+
+        isMultiHub = len(ap_querys) > 1
         t_end = time.time()
 
+        if isMultiHub:
+            title = f"Routes from multiple hubs"
+        else:
+            title = format_ap_short(ap_querys[0].ap, mode=0)
+
         embed = discord.Embed(
-            title=format_ap_short(ap_query.ap, mode=0),
+            title=title,
             colour=get_user_colour(u),
         )
         profits = []  # each entry represents one aircraft
-        for i, d in enumerate(destinations):
-            acr = d.ac_route
+        if destinations:
+            for i, d in enumerate(destinations):
+                acr = d.ac_route
 
-            profit_per_day_per_ac = acr.profit * acr.trips_per_day_per_ac
-            for _ in range(acr.num_ac):
-                profits.append(profit_per_day_per_ac)
-            if i > 2:
-                continue
+                profit_per_day_per_ac = acr.profit * acr.trips_per_day_per_ac
+                for _ in range(acr.num_ac):
+                    profits.append(profit_per_day_per_ac)
+                if i > 2:
+                    continue
 
-            add_data(d, is_cargo, embed)
-        if not destinations:
+                add_data(isMultiHub, d.origin, d, is_cargo, embed)
+        else:
             embed.description = (
                 "There are no profitable routes found. Try relaxing the constraints or reducing the trips per day."
             )
@@ -255,25 +269,34 @@ class RoutesCog(BaseCog):
             return
 
         cols = rs._get_columns(destinations)
+        iata = ""
+        i = 0
+        for ap in ap_querys:
+            if i != 0:
+                iata += "-"
+            iata += ap.ap.iata
+            i += 1
+
         file_suffix = "_".join(
             [
-                ap_query.ap.iata,
+                iata,
                 ac_query.ac.shortname,
                 str(tpd),
             ]
         )
-        btns = ButtonHandler(msg, destinations, cols, ac_query.ac.type == Aircraft.Type.CARGO, file_suffix, u)
+        btns = ButtonHandler(msg, isMultiHub, destinations, cols, ac_query.ac.type == Aircraft.Type.CARGO, file_suffix, u)
         await msg.edit(view=btns)
 
-        im = await mpl_map.plot_destinations(cols, ap_query.ap.lng, ap_query.ap.lat)
-        embed.set_image(url=f"attachment://routes_{file_suffix}.png")
-        embed.set_footer(text="\n".join(embed.footer.text.split("\n")[:-1]))
-        await msg.edit(
-            embed=embed,
-            attachments=[
-                discord.File(im, filename=f"routes_{file_suffix}.png"),
-            ],
-        )
+        if not isMultiHub:
+            im = await mpl_map.plot_destinations(cols, ap_querys[0].ap.lng, ap_querys[0].ap.lat)
+            embed.set_image(url=f"attachment://routes_{file_suffix}.png")
+            embed.set_footer(text="\n".join(embed.footer.text.split("\n")[:-1]))
+            await msg.edit(
+                embed=embed,
+                attachments=[
+                    discord.File(im, filename=f"routes_{file_suffix}.png"),
+                ],
+            )
 
     async def check_constraints(
         self,

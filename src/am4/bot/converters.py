@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, List, Literal
 
 from discord.ext import commands
 from pydantic import BaseModel, Field
@@ -34,6 +34,17 @@ class AirportCvtr(commands.Converter):
         if not acsr.ap.valid:
             raise AirportNotFoundError(acsr)
         return acsr
+
+class MultiAirportCvtr(commands.Converter):
+    async def convert(self, ctx: commands.Context, query: str) -> List[Airport.SearchResult]:
+        acsrList = []
+        for q in query.split(","):
+            acsr = Airport.search(q)
+            if not acsr.ap.valid:
+                raise AirportNotFoundError(acsr)
+            acsrList.append(acsr)
+
+        return acsrList
 
 
 class AircraftCvtr(commands.Converter):

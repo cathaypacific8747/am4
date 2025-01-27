@@ -305,7 +305,7 @@ def test_route_trips_per_day_too_high():
 def test_find_routes():
     ap0 = Airport.search("VHHH").ap
     ac = Aircraft.search("mc214").ac
-    dests = RoutesSearch(ap0, ac).get()
+    dests = RoutesSearch([ap0], ac).get()
     assert len(dests) == 2248
     assert dests[0].airport.iata == "TMX"
     assert dests[0].ac_route.route.direct_distance == pytest.approx(10891.46)
@@ -317,7 +317,7 @@ def test_export_routes_vip():
     options = AircraftRoute.Options(
         tpd_mode=AircraftRoute.Options.TPDMode.STRICT_ALLOW_MULTIPLE_AC, trips_per_day_per_ac=2
     )
-    rs = RoutesSearch(ap0, ac, options)
+    rs = RoutesSearch([ap0], ac, options)
     dests = rs.get()
     assert len(dests) > 10
     cols = rs._get_columns(dests)

@@ -466,19 +466,21 @@ const string AircraftRoute::repr(const AircraftRoute& ar) {
     return s;
 }
 
-Destination::Destination(const Airport& destination, const AircraftRoute& route)
-    : airport(destination), ac_route(route) {}
+Destination::Destination(const Airport& origin, const Airport& destination, const AircraftRoute& route)
+    : origin(origin), airport(destination), ac_route(route) {}
 
 std::vector<Destination> RoutesSearch::get() const {
     std::vector<Destination> destinations;
     const auto& db = Database::Client();
 
     const uint16_t rwy_requirement = this->user.game_mode == User::GameMode::EASY ? 0 : this->aircraft.rwy;
-    for (const Airport& ap : db->airports) {
-        if (ap.rwy < rwy_requirement || ap.id == this->origin.id) continue;
-        const AircraftRoute ar = AircraftRoute::create(this->origin, ap, this->aircraft, this->options, this->user);
-        if (!ar.valid) continue;
-        destinations.emplace_back(ap, ar);
+    for (const Airport& origin: this->origins) {
+        for (const Airport& ap : db->airports) {
+            if (ap.rwy < rwy_requirement || ap.id == origin.id) continue;
+            const AircraftRoute ar = AircraftRoute::create(origin, ap, this->aircraft, this->options, this->user);
+            if (!ar.valid) continue;
+            destinations.emplace_back(origin, ap, ar);
+        }
     }
     auto cmp = this->options.sort_by == AircraftRoute::Options::SortBy::PER_TRIP
                    ? [](const Destination& a, const Destination& b) { return a.ac_route.profit > b.ac_route.profit; }
@@ -573,8 +575,14 @@ py::dict to_dict(const AircraftRoute& ar) {
     return d;
 }
 
-py::dict to_dict(const Destination& d) {
-    return py::dict("airport"_a = to_dict(d.airport), "ac_route"_a = to_dict(d.ac_route));
+py::dict to_dict(const Destination& d, bool include_origin) {
+    py::dict dest;
+    if (include_origin) {
+        dest["origin"] = py::dict("iata"_a = d.origin.iata, "icao"_a = d.origin.icao);
+    }
+    dest["airport"] = to_dict(d.airport);
+    dest["ac_route"] = to_dict(d.ac_route);
+    return dest;
 }
 
 std::map<string, py::list> _get_columns(const RoutesSearch& rs, const vector<Destination>& dests) {
@@ -582,66 +590,68 @@ std::map<string, py::list> _get_columns(const RoutesSearch& rs, const vector<Des
     // assuming dests to be all valid
     std::map<string, py::list> cols;
     for (const Destination& dest : dests) {
-        cols["00|dest.id"].append(dest.airport.id);
-        cols["01|dest.name"].append(dest.airport.name);
-        cols["02|dest.country"].append(dest.airport.country);
-        cols["03|dest.iata"].append(dest.airport.iata);
-        cols["04|dest.icao"].append(dest.airport.icao);
+        cols["00|orig.iata"].append(dest.origin.iata);
+        cols["01|orig.icao"].append(dest.origin.icao);
+        cols["10|dest.id"].append(dest.airport.id);
+        cols["11|dest.name"].append(dest.airport.name);
+        cols["12|dest.country"].append(dest.airport.country);
+        cols["13|dest.iata"].append(dest.airport.iata);
+        cols["14|dest.icao"].append(dest.airport.icao);
         cols["98|dest.lat"].append(dest.airport.lat);
         cols["99|dest.lng"].append(dest.airport.lng);
         auto& acr = dest.ac_route;
         if (dest.ac_route.stopover.exists) {
-            cols["05|stop.id"].append(acr.stopover.airport.id);
-            cols["06|stop.name"].append(acr.stopover.airport.name);
-            cols["07|stop.country"].append(acr.stopover.airport.country);
-            cols["08|stop.iata"].append(acr.stopover.airport.iata);
-            cols["09|stop.icao"].append(acr.stopover.airport.icao);
-            cols["10|full_dist"].append(acr.stopover.full_distance);
+            cols["15|stop.id"].append(acr.stopover.airport.id);
+            cols["16|stop.name"].append(acr.stopover.airport.name);
+            cols["17|stop.country"].append(acr.stopover.airport.country);
+            cols["18|stop.iata"].append(acr.stopover.airport.iata);
+            cols["19|stop.icao"].append(acr.stopover.airport.icao);
+            cols["20|full_dist"].append(acr.stopover.full_distance);
         } else {
-            cols["05|stop.id"].append(py::none());
-            cols["06|stop.name"].append(py::none());
-            cols["07|stop.country"].append(py::none());
-            cols["08|stop.iata"].append(py::none());
-            cols["09|stop.icao"].append(py::none());
-            cols["10|full_dist"].append(py::none());
+            cols["15|stop.id"].append(py::none());
+            cols["16|stop.name"].append(py::none());
+            cols["17|stop.country"].append(py::none());
+            cols["18|stop.iata"].append(py::none());
+            cols["19|stop.icao"].append(py::none());
+            cols["20|full_dist"].append(py::none());
         }
         if (rs.aircraft.type == Aircraft::Type::CARGO) {
             auto dem = CargoDemand(acr.route.pax_demand);
             auto& cfg = get<Aircraft::CargoConfig>(acr.config);
             auto& tkt = get<CargoTicket>(acr.ticket);
-            cols["11|dem.l"].append(dem.l);
-            cols["12|dem.h"].append(dem.h);
-            cols["14|cfg.l"].append(cfg.l);
-            cols["15|cfg.h"].append(cfg.h);
-            cols["17|tkt.l"].append(tkt.l);
-            cols["18|tkt.h"].append(tkt.h);
+            cols["21|dem.l"].append(dem.l);
+            cols["22|dem.h"].append(dem.h);
+            cols["24|cfg.l"].append(cfg.l);
+            cols["25|cfg.h"].append(cfg.h);
+            cols["27|tkt.l"].append(tkt.l);
+            cols["28|tkt.h"].append(tkt.h);
         } else {
             auto& dem = acr.route.pax_demand;
             auto& cfg = get<Aircraft::PaxConfig>(acr.config);
             auto& tkt =
                 rs.aircraft.type == Aircraft::Type::VIP ? get<VIPTicket>(acr.ticket) : get<PaxTicket>(acr.ticket);
-            cols["11|dem.y"].append(dem.y);
-            cols["12|dem.j"].append(dem.j);
-            cols["13|dem.f"].append(dem.f);
-            cols["14|cfg.y"].append(cfg.y);
-            cols["15|cfg.j"].append(cfg.j);
-            cols["16|cfg.f"].append(cfg.f);
-            cols["17|tkt.y"].append(tkt.y);
-            cols["18|tkt.j"].append(tkt.j);
-            cols["19|tkt.f"].append(tkt.f);
+            cols["21|dem.y"].append(dem.y);
+            cols["22|dem.j"].append(dem.j);
+            cols["23|dem.f"].append(dem.f);
+            cols["24|cfg.y"].append(cfg.y);
+            cols["25|cfg.j"].append(cfg.j);
+            cols["26|cfg.f"].append(cfg.f);
+            cols["27|tkt.y"].append(tkt.y);
+            cols["28|tkt.j"].append(tkt.j);
+            cols["29|tkt.f"].append(tkt.f);
         }
-        cols["20|direct_dist"].append(acr.route.direct_distance);
-        cols["21|time"].append(acr.flight_time);
-        cols["22|trips_pd_pa"].append(acr.trips_per_day_per_ac);
-        cols["23|num_ac"].append(acr.num_ac);
-        cols["24|income"].append(acr.income);
-        cols["25|fuel"].append(acr.fuel);
-        cols["26|co2"].append(acr.co2);
-        cols["27|chk_cost"].append(acr.acheck_cost);
-        cols["28|repair_cost"].append(acr.repair_cost);
-        cols["29|profit_pt"].append(acr.profit);
-        cols["30|ci"].append(acr.ci);
-        cols["31|contrib_pt"].append(acr.contribution);
+        cols["30|direct_dist"].append(acr.route.direct_distance);
+        cols["31|time"].append(acr.flight_time);
+        cols["32|trips_pd_pa"].append(acr.trips_per_day_per_ac);
+        cols["33|num_ac"].append(acr.num_ac);
+        cols["34|income"].append(acr.income);
+        cols["35|fuel"].append(acr.fuel);
+        cols["36|co2"].append(acr.co2);
+        cols["37|chk_cost"].append(acr.acheck_cost);
+        cols["38|repair_cost"].append(acr.repair_cost);
+        cols["39|profit_pt"].append(acr.profit);
+        cols["40|ci"].append(acr.ci);
+        cols["41|contrib_pt"].append(acr.contribution);
     }
     return cols;
 }
@@ -767,13 +777,14 @@ void pybind_init_route(py::module_& m) {
         .def("to_dict", py::overload_cast<const AircraftRoute&>(&to_dict));
 
     py::class_<Destination>(m_route, "Destination")
+        .def_readonly("origin", &Destination::origin)
         .def_readonly("airport", &Destination::airport)
         .def_readonly("ac_route", &Destination::ac_route)
-        .def("to_dict", py::overload_cast<const Destination&>(&to_dict));
+        .def("to_dict", py::overload_cast<const Destination&, const bool>(&to_dict));
 
     py::class_<RoutesSearch>(m_route, "RoutesSearch")
         .def(
-            py::init<const Airport&, const Aircraft&, const AircraftRoute::Options&, const User&>(), "ap0"_a, "ac"_a,
+            py::init<const vector<Airport>&, const Aircraft&, const AircraftRoute::Options&, const User&>(), "ap0"_a, "ac"_a,
             py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
             py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
         )
