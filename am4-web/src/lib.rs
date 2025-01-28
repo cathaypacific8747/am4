@@ -1,48 +1,64 @@
-#[allow(non_snake_case)]
 mod components;
 mod db;
+mod console;
 
 use components::aircraft::ACSearch;
 use components::airport::APSearch;
 use components::nav::Header;
-use db::{Database, Idb, LoadDbProgress};
 
-use leptos::*;
+use console::{Entry, Level};
+use leptos::{logging::log, prelude::*};
+use reactive_stores::Store;
+use db::Idb;
+
 #[component]
 #[allow(non_snake_case)]
 pub fn App() -> impl IntoView {
-    let database = store_value::<Option<Database>>(None);
-    let (progress, set_progress) = create_signal(LoadDbProgress::Starting);
+    let database = StoredValue::<Option<db::Data>>::new(None);
+    let console = Store::new(console::Console {
+        history: vec![],
+    });
 
     provide_context(database);
-    create_resource(
+    provide_context(console);
+
+    Resource::new(
         || (),
         move |_| async move {
-            set_progress.set(LoadDbProgress::IDBConnect);
-            match Idb::connect()
-                .await
-                .unwrap()
-                .init_db(&|msg| set_progress.set(msg))
-                .await
-            {
-                Ok(db) => {
-                    database.set_value(Some(db));
-                    set_progress.set(LoadDbProgress::Loaded);
-                }
-                Err(e) => set_progress.set(LoadDbProgress::Err(e)),
-            }
+            console.write().history.push(Entry {
+                time: 0,
+                level: Level::Debug,
+                user: "system".to_string(),
+                message: "start".to_string()
+            });
+            let history = console.get().history.iter().map(|m| m.message.as_str()).collect::<Vec<_>>().join("\n");
+            log!("{history}");
+            // let db = Idb::connect().await;
+            // match Idb::connect()
+            //     .await
+            //     .unwrap()
+            //     .init_db()
+            //     .await
+            // {
+            //     Ok(db) => {
+            //         database.set_value(Some(db));
+            //     }
+            //     Err(e) => {
+            //         log!("{e}");
+            //         set_progress.set(LoadDbProgress::Err);
+            //     },
+            // }
         },
     );
 
     view! {
         <div id="app">
-            <Header progress/>
-            <main>
-                <Show when=move || progress.get() == LoadDbProgress::Loaded>
-                    <ACSearch/>
-                    <APSearch/>
-                </Show>
-            </main>
+            <Header/>
+            // <Show when=move || progress.read() == db::LoadDbProgress::Loaded>
+            // <ACSearch/>
+            // <APSearch/>
+            // </Show>
+            <main></main>
         </div>
     }
 }

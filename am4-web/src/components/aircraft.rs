@@ -1,27 +1,29 @@
-use crate::db::Database;
+use crate::db::Data;
 use am4::aircraft::db::{AircraftSearchError, LENGTH_MAX, LENGTH_MEAN};
 use am4::aircraft::Aircraft;
-use leptos::{wasm_bindgen::JsCast, *};
+use leptos::prelude::*;
+use leptos::wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ACSearch() -> impl IntoView {
-    let (search_term, set_search_term) = create_signal("".to_string());
-    let database = expect_context::<StoredValue<Option<Database>>>();
+    let (search_term, set_search_term) = signal("".to_string());
+    let database = expect_context::<StoredValue<Option<Data>>>();
 
-    let search_results = move || {
-        let s = search_term.get();
-        database.with_value(|db| {
-            db.as_ref()
-                .unwrap()
-                .aircrafts
-                .search(s.as_str())
-                .map_or_else(
-                    |e| view! { <ACErr e/> },
-                    |ac| view! { <Ac aircraft=ac.aircraft/> },
-                )
-        })
-    };
+    // let search_results = move || {
+    //     let s = search_term.get();
+    //     database.with_value(|db| {
+    //         db.as_ref()
+    //             .unwrap()
+    //             .aircrafts
+    //             .search(s.as_str())
+    //             .map_or_else(
+    //                 |e| view! { <ACErr e/> },
+    //                 |ac| view! { <Ac aircraft=ac.aircraft/> },
+    //             )
+    //     })
+    // };
 
     view! {
         <div id="ac-search">
@@ -35,51 +37,54 @@ pub fn ACSearch() -> impl IntoView {
                 }
             />
 
-            {search_results}
+        // {search_results}
         </div>
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 fn ACErr(e: AircraftSearchError) -> impl IntoView {
-    let database = expect_context::<StoredValue<Option<Database>>>();
+    let database = expect_context::<StoredValue<Option<Data>>>();
 
-    if let AircraftSearchError::AircraftNotFound(ctx) = &e {
-        return database.with_value(|db| {
-            let suggs = db.as_ref().unwrap().aircrafts.suggest_by_ctx(ctx);
+    // if let AircraftSearchError::AircraftNotFound(ctx) = &e {
+    //     return database.with_value(|db| {
+    //         let suggs = db.as_ref().unwrap().aircrafts.suggest_by_ctx(ctx);
 
-            view! {
-                <div>
-                    <p class="err">"Aircraft not found. Did you mean: "</p>
-                    <ul>
+    //         view! {
+    //             <div>
+    //                 <p class="err">"Aircraft not found. Did you mean: "</p>
+    //                 <ul>
 
-                        {suggs
-                            .unwrap_or_default()
-                            .into_iter()
-                            .map(|sugg| {
-                                view! {
-                                    <li>
-                                        {&sugg.item.shortname.to_string()} " ("
-                                        {&sugg.item.name.to_string()} ")"
-                                    </li>
-                                }
-                            })
-                            .collect::<Vec<_>>()}
+    //                     {suggs
+    //                         .unwrap_or_default()
+    //                         .into_iter()
+    //                         .map(|sugg| {
+    //                             view! {
+    //                                 <li>
+    //                                     {sugg.item.shortname.to_string()} " ("
+    //                                     {sugg.item.name.to_string()} ")"
+    //                                 </li>
+    //                             }
+    //                         })
+    //                         .collect::<Vec<_>>()}
 
-                    </ul>
-                </div>
-            }
-        });
-    } else if let AircraftSearchError::EmptyQuery = &e {
-        return view! { <div></div> };
-    }
-    view! {
-        <div class="err">
-            <p>{e.to_string()}</p>
-        </div>
-    }
+    //                 </ul>
+    //             </div>
+    //         }
+    //     });
+    // } else if let AircraftSearchError::EmptyQuery = &e {
+    //     return view! { <div></div> };
+    // }
+    // view! {
+    //     <div class="err">
+    //         <p>{e.to_string()}</p>
+    //     </div>
+    // }
+    view! { <div>"An error occurred"</div> }
 }
 
+#[allow(non_snake_case)]
 #[component]
 fn Ac(aircraft: Aircraft) -> impl IntoView {
     let width = if aircraft.length == 0 {

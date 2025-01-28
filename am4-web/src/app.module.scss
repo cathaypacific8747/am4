@@ -52,11 +52,6 @@ body {
                     font-weight: bold;
                 }
 
-                span#version,
-                >#db-progress {
-                    color: #aaa;
-                }
-
                 span#version {
                     vertical-align: super;
                     font-size: .75rem;
@@ -94,7 +89,7 @@ body {
                             }
                         }
 
-                        >li#clear-cache {
+                        >li#clear-database {
                             cursor: pointer;
                             color: rgb(184, 154, 154);
 
