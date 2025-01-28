@@ -150,26 +150,27 @@ struct AircraftRoute {
 };
 
 struct Destination {
+    Airport origin;
     Airport airport;
     AircraftRoute ac_route;
 
-    Destination(const Airport& destination, const AircraftRoute& route);
+    Destination(const Airport& origin, const Airport& airport, const AircraftRoute& route);
 };
 
 class RoutesSearch {
    public:
-    Airport origin;
+    vector<Airport> origins;
     Aircraft aircraft;
     AircraftRoute::Options options;
     User user;
 
     RoutesSearch(
-        const Airport& origin,
+        const vector<Airport>& origins,
         const Aircraft& aircraft,
         const AircraftRoute::Options& options = AircraftRoute::Options(),
         const User& user = User::Default()
     )
-        : origin(origin), aircraft(aircraft), options(options), user(user) {
+        : origins(origins), aircraft(aircraft), options(options), user(user) {
         if (options.max_distance > aircraft.range * 2) {
             this->options.max_distance = aircraft.range * 2;
         }

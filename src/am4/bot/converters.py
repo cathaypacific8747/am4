@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, List, Literal
 
 from discord.ext import commands
 from pydantic import BaseModel, Field
@@ -23,6 +23,7 @@ from .errors import (
     ConstraintValidationError,
     PriceValidationError,
     SettingValueValidationError,
+    TooManyAirportsError,
     TPDValidationError,
 )
 
@@ -34,6 +35,24 @@ class AirportCvtr(commands.Converter):
         if not acsr.ap.valid:
             raise AirportNotFoundError(acsr)
         return acsr
+
+
+class MultiAirportCvtr(commands.Converter):
+    async def convert(self, ctx: commands.Context, query: str) -> List[Airport.SearchResult]:
+        queries = query.split(",")
+        MAX_AIRPORTS = 24  # prevent DoS attacks & stay within upload limits
+        if (num_airports := len(queries)) > MAX_AIRPORTS:
+            raise TooManyAirportsError(num_airports, max_airports=MAX_AIRPORTS)
+
+        acsr_list = []
+        for q in queries:
+            acsr = Airport.search(q)
+            if not acsr.ap.valid:
+                raise AirportNotFoundError(acsr)
+            acsr_list.append(acsr)
+        # TODO: handle duplicate airports?
+
+        return acsr_list
 
 
 class AircraftCvtr(commands.Converter):
