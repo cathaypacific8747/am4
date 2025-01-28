@@ -23,7 +23,7 @@ fn convert_routes(out_dir: &Path) {
     schema.with_column("d".into(), DataType::Float64);
     schema.with_column("rwy".into(), DataType::UInt16);
 
-    let lf = LazyCsvReader::new("../../private/community/db-data/routes.csv")
+    let lf = LazyCsvReader::new("../../../../am4-private/community/db-data/routes.csv")
         .with_has_header(false)
         .with_schema(Some(Arc::new(schema)))
         .finish()
@@ -96,7 +96,7 @@ fn convert_airports(out_dir: &Path) {
     schema.with_column("hub_cost".into(), DataType::UInt32);
     schema.with_column("rwy_codes".into(), DataType::String);
 
-    let lf = LazyCsvReader::new("../../private/community/db-data/airports.csv")
+    let lf = LazyCsvReader::new("../../../../am4-private/community/db-data/airports.csv")
         .with_has_header(true)
         .with_schema(Some(Arc::new(schema)))
         .finish()
@@ -180,7 +180,7 @@ fn convert_aircrafts(out_dir: &Path) {
     schema.with_column("wingspan".into(), DataType::UInt8);
     schema.with_column("length".into(), DataType::UInt8);
 
-    let lf = LazyCsvReader::new("../../private/community/db-data/aircrafts.csv")
+    let lf = LazyCsvReader::new("../../../../am4-private/community/db-data/aircrafts.csv")
         .with_has_header(true)
         .with_schema(Some(Arc::new(schema)))
         .finish()

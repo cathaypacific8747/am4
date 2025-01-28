@@ -14,7 +14,7 @@ using std::string;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-constexpr int AIRCRAFT_COUNT = 492;
+constexpr int AIRCRAFT_COUNT = 496;
 constexpr int AIRPORT_COUNT = 3907;
 constexpr int AIRPORT_ID_MAX = 3982;
 constexpr int ROUTE_COUNT = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
@@ -35,12 +35,6 @@ inline void CHECK_SUCCESS(duckdb::unique_ptr<T> q) {
 template <typename T>
 inline void CHECK_SUCCESS_REF(duckdb::unique_ptr<T>& q) {
     if (q->HasError()) throw DatabaseException(q->GetError());
-}
-template <typename T>
-inline void VERIFY_UPDATE_SUCCESS(duckdb::unique_ptr<T> q) {
-    CHECK_SUCCESS_REF(q);
-    auto result = q->Fetch();
-    if (!result || result->size() != 1) throw DatabaseException("FATAL: cannot update user!");
 }
 
 // multiple threads can use the same connection?
