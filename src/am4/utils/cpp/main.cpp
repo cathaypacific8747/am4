@@ -5,8 +5,6 @@
 #include <iomanip>
 #include <chrono>
 
-#include <ittnotify.h>
-
 #include "include/db.hpp"
 #include "include/game.hpp"
 #include "include/ticket.hpp"

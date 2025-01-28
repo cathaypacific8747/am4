@@ -26,6 +26,7 @@ from ..common import (
     HELP_U_INCOME_LOSS_TOL,
     HELP_U_L_TRAINING,
     HELP_U_LOAD,
+    HELP_U_CARGO_LOAD,
     HELP_U_REPAIR_TRAINING,
     HELP_U_WEAR_TRAINING,
 )
@@ -324,6 +325,14 @@ class FAPIReqUser:
                 le=1,
             ),
         ] = None,
+        cargo_load: Annotated[
+            float,
+            Query(
+                description=f"[Optional] {HELP_U_CARGO_LOAD}",
+                gt=0,
+                le=1,
+            ),
+        ] = None,
     ):
         self.realism = realism
         self.wear_training = wear_training
@@ -338,6 +347,7 @@ class FAPIReqUser:
         self.fourx = fourx
         self.income_loss_tol = income_loss_tol
         self.load = load
+        self.cargo_load = cargo_load
 
     def to_core(self) -> User:
         user = User.Default(realism=True) if self.realism else User.Default()
@@ -365,5 +375,7 @@ class FAPIReqUser:
             user.income_loss_tol = ilt
         if (load := self.load) is not None:
             user.load = load
+        if (cargo_load := self.cargo_load) is not None:
+            user.cargo_load = cargo_load
 
         return user

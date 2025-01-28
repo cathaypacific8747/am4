@@ -45,6 +45,7 @@ void tpd_sweep(
     std::function<double()> est_max_tpd,
     std::function<Cfg(double)> calc_cfg,
     std::function<uint32_t(const Cfg&)> calc_max_income,
+    const float ac_load,
     AircraftRoute* ar
 ) {
     // first, calculate the configuration for 1 aircraft
@@ -73,7 +74,7 @@ void tpd_sweep(
     if (options.tpd_mode == AircraftRoute::Options::TPDMode::STRICT) {
         ar->config = cfg;
         ar->max_income = max_income;
-        ar->income = max_income * user.load;
+        ar->income = max_income * ac_load;
         ar->num_ac = 1;
         ar->trips_per_day_per_ac = tpdpa;
         ar->valid = true;
@@ -108,7 +109,7 @@ void tpd_sweep(
     }
     ar->config = cfg;
     ar->max_income = max_income;
-    ar->income = max_income * user.load;
+    ar->income = max_income * ac_load;
     ar->num_ac = num_ac;
     ar->trips_per_day_per_ac = tpdpa;
     ar->valid = true;
@@ -144,7 +145,7 @@ inline void AircraftRoute::update_pax_details(
     auto calc_max_income = [&](const Aircraft::PaxConfig& cfg) -> uint32_t {
         return (cfg.y * tkt.y + cfg.j * tkt.j + cfg.f * tkt.f);
     };
-    tpd_sweep<Aircraft::PaxConfig>(user, options, est_max_tpd, calc_cfg, calc_max_income, this);
+    tpd_sweep<Aircraft::PaxConfig>(user, options, est_max_tpd, calc_cfg, calc_max_income, user.load, this);
     this->ticket = tkt;
 }
 
@@ -167,7 +168,7 @@ inline void AircraftRoute::update_cargo_details(
     };
     auto calc_cfg = [&](double trips_per_day) {
         return Aircraft::CargoConfig::calc_cargo_conf(
-            load_adj_cd / user.load / trips_per_day, ac_capacity, user.l_training, user.h_training, config_algorithm
+            load_adj_cd / user.cargo_load / trips_per_day, ac_capacity, user.l_training, user.h_training, config_algorithm
         );
     };
     const CargoTicket tkt = CargoTicket::from_optimal(this->route.direct_distance, user.game_mode);
@@ -175,7 +176,7 @@ inline void AircraftRoute::update_cargo_details(
         return ((1 + user.l_training / 100.0) * cfg.l * 0.7 * tkt.l + (1 + user.h_training / 100.0) * cfg.h * tkt.h) *
                ac_capacity / 100.0;
     };
-    tpd_sweep<Aircraft::CargoConfig>(user, options, est_max_tpd, calc_cfg, calc_income, this);
+    tpd_sweep<Aircraft::CargoConfig>(user, options, est_max_tpd, calc_cfg, calc_income, user.cargo_load, this);
     this->ticket = tkt;
 }
 
@@ -205,7 +206,7 @@ AircraftRoute AircraftRoute::create(
     acr._ac_type = ac.type;
     acr.max_tpd = std::nullopt;
 
-    if (user.game_mode == User::GameMode::REALISM && a1.rwy < ac.rwy) {
+    if (user.game_mode == User::GameMode::REALISM && (a1.rwy < ac.rwy || a0.rwy < ac.rwy)) {
         acr.warnings.push_back(AircraftRoute::Warning::ERR_RWY_TOO_SHORT);
         return acr;
     }
@@ -359,9 +360,10 @@ inline double AircraftRoute::calc_fuel(const Aircraft& ac, double distance, cons
 inline double AircraftRoute::calc_co2(
     const Aircraft& ac, const Aircraft::PaxConfig& cfg, double distance, const User& user, uint8_t ci
 ) {
+    double ac_load = ac.type == Aircraft::Type::CARGO ? user.cargo_load : user.load;
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * ac.co2 * ((cfg.y + cfg.j * 2 + cfg.f * 3) * user.load) +
+        (ceil(distance * 100.0) / 100.0 * ac.co2 * ((cfg.y + cfg.j * 2 + cfg.f * 3) * ac_load) +
          (cfg.y + cfg.j + cfg.f)) *
         (ci / 2000.0 + 0.9)
     );
@@ -370,10 +372,11 @@ inline double AircraftRoute::calc_co2(
 inline double AircraftRoute::calc_co2(
     const Aircraft& ac, const Aircraft::CargoConfig& cfg, double distance, const User& user, uint8_t ci
 ) {
+    double ac_load = ac.type == Aircraft::Type::CARGO ? user.cargo_load : user.load;
     return (
         (1 - user.co2_training / 100.0) *
         (ceil(distance * 100.0) / 100.0 * ac.co2 *
-             ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * user.load * ac.capacity) +
+             ((cfg.l / 100.0 * 0.7 / 1000.0 + cfg.h / 100.0 / 500.0) * ac_load * ac.capacity) +
          ((cfg.l / 100.0 * 0.7 + cfg.h / 100.0) * ac.capacity)) *
         (ci / 2000.0 + 0.9)
     );

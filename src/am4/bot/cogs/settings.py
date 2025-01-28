@@ -47,6 +47,7 @@ class SettingsCog(BaseCog):
                 f"`          game_id`: {u.game_id}\n"
                 f"`        game_name`: {u.game_name}\n"
                 f"`             load`: {u.load:.2%}\n"
+                f"`       cargo_load`: {u.cargo_load:.2%}\n"
                 f"`  income_loss_tol`: {u.income_loss_tol:.2%}\n"
                 f"`    wear_training`: {u.wear_training}\n"
                 f"`  repair_training`: {u.repair_training}\n"

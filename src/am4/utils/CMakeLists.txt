@@ -84,7 +84,7 @@ target_link_libraries(utils_executable PRIVATE duckdb)
 set(VTUNE_INSTALL_DIR /opt/intel/oneapi/vtune/latest)
 target_include_directories(utils_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/include)
 target_link_directories(utils_executable PRIVATE ${VTUNE_INSTALL_DIR}/sdk/lib64)
-target_link_libraries(utils_executable PRIVATE ittnotify dl pthread)
+target_link_libraries(utils_executable PRIVATE dl pthread)
 target_link_libraries(utils_executable PRIVATE utils_static)
 
 # target_compile_features(utils_executable PRIVATE cxx_std_17)

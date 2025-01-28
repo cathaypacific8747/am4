@@ -42,6 +42,7 @@ def test_default_user():
     assert u.fuel_price == 700
     assert u.co2_price == 120
     assert u.load == 0.99
+    assert u.cargo_load == 0.99
     assert u.accumulated_count == 0
     assert u.income_loss_tol == 0.02
     assert u.fourx is False

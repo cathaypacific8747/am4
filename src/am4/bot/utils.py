@@ -57,7 +57,7 @@ HELP_SETTING_KEY = (
     "**The setting key** - some important ones are:\n"
     f"- `fourx`: {HELP_U_FOURX}\n"
     f"- `income_loss_tol`: {HELP_U_INCOME_LOSS_TOL}\n"
-    f"- `load`: {HELP_U_LOAD}\n"
+    f"- `load` and `cargo_load`: {HELP_U_LOAD}\n"
 )
 
 _SP100 = " "

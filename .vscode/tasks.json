@@ -4,19 +4,19 @@
         {
             "label": "py: start api",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m src.am4 start api",
+            "command": "uv run python -m src.am4 start api",
             "problemMatcher": []
         },
         {
             "label": "py: start api+discord bot",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m src.am4 start api,bot",
+            "command": "uv run python -m src.am4 start api,bot",
             "problemMatcher": []
         },
         {
             "label": "py: uninstall",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m pip uninstall am4 -y"
+            "command": "uv pip uninstall am4"
         },
         {
             "label": "py: generate stubs",
@@ -24,13 +24,13 @@
             "options": {
                 "cwd": "${workspaceFolder}/src/am4/utils"
             },
-            "command": "${command:python.interpreterPath} generate-stubs.py",
+            "command": "uv run generate-stubs.py",
             "problemMatcher": []
         },
         {
             "label": "py: install",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m pip install --verbose \".[dev,bot,api,docs]\" --config-settings=cmake.define.COPY_DATA=1"
+            "command": "uv pip install --verbose \".[dev,bot,api,docs]\" --config-settings=cmake.define.COPY_DATA=1"
         },
         {
             "label": "py: reinstall",
@@ -45,7 +45,7 @@
         {
             "label": "py: test",
             "type": "shell",
-            "command": "${command:python.interpreterPath} -m pytest"
+            "command": "uv run pytest"
         },
         {
             "label": "cargo: clippy",

@@ -3,6 +3,9 @@ import datetime
 __all__ = ['AllianceLog', 'UserLog']
 class AllianceLog:
     class Member:
+        @staticmethod
+        def _pybind11_conduit_v1_(*args, **kwargs):
+            ...
         def __init__(self, id: int, username: str, joined: datetime.datetime, flights: int, contributed: int, daily_contribution: int, online: datetime.datetime, sv: float, season: int) -> None:
             ...
         @property
@@ -32,6 +35,9 @@ class AllianceLog:
         @property
         def username(self) -> str:
             ...
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs):
+        ...
     def __init__(self, id: int, name: str, rank: int, member_count: int, max_members: int, value: float, ipo: bool, min_sv: float, members: list[AllianceLog.Member]) -> None:
         ...
     @property
@@ -69,6 +75,9 @@ class AllianceLog:
         ...
 class UserLog:
     class AircraftCount:
+        @staticmethod
+        def _pybind11_conduit_v1_(*args, **kwargs):
+            ...
         @property
         def aircraft(self) -> str:
             ...
@@ -76,6 +85,9 @@ class UserLog:
         def amount(self) -> int:
             ...
     class Award:
+        @staticmethod
+        def _pybind11_conduit_v1_(*args, **kwargs):
+            ...
         def __init__(self, ts: datetime.datetime, award: str) -> None:
             ...
         @property
@@ -85,6 +97,9 @@ class UserLog:
         def ts(self) -> datetime.datetime:
             ...
     class RouteDetail:
+        @staticmethod
+        def _pybind11_conduit_v1_(*args, **kwargs):
+            ...
         @property
         def arrived(self) -> datetime.datetime:
             ...
@@ -101,6 +116,9 @@ class UserLog:
         def stopover(self) -> str:
             ...
     class Share:
+        @staticmethod
+        def _pybind11_conduit_v1_(*args, **kwargs):
+            ...
         def __init__(self, ts: datetime.datetime, share: float) -> None:
             ...
         @property
@@ -109,6 +127,9 @@ class UserLog:
         @property
         def ts(self) -> datetime.datetime:
             ...
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs):
+        ...
     def __init__(self, id: int, username: str, level: int, online: bool, share: float, shares_available: int, shares_sold: int, ipo: bool, fleet_count: int, routes: int, alliance: str, achievements: int, game_mode: bool, rank: int, reputation: int, cargo_reputation: int, founded: datetime.datetime, logo: str, share_log: list[UserLog.Share], awards: list[UserLog.Award], fleet: list[UserLog.AircraftCount], route_list: list[UserLog.RouteDetail]) -> None:
         ...
     @property
