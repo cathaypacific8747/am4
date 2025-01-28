@@ -48,15 +48,10 @@ HELP_U_INCOME_LOSS_TOL = (
     "of the max, but in exchange you can cram in more aircraft per hub and gain more income.\n"
     "**Recommended: set this to `0.05` for end-game players**"
 )
-HELP_U_LOAD = (
-    "**Assumed aircraft load** (default: `0.99`)\n\n"
+_HELP_LOAD = (
     "For advanced players, set this to `0.875` (the expected value of the max reputation). In this case, "
     "the demand will be inflated by 1/0.875 = 14.3%.\n"
     "*Note*: you can assume this to be roughly equivalent to the reputation."
 )
-HELP_U_CARGO_LOAD = (
-    "**Assumed cargo aircraft load** (default: `0.99`)\n\n"
-    "For advanced players, set this to `0.875` (the expected value of the max reputation). In this case, "
-    "the demand will be inflated by 1/0.875 = 14.3%.\n"
-    "*Note*: you can assume this to be roughly equivalent to the reputation."
-)
+HELP_U_LOAD = f"**Assumed aircraft load** (default: `0.99`)\n\n{_HELP_LOAD}"
+HELP_U_CARGO_LOAD = f"**Assumed cargo aircraft load** (default: `0.99`)\n\n{_HELP_LOAD}"

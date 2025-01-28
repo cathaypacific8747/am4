@@ -8,4 +8,4 @@ from . import log
 from . import route
 from . import ticket
 __all__ = ['aircraft', 'airport', 'db', 'demand', 'game', 'log', 'route', 'ticket']
-__version__: str = '0.1.8'
+__version__: str = '0.1.9'

@@ -5,7 +5,7 @@ migrate(
       {
         id: "_pb_users_auth_",
         created: "2024-02-03 13:18:53.989Z",
-        updated: "2024-02-09 22:58:44.859Z",
+        updated: "2025-01-28 02:23:01.859Z",
         name: "users",
         type: "auth",
         system: false,
@@ -207,7 +207,7 @@ migrate(
           },
           {
             system: false,
-            id: "wrffnkkg",
+            id: "rwrz65cf",
             name: "cargo_load",
             type: "number",
             required: false,
