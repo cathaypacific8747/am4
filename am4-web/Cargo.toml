@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 am4 = { path = "../am4" }
 serde = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 indexed_db_futures = "0.6.0"
 wasm-bindgen-futures = "0.4.50"
 console_error_panic_hook = "0.1.7"

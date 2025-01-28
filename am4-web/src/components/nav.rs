@@ -1,4 +1,4 @@
-use crate::db::{Idb, LoadDbProgress};
+use crate::db::LoadDbProgress;
 use leptos::prelude::*;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");

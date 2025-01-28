@@ -1,5 +1,6 @@
 use reactive_stores::Store;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub enum Level {
     #[default]

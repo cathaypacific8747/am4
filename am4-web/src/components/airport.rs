@@ -1,4 +1,4 @@
-use crate::db::Data;
+// use crate::db::Data;
 use am4::airport::db::AirportSearchError;
 use am4::airport::Airport;
 use leptos::prelude::*;
@@ -8,7 +8,7 @@ use web_sys::HtmlInputElement;
 #[allow(non_snake_case)]
 #[component]
 pub fn APSearch() -> impl IntoView {
-    let (search_term, set_search_term) = signal("".to_string());
+    let (_search_term, set_search_term) = signal("".to_string());
 
     // let database = expect_context::<StoredValue<Option<Data>>>();
     // let search_results = move || {
@@ -41,7 +41,7 @@ pub fn APSearch() -> impl IntoView {
 
 #[allow(non_snake_case)]
 #[component]
-fn APErr(e: AirportSearchError) -> impl IntoView {
+fn APErr(_e: AirportSearchError) -> impl IntoView {
     // let database = expect_context::<StoredValue<Option<Data>>>();
 
     // if let AirportSearchError::AirportNotFound(ctx) = &e {
@@ -82,6 +82,7 @@ fn APErr(e: AirportSearchError) -> impl IntoView {
     view! { <div>"Under construction"</div> }
 }
 
+#[allow(dead_code)] // leptos bug
 #[allow(non_snake_case)]
 #[component]
 fn Ap<'a>(airport: &'a Airport) -> impl IntoView {

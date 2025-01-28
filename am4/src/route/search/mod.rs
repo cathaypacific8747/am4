@@ -81,7 +81,7 @@ pub struct Routes<'a, R, C> {
     config: C,
 }
 
-impl<'a, R, C> Routes<'a, R, C> {
+impl<R, C> Routes<'_, R, C> {
     /// Get the list of routes (e.g. [AbstractRoutes], [ConcreteRoutes])
     pub fn routes(&self) -> &[R] {
         &self.routes

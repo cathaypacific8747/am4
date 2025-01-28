@@ -1,23 +1,21 @@
 mod components;
-mod db;
 mod console;
+mod db;
 
-use components::aircraft::ACSearch;
-use components::airport::APSearch;
+// use components::aircraft::ACSearch;
+// use components::airport::APSearch;
 use components::nav::Header;
 
 use console::{Entry, Level};
+// use db::Idb;
 use leptos::{logging::log, prelude::*};
 use reactive_stores::Store;
-use db::Idb;
 
 #[component]
 #[allow(non_snake_case)]
 pub fn App() -> impl IntoView {
     let database = StoredValue::<Option<db::Data>>::new(None);
-    let console = Store::new(console::Console {
-        history: vec![],
-    });
+    let console = Store::new(console::Console { history: vec![] });
 
     provide_context(database);
     provide_context(console);
@@ -29,9 +27,15 @@ pub fn App() -> impl IntoView {
                 time: 0,
                 level: Level::Debug,
                 user: "system".to_string(),
-                message: "start".to_string()
+                message: "start".to_string(),
             });
-            let history = console.get().history.iter().map(|m| m.message.as_str()).collect::<Vec<_>>().join("\n");
+            let history = console
+                .get()
+                .history
+                .iter()
+                .map(|m| m.message.as_str())
+                .collect::<Vec<_>>()
+                .join("\n");
             log!("{history}");
             // let db = Idb::connect().await;
             // match Idb::connect()

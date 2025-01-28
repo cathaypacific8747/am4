@@ -1,4 +1,3 @@
 pb_data/*
 !pb_data/types.d.ts
 pocketbase
-private

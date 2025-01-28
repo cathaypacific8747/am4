@@ -51,7 +51,7 @@ pub struct Settings {
 
 static DEFAULT_SETTINGS: LazyLock<Settings> = LazyLock::new(Settings::default);
 
-impl<'a> Default for &'a Settings {
+impl Default for &Settings {
     fn default() -> Self {
         &DEFAULT_SETTINGS
     }
