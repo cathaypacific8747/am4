@@ -30,7 +30,7 @@
         {
             "label": "py: install",
             "type": "shell",
-            "command": "uv pip install --verbose \".[dev,bot,api,docs]\" --config-settings=cmake.define.COPY_DATA=1"
+            "command": "uv pip install --reinstall --verbose \".[dev,bot,api,docs]\" --config-settings=cmake.define.COPY_DATA=1"
         },
         {
             "label": "py: reinstall",

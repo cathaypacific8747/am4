@@ -168,7 +168,8 @@ inline void AircraftRoute::update_cargo_details(
     };
     auto calc_cfg = [&](double trips_per_day) {
         return Aircraft::CargoConfig::calc_cargo_conf(
-            load_adj_cd / user.cargo_load / trips_per_day, ac_capacity, user.l_training, user.h_training, config_algorithm
+            load_adj_cd / user.cargo_load / trips_per_day, ac_capacity, user.l_training, user.h_training,
+            config_algorithm
         );
     };
     const CargoTicket tkt = CargoTicket::from_optimal(this->route.direct_distance, user.game_mode);
@@ -363,8 +364,8 @@ inline double AircraftRoute::calc_co2(
     double ac_load = ac.type == Aircraft::Type::CARGO ? user.cargo_load : user.load;
     return (
         (1 - user.co2_training / 100.0) *
-        (ceil(distance * 100.0) / 100.0 * ac.co2 * ((cfg.y + cfg.j * 2 + cfg.f * 3) * ac_load) +
-         (cfg.y + cfg.j + cfg.f)) *
+        (ceil(distance * 100.0) / 100.0 * ac.co2 * ((cfg.y + cfg.j * 2 + cfg.f * 3) * ac_load) + (cfg.y + cfg.j + cfg.f)
+        ) *
         (ci / 2000.0 + 0.9)
     );
 }
@@ -477,7 +478,7 @@ std::vector<Destination> RoutesSearch::get() const {
     const auto& db = Database::Client();
 
     const uint16_t rwy_requirement = this->user.game_mode == User::GameMode::EASY ? 0 : this->aircraft.rwy;
-    for (const Airport& origin: this->origins) {
+    for (const Airport& origin : this->origins) {
         for (const Airport& ap : db->airports) {
             if (ap.rwy < rwy_requirement || ap.id == origin.id) continue;
             const AircraftRoute ar = AircraftRoute::create(origin, ap, this->aircraft, this->options, this->user);
@@ -581,25 +582,30 @@ py::dict to_dict(const AircraftRoute& ar) {
 py::dict to_dict(const Destination& d, bool include_origin) {
     py::dict dest;
     if (include_origin) {
-        dest["origin"] = py::dict("iata"_a = d.origin.iata, "icao"_a = d.origin.icao);
+        // not including everything to save bandwidth
+        dest["origin"] = py::dict("id"_a = d.origin.id, "iata"_a = d.origin.iata, "icao"_a = d.origin.icao);
     }
     dest["airport"] = to_dict(d.airport);
     dest["ac_route"] = to_dict(d.ac_route);
     return dest;
 }
 
-std::map<string, py::list> _get_columns(const RoutesSearch& rs, const vector<Destination>& dests) {
+std::map<string, py::list> _get_columns(const RoutesSearch& rs, const vector<Destination>& dests, bool include_origin) {
     // for use in csv generation via pyarrow.Table.from_pydict & downstream statistical analysis
     // assuming dests to be all valid
     std::map<string, py::list> cols;
     for (const Destination& dest : dests) {
-        cols["00|orig.iata"].append(dest.origin.iata);
-        cols["01|orig.icao"].append(dest.origin.icao);
+        if (include_origin) {
+            cols["00|orig.id"].append(dest.origin.id);
+            cols["03|orig.iata"].append(dest.origin.iata);
+            cols["04|orig.icao"].append(dest.origin.icao);
+        }
         cols["10|dest.id"].append(dest.airport.id);
         cols["11|dest.name"].append(dest.airport.name);
         cols["12|dest.country"].append(dest.airport.country);
         cols["13|dest.iata"].append(dest.airport.iata);
         cols["14|dest.icao"].append(dest.airport.icao);
+        // for use in map display
         cols["98|dest.lat"].append(dest.airport.lat);
         cols["99|dest.lng"].append(dest.airport.lng);
         auto& acr = dest.ac_route;
@@ -783,15 +789,19 @@ void pybind_init_route(py::module_& m) {
         .def_readonly("origin", &Destination::origin)
         .def_readonly("airport", &Destination::airport)
         .def_readonly("ac_route", &Destination::ac_route)
-        .def("to_dict", py::overload_cast<const Destination&, const bool>(&to_dict));
+        .def("to_dict", py::overload_cast<const Destination&, const bool>(&to_dict), "include_origin"_a = false);
 
     py::class_<RoutesSearch>(m_route, "RoutesSearch")
         .def(
-            py::init<const vector<Airport>&, const Aircraft&, const AircraftRoute::Options&, const User&>(), "ap0"_a, "ac"_a,
-            py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
+            py::init<const vector<Airport>&, const Aircraft&, const AircraftRoute::Options&, const User&>(), "ap0"_a,
+            "ac"_a, py::arg_v("options", AircraftRoute::Options(), "AircraftRoute.Options()"),
             py::arg_v("user", User::Default(), "am4.utils.game.User.Default()")
         )
         .def("get", &RoutesSearch::get, py::call_guard<py::gil_scoped_release>())
-        .def("_get_columns", py::overload_cast<const RoutesSearch&, const vector<Destination>&>(&_get_columns));
+        .def(
+            "_get_columns",
+            py::overload_cast<const RoutesSearch&, const vector<Destination>&, const bool>(&_get_columns), "dests"_a,
+            "include_origin"_a = false
+        );
 }
 #endif

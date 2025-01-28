@@ -30,12 +30,19 @@ class AirportNotFoundError(commands.BadArgument):
         self.apsr = apsr
 
 
+class TooManyAirportsError(commands.BadArgument):
+    def __init__(self, num_airports: int, *, max_airports: int):
+        super().__init__("Too many airports!")
+        self.num_airports = num_airports
+        self.max_airports = max_airports
+
+
 class ValidationErrorBase(commands.BadArgument):
     def __init__(self, err: ValidationError | PydanticCustomError):
         super().__init__()
         self.err = err
         if isinstance(err, ValidationError):
-            self.msg = "\n".join(f'`{",".join(e["loc"])}`: {e["msg"]}' for e in err.errors())
+            self.msg = "\n".join(f"`{','.join(e['loc'])}`: {e['msg']}" for e in err.errors())
         elif isinstance(err, PydanticCustomError):
             self.msg = err.message()
         else:
@@ -128,7 +135,7 @@ class CustomErrHandler:
                     value=(
                         "```php\n"
                         f"{cfg.bot.COMMAND_PREFIX}help {self.cmd}\n"
-                        f"{v.buffer[:v.previous]}{suggs[0][0]}{v.buffer[v.index:]}\n"
+                        f"{v.buffer[: v.previous]}{suggs[0][0]}{v.buffer[v.index :]}\n"
                         "```"
                     ),
                     inline=False,
@@ -175,6 +182,20 @@ class CustomErrHandler:
             suggs=[(a.ap.iata.lower(), f"`{a.ap.iata}` / `{a.ap.icao}` ({a.ap.name}, {a.ap.country})") for a in suggs],
         )
         await self.ctx.send(embed=embed)
+        self.handled = True
+
+    async def too_many_airports(self):
+        if not isinstance(self.error, TooManyAirportsError):
+            return
+        await self.ctx.send(
+            embed=self._get_err_embed(
+                title="Too many airports!",
+                description=(
+                    f"{self.err_tb}You specified {self.error.num_airports} airports, "
+                    f"but the maximum allowed is {self.error.max_airports}."
+                ),
+            )
+        )
         self.handled = True
 
     async def invalid_setting_value(self):
@@ -254,18 +275,17 @@ class CustomErrHandler:
         v = self.ctx.view
         # override
         highlight = "▔" * len(v.buffer[v.index + 1 :])
-        err_loc = f"```php\n{v.buffer}\n{' ' * (v.index+1)}{highlight}\n```"
+        err_loc = f"```php\n{v.buffer}\n{' ' * (v.index + 1)}{highlight}\n```"
 
         cmds = [f"{cfg.bot.COMMAND_PREFIX}help {self.cmd}", f"{v.buffer[: v.index]}"]
         if a := self.ctx.current_argument:
-            cmds.append(f'{v.buffer[: v.previous]}"{a}{v.buffer[v.index:]}"')
+            cmds.append(f'{v.buffer[: v.previous]}"{a}{v.buffer[v.index :]}"')
 
         await self.ctx.send(
             embed=self._get_err_embed(
                 title="Too many arguments!",
                 description=(
-                    f"{err_loc}Tip: If you are trying to use spaces in the {arg_name},"
-                    f' wrap it in double quotes (`"`).'
+                    f'{err_loc}Tip: If you are trying to use spaces in the {arg_name}, wrap it in double quotes (`"`).'
                 ),
                 sugg_cmd_override=cmds,
             )
@@ -314,7 +334,7 @@ class CustomErrHandler:
             embed=self._get_err_embed(
                 title="Missing closing quote!",
                 description=f"{self.err_tb}You forgot to close the quote here.",
-                sugg_cmd_override=[f'{v.buffer[:v.index]}"{v.buffer[v.index:]}'],
+                sugg_cmd_override=[f'{v.buffer[: v.index]}"{v.buffer[v.index :]}'],
             )
         )
         self.handled = True
@@ -327,7 +347,7 @@ class CustomErrHandler:
             embed=self._get_err_embed(
                 title="Invalid end of quoted string!",
                 description=f"{self.err_tb}You can't have anything after this closing quote.",
-                sugg_cmd_override=[f"{v.buffer[:v.index]}"],
+                sugg_cmd_override=[f"{v.buffer[: v.index]}"],
             )
         )
         self.handled = True
@@ -340,7 +360,7 @@ class CustomErrHandler:
             embed=self._get_err_embed(
                 title="Unexpected quote!",
                 description=f"{self.err_tb}You can't have a quote after this character.",
-                sugg_cmd_override=[f"{v.buffer[:v.index]}{v.buffer[v.index+1:]}"],
+                sugg_cmd_override=[f"{v.buffer[: v.index]}{v.buffer[v.index + 1 :]}"],
             )
         )
         self.handled = True

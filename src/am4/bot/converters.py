@@ -23,6 +23,7 @@ from .errors import (
     ConstraintValidationError,
     PriceValidationError,
     SettingValueValidationError,
+    TooManyAirportsError,
     TPDValidationError,
 )
 
@@ -35,16 +36,23 @@ class AirportCvtr(commands.Converter):
             raise AirportNotFoundError(acsr)
         return acsr
 
+
 class MultiAirportCvtr(commands.Converter):
     async def convert(self, ctx: commands.Context, query: str) -> List[Airport.SearchResult]:
-        acsrList = []
-        for q in query.split(","):
+        queries = query.split(",")
+        MAX_AIRPORTS = 24  # prevent DoS attacks & stay within upload limits
+        if (num_airports := len(queries)) > MAX_AIRPORTS:
+            raise TooManyAirportsError(num_airports, max_airports=MAX_AIRPORTS)
+
+        acsr_list = []
+        for q in queries:
             acsr = Airport.search(q)
             if not acsr.ap.valid:
                 raise AirportNotFoundError(acsr)
-            acsrList.append(acsr)
+            acsr_list.append(acsr)
+        # TODO: handle duplicate airports?
 
-        return acsrList
+        return acsr_list
 
 
 class AircraftCvtr(commands.Converter):

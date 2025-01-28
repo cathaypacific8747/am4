@@ -15,7 +15,7 @@ sdist.exclude = ["misc/demand-research", "src/am4/utils/data/*.parquet"]
 
 [project]
 name = "am4"
-version = "0.1.9-alpha.1"
+version = "0.1.9-alpha.2"
 description = "Tools and utilities for the game Airline Manager 4."
 authors = [{ name = "cathaypacific8747", email = "abraham@ylcheung.com" }]
 license = { text = "MIT License" }
@@ -57,7 +57,7 @@ docs = [
 ]
 api = ["fastapi>=0.109.2", "uvicorn>=0.27.0"]
 bot = [
-    "matplotlib>=3.9.0",
+    "matplotlib>=3.9.1",
     "Pillow>=10.3.0",
     "discord.py>=2.4.0",
     "pyproj>=3.6.1",

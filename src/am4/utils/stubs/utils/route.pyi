@@ -271,13 +271,16 @@ class Destination:
     @staticmethod
     def _pybind11_conduit_v1_(*args, **kwargs):
         ...
-    def to_dict(self) -> dict:
+    def to_dict(self, include_origin: bool = False) -> dict:
         ...
     @property
     def ac_route(self) -> AircraftRoute:
         ...
     @property
     def airport(self) -> am4.utils.airport.Airport:
+        ...
+    @property
+    def origin(self) -> am4.utils.airport.Airport:
         ...
 class Route:
     @staticmethod
@@ -311,9 +314,9 @@ class RoutesSearch:
     @staticmethod
     def _pybind11_conduit_v1_(*args, **kwargs):
         ...
-    def __init__(self, ap0: am4.utils.airport.Airport, ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> None:
+    def __init__(self, ap0: list[am4.utils.airport.Airport], ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> None:
         ...
-    def _get_columns(self, arg0: list[Destination]) -> dict[str, list]:
+    def _get_columns(self, dests: list[Destination], include_origin: bool = False) -> dict[str, list]:
         ...
     def get(self) -> list[Destination]:
         ...

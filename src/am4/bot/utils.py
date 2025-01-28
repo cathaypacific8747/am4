@@ -123,6 +123,7 @@ def format_flight_time(t: float, short: bool = False) -> str:
     return (f"{int(d)}D" if d else "") + time.strftime(fs, time.gmtime(hrs))
 
 
+# TODO: refactor to accept strings instead
 def format_ap_short(ap: Airport, mode: Literal[0, 1, 2]) -> str:
     indicator = "┏" if mode == 0 else "┣" if mode == 1 else "┗"
     return f"`{indicator} {ap.iata}` {ap.name}, {ap.country}"
