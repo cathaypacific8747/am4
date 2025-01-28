@@ -3,6 +3,9 @@ import am4.utils.game
 __all__ = ['CargoTicket', 'PaxTicket', 'VIPTicket']
 class CargoTicket:
     @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs):
+        ...
+    @staticmethod
     def from_optimal(distance: float, game_mode: am4.utils.game.User.GameMode = am4.utils.game.User.GameMode.EASY) -> PaxTicket:
         ...
     def __repr__(self) -> str:
@@ -16,6 +19,9 @@ class CargoTicket:
     def l(self) -> float:
         ...
 class PaxTicket:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs):
+        ...
     @staticmethod
     def from_optimal(distance: float, game_mode: am4.utils.game.User.GameMode = am4.utils.game.User.GameMode.EASY) -> PaxTicket:
         ...
@@ -33,6 +39,9 @@ class PaxTicket:
     def y(self) -> int:
         ...
 class VIPTicket:
+    @staticmethod
+    def _pybind11_conduit_v1_(*args, **kwargs):
+        ...
     @staticmethod
     def from_optimal(distance: float, game_mode: am4.utils.game.User.GameMode = am4.utils.game.User.GameMode.EASY) -> VIPTicket:
         ...

@@ -1,5 +1,5 @@
-use crate::db::{Idb, LoadDbProgress};
-use leptos::*;
+use crate::db::LoadDbProgress;
+use leptos::prelude::*;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -13,18 +13,19 @@ impl std::fmt::Display for LoadDbProgress {
             LoadDbProgress::Fetching(key) => write!(f, "fetch: {}", key),
             LoadDbProgress::Parsing(key) => write!(f, "parse: {}", key),
             LoadDbProgress::Loaded => write!(f, ""),
-            LoadDbProgress::Err(e) => write!(f, "error: {}", e),
+            LoadDbProgress::Err => write!(f, "error"),
         }
     }
 }
 
 #[component]
 #[allow(non_snake_case)]
-pub fn Header(progress: ReadSignal<LoadDbProgress>) -> impl IntoView {
-    let prog_str = move || progress.get().to_string();
+pub fn Header() -> impl IntoView {
+    // let prog_str = move || progress.get().to_string();
 
-    let clear_db = create_action(|_e| async move {
-        Idb::connect().await.unwrap().clear().await.unwrap();
+    let clear_db = Action::new(|_| async {
+        todo!();
+        // Idb::connect().await.unwrap().clear().await.unwrap();
     });
 
     view! {
@@ -37,7 +38,6 @@ pub fn Header(progress: ReadSignal<LoadDbProgress>) -> impl IntoView {
                     <span id="name">AM4Help</span>
                     <span id="version">" v" {VERSION}</span>
                 </div>
-                <div id="db-progress">{prog_str}</div>
             </div>
             <div id="local-bar">
                 <nav>
@@ -47,19 +47,20 @@ pub fn Header(progress: ReadSignal<LoadDbProgress>) -> impl IntoView {
                                 <a href="/">"Home"</a>
                             </b>
                         </li>
+                        <li>"Console"</li>
                         <li>
                             <a href="https://cathaypacific8747.github.io/am4/formulae/">
                                 "Formulae"
                             </a>
                         </li>
                         <li
-                            id="clear-cache"
-                            on:click=move |ev| {
-                                clear_db.dispatch(ev);
+                            id="clear-database"
+                            on:click=move |_| {
+                                clear_db.dispatch(&());
                             }
                         >
 
-                            "Clear Cache"
+                            "Clear Database"
                         </li>
                     </ul>
                 </nav>

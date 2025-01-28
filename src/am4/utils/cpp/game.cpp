@@ -21,6 +21,7 @@ User::User()
       co2_price(120),
       accumulated_count(0),
       load(0.99),
+      cargo_load(0.99),
       income_loss_tol(0.02),
       fourx(false),
       role(User::Role::USER),
@@ -224,7 +225,7 @@ py::dict to_dict(const User &user) {
         "wear_training"_a = user.wear_training, "repair_training"_a = user.repair_training,
         "l_training"_a = user.l_training, "h_training"_a = user.h_training, "fuel_training"_a = user.fuel_training,
         "co2_training"_a = user.co2_training, "fuel_price"_a = user.fuel_price, "co2_price"_a = user.co2_price,
-        "accumulated_count"_a = user.accumulated_count, "load"_a = user.load,
+        "accumulated_count"_a = user.accumulated_count, "load"_a = user.load, "cargo_load"_a = user.cargo_load,
         "income_loss_tol"_a = user.income_loss_tol, "fourx"_a = user.fourx, "role"_a = to_string(user.role)
     );
 }
@@ -248,6 +249,7 @@ User from_dict(py::dict &d) {
     user.co2_price = p("co2_price").cast<uint8_t>();
     user.accumulated_count = p("accumulated_count").cast<uint16_t>();
     user.load = p("load").cast<double>();
+    user.cargo_load = p("cargo_load").cast<double>();
     user.income_loss_tol = p("income_loss_tol").cast<double>();
     user.fourx = p("fourx").cast<bool>();
     user.role = role_from_string(p("role").cast<std::string>());
@@ -283,6 +285,7 @@ void pybind_init_game(py::module_ &m) {
         .def_readwrite("co2_price", &User::co2_price)
         .def_readwrite("accumulated_count", &User::accumulated_count)
         .def_readwrite("load", &User::load)
+        .def_readwrite("cargo_load", &User::cargo_load)
         .def_readwrite("income_loss_tol", &User::income_loss_tol)
         .def_readwrite("valid", &User::valid)
         .def_readwrite("fourx", &User::fourx)

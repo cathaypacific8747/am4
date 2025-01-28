@@ -41,6 +41,7 @@ struct User {
     uint8_t co2_price;           // 0-200
     uint16_t accumulated_count;  // for use in reputation price calculation
     double load;                 // 0-1
+    double cargo_load;           // 0-1
     double income_loss_tol;      // 0-1, .1 = 90% of income allowed for AUTO / STRICT_ALLOW_MULTIPLE_AC config searches
     bool fourx;
     Role role;  // user
