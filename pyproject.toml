@@ -11,11 +11,7 @@ cmake.verbose = true
 logging.level = "DEBUG"
 wheel.install-dir = "am4"
 wheel.expand-macos-universal-tags = true
-sdist.exclude = [
-    "misc/demand-research",
-    "misc/old-versions",
-    "src/am4/utils/data/*.parquet",
-]
+sdist.exclude = ["misc/demand-research", "src/am4/utils/data/*.parquet"]
 
 [project]
 name = "am4"

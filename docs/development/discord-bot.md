@@ -25,11 +25,6 @@ python3 -m src.am4 start bot
 
 ??? note "Documentation for legacy code, click to expand."
 
-    Code [here](https://github.com/cathaypacific8747/am4/tree/master/misc/old-versions)
-    - `src-old`: the very first iteration of the discord bot.
-    - `src-v2-v3`: my first attempts at rewriting in C/Cython
-    
-
     ### Features
     Old bot:
 
