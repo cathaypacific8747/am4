@@ -3,9 +3,6 @@ import typing
 __all__ = ['Airport']
 class Airport:
     class ParseResult:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, arg0: Airport.SearchType, arg1: str) -> None:
             ...
         @property
@@ -15,9 +12,6 @@ class Airport:
         def search_type(self) -> Airport.SearchType:
             ...
     class SearchResult:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, arg0: Airport, arg1: Airport.ParseResult) -> None:
             ...
         @property
@@ -49,9 +43,6 @@ class Airport:
         ID: typing.ClassVar[Airport.SearchType]  # value = <SearchType.ID: 5>
         NAME: typing.ClassVar[Airport.SearchType]  # value = <SearchType.NAME: 3>
         __members__: typing.ClassVar[dict[str, Airport.SearchType]]  # value = {'ALL': <SearchType.ALL: 0>, 'IATA': <SearchType.IATA: 1>, 'ICAO': <SearchType.ICAO: 2>, 'NAME': <SearchType.NAME: 3>, 'FULLNAME': <SearchType.FULLNAME: 4>, 'ID': <SearchType.ID: 5>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -79,9 +70,6 @@ class Airport:
         def value(self) -> int:
             ...
     class Suggestion:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, arg0: Airport, arg1: float) -> None:
             ...
         @property
@@ -90,9 +78,6 @@ class Airport:
         @property
         def score(self) -> float:
             ...
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @staticmethod
     def search(s: str) -> Airport.SearchResult:
         ...

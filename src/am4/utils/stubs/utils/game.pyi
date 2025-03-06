@@ -82,9 +82,6 @@ class Campaign:
         C4_8HR: typing.ClassVar[Campaign.Airline]  # value = <Airline.C4_8HR: 42>
         NONE: typing.ClassVar[Campaign.Airline]  # value = <Airline.NONE: 0>
         __members__: typing.ClassVar[dict[str, Campaign.Airline]]  # value = {'C4_4HR': <Airline.C4_4HR: 41>, 'C4_8HR': <Airline.C4_8HR: 42>, 'C4_12HR': <Airline.C4_12HR: 43>, 'C4_16HR': <Airline.C4_16HR: 44>, 'C4_20HR': <Airline.C4_20HR: 45>, 'C4_24HR': <Airline.C4_24HR: 46>, 'C3_4HR': <Airline.C3_4HR: 31>, 'C3_8HR': <Airline.C3_8HR: 32>, 'C3_12HR': <Airline.C3_12HR: 33>, 'C3_16HR': <Airline.C3_16HR: 34>, 'C3_20HR': <Airline.C3_20HR: 35>, 'C3_24HR': <Airline.C3_24HR: 36>, 'C2_4HR': <Airline.C2_4HR: 21>, 'C2_8HR': <Airline.C2_8HR: 22>, 'C2_12HR': <Airline.C2_12HR: 23>, 'C2_16HR': <Airline.C2_16HR: 24>, 'C2_20HR': <Airline.C2_20HR: 25>, 'C2_24HR': <Airline.C2_24HR: 26>, 'C1_4HR': <Airline.C1_4HR: 11>, 'C1_8HR': <Airline.C1_8HR: 12>, 'C1_12HR': <Airline.C1_12HR: 13>, 'C1_16HR': <Airline.C1_16HR: 14>, 'C1_20HR': <Airline.C1_20HR: 15>, 'C1_24HR': <Airline.C1_24HR: 16>, 'NONE': <Airline.NONE: 0>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -137,9 +134,6 @@ class Campaign:
         C_8HR: typing.ClassVar[Campaign.Eco]  # value = <Eco.C_8HR: 52>
         NONE: typing.ClassVar[Campaign.Eco]  # value = <Eco.NONE: 0>
         __members__: typing.ClassVar[dict[str, Campaign.Eco]]  # value = {'C_4HR': <Eco.C_4HR: 51>, 'C_8HR': <Eco.C_8HR: 52>, 'C_12HR': <Eco.C_12HR: 53>, 'C_16HR': <Eco.C_16HR: 54>, 'C_20HR': <Eco.C_20HR: 55>, 'C_24HR': <Eco.C_24HR: 56>, 'NONE': <Eco.NONE: 0>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -170,9 +164,6 @@ class Campaign:
     def Default() -> Campaign:
         ...
     @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
-    @staticmethod
     def parse(s: str) -> Campaign:
         ...
     def estimate_cargo_reputation(self, base_reputation: float = 45) -> float:
@@ -200,9 +191,6 @@ class User:
         EASY: typing.ClassVar[User.GameMode]  # value = <GameMode.EASY: 0>
         REALISM: typing.ClassVar[User.GameMode]  # value = <GameMode.REALISM: 1>
         __members__: typing.ClassVar[dict[str, User.GameMode]]  # value = {'EASY': <GameMode.EASY: 0>, 'REALISM': <GameMode.REALISM: 1>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -246,9 +234,6 @@ class User:
         TRUSTED_USER: typing.ClassVar[User.Role]  # value = <Role.TRUSTED_USER: 6>
         USER: typing.ClassVar[User.Role]  # value = <Role.USER: 5>
         __members__: typing.ClassVar[dict[str, User.Role]]  # value = {'BANNED': <Role.BANNED: 0>, 'USER': <Role.USER: 5>, 'TRUSTED_USER': <Role.TRUSTED_USER: 6>, 'ADMIN': <Role.ADMIN: 52>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -297,9 +282,6 @@ class User:
     wear_training: int
     @staticmethod
     def Default(realism: bool = False) -> User:
-        ...
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
         ...
     @staticmethod
     def from_dict(arg0: dict) -> User:

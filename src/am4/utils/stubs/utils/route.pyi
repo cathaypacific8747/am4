@@ -19,9 +19,6 @@ class AircraftRoute:
             PER_AC_PER_DAY: typing.ClassVar[AircraftRoute.Options.SortBy]  # value = <SortBy.PER_AC_PER_DAY: 1>
             PER_TRIP: typing.ClassVar[AircraftRoute.Options.SortBy]  # value = <SortBy.PER_TRIP: 0>
             __members__: typing.ClassVar[dict[str, AircraftRoute.Options.SortBy]]  # value = {'PER_TRIP': <SortBy.PER_TRIP: 0>, 'PER_AC_PER_DAY': <SortBy.PER_AC_PER_DAY: 1>}
-            @staticmethod
-            def _pybind11_conduit_v1_(*args, **kwargs):
-                ...
             def __eq__(self, other: typing.Any) -> bool:
                 ...
             def __getstate__(self) -> int:
@@ -62,9 +59,6 @@ class AircraftRoute:
             STRICT: typing.ClassVar[AircraftRoute.Options.TPDMode]  # value = <TPDMode.STRICT: 2>
             STRICT_ALLOW_MULTIPLE_AC: typing.ClassVar[AircraftRoute.Options.TPDMode]  # value = <TPDMode.STRICT_ALLOW_MULTIPLE_AC: 1>
             __members__: typing.ClassVar[dict[str, AircraftRoute.Options.TPDMode]]  # value = {'AUTO': <TPDMode.AUTO: 0>, 'STRICT_ALLOW_MULTIPLE_AC': <TPDMode.STRICT_ALLOW_MULTIPLE_AC: 1>, 'STRICT': <TPDMode.STRICT: 2>}
-            @staticmethod
-            def _pybind11_conduit_v1_(*args, **kwargs):
-                ...
             def __eq__(self, other: typing.Any) -> bool:
                 ...
             def __getstate__(self) -> int:
@@ -97,15 +91,9 @@ class AircraftRoute:
         sort_by: AircraftRoute.Options.SortBy
         tpd_mode: AircraftRoute.Options.TPDMode
         trips_per_day_per_ac: int
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, tpd_mode: AircraftRoute.Options.TPDMode = TPDMode.AUTO, trips_per_day_per_ac: int = 1, max_distance: float = 20015.086796020572, max_flight_time: float = 24.0, config_algorithm: None | am4.utils.aircraft.Aircraft.PaxConfig.Algorithm | am4.utils.aircraft.Aircraft.CargoConfig.Algorithm = None, sort_by: AircraftRoute.Options.SortBy = SortBy.PER_TRIP) -> None:
             ...
     class Stopover:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         @staticmethod
         def find_by_efficiency(origin: am4.utils.airport.Airport, destination: am4.utils.airport.Airport, aircraft: am4.utils.aircraft.Aircraft, game_mode: am4.utils.game.User.GameMode) -> AircraftRoute.Stopover:
             ...
@@ -154,9 +142,6 @@ class AircraftRoute:
         ERR_TRIPS_PER_DAY_TOO_HIGH: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.ERR_TRIPS_PER_DAY_TOO_HIGH: 8>
         REDUCED_CONTRIBUTION: typing.ClassVar[AircraftRoute.Warning]  # value = <Warning.REDUCED_CONTRIBUTION: 4>
         __members__: typing.ClassVar[dict[str, AircraftRoute.Warning]]  # value = {'ERR_RWY_TOO_SHORT': <Warning.ERR_RWY_TOO_SHORT: 0>, 'ERR_DISTANCE_ABOVE_SPECIFIED': <Warning.ERR_DISTANCE_ABOVE_SPECIFIED: 1>, 'ERR_DISTANCE_TOO_LONG': <Warning.ERR_DISTANCE_TOO_LONG: 2>, 'ERR_DISTANCE_TOO_SHORT': <Warning.ERR_DISTANCE_TOO_SHORT: 3>, 'REDUCED_CONTRIBUTION': <Warning.REDUCED_CONTRIBUTION: 4>, 'ERR_NO_STOPOVER': <Warning.ERR_NO_STOPOVER: 5>, 'ERR_FLIGHT_TIME_ABOVE_SPECIFIED': <Warning.ERR_FLIGHT_TIME_ABOVE_SPECIFIED: 6>, 'ERR_INSUFFICIENT_DEMAND': <Warning.ERR_INSUFFICIENT_DEMAND: 7>, 'ERR_TRIPS_PER_DAY_TOO_HIGH': <Warning.ERR_TRIPS_PER_DAY_TOO_HIGH: 8>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -183,9 +168,6 @@ class AircraftRoute:
         @property
         def value(self) -> int:
             ...
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @staticmethod
     @typing.overload
     def calc_co2(ac: am4.utils.aircraft.Aircraft, cfg: am4.utils.aircraft.Aircraft.PaxConfig, distance: float, user: am4.utils.game.User = am4.utils.game.User.Default(), ci: int = 200) -> float:
@@ -268,9 +250,6 @@ class AircraftRoute:
     def warnings(self) -> list[AircraftRoute.Warning]:
         ...
 class Destination:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     def to_dict(self, include_origin: bool = False) -> dict:
         ...
     @property
@@ -283,9 +262,6 @@ class Destination:
     def origin(self) -> am4.utils.airport.Airport:
         ...
 class Route:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @staticmethod
     @typing.overload
     def calc_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -311,9 +287,6 @@ class Route:
     def valid(self) -> bool:
         ...
 class RoutesSearch:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     def __init__(self, ap0: list[am4.utils.airport.Airport], ac: am4.utils.aircraft.Aircraft, options: AircraftRoute.Options = AircraftRoute.Options(), user: am4.utils.game.User = am4.utils.game.User.Default()) -> None:
         ...
     def _get_columns(self, dests: list[Destination], include_origin: bool = False) -> dict[str, list]:

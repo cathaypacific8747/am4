@@ -2,9 +2,6 @@ from __future__ import annotations
 import typing
 __all__ = ['CargoDemand', 'PaxDemand']
 class CargoDemand:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @typing.overload
     def __init__(self) -> None:
         ...
@@ -25,9 +22,6 @@ class CargoDemand:
     def l(self) -> int:
         ...
 class PaxDemand:
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @typing.overload
     def __init__(self) -> None:
         ...

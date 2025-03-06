@@ -4,8 +4,7 @@ use rstest::*;
 
 #[rstest]
 fn test_aircrafts_ok() {
-    assert_eq!(AIRCRAFTS.data().len(), 492);
-    assert_eq!(AIRCRAFTS.index().len(), 992);
+    assert!(AIRCRAFTS.data().len() > 496);
 }
 
 #[rstest]

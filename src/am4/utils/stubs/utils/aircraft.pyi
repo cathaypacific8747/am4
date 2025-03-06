@@ -18,9 +18,6 @@ class Aircraft:
             H: typing.ClassVar[Aircraft.CargoConfig.Algorithm]  # value = <Algorithm.H: 2>
             L: typing.ClassVar[Aircraft.CargoConfig.Algorithm]  # value = <Algorithm.L: 1>
             __members__: typing.ClassVar[dict[str, Aircraft.CargoConfig.Algorithm]]  # value = {'AUTO': <Algorithm.AUTO: 0>, 'L': <Algorithm.L: 1>, 'H': <Algorithm.H: 2>}
-            @staticmethod
-            def _pybind11_conduit_v1_(*args, **kwargs):
-                ...
             def __eq__(self, other: typing.Any) -> bool:
                 ...
             def __getstate__(self) -> int:
@@ -47,9 +44,6 @@ class Aircraft:
             @property
             def value(self) -> int:
                 ...
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __repr__(self) -> str:
             ...
         def to_dict(self) -> dict:
@@ -67,9 +61,6 @@ class Aircraft:
         def valid(self) -> bool:
             ...
     class ParseResult:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         @property
         def co2_mod(self) -> bool:
             ...
@@ -118,9 +109,6 @@ class Aircraft:
             YFJ: typing.ClassVar[Aircraft.PaxConfig.Algorithm]  # value = <Algorithm.YFJ: 6>
             YJF: typing.ClassVar[Aircraft.PaxConfig.Algorithm]  # value = <Algorithm.YJF: 5>
             __members__: typing.ClassVar[dict[str, Aircraft.PaxConfig.Algorithm]]  # value = {'AUTO': <Algorithm.AUTO: 0>, 'FJY': <Algorithm.FJY: 1>, 'FYJ': <Algorithm.FYJ: 2>, 'JFY': <Algorithm.JFY: 3>, 'JYF': <Algorithm.JYF: 4>, 'YJF': <Algorithm.YJF: 5>, 'YFJ': <Algorithm.YFJ: 6>}
-            @staticmethod
-            def _pybind11_conduit_v1_(*args, **kwargs):
-                ...
             def __eq__(self, other: typing.Any) -> bool:
                 ...
             def __getstate__(self) -> int:
@@ -147,9 +135,6 @@ class Aircraft:
             @property
             def value(self) -> int:
                 ...
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __repr__(self) -> str:
             ...
         def to_dict(self) -> dict:
@@ -170,9 +155,6 @@ class Aircraft:
         def y(self) -> int:
             ...
     class SearchResult:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, arg0: Aircraft, arg1: Aircraft.ParseResult) -> None:
             ...
         @property
@@ -198,9 +180,6 @@ class Aircraft:
         NAME: typing.ClassVar[Aircraft.SearchType]  # value = <SearchType.NAME: 3>
         SHORTNAME: typing.ClassVar[Aircraft.SearchType]  # value = <SearchType.SHORTNAME: 2>
         __members__: typing.ClassVar[dict[str, Aircraft.SearchType]]  # value = {'ALL': <SearchType.ALL: 0>, 'ID': <SearchType.ID: 1>, 'SHORTNAME': <SearchType.SHORTNAME: 2>, 'NAME': <SearchType.NAME: 3>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -228,9 +207,6 @@ class Aircraft:
         def value(self) -> int:
             ...
     class Suggestion:
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __init__(self, arg0: Aircraft, arg1: float) -> None:
             ...
         @property
@@ -253,9 +229,6 @@ class Aircraft:
         PAX: typing.ClassVar[Aircraft.Type]  # value = <Type.PAX: 0>
         VIP: typing.ClassVar[Aircraft.Type]  # value = <Type.VIP: 2>
         __members__: typing.ClassVar[dict[str, Aircraft.Type]]  # value = {'PAX': <Type.PAX: 0>, 'CARGO': <Type.CARGO: 1>, 'VIP': <Type.VIP: 2>}
-        @staticmethod
-        def _pybind11_conduit_v1_(*args, **kwargs):
-            ...
         def __eq__(self, other: typing.Any) -> bool:
             ...
         def __getstate__(self) -> int:
@@ -282,9 +255,6 @@ class Aircraft:
         @property
         def value(self) -> int:
             ...
-    @staticmethod
-    def _pybind11_conduit_v1_(*args, **kwargs):
-        ...
     @staticmethod
     def search(s: str, user: am4.utils.game.User = am4.utils.game.User.Default()) -> Aircraft.SearchResult:
         ...

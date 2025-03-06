@@ -14,7 +14,7 @@ using std::string;
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
-constexpr int AIRCRAFT_COUNT = 496;
+constexpr int AIRCRAFT_COUNT = 497;
 constexpr int AIRPORT_COUNT = 3907;
 constexpr int AIRPORT_ID_MAX = 3982;
 constexpr int ROUTE_COUNT = AIRPORT_COUNT * (AIRPORT_COUNT - 1) / 2;
@@ -86,7 +86,6 @@ struct Database {
     static shared_ptr<Database> Client();
     static shared_ptr<Database> Client(const string& home_dir);
 
-    void populate_database();
     void populate_internal();
 };
 

@@ -1,10 +1,12 @@
 import asyncio
+from pathlib import Path
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
 from loguru import logger
 
+import am4
 from am4.utils import __version__ as am4utils_version
 from am4.utils.db import init as utils_init
 
@@ -75,12 +77,16 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError):
 
 
 async def start(db_done: asyncio.Event):
+    venv_path = am4.__path__[-1]
+    if "site-packages" not in venv_path:
+        logger.warning("am4 should be installed in a virtual environment")
+
     await db_done.wait()
 
     from .plots import MPLMap
 
     mpl_map = MPLMap()
-    utils_init()
+    utils_init(home_dir=venv_path)
     await bot.add_cog(HelpCog(bot))
     await bot.add_cog(SettingsCog(bot))
     await bot.add_cog(AirportCog(bot))
