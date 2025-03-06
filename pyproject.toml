@@ -94,7 +94,7 @@ ignore = [
     "W292",
     "E741",  # ambiguous variable name
 ]
-exclude = ["src-old", "src-v2-v3", "research/nn"]
+exclude = ["src-old", "src-v2-v3"]
 line-length = 120
 target-version = "py39"
 

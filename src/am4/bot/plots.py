@@ -11,34 +11,39 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
 from pyproj import CRS, Transformer
 
-from am4.utils.airport import Airport
-
 from .utils import format_num
 
 
 class MPLMap:
     def __init__(self):
-        self.transformer = Transformer.from_crs(4326, CRS.from_string("+proj=peirce_q +lon_0=25 +shape=square"))
-        self._init_template()
-        self.cmap = cmocean.tools.crop_by_percent(cmocean.cm.dense_r, 30, which="min")
-        self.cmap2 = cmocean.tools.crop_by_percent(cmocean.cm.curl, 50)
-
-    def _init_template(self):
-        plt.style.use("dark_background")
-        ext = 2**24
-
+        # setup the style and font
         font_path = Path(__file__).parent / "assets" / "font" / "B612-Regular.ttf"
         fm.fontManager.addfont(font_path)
         prop = fm.FontProperties(fname=font_path)
-        plt.rcParams.update(
-            {
-                "font.family": prop.get_name(),
-                "axes.facecolor": "#16171a",
-                "savefig.facecolor": "#1f2024",
-                "legend.fontsize": 10 * 0.9,
-                "legend.handlelength": 2 * 0.9,
-            }
-        )
+        self.rc_params = {
+            "font.family": prop.get_name(),  # "B612"
+            "axes.facecolor": "#16171a",
+            "savefig.facecolor": "#1f2024",
+            "legend.fontsize": 10 * 0.9,
+            "legend.handlelength": 2 * 0.9,
+            "text.color": "white",
+            "axes.labelcolor": "white",
+            "axes.edgecolor": "white",
+            "xtick.color": "white",
+            "ytick.color": "white",
+        }
+
+        self.template_routes = self.create_routes_template()
+        self.cmap = cmocean.tools.crop_by_percent(cmocean.cm.dense_r, 30, which="min")
+        self.cmap2 = cmocean.tools.crop_by_percent(cmocean.cm.curl, 50)
+        self.wgs84_to_pierceq = Transformer.from_crs(4326, CRS.from_string("+proj=peirce_q +lon_0=25 +shape=square"))
+
+    def create_routes_template(self):
+        """Create a blank template for the routes plot, which will be unpickled later to draw the plot."""
+        plt.style.use("dark_background")
+        ext = 2**24
+
+        plt.rcParams.update(self.rc_params)
 
         fig, (ax, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 5), layout="tight")
         ax3 = ax2.twiny()
@@ -64,18 +69,17 @@ class MPLMap:
         ext = 2**24
         ax.imshow(im.astype(np.uint16), extent=[-ext, ext, -ext, ext])
 
-        self.template = pickle.dumps((fig, ax, ax2, ax3))
+        template = pickle.dumps((fig, ax, ax2, ax3))
         plt.close(fig)
+        return template
 
-    def plot_destinations(
+    def _plot_destinations(
         self,
         cols: dict[str, list],
-        ap_queries: list[Airport.SearchResult],
+        origin_lngs: list[float],
+        origin_lats: list[float],
     ) -> io.BytesIO:
-        origin_lngs = [q.ap.lng for q in ap_queries]
-        origin_lats = [q.ap.lat for q in ap_queries]
-
-        fig, ax, ax2, ax3 = pickle.loads(self.template)
+        fig, ax, ax2, ax3 = pickle.loads(self.template_routes)
         fig: Figure
         ax: plt.Axes
         ax2: plt.Axes
@@ -85,8 +89,8 @@ class MPLMap:
         lngs = cols["99|dest.lng"]
         tpdpas = np.array(cols["32|trips_pd_pa"])
         profits = np.array(cols["39|profit_pt"]) * tpdpas
-        sc_d = ax.scatter(*self.transformer.transform(lats, lngs), c=profits, s=0.5, cmap=self.cmap)
-        ax.plot(*self.transformer.transform(origin_lats, origin_lngs), "ro", markersize=3)
+        sc_d = ax.scatter(*self.wgs84_to_pierceq.transform(lats, lngs), c=profits, s=0.5, cmap=self.cmap)
+        ax.plot(*self.wgs84_to_pierceq.transform(origin_lats, origin_lngs), "ro", markersize=3)
         legend = ax.legend(*sc_d.legend_elements(fmt=FuncFormatter(format_num)), title="$/d/ac")
 
         ac_needs = cols["33|num_ac"]
@@ -111,6 +115,3 @@ class MPLMap:
         buf.seek(0)
         plt.close(fig)
         return buf
-
-
-mpl_map = MPLMap()

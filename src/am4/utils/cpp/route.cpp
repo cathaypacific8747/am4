@@ -207,7 +207,9 @@ AircraftRoute AircraftRoute::create(
     acr._ac_type = ac.type;
     acr.max_tpd = std::nullopt;
 
-    if (user.game_mode == User::GameMode::REALISM && (a1.rwy < ac.rwy || a0.rwy < ac.rwy)) {
+    if (user.game_mode == User::GameMode::REALISM && (a1.rwy < ac.rwy)) {
+        // NOTE: departing from runways that are too short is actually allowed
+        // for realism player. just exercise caution not to make routes the other way
         acr.warnings.push_back(AircraftRoute::Warning::ERR_RWY_TOO_SHORT);
         return acr;
     }

@@ -42,9 +42,7 @@ def start(components: Annotated[Optional[str], typer.Argument()] = None):
 
     async def main():
         db_done = asyncio.Event()
-        from .db import start as start_db
-
-        tasks = [asyncio.create_task(start_db(db_done))]
+        tasks = []
         if "api" in components:
             from .api.fapi import start as start_fapi
 
@@ -53,6 +51,9 @@ def start(components: Annotated[Optional[str], typer.Argument()] = None):
             from .bot import start as start_bot
 
             tasks.append(asyncio.create_task(start_bot(db_done)))
+        from .db import start as start_db
+
+        tasks = [asyncio.create_task(start_db(db_done))]
 
         await asyncio.gather(*tasks)
 

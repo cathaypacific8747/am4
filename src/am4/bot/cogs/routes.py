@@ -2,7 +2,7 @@ import asyncio
 import io
 import math
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import discord
 import orjson
@@ -19,7 +19,7 @@ from ...config import cfg
 from ..base import BaseCog
 from ..converters import AircraftCvtr, CfgAlgCvtr, ConstraintCvtr, MultiAirportCvtr, TPDCvtr
 from ..errors import CustomErrHandler
-from ..plots import mpl_map
+from ..plots import MPLMap
 from ..utils import (
     COLOUR_WARNING,
     HELP_CFG_ALG,
@@ -153,9 +153,13 @@ class ButtonHandler(discord.ui.View):
 
 
 class RoutesCog(BaseCog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, mpl_map: MPLMap):
         super().__init__(bot)
         self.executor = ThreadPoolExecutor(max_workers=4)
+        # matplotlib is not thread-safe
+        # run in one thread only to avoid the background colours getting messed up
+        self.mpl_map_executor = ProcessPoolExecutor(max_workers=1)
+        self.mpl_map = mpl_map
 
     @commands.command(
         brief="Searches best routes from a hub",
@@ -281,7 +285,11 @@ class RoutesCog(BaseCog):
         )
         await msg.edit(view=btns)
 
-        im = await loop.run_in_executor(self.executor, mpl_map.plot_destinations, cols, ap_queries)
+        origin_lngs = [q.ap.lng for q in ap_queries]
+        origin_lats = [q.ap.lat for q in ap_queries]
+        im = await loop.run_in_executor(
+            self.mpl_map_executor, self.mpl_map._plot_destinations, cols, origin_lngs, origin_lats
+        )
         embed.set_image(url=f"attachment://routes_{file_suffix}.png")
         embed.set_footer(text="\n".join(embed.footer.text.split("\n")[:-1]))
         await msg.edit(

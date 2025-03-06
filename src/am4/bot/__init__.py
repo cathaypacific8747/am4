@@ -27,7 +27,7 @@ bot = Bot(command_prefix=cfg.bot.COMMAND_PREFIX, intents=intents, help_command=N
 @bot.event
 async def on_ready():
     await channels.init(bot)
-    logger.info(f'logged in as {bot.user} on {", ".join([g.name for g in bot.guilds])}')
+    logger.info(f"logged in as {bot.user} on {', '.join([g.name for g in bot.guilds])}")
     logger.info(f"am4.utils version {am4utils_version}")
 
 
@@ -76,12 +76,16 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError):
 
 async def start(db_done: asyncio.Event):
     await db_done.wait()
+
+    from .plots import MPLMap
+
+    mpl_map = MPLMap()
     utils_init()
     await bot.add_cog(HelpCog(bot))
     await bot.add_cog(SettingsCog(bot))
     await bot.add_cog(AirportCog(bot))
     await bot.add_cog(AircraftCog(bot))
     await bot.add_cog(RouteCog(bot))
-    await bot.add_cog(RoutesCog(bot))
+    await bot.add_cog(RoutesCog(bot, mpl_map))
     await bot.add_cog(PriceCog(bot))
     await bot.start(cfg.bot.DISCORD_TOKEN)
