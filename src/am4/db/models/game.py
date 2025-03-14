@@ -27,7 +27,7 @@ class PyUser(BaseModel):
     co2_training: Annotated[int, Field(ge=0, le=5)]
     fuel_price: Annotated[int, Field(ge=0, le=3000)]
     co2_price: Annotated[int, Field(ge=0, le=200)]
-    accumulated_count: Annotated[int, Field(ge=0)]
+    accumulated_count: Annotated[int, Field(ge=0, lt=2**16)]
     load: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     cargo_load: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
     income_loss_tol: Annotated[float, Field(ge=0, le=1), StrPctToFloat]
