@@ -200,7 +200,7 @@ server = Server(
     Config(
         app,
         host=cfg.api.HOST,
-        port=cfg.api.PORT,
+        port=10000,  # Updated port to 10000
         reload=cfg.api.RELOAD,
         server_header=False,
         log_level=cfg.LOG_LEVEL.lower(),
